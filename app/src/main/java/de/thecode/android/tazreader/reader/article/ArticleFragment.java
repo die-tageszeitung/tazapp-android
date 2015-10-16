@@ -631,14 +631,18 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
             result = Files.toString(articleFile, Charsets.UTF_8);
 
-            Pattern tazapiPattern = Pattern.compile("(<script.+?src\\s*?=\\s*?(?:\"|'))(res.+?TAZAPI.js)((?:\"|').*?>)", Pattern.DOTALL);
+//            Pattern tazapiPattern = Pattern.compile("(<script.+?src\\s*?=\\s*?(?:\"|'))(res.+?TAZAPI.js)((?:\"|').*?>)", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 
-            Matcher matcher = tazapiPattern.matcher(result);
-            result = matcher.replaceAll("$1" + tazapiReplacement + "$3");
+//            Matcher matcher = tazapiPattern.matcher(result);
+//            result = matcher.replaceAll("$1" + tazapiReplacement + "$3");
 
-            Pattern resPattern = Pattern.compile("(<[^>]+?(?:href|src)\\s*?=\\s*?(?:\"|'))(res.+?)((?:\"|').*?>)", Pattern.DOTALL);
-            matcher = resPattern.matcher(result);
+            Pattern resPattern = Pattern.compile("(<[^>]+?(?:href|src)\\s*?=\\s*?(?:\"|'))(res.+?)((?:\"|').*?>)", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+            Matcher matcher = resPattern.matcher(result);
             result = matcher.replaceAll("$1" + resourceReplacement + "$2$3");
+
+            Pattern tazapiPattern = Pattern.compile("file://.+?TAZAPI.js",Pattern.CASE_INSENSITIVE);
+            Matcher matcher2 = tazapiPattern.matcher(result);
+            result = matcher2.replaceAll(tazapiReplacement);
 
         } catch (IOException e) {
             e.printStackTrace();
