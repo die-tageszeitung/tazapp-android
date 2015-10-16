@@ -8,12 +8,14 @@ import android.app.LoaderManager;
 import android.content.Context;
 import android.content.Loader;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.widget.DrawerLayout;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 
 import com.google.common.base.Strings;
@@ -36,6 +38,7 @@ import de.thecode.android.tazreader.data.Paper.Plist.Source;
 import de.thecode.android.tazreader.data.Paper.Plist.TopLink;
 import de.thecode.android.tazreader.data.Store;
 import de.thecode.android.tazreader.data.TazSettings;
+import de.thecode.android.tazreader.dialog.TcDialog;
 import de.thecode.android.tazreader.dialog.TcDialog.TcDialogButtonListener;
 import de.thecode.android.tazreader.download.NotificationHelper;
 import de.thecode.android.tazreader.reader.article.ArticleFragment;
@@ -50,7 +53,7 @@ import de.thecode.android.tazreader.utils.Log;
 import de.thecode.android.tazreader.utils.Utils;
 
 @SuppressLint("RtlHardcoded")
-public class ReaderActivity extends BaseActivity implements LoaderManager.LoaderCallbacks<PaperLoader.PaperLoaderResult>, IReaderCallback, TcDialogButtonListener {
+public class ReaderActivity extends BaseActivity implements LoaderManager.LoaderCallbacks<PaperLoader.PaperLoaderResult>, IReaderCallback, TcDialogButtonListener, TcDialog.TcDialogDismissListener {
 
     public static enum THEMES {
         normal("bgColorNormal"), sepia("bgColorSepia"), night("bgColorNight");
@@ -88,6 +91,7 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
     DrawerLayout mDrawerLayout;
     View mDrawerLayoutIndex;
     View mDrawerLayoutPageIndex;
+    FrameLayout mContentFrame;
 
     FragmentManager mFragmentManager;
 
@@ -125,6 +129,7 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
 
         setContentView(R.layout.activity_reader);
 
+
         setBackgroundColor(onGetBackgroundColor(TazSettings.getPrefString(this, TazSettings.PREFKEY.THEME, "normal")));
 
         mLoadingProgress = (ProgressBar) findViewById(R.id.loading);
@@ -138,6 +143,8 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mDrawerLayoutIndex = findViewById(R.id.left_drawer);
         mDrawerLayoutPageIndex = findViewById(R.id.right_drawer);
+        mContentFrame = (FrameLayout) findViewById(R.id.content_frame);
+
 
         mFragmentManager = getFragmentManager();
 
@@ -162,6 +169,7 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
 
         Log.v(fragment.getTag());
     }
+
 
     @Override
     protected void onRestart() {
@@ -192,6 +200,7 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
             Log.d("Bildschirm bleibt nicht an!");
             getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
+        setImmersiveMode();
     }
 
     @Override
@@ -488,7 +497,13 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
     @Override
     public void onDialogClick(String tag, Bundle arguments, int which) {
         // TODO Auto-generated method stub
+    }
 
+    @Override
+    public void onDialogDismiss(String tag, Bundle arguments) {
+        if (TAG_FRAGMENT_DIALOG_SETTING.equals(tag)) {
+            setImmersiveMode();
+        }
     }
 
     @Override
@@ -505,7 +520,7 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
     public void togglePageIndexDrawer() {
         if (mDrawerLayout.isDrawerOpen(mDrawerLayoutPageIndex)) {
             mDrawerLayout.closeDrawer(mDrawerLayoutPageIndex);
-        } else  {
+        } else {
             mDrawerLayout.openDrawer(mDrawerLayoutPageIndex);
         }
 
@@ -524,7 +539,6 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
         String boolValue = "off";
         if (value) boolValue = "on";
         callConfigListeners(name, boolValue);
-
     }
 
     WeakHashMap<ConfigurationChangeListener, Void> configListenerWeakHashMap = new WeakHashMap<>();
@@ -769,7 +783,7 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
     @Override
     public void onBackPressed() {
         if (retainDataFragment != null && retainDataFragment.getBackstack() != null && retainDataFragment.getBackstack()
-                              .size() > 1) {
+                                                                                                         .size() > 1) {
             RetainDataFragment.BackStack loadBackStack = retainDataFragment.getBackstack()
                                                                            .get(retainDataFragment.getBackstack()
                                                                                                   .size() - 2);
@@ -789,11 +803,56 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         Log.d();
-        switch(keyCode) {
+        switch (keyCode) {
             case KeyEvent.KEYCODE_MENU:
                 togglePageIndexDrawer();
                 return true;
         }
         return super.onKeyDown(keyCode, event);
+    }
+
+    @Override
+    public void setImmersiveMode() {
+
+        boolean onOff = TazSettings.getPrefBoolean(this,TazSettings.PREFKEY.FULLSCREEN,false);
+
+        Log.v("immersive:"+onOff);
+
+        mContentFrame.setFitsSystemWindows(!onOff);
+
+        int newUiOptions = getWindow().getDecorView()
+                                      .getSystemUiVisibility();
+
+        if (onOff) {
+            // Navigation bar hiding:  Backwards compatible to ICS.
+            if (Build.VERSION.SDK_INT >= 14) {
+                newUiOptions |= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+            }
+
+            // Status bar hiding: Backwards compatible to Jellybean
+            if (Build.VERSION.SDK_INT >= 16) {
+                //newUiOptions |= View.SYSTEM_UI_FLAG_LAYOUT_STABLE;
+                newUiOptions |= View.SYSTEM_UI_FLAG_FULLSCREEN;
+                newUiOptions |= View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION;
+                newUiOptions |= View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
+            }
+            // Immersive mode: Backward compatible to KitKat.
+            // Note that this flag doesn't do anything by itself, it only augments the behavior
+            // of HIDE_NAVIGATION and FLAG_FULLSCREEN.  For the purposes of this sample
+            // all three flags are being toggled together.
+            // Note that there are two immersive mode UI flags, one of which is referred to as "sticky".
+            // Sticky immersive mode differs in that it makes the navigation and status bars
+            // semi-transparent, and the UI flag does not get cleared when the user interacts with
+            // the screen.
+            if (Build.VERSION.SDK_INT >= 18) {
+                newUiOptions |= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+            }
+        }
+
+
+        getWindow().getDecorView()
+                   .setSystemUiVisibility(newUiOptions);
+        mContentFrame.invalidate();
+
     }
 }

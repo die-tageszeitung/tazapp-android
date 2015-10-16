@@ -3,13 +3,14 @@ package de.thecode.android.tazreader.data;
 import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 
+import org.apache.commons.io.FileUtils;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Locale;
 
-import de.thecode.android.tazreader.utils.Utils;
 import de.thecode.android.tazreader.utils.StorageManager;
 
 public abstract class FileCacheImageHelper {
@@ -90,13 +91,12 @@ public abstract class FileCacheImageHelper {
         return false;
     }
     
-    public boolean deleteDir() {
+    public void deleteDir() {
         if (mCacheDir != null)
         {
             if (mCacheDir.exists())
-                return Utils.deleteDir(mCacheDir);
+                FileUtils.deleteQuietly(mCacheDir);
         }
-        return false;
     }
 
     public boolean exists(String hash)

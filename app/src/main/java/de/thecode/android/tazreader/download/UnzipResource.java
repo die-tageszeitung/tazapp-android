@@ -38,7 +38,7 @@ public class UnzipResource {
         this.unzipFile = new UnzipFile(zipFile, destinationDir, deleteSourceOnSuccess, true);
     }
 
-    public File start() throws IOException, ParserConfigurationException, ParseException, SAXException, PropertyListFormatException, UnzipStream.UnzipCanceledException {
+    public File start() throws IOException, ParserConfigurationException, ParseException, SAXException, PropertyListFormatException, UnzipCanceledException {
         File result = unzipFile.start();
         File sha1File = new File(destinationDir, RESOURCE_SHA1_PLIST_FILENAME);
         if (!sha1File.exists()) throw new FileNotFoundException("Sha1 File not found");

@@ -2,6 +2,8 @@ package de.thecode.android.tazreader.utils;
 
 import android.content.Context;
 
+import org.apache.commons.io.FileUtils;
+
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
@@ -86,15 +88,20 @@ public class StorageManager {
     public File getResourceDirectory(String key) {return new File(get(RESOURCE),key);}
 
     public void deletePaperDir(Paper paper) {
-        Utils.deleteDir(getPaperDirectory(paper));
+        if (getPaperDirectory(paper).exists())
+            FileUtils.deleteQuietly(getPaperDirectory(paper));
+//        Utils.deleteDir(getPaperDirectory(paper));
         new FileCachePDFThumbHelper(this, paper.getFileHash()).deleteDir();
         if (paper.isImported() || paper.isKiosk()) {
             new FileCacheCoverHelper(this).delete(paper.getImageHash());
         }
     }
 
-    public void deleteResourceDir(String key) {
-        Utils.deleteDir(getResourceDirectory(key));
+    public void deleteResourceDir(String key)  {
+        File dir = getResourceDirectory(key);
+        if (dir.exists())
+            FileUtils.deleteQuietly(getResourceDirectory(key));
+        //Utils.deleteDir(getResourceDirectory(key));
     }
 
 

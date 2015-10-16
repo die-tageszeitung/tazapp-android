@@ -53,7 +53,7 @@ import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Publication;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.download.CoverDownloadedEvent;
-import de.thecode.android.tazreader.download.DownloadHelper;
+import de.thecode.android.tazreader.download.DownloadManager;
 import de.thecode.android.tazreader.reader.ReaderActivity;
 import de.thecode.android.tazreader.start.ScrollToPaperEvent;
 import de.thecode.android.tazreader.utils.StorageManager;
@@ -333,11 +333,11 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
                             AccountHelper accountHelper = new AccountHelper(getContext(),account);
                             if (accountHelper.isAuthenticated()) {
-                                DownloadHelper downloadHelper = new DownloadHelper(getContext());
+                                //DownloadHelper downloadHelper = new DownloadHelper(getContext());
                                 try {
-                                    downloadHelper.enquePaper(tomorrowPaper.getId());
+                                    DownloadManager.getInstance(getContext()).enquePaper(tomorrowPaper.getId());
                                     autoloadSuccess = true;
-                                } catch (IllegalArgumentException | DownloadHelper.DownloadNotAllowedException | Paper.PaperNotFoundException | AccountHelper.CreateAccountException ignored) {
+                                } catch (IllegalArgumentException | DownloadManager.DownloadNotAllowedException | Paper.PaperNotFoundException | AccountHelper.CreateAccountException ignored) {
                                 }
                             }
 

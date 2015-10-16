@@ -326,7 +326,11 @@ public class LibraryFragment extends BaseFragment implements LoaderManager.Loade
 
                 case Paper.NOT_DOWNLOADED:
                 case Paper.NOT_DOWNLOADED_IMPORT:
-                    callback.startDownload(paper.getId());
+                    try {
+                        callback.startDownload(paper.getId());
+                    } catch (Paper.PaperNotFoundException e) {
+                        Log.e(e);
+                    }
                     break;
 
             }
@@ -346,13 +350,9 @@ public class LibraryFragment extends BaseFragment implements LoaderManager.Loade
 
 
     private void deleteSelected() {
-        for (Long paperId : adapter.getSelected()) {
-            try {
-                Paper paper = new Paper(getActivity(), paperId);
-                paper.delete(getActivity());
-            } catch (Paper.PaperNotFoundException e) {
-                Log.e(e);
-            }
+        if (adapter.getSelected()!= null && adapter.getSelected().size()>0) {
+            Long[] ids = adapter.getSelected().toArray(new Long[adapter.getSelected().size()]);
+            callback.getRetainData().deletePaper(ids);
         }
     }
 

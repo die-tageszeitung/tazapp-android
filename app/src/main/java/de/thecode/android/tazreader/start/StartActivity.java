@@ -2,6 +2,7 @@ package de.thecode.android.tazreader.start;
 
 
 import android.annotation.SuppressLint;
+import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
@@ -23,6 +24,7 @@ import java.util.List;
 import de.greenrobot.event.EventBus;
 import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.R;
+import de.thecode.android.tazreader.data.DeleteTask;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Resource;
 import de.thecode.android.tazreader.data.TazSettings;
@@ -30,7 +32,7 @@ import de.thecode.android.tazreader.dialog.ArchiveDialog;
 import de.thecode.android.tazreader.dialog.TcDialog;
 import de.thecode.android.tazreader.dialog.TcDialogAdapterList;
 import de.thecode.android.tazreader.dialog.TcDialogIndeterminateProgress;
-import de.thecode.android.tazreader.download.DownloadHelper;
+import de.thecode.android.tazreader.download.DownloadManager;
 import de.thecode.android.tazreader.download.NotificationHelper;
 import de.thecode.android.tazreader.download.PaperDownloadFailedEvent;
 import de.thecode.android.tazreader.download.PaperDownloadFinishedEvent;
@@ -107,16 +109,10 @@ public class StartActivity extends BaseActivity implements IStartCallback, TcDia
         }
         TazSettings.removePref(this, TazSettings.PREFKEY.PAPERMIGRATEFROM);
 
-        //        if (TazSettings.getPrefBoolean(this, TazSettings.PREFKEY.PAPERMIGRATERUNNING, false)) {
-        //            showMigrationDialog();
-        //            return;
-        //        } else dismissMigrationDialog();
-
-
         Utils.setActivityOrientationFromPrefs(this);
 
 
-        retainDataFragment = RetainDataFragment.findOrCreateRetainFragment(getFragmentManager());
+        retainDataFragment = RetainDataFragment.findOrCreateRetainFragment(getFragmentManager(), this);
 
 
         if (retainDataFragment.getCache() == null) {
@@ -290,19 +286,22 @@ public class StartActivity extends BaseActivity implements IStartCallback, TcDia
     }
 
     @Override
-    public void startDownload(long paperId) {
-        switch (Utils.getConnectionType(this)) {
-            case Utils.CONNECTION_NOT_AVAILABLE:
-                showNoConnectionDialog();
-                break;
-            case Utils.CONNECTION_MOBILE:
-            case Utils.CONNECTION_MOBILE_ROAMING:
-                showMobileConnectionDialog();
-                addToDownloadQueue(paperId);
-                break;
-            default:
-                addToDownloadQueue(paperId);
-                startDownloadQueue();
+    public void startDownload(long paperId) throws Paper.PaperNotFoundException {
+        Paper downloadPaper = new Paper(this,paperId);
+        if (!downloadPaper.isDownloading()) {
+            switch (Utils.getConnectionType(this)) {
+                case Utils.CONNECTION_NOT_AVAILABLE:
+                    showNoConnectionDialog();
+                    break;
+                case Utils.CONNECTION_MOBILE:
+                case Utils.CONNECTION_MOBILE_ROAMING:
+                    showMobileConnectionDialog();
+                    addToDownloadQueue(paperId);
+                    break;
+                default:
+                    addToDownloadQueue(paperId);
+                    startDownloadQueue();
+            }
         }
         //        //TODO DIALOG
         //        //startDownload(paper.getId());
@@ -320,14 +319,14 @@ public class StartActivity extends BaseActivity implements IStartCallback, TcDia
     }
 
     private void startDownloadQueue() {
-        DownloadHelper mDownloadHelper = new DownloadHelper(this);
+        //DownloadHelper mDownloadHelper = new DownloadHelper(this);
         while (retainDataFragment.downloadQueue.size() > 0) {
             long paperId = retainDataFragment.downloadQueue.get(0);
             try {
-                mDownloadHelper.enquePaper(paperId);
+                DownloadManager.getInstance(this).enquePaper(paperId);
             } catch (IllegalArgumentException | Paper.PaperNotFoundException | AccountHelper.CreateAccountException e) {
                 showDownloadManagerErrorDialog();
-            } catch (DownloadHelper.DownloadNotAllowedException e) {
+            } catch (DownloadManager.DownloadNotAllowedException e) {
 
             }
             retainDataFragment.downloadQueue.remove(0);
@@ -342,40 +341,11 @@ public class StartActivity extends BaseActivity implements IStartCallback, TcDia
                       .show(getFragmentManager(), DIALOG_FIRST);
     }
 
-    //    private void showResourceMissingDialog(String resourceKey, String resourceUrl) {
-    //        Bundle bundle = new Bundle();
-    //        bundle.putString(ARGUMENT_RESOURCE_KEY, resourceKey);
-    //        bundle.putString(ARGUMENT_RESOURCE_URL, resourceUrl);
-    //        new TcDialog().withBundle(bundle)
-    //                      .withMessage(R.string.dialog_resources_not_found)
-    //                      .withPositiveButton(R.string.dialog_yes)
-    //                      .withNegativeButton()
-    //                      .show(getFragmentManager(), DIALOG_MISSING_RESOURCE);
-    //    }
-
-
-    //    private void showResourceLoadingDialog() {
-    //        new TcDialog().withMessage(R.string.dialog_resources_loading)
-    //                      .withPositiveButton()
-    //                      .show(getFragmentManager(), DIALOG_RESOURCE_DOWNLOADING);
-    //    }
-
     public void showNoConnectionDialog() {
         new TcDialog().withMessage(R.string.dialog_noconnection)
                       .withPositiveButton()
                       .show(getFragmentManager(), DIALOG_NO_CONNECTION);
     }
-
-    //    private void showMigrationDialog() {
-    //        if (getFragmentManager().findFragmentByTag(DIALOG_MIGRATION_WAIT) == null) {
-    //            new TcDialogIndeterminateProgress().withMessage(R.string.dialog_migration_wait)
-    //                                               .show(getFragmentManager(), DIALOG_MIGRATION_WAIT);
-    //        }
-    //    }
-    //
-    //    private void dismissMigrationDialog() {
-    //        TcDialogIndeterminateProgress.dismissDialog(getFragmentManager(), DIALOG_MIGRATION_WAIT);
-    //    }
 
     private void showMobileConnectionDialog() {
         if (!retainDataFragment.downloadMobileDialog) {
@@ -387,27 +357,6 @@ public class StartActivity extends BaseActivity implements IStartCallback, TcDia
                           .show(getFragmentManager(), DIALOG_DOWNLOAD_MOBILE);
         }
     }
-
-    //    private void showMigrationDownloadDialog() {
-    //        // Check for migrated papers for autodownload Dialog
-    //        try {
-    //            JSONArray json = new JSONArray(TazSettings.getPrefString(getApplicationContext(), TazSettings.PREFKEY.PAPERMIGRATEDIDS, "[]"));
-    //            if (json.length() > 0) {
-    //                SyncHelper.requestManualSync(this);
-    //                Bundle bundle = new Bundle();
-    //                bundle.putString(ARGUMENT_MIGRATED_IDS_JSONARRAY, json.toString());
-    //
-    //                new TcDialog().withMessage(String.format(getString(R.string.dialog_migration_download), json.length()))
-    //                              .withPositiveButton(R.string.yes)
-    //                              .withNegativeButton()
-    //                              .withBundle(bundle)
-    //                              .show(getFragmentManager(), DIALOG_MIGRATION_FINISHED);
-    //            }
-    //            TazSettings.removePref(this, TazSettings.PREFKEY.PAPERMIGRATEDIDS);
-    //        } catch (JSONException e) {
-    //            Log.w(e);
-    //        }
-    //    }
 
     private void showAccountErrorDialog() {
         new TcDialog().withMessage(R.string.dialog_account_error)
@@ -425,16 +374,6 @@ public class StartActivity extends BaseActivity implements IStartCallback, TcDia
 
     private void showArchiveYearPicker() {
         Calendar cal = Calendar.getInstance();
-
-        //        List<String> years = new ArrayList<>();
-        //        for (int year = cal.get(Calendar.YEAR); year >= 2011; year--) {
-        //            years.add(String.valueOf(year));
-        //        }
-        //        new TcDialogList().withList(years.toArray(new String[years.size()]))
-        //                          .withTitle("Jahr")
-        //                .withCancelable(true)
-        //                          .show(getSupportFragmentManager(), DIALOG_ARCHIVE_YEAR);
-
         ArrayList<ArchiveDialog.ArchiveEntry> years = new ArrayList<>();
         for (int year = cal.get(Calendar.YEAR); year >= 2011; year--) {
             years.add(new ArchiveDialog.ArchiveEntry(year));
@@ -485,12 +424,18 @@ public class StartActivity extends BaseActivity implements IStartCallback, TcDia
         }
     }
 
-    private void showWaitDialog() {
-        new TcDialogIndeterminateProgress().withCancelable(false)
-                                           .withMessage("Bitte warten...")
-                                           .show(getFragmentManager(), DIALOG_WAIT);
-    }
 
+
+    @Override
+    public void toggleWaitDialog(String tag) {
+        DialogFragment dialog = (DialogFragment) getFragmentManager().findFragmentByTag(tag);
+        if (dialog == null)
+            new TcDialogIndeterminateProgress().withCancelable(false)
+                                               .withMessage("Bitte warten...")
+                                               .show(getFragmentManager(), tag);
+        else
+            dialog.dismiss();
+    }
 
     @Override
     public void callArchive() {
@@ -516,20 +461,14 @@ public class StartActivity extends BaseActivity implements IStartCallback, TcDia
                         showNoConnectionDialog();
                         break;
                     default:
-                        showWaitDialog();
-                        DownloadHelper downloadHelper = new DownloadHelper(this);
-                        downloadHelper.enqueResource(openPaper);
+                        toggleWaitDialog(DIALOG_WAIT + openPaper.getBookId());
+                        //DownloadHelper downloadHelper = new DownloadHelper(this);
+                        DownloadManager.getInstance(this).enqueResource(openPaper);
                         retainDataFragment.openPaperWaitingForRessource = id;
                 }
             }
         } catch (Paper.PaperNotFoundException e) {
             Log.e(e);
-        }
-    }
-
-    public void deletePapers(long... ids) {
-        if (ids != null && ids.length > 0) {
-
         }
     }
 
@@ -552,14 +491,6 @@ public class StartActivity extends BaseActivity implements IStartCallback, TcDia
         SyncHelper.requestManualSync(this);
     }
 
-    //    public void onEventMainThread(MigrationFinishedEvent event) {
-    //        Log.d(event);
-    //        Intent i = new Intent(this, StartActivity.class);
-    //        i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-    //        finish();
-    //        startActivity(i);
-    //    }
-
     public void onEventMainThread(PaperDownloadFinishedEvent event) {
         Log.d(event);
         if (retainDataFragment.useOpenPaperafterDownload) {
@@ -580,7 +511,7 @@ public class StartActivity extends BaseActivity implements IStartCallback, TcDia
                 Paper waitingPaper = new Paper(this, retainDataFragment.openPaperWaitingForRessource);
                 if (event.getKey()
                          .equals(waitingPaper.getResource())) {
-                    TcDialogIndeterminateProgress.dismissDialog(getFragmentManager(), DIALOG_WAIT);
+                    toggleWaitDialog(DIALOG_WAIT + waitingPaper.getBookId());
                     long paperId = retainDataFragment.openPaperWaitingForRessource;
                     retainDataFragment.openPaperWaitingForRessource = -1;
                     if (event.isSuccessful()) {
@@ -598,22 +529,6 @@ public class StartActivity extends BaseActivity implements IStartCallback, TcDia
     public void onDialogClick(String tag, Bundle arguments, int which) {
         if (DIALOG_FIRST.equals(tag)) {
             if (which == TcDialog.BUTTON_NEUTRAL) mDrawerFragment.simulateClick(userItem, true);
-            //        }         else if (DIALOG_MISSING_RESOURCE.equals(tag)) {
-            //            if (which == TcDialog.BUTTON_POSITIVE) {
-            //                String resourceKey = arguments.getString(ARGUMENT_RESOURCE_KEY);
-            //                String resourceUrl = arguments.getString(ARGUMENT_RESOURCE_URL);
-            //                if (!Strings.isNullOrEmpty(resourceKey)) {
-            //
-            //                    switch (Utils.getConnectionType(this)) {
-            //                        case Utils.CONNECTION_NOT_AVAILABLE:
-            //                            showNoConnectionDialog();
-            //                            break;
-            //                        default:
-            //                            DownloadHelper downloadHelper = new DownloadHelper(this);
-            //                            downloadHelper.enqueResource(resourceKey, resourceUrl);
-            //                    }
-            //                }
-            //            }
         } else if (DIALOG_MIGRATION_FINISHED.equals(tag)) {
             if (which == TcDialog.BUTTON_POSITIVE) {
                 try {
@@ -621,7 +536,7 @@ public class StartActivity extends BaseActivity implements IStartCallback, TcDia
                     for (int i = 0; i < json.length(); i++) {
                         startDownload(json.getLong(i));
                     }
-                } catch (JSONException e) {
+                } catch (JSONException | Paper.PaperNotFoundException e) {
                     Log.w(e);
                 }
 
@@ -676,6 +591,8 @@ public class StartActivity extends BaseActivity implements IStartCallback, TcDia
     }
 
 
+
+
     public static class RetainDataFragment extends BaseFragment {
 
         private static final String TAG = "RetainDataFragment";
@@ -688,11 +605,12 @@ public class StartActivity extends BaseActivity implements IStartCallback, TcDia
         private long openPaperWaitingForRessource = -1;
         private boolean useOpenPaperafterDownload = true;
         List<NavigationDrawerFragment.NavigationItem> navBackstack = new ArrayList<>();
+        IStartCallback callback;
 
         public RetainDataFragment() {
         }
 
-        public static RetainDataFragment findOrCreateRetainFragment(FragmentManager fm) {
+        public static RetainDataFragment findOrCreateRetainFragment(FragmentManager fm, IStartCallback callback) {
             RetainDataFragment fragment = (RetainDataFragment) fm.findFragmentByTag(TAG);
             if (fragment == null) {
                 fragment = new RetainDataFragment();
@@ -700,6 +618,7 @@ public class StartActivity extends BaseActivity implements IStartCallback, TcDia
                   .add(fragment, TAG)
                   .commit();
             }
+            fragment.callback = callback;
             return fragment;
         }
 
@@ -749,8 +668,21 @@ public class StartActivity extends BaseActivity implements IStartCallback, TcDia
             return navBackstack;
         }
 
+        public void deletePaper(Long... ids) {
+            callback.toggleWaitDialog(DIALOG_WAIT+"delete");
+            new DeleteTask(getActivity()){
 
+                @Override
+                protected void onPostError(Exception exception) {
+                    Log.e(exception);
+                    callback.toggleWaitDialog(DIALOG_WAIT+"delete");
+                }
 
-
+                @Override
+                protected void onPostSuccess(Void aVoid) {
+                    callback.toggleWaitDialog(DIALOG_WAIT+"delete");
+                }
+            }.execute(ids);
+        }
     }
 }

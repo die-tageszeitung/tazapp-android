@@ -15,7 +15,7 @@ import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.dialog.TcDialog;
-import de.thecode.android.tazreader.download.DownloadHelper;
+import de.thecode.android.tazreader.download.DownloadManager;
 import de.thecode.android.tazreader.sync.AccountHelper;
 import de.thecode.android.tazreader.utils.BaseActivity;
 import de.thecode.android.tazreader.utils.Log;
@@ -102,11 +102,10 @@ public class ImportActivity extends BaseActivity implements TcDialog.TcDialogBut
             switch (which) {
                 case TcDialog.BUTTON_POSITIVE:
                     if (downloadUris != null) {
-                        DownloadHelper downloadHelper = new DownloadHelper(this);
                         for (Uri downloadUri : downloadUris) {
                             try {
-                                downloadHelper.enquePaper(ContentUris.parseId(downloadUri));
-                            } catch (Paper.PaperNotFoundException | AccountHelper.CreateAccountException | DownloadHelper.DownloadNotAllowedException e) {
+                                DownloadManager.getInstance(this).enquePaper(ContentUris.parseId(downloadUri));
+                            } catch (Paper.PaperNotFoundException | AccountHelper.CreateAccountException | DownloadManager.DownloadNotAllowedException e) {
                                 Log.sendExceptionWithCrashlytics(e);
                             }
                         }

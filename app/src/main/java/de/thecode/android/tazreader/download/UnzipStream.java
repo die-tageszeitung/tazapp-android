@@ -1,5 +1,7 @@
 package de.thecode.android.tazreader.download;
 
+import org.apache.commons.io.FileUtils;
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -12,7 +14,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import de.thecode.android.tazreader.utils.Log;
-import de.thecode.android.tazreader.utils.Utils;
 
 /**
  * Created by mate on 07.08.2015.
@@ -46,7 +47,7 @@ public class UnzipStream {
                 while ((ze = zis.getNextEntry()) != null) {
                     if (canceled)
                         throw new UnzipCanceledException();
-                    Log.t("... zipentry:", ze, ze.getSize());
+                    Log.d("... zipentry:", ze, ze.getSize());
                     if (ze.isDirectory()) {
                         File zipDir = new File(destinationDir, ze.getName());
                         if (dirHelper(zipDir)) {
@@ -63,6 +64,7 @@ public class UnzipStream {
                             notifyListeners(progress);
 
                             FileOutputStream fout = new FileOutputStream(destinationFile);
+                            Log.d("open fileoutputstream for",destinationFile);
                             try {
                                 byte[] buffer = new byte[32 * 1024]; // play with sizes..
                                 int readCount;
@@ -72,6 +74,7 @@ public class UnzipStream {
                                     publishProgress(destinationFile, readCount);
                                 }
                             } finally {
+                                Log.d("closing fileoutputstream");
                                 fout.close();
                             }
                         }
@@ -83,6 +86,7 @@ public class UnzipStream {
             } finally {
                 Log.t("... all uncompressed bytes:", progress.getBytesSoFar());
                 try {
+                    Log.d("closing inputstream");
                     zis.close();
                 } catch (IOException ignored) {
 
@@ -100,10 +104,15 @@ public class UnzipStream {
         canceled = true;
     }
 
-    public void onError(Exception e) {
+    public boolean isCanceled() {
+        return canceled;
+    }
+
+    public void onError(Exception e) throws IOException {
         Log.e(e);
         if (deleteDestinationOnFailure) {
-            if (destinationDir.exists()) Utils.deleteDir(destinationDir);
+            if (destinationDir.exists()) FileUtils.deleteDirectory(destinationDir);
+                //Utils.deleteDir(destinationDir);
         }
         //Log.sendExceptionWithCrashlytics(e);
     }
@@ -251,7 +260,4 @@ public class UnzipStream {
         public void onProgress(Progress progress);
     }
 
-    public class UnzipCanceledException extends Exception {
-
-    }
 }

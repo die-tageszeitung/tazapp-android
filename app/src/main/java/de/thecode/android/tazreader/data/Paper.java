@@ -130,7 +130,8 @@ public class Paper {
     }
 
     public Paper(Context context, long id) throws PaperNotFoundException {
-        Cursor cursor = context.getContentResolver()
+        Cursor cursor = context.getApplicationContext()
+                               .getContentResolver()
                                .query(ContentUris.withAppendedId(CONTENT_URI, id), null, null, null, null);
         try {
             if (cursor.moveToNext()) {
@@ -147,7 +148,8 @@ public class Paper {
         Uri bookIdUri = CONTENT_URI.buildUpon()
                                    .appendPath(bookId)
                                    .build();
-        Cursor cursor = context.getContentResolver()
+        Cursor cursor = context.getApplicationContext()
+                               .getContentResolver()
                                .query(bookIdUri, null, null, null, null);
         try {
             if (cursor.moveToNext()) {
@@ -1502,6 +1504,7 @@ public class Paper {
             context.getContentResolver()
                    .delete(ContentUris.withAppendedId(Paper.CONTENT_URI, getId()), null, null);
         } else {
+            setDownloadId(0);
             setDownloaded(false);
             setHasupdate(false);
             setValidUntil(0);

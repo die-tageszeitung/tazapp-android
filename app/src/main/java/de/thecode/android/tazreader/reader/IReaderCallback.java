@@ -35,5 +35,7 @@ public interface IReaderCallback {
 
     public void setFilterBookmarks(boolean bool);
     public boolean isFilterBookmarks();
+
+    public void setImmersiveMode();
     
 }

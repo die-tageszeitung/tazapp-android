@@ -42,6 +42,15 @@
                 android:text="@string/theme_night"
                 android:textAppearance="@style/SettingsTextAppearance" />
         </LinearLayout>
+        <android.support.v7.widget.SwitchCompat
+            android:id="@+id/switchFullscreen"
+            style="@style/SettingsWidget"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/fullscreen"
+
+            android:textAppearance="@style/SettingsTextAppearance"
+            app:switchTextAppearance="@style/SettingsTextAppearance" />
 
         <android.support.v7.widget.SwitchCompat
             android:id="@+id/switchPaging"

@@ -45,7 +45,7 @@ public class DownloadFinishedResourceService extends IntentService {
                     UnzipResource unzipResource = new UnzipResource(storageManager.getDownloadFile(resource),storageManager.getResourceDirectory(resource.getKey()),true);
                     unzipResource.start();
                     saveResource(resource, null);
-                } catch (UnzipStream.UnzipCanceledException|IOException | PropertyListFormatException | ParseException | SAXException | ParserConfigurationException e) {
+                } catch (UnzipCanceledException|IOException | PropertyListFormatException | ParseException | SAXException | ParserConfigurationException e) {
                     saveResource(resource,e);
                 }
             }

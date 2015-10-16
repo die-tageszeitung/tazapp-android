@@ -1,6 +1,5 @@
 package de.thecode.android.tazreader.download;
 
-import android.app.DownloadManager;
 import android.content.BroadcastReceiver;
 import android.content.ContentUris;
 import android.content.Context;
@@ -30,16 +29,16 @@ public class DownloadReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
 
         StorageManager externalStorage = StorageManager.getInstance(context);
-        DownloadHelper downloadHelper = new DownloadHelper(context);
+        DownloadManager downloadHelper = DownloadManager.getInstance(context);
 
         String action = intent.getAction();
 
         Log.t("DownloadReceiver received intent:",intent);
 
-        if (DownloadManager.ACTION_DOWNLOAD_COMPLETE.equals(action)) {
-            long downloadId = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, 0);
+        if (android.app.DownloadManager.ACTION_DOWNLOAD_COMPLETE.equals(action)) {
+            long downloadId = intent.getLongExtra(android.app.DownloadManager.EXTRA_DOWNLOAD_ID, 0);
 
-            DownloadHelper.DownloadState state = downloadHelper.getDownloadState(downloadId);
+            DownloadManager.DownloadState state = downloadHelper.getDownloadState(downloadId);
             boolean firstOccurrenceOfState = downloadHelper.isFirstOccurrenceOfState(state);
             if (!firstOccurrenceOfState) {
                 Log.e("DownloadState already received:",state);
@@ -55,7 +54,7 @@ public class DownloadReceiver extends BroadcastReceiver {
                     Log.t("Download complete for paper:", paper);
                     Log.t(state);
                     boolean failed = false;
-                    if (state.getStatus() == DownloadHelper.DownloadState.STATUS_SUCCESSFUL) {
+                    if (state.getStatus() == DownloadManager.DownloadState.STATUS_SUCCESSFUL) {
                         File downloadFile = externalStorage.getDownloadFile(paper);
                         if (!downloadFile.exists()) {
                             failed = true;
@@ -84,7 +83,7 @@ public class DownloadReceiver extends BroadcastReceiver {
                                 context.startService(unzipIntent);
                             }
                         }
-                    } else if (state.getStatus() == DownloadHelper.DownloadState.STATUS_FAILED) {
+                    } else if (state.getStatus() == DownloadManager.DownloadState.STATUS_FAILED) {
                         failed = true;
                     }
                     if (failed) {
@@ -118,7 +117,7 @@ public class DownloadReceiver extends BroadcastReceiver {
                     Log.t(state);
 
                     boolean failed = false;
-                    if (state.getStatus() == DownloadHelper.DownloadState.STATUS_SUCCESSFUL) {
+                    if (state.getStatus() == DownloadManager.DownloadState.STATUS_SUCCESSFUL) {
 
 
                         File downloadFile = externalStorage.getDownloadFile(resource);
@@ -149,7 +148,7 @@ public class DownloadReceiver extends BroadcastReceiver {
                                 context.startService(unzipIntent);
                             }
                         }
-                    } else if (state.getStatus() == DownloadHelper.DownloadState.STATUS_FAILED) {
+                    } else if (state.getStatus() == DownloadManager.DownloadState.STATUS_FAILED) {
                         failed = true;
                     }
                     if (failed) {
@@ -168,7 +167,7 @@ public class DownloadReceiver extends BroadcastReceiver {
                 cursor.close();
             }
 
-        } else if (DownloadManager.ACTION_NOTIFICATION_CLICKED.equals(action)) {
+        } else if (android.app.DownloadManager.ACTION_NOTIFICATION_CLICKED.equals(action)) {
             Intent libIntent = new Intent(context, StartActivity.class);
             libIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(libIntent);

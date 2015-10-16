@@ -6,6 +6,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.os.Bundle;
 
+import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -17,15 +18,14 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.thecode.android.tazreader.data.TazSettings;
-import de.thecode.android.tazreader.utils.Utils;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Store;
+import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.reader.ReaderActivity;
 import de.thecode.android.tazreader.utils.AsyncTaskWithExecption;
-import de.thecode.android.tazreader.utils.StorageManager;
 import de.thecode.android.tazreader.utils.BaseFragment;
 import de.thecode.android.tazreader.utils.Log;
+import de.thecode.android.tazreader.utils.StorageManager;
 
 /**
  * Created by mate on 21.04.2015.
@@ -114,12 +114,12 @@ public class MigrationWorkerFragment extends BaseFragment {
 
                 Log.i("Deleting old temp dir");
                 File oldTemp = storage.get("temp");
-                if (oldTemp.exists()) Utils.deleteDir(oldTemp);
+                if (oldTemp.exists()) FileUtils.deleteQuietly(oldTemp);//Utils.deleteDir(oldTemp);
                 Log.i("...finished");
 
                 Log.i("Deleting Cache");
                 if (storage.getCache(null)
-                           .exists()) Utils.deleteDirContent(storage.getCache(null));
+                           .exists()) FileUtils.deleteQuietly(storage.getCache(null));//Utils.deleteDirContent(storage.getCache(null));
                 Log.i("...finished");
 
                 List<Store> storeList = Store.getAllStores(applicationContext);
@@ -153,7 +153,7 @@ public class MigrationWorkerFragment extends BaseFragment {
                 }
 
 
-                Utils.deleteDirContent(storage.getCache(null));
+                FileUtils.deleteQuietly(storage.getCache(null));//Utils.deleteDirContent(storage.getCache(null));
 
                 File externalFilesDir = applicationContext.getExternalFilesDir(null);
                 File externalStorageDir = null;
@@ -199,7 +199,8 @@ public class MigrationWorkerFragment extends BaseFragment {
                 } finally {
                     cursor.close();
                 }
-                Utils.deleteDir(paperDir);
+
+                FileUtils.deleteQuietly(paperDir);//Utils.deleteDir(paperDir);
                 Log.i("... migration finished!");
                 while (callback == null) {
                     //wait for callback before returning

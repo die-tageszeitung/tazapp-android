@@ -10,8 +10,6 @@ import android.net.NetworkInfo;
 import android.os.Build;
 import android.telephony.TelephonyManager;
 
-import java.io.File;
-
 import de.thecode.android.tazreader.data.TazSettings;
 
 public class Utils {
@@ -52,23 +50,23 @@ public class Utils {
 
 
 
-    public static boolean deleteDir(File dir) {
-        deleteDirContent(dir);
-        return dir.delete();
-    }
-
-    public static boolean deleteDirContent(File dir) {
-        if (dir.isDirectory()) {
-            String[] children = dir.list();
-            for (int i = 0; i < children.length; i++) {
-                boolean success = deleteDir(new File(dir, children[i]));
-                if (!success) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
+//    public static boolean deleteDir(File dir) {
+//        deleteDirContent(dir);
+//        return dir.delete();
+//    }
+//
+//    public static boolean deleteDirContent(File dir) {
+//        if (dir.isDirectory()) {
+//            String[] children = dir.list();
+//            for (int i = 0; i < children.length; i++) {
+//                boolean success = deleteDir(new File(dir, children[i]));
+//                if (!success) {
+//                    return false;
+//                }
+//            }
+//        }
+//        return true;
+//    }
 
     // Orientation
     public static void setActivityOrientationFromPrefs(Activity activity)

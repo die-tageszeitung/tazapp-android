@@ -4,6 +4,7 @@
     <string name="header_fontsize">Schriftgröße</string>
     <string name="header_column">Spaltenbreite</string>
     <string name="paging">Blättern</string>
+    <string name="fullscreen">Vollbild</string>
     <string name="header_screen">BILDSCHIRM</string>
     <string name="screen_active">beim lesen aktiv lassen</string>
     <string name="pageindex_button">Button für Seitenübersicht anzeigen</string>

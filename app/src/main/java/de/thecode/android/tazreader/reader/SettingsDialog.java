@@ -22,6 +22,7 @@ public class SettingsDialog extends TcDialogCustomView {
 
     IReaderCallback mCallback;
     boolean isScroll;
+    boolean isFullscreen;
     SeekBar seekBarColumns;
     private Button btnNormal;
     private Button btnSepia;
@@ -36,6 +37,7 @@ public class SettingsDialog extends TcDialogCustomView {
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         isScroll = TazSettings.getPrefBoolean(activity, TazSettings.PREFKEY.ISSCROLL, false);
+        isFullscreen = TazSettings.getPrefBoolean(activity, TazSettings.PREFKEY.FULLSCREEN, false);
         mCallback = (IReaderCallback) getActivity();
     }
 
@@ -98,6 +100,19 @@ public class SettingsDialog extends TcDialogCustomView {
                 seekBarColumns.setEnabled(isChecked);
             }
         });
+
+        SwitchCompat switchFullscreen = (SwitchCompat) view.findViewById(R.id.switchFullscreen);
+        switchFullscreen.setChecked(isFullscreen);
+        switchFullscreen.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                Log.v();
+                TazSettings.setPref(getActivity(), TazSettings.PREFKEY.FULLSCREEN, isChecked);
+                mCallback.setImmersiveMode();
+            }
+        });
+
 
         seekBarColumns = (SeekBar) view.findViewById(R.id.seekBarColumn);
 

@@ -1,7 +1,6 @@
 package de.thecode.android.tazreader.download;
 
 import android.annotation.SuppressLint;
-import android.app.DownloadManager;
 import android.app.DownloadManager.Request;
 import android.content.ContentUris;
 import android.content.Context;
@@ -28,14 +27,22 @@ import de.thecode.android.tazreader.sync.AccountHelper.CreateAccountException;
 import de.thecode.android.tazreader.utils.StorageManager;
 import de.thecode.android.tazreader.utils.Log;
 
-public class DownloadHelper {
+public class DownloadManager {
 
-    DownloadManager mDownloadManager;
+    android.app.DownloadManager mDownloadManager;
     Context mContext;
     StorageManager mStorage;
 
-    public DownloadHelper(Context context) {
-        mDownloadManager = ((DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE));
+    private static DownloadManager instance;
+
+    public static DownloadManager getInstance(Context context) {
+        if (instance == null)
+            instance = new DownloadManager(context.getApplicationContext());
+        return instance;
+    }
+
+    private DownloadManager(Context context) {
+        mDownloadManager = ((android.app.DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE));
         mContext = context;
         mStorage = StorageManager.getInstance(context);
     }
@@ -148,6 +155,25 @@ public class DownloadHelper {
 
     }
 
+    public void cancelDownload(long downloadId) {
+        DownloadState state = getDownloadState(downloadId);
+        if (state != null && state.getStatus() != DownloadState.STATUS_SUCCESSFUL) {
+            if (mDownloadManager.remove(downloadId)>0){
+                Cursor cursor = mContext.getContentResolver()
+                                       .query(Paper.CONTENT_URI, null, Paper.Columns.DOWNLOADID + " = " + downloadId, null, null);
+                try {
+                    while (cursor.moveToNext()) {
+                        Paper removedPaper = new Paper(cursor);
+                        removedPaper.delete(mContext);
+                    }
+                }finally {
+                    cursor.close();
+                }
+
+            }
+        }
+    }
+
     public DownloadState getDownloadState(long downloadId) {
         return new DownloadState(downloadId);
     }
@@ -185,19 +211,14 @@ public class DownloadHelper {
         return result;
     }
 
-    public DownloadManager getDownloadManager() {
-        return mDownloadManager;
-    }
-
-
     public class DownloadState {
 
 
-        public static final int STATUS_SUCCESSFUL = DownloadManager.STATUS_SUCCESSFUL;
-        public static final int STATUS_FAILED = DownloadManager.STATUS_FAILED;
-        public static final int STATUS_PAUSED = DownloadManager.STATUS_PAUSED;
-        public static final int STATUS_PENDING = DownloadManager.STATUS_PENDING;
-        public static final int STATUS_RUNNING = DownloadManager.STATUS_RUNNING;
+        public static final int STATUS_SUCCESSFUL = android.app.DownloadManager.STATUS_SUCCESSFUL;
+        public static final int STATUS_FAILED = android.app.DownloadManager.STATUS_FAILED;
+        public static final int STATUS_PAUSED = android.app.DownloadManager.STATUS_PAUSED;
+        public static final int STATUS_PENDING = android.app.DownloadManager.STATUS_PENDING;
+        public static final int STATUS_RUNNING = android.app.DownloadManager.STATUS_RUNNING;
         public static final int STATUS_NOTFOUND = 0;
 
         int mStatus;
@@ -211,20 +232,20 @@ public class DownloadHelper {
 
         public DownloadState(long downloadId) {
             mDownloadId = downloadId;
-            DownloadManager.Query q = new DownloadManager.Query();
+            android.app.DownloadManager.Query q = new android.app.DownloadManager.Query();
 
             q.setFilterById(downloadId);
             Cursor cursor = null;
             try {
-                cursor = getDownloadManager().query(q);
+                cursor = mDownloadManager.query(q);
                 if (cursor != null && cursor.moveToFirst()) {
-                    mStatus = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS));
-                    mReason = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_REASON));
-                    mBytesDownloaded = cursor.getLong(cursor.getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR));
-                    mBytesTotal = cursor.getLong(cursor.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES));
-                    mUri = cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_URI));
-                    mTitle = cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_TITLE));
-                    mDescription = cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_DESCRIPTION));
+                    mStatus = cursor.getInt(cursor.getColumnIndex(android.app.DownloadManager.COLUMN_STATUS));
+                    mReason = cursor.getInt(cursor.getColumnIndex(android.app.DownloadManager.COLUMN_REASON));
+                    mBytesDownloaded = cursor.getLong(cursor.getColumnIndex(android.app.DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR));
+                    mBytesTotal = cursor.getLong(cursor.getColumnIndex(android.app.DownloadManager.COLUMN_TOTAL_SIZE_BYTES));
+                    mUri = cursor.getString(cursor.getColumnIndex(android.app.DownloadManager.COLUMN_URI));
+                    mTitle = cursor.getString(cursor.getColumnIndex(android.app.DownloadManager.COLUMN_TITLE));
+                    mDescription = cursor.getString(cursor.getColumnIndex(android.app.DownloadManager.COLUMN_DESCRIPTION));
                 }
             } finally {
                 if (cursor != null) cursor.close();
@@ -237,16 +258,16 @@ public class DownloadHelper {
         }
 
         /**
-         * @return Status des Downloads nach {@link DownloadManager}
-         * @see DownloadManager
+         * @return Status des Downloads nach {@link android.app.DownloadManager}
+         * @see android.app.DownloadManager
          */
         public int getStatus() {
             return mStatus;
         }
 
         /**
-         * @return Grund für den Status von getStatus() des Downloads nach {@link DownloadManager}
-         * @see DownloadManager
+         * @return Grund für den Status von getStatus() des Downloads nach {@link android.app.DownloadManager}
+         * @see android.app.DownloadManager
          */
         public int getReason() {
             return mReason;

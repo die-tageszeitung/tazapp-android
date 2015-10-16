@@ -26,19 +26,19 @@ public class UnzipPaper {
     private File destinationDir;
     private UnzipFile unzipFile;
 
-
     public UnzipPaper(Paper paper, File zipFile, File destinationDir, boolean deleteSourceOnSuccess) throws FileNotFoundException {
         this.paper = paper;
         this.destinationDir = destinationDir;
         this.unzipFile = new UnzipFile(zipFile, destinationDir, deleteSourceOnSuccess, true);
     }
 
-    public File start() throws PropertyListFormatException, ParserConfigurationException, SAXException, ParseException, IOException, UnzipStream.UnzipCanceledException {
+    public File start() throws PropertyListFormatException, ParserConfigurationException, SAXException, ParseException, IOException, UnzipCanceledException {
         unzipFile.getProgress()
                  .setProgressPercentageMax(50);
         File result = unzipFile.start();
         unzipFile.getProgress()
                  .setOffset(50);
+        checkCanceled();
         Log.t("... start parsing plist to check hashvals.");
         if (!destinationDir.exists() || !destinationDir.isDirectory()) throw new FileNotFoundException("Directory not found");
         File plistFile = new File(destinationDir, Paper.CONTENT_PLIST_FILENAME);
@@ -49,6 +49,7 @@ public class UnzipPaper {
         if (hashVals != null) {
             int count = 0;
             for (Map.Entry<String, String> entry : hashVals.entrySet()) {
+                checkCanceled();
                 count++;
                 unzipFile.getProgress()
                          .setPercentage((count * 100) / hashVals.size());
@@ -65,6 +66,7 @@ public class UnzipPaper {
                 }
             }
         } else Log.w("No hash values found in Plist");
+        checkCanceled();
         Log.t("... finished");
         return result;
     }
@@ -76,6 +78,19 @@ public class UnzipPaper {
     public Paper getPaper() {
         return paper;
     }
+
+    public void cancel() {
+        unzipFile.cancel();
+    }
+
+    private void checkCanceled() throws UnzipCanceledException, IOException {
+        if (unzipFile.isCanceled()) {
+            UnzipCanceledException e = new UnzipCanceledException();
+            unzipFile.onError(e);
+            throw e;
+        }
+    }
+
 
 
 }

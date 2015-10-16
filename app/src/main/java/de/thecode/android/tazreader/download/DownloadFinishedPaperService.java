@@ -10,6 +10,8 @@ import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -24,37 +26,65 @@ import de.thecode.android.tazreader.utils.StorageManager;
 public class DownloadFinishedPaperService extends IntentService implements UnzipStream.UnzipStreamProgressListener {
 
     public static final String PARAM_PAPER_ID = "paperId";
+    public static final String PARAM_CANCEL_BOOL = "cancel";
+
+    private static volatile List<Long> canceledPapersIds = new ArrayList<>();
+
 
     public DownloadFinishedPaperService() {
         super(DownloadFinishedPaperService.class.getSimpleName());
     }
 
     private long currentPaperId;
+    private UnzipPaper currentUnzipPaper;
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+    }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(intent, flags, startId);
+        if (intent.getBooleanExtra(PARAM_CANCEL_BOOL, false)) {
+            long paperId = intent.getLongExtra(PARAM_PAPER_ID, -1);
+            if (paperId != -1) {
+                if (currentUnzipPaper != null && currentUnzipPaper.getPaper()
+                                                                  .getId() == paperId) {
+                    currentUnzipPaper.cancel();
+                } else if (!canceledPapersIds.contains(paperId)) canceledPapersIds.add(paperId);
+            }
+        }
         return super.onStartCommand(intent, flags, startId);
     }
 
     @Override
     protected void onHandleIntent(Intent intent) {
+        if (intent.getBooleanExtra(PARAM_CANCEL_BOOL, false)) return;
         long paperId = intent.getLongExtra(PARAM_PAPER_ID, -1);
         Log.t("Start service after download for paper:", paperId);
         if (paperId != -1) try {
             Paper paper = new Paper(this, paperId);
+            if (canceledPapersIds.contains(paperId)) {
+                canceledPapersIds.remove(paperId);
+                paper.delete(this);
+                return;
+            }
             try {
                 Log.t(paper);
                 StorageManager storageManager = StorageManager.getInstance(this);
-
                 currentPaperId = paperId;
-
-                UnzipPaper unzipPaper = new UnzipPaper(paper, storageManager.getDownloadFile(paper), storageManager.getPaperDirectory(paper), true);
-                unzipPaper.getUnzipFile()
-                          .addProgressListener(this);
-                unzipPaper.start();
+                currentUnzipPaper = new UnzipPaper(paper, storageManager.getDownloadFile(paper), storageManager.getPaperDirectory(paper), true);
+                currentUnzipPaper.getUnzipFile()
+                                 .addProgressListener(this);
+                currentUnzipPaper.start();
                 savePaper(paper, null);
-            } catch (ParserConfigurationException | IOException | SAXException | ParseException | PropertyListFormatException | UnzipStream.UnzipCanceledException e) {
+            } catch (ParserConfigurationException | IOException | SAXException | ParseException | PropertyListFormatException | UnzipCanceledException e) {
                 savePaper(paper, e);
             }
         } catch (Paper.PaperNotFoundException e) {
@@ -85,6 +115,9 @@ public class DownloadFinishedPaperService extends IntentService implements Unzip
             NotificationHelper.showDownloadFinishedNotification(this, paper.getId());
             EventBus.getDefault()
                     .post(new PaperDownloadFinishedEvent(paper.getId()));
+
+        } else if (exception instanceof UnzipCanceledException) {
+            Log.w(exception);
         } else {
             Log.e(exception);
             Log.sendExceptionWithCrashlytics(exception);

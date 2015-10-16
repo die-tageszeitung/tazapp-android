@@ -229,7 +229,7 @@ public class ImportWorkerFragment extends BaseFragment {
                     break;
             }
 
-        } catch (ImportException | FileNotFoundException e) {
+        } catch (IOException | ImportException  e) {
             onError(dataUri, e, file, deleteFile);
         }
     }
@@ -255,7 +255,7 @@ public class ImportWorkerFragment extends BaseFragment {
     }
 
 
-    private void importTazAndroid(Uri dataUri, ImportMetadata metadata, File cacheFile, boolean deleteFile) throws ImportException {
+    private void importTazAndroid(Uri dataUri, ImportMetadata metadata, File cacheFile, boolean deleteFile) throws ImportException, IOException {
 
         StorageManager storage = StorageManager.getInstance(getActivity());
 
@@ -267,7 +267,6 @@ public class ImportWorkerFragment extends BaseFragment {
             paper = new Paper();
             paper.setBookId(metadata.getBookId());
             paper.setDate(metadata.getDate());
-
         }
         if (!Strings.isNullOrEmpty(metadata.getArchive())) {
             paper.setLink(Uri.parse(getString(R.string.archiveUrl))
@@ -303,7 +302,7 @@ public class ImportWorkerFragment extends BaseFragment {
         onFinished(dataUri, cacheFile, deleteFile);
     }
 
-    private void importTpaper(Uri dataUri, ImportMetadata metadata, File cacheFile, boolean deleteFile) throws FileNotFoundException {
+    private void importTpaper(Uri dataUri, ImportMetadata metadata, File cacheFile, boolean deleteFile) throws IOException {
         StorageManager storage = StorageManager.getInstance(getActivity());
 
         Paper paper;
