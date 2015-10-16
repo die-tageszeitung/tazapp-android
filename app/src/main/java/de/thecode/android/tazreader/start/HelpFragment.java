@@ -13,12 +13,12 @@ import android.widget.ImageView;
 import com.viewpagerindicator.CirclePageIndicator;
 
 import de.thecode.android.tazreader.R;
-import de.thecode.android.tazreader.utils.LeakCanaryFragment;
+import de.thecode.android.tazreader.utils.BaseFragment;
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class HelpFragment extends LeakCanaryFragment {
+public class HelpFragment extends BaseFragment {
     private IStartCallback callback;
     private ViewPager viewPager;
 

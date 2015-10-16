@@ -21,9 +21,9 @@ import android.widget.TextView;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.utils.Utils;
-import de.thecode.android.tazreader.utils.LeakCanaryFragment;
+import de.thecode.android.tazreader.utils.BaseFragment;
 
-public class SettingsFragment extends LeakCanaryFragment {
+public class SettingsFragment extends BaseFragment {
 
     public static final int REQUESTCODE_NOTIFICATION_SOUND = 8001;
 

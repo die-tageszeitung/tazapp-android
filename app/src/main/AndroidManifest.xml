@@ -88,10 +88,10 @@
         <activity android:name=".reader.HelpActivity"/>
 
         <service
-            android:name=".download.FinishPaperDownloadService"
+            android:name=".download.DownloadFinishedResourceService"
             android:exported="false"/>
         <service
-            android:name=".download.FinishResourceDownloadService"
+            android:name=".download.DownloadFinishedPaperService"
             android:exported="false"/>
 
         <receiver android:name=".service.TazBootCompleteReceiver">

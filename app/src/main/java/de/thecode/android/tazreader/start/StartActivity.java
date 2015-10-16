@@ -41,7 +41,7 @@ import de.thecode.android.tazreader.reader.ReaderActivity;
 import de.thecode.android.tazreader.sync.AccountHelper;
 import de.thecode.android.tazreader.sync.SyncHelper;
 import de.thecode.android.tazreader.utils.BaseActivity;
-import de.thecode.android.tazreader.utils.LeakCanaryFragment;
+import de.thecode.android.tazreader.utils.BaseFragment;
 import de.thecode.android.tazreader.utils.Log;
 import de.thecode.android.tazreader.utils.Utils;
 
@@ -527,6 +527,12 @@ public class StartActivity extends BaseActivity implements IStartCallback, TcDia
         }
     }
 
+    public void deletePapers(long... ids) {
+        if (ids != null && ids.length > 0) {
+
+        }
+    }
+
     public void updateTitle() {
         StringBuilder titleBuilder = new StringBuilder(getString(getApplicationInfo().labelRes));
         if (!mAccountHelper.isAuthenticated()) {
@@ -670,7 +676,7 @@ public class StartActivity extends BaseActivity implements IStartCallback, TcDia
     }
 
 
-    public static class RetainDataFragment extends LeakCanaryFragment {
+    public static class RetainDataFragment extends BaseFragment {
 
         private static final String TAG = "RetainDataFragment";
         public LruCache<String, Bitmap> cache;
@@ -742,6 +748,8 @@ public class StartActivity extends BaseActivity implements IStartCallback, TcDia
         public List<NavigationDrawerFragment.NavigationItem> getNavBackstack() {
             return navBackstack;
         }
+
+
 
 
     }

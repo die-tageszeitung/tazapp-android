@@ -19,13 +19,13 @@ import java.io.File;
 
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.importer.ImportActivity;
-import de.thecode.android.tazreader.utils.LeakCanaryFragment;
+import de.thecode.android.tazreader.utils.BaseFragment;
 import de.thecode.android.tazreader.utils.Log;
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class ImportFragment extends LeakCanaryFragment implements ImportDataRetainFragment.ImportDataCallback {
+public class ImportFragment extends BaseFragment implements ImportDataRetainFragment.ImportDataCallback {
 
     ImportRecyclerAdapter adapter;
 

@@ -27,14 +27,14 @@ import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.download.CoverDownloadedEvent;
 import de.thecode.android.tazreader.sync.SyncStateChangedEvent;
-import de.thecode.android.tazreader.utils.LeakCanaryFragment;
+import de.thecode.android.tazreader.utils.BaseFragment;
 import de.thecode.android.tazreader.utils.Log;
 import de.thecode.android.tazreader.widget.AutofitRecyclerView;
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class LibraryFragment extends LeakCanaryFragment implements LoaderManager.LoaderCallbacks<Cursor>, LibraryAdapter.OnItemClickListener, LibraryAdapter.OnItemLongClickListener {
+public class LibraryFragment extends BaseFragment implements LoaderManager.LoaderCallbacks<Cursor>, LibraryAdapter.OnItemClickListener, LibraryAdapter.OnItemLongClickListener {
 
     IStartCallback callback;
     LibraryAdapter adapter;

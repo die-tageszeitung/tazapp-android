@@ -16,5 +16,8 @@ public class TazReaderDebugApplication extends TazReaderApplication {
                                 .build());
     }
 
-
+//    @Override
+//    public RefWatcher installLeakCanary() {
+//        return LeakCanary.install(this);
+//    }
 }

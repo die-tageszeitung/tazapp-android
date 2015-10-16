@@ -42,10 +42,10 @@ import de.thecode.android.tazreader.data.Paper.Plist.TopLink;
 import de.thecode.android.tazreader.reader.IReaderCallback;
 import de.thecode.android.tazreader.reader.page.TAZMuPDFCore;
 import de.thecode.android.tazreader.utils.StorageManager;
-import de.thecode.android.tazreader.utils.LeakCanaryFragment;
+import de.thecode.android.tazreader.utils.BaseFragment;
 import de.thecode.android.tazreader.utils.Log;
 
-public class PageIndexFragment extends LeakCanaryFragment {
+public class PageIndexFragment extends BaseFragment {
 
     List<IIndexItem> index;
     Paper paper;

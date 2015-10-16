@@ -6,13 +6,13 @@ import android.content.Context;
 
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.data.Paper;
-import de.thecode.android.tazreader.utils.LeakCanaryFragment;
+import de.thecode.android.tazreader.utils.BaseFragment;
 import de.thecode.android.tazreader.utils.Log;
 
 /**
  * Created by mate on 18.12.2014.
  */
-public abstract class AbstractContentFragment extends LeakCanaryFragment implements ReaderActivity.ConfigurationChangeListener {
+public abstract class AbstractContentFragment extends BaseFragment implements ReaderActivity.ConfigurationChangeListener {
 
     public Context mContext;
     public IReaderCallback mCallback;

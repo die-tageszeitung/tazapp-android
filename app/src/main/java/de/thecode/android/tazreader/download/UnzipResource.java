@@ -3,41 +3,43 @@ package de.thecode.android.tazreader.download;
 import com.dd.plist.NSDictionary;
 import com.dd.plist.NSObject;
 import com.dd.plist.NSString;
+import com.dd.plist.PropertyListFormatException;
 import com.dd.plist.PropertyListParser;
+
+import org.xml.sax.SAXException;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
+import java.text.ParseException;
 import java.util.Map;
 import java.util.Set;
 
-import de.thecode.android.tazreader.data.Resource;
+import javax.xml.parsers.ParserConfigurationException;
+
 import de.thecode.android.tazreader.secure.HashHelper;
 import de.thecode.android.tazreader.utils.Log;
 
 /**
- * Created by Mate on 27.04.2015.
+ * Created by mate on 07.08.2015.
  */
-public class ResourceFileUnzipTask extends UnzipFileTask {
+public class UnzipResource {
 
     private static final String RESOURCE_SHA1_PLIST_FILENAME = "sha1.plist";
     private static final String KEY_HASHVALS = "HashVals";
 
 
-    private Resource resource;
+    private File destinationDir;
+    private UnzipFile unzipFile;
 
-    public ResourceFileUnzipTask(Resource resource, File zipFile, File destinationDir, boolean deleteSourceOnSuccess, boolean deleteDestinationOnFailure) throws FileNotFoundException {
-        super(zipFile, destinationDir, deleteSourceOnSuccess, deleteDestinationOnFailure);
-        this.resource = resource;
+    public UnzipResource(File zipFile, File destinationDir, boolean deleteSourceOnSuccess) throws FileNotFoundException {
+        this.destinationDir = destinationDir;
+        this.unzipFile = new UnzipFile(zipFile, destinationDir, deleteSourceOnSuccess, true);
     }
 
-    public Resource getResource() {
-        return resource;
-    }
-
-    @Override
-    public File doInBackgroundWithException(Object... params) throws Exception {
-        File destinationDir = super.doInBackgroundWithException(params);
+    public File start() throws IOException, ParserConfigurationException, ParseException, SAXException, PropertyListFormatException, UnzipStream.UnzipCanceledException {
+        File result = unzipFile.start();
         File sha1File = new File(destinationDir, RESOURCE_SHA1_PLIST_FILENAME);
         if (!sha1File.exists()) throw new FileNotFoundException("Sha1 File not found");
         try {
@@ -58,14 +60,10 @@ public class ResourceFileUnzipTask extends UnzipFileTask {
                 }
             }
         } catch (UnsupportedOperationException e) {
-          Log.w(e);
+            Log.w(e);
         }
-        Log.t("... finished");
-        return destinationDir;
+        return result;
     }
 
-    @Override
-    public void onPostError(Exception exception, File sourceZipFile) {
 
-    }
 }

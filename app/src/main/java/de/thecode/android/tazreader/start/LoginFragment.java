@@ -27,7 +27,7 @@ import de.thecode.android.tazreader.dialog.TcDialog;
 import de.thecode.android.tazreader.dialog.TcDialogIndeterminateProgress;
 import de.thecode.android.tazreader.secure.Base64;
 import de.thecode.android.tazreader.sync.AccountHelper;
-import de.thecode.android.tazreader.utils.LeakCanaryFragment;
+import de.thecode.android.tazreader.utils.BaseFragment;
 import de.thecode.android.tazreader.volley.TazStringRequest;
 import de.thecode.android.tazreader.volley.VolleySingleton;
 
@@ -36,7 +36,7 @@ import static android.graphics.PorterDuff.Mode.SRC_ATOP;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class LoginFragment extends LeakCanaryFragment {
+public class LoginFragment extends BaseFragment {
 
     public static final String DIALOG_CHECK_CREDENTIALS = "checkCrd";
     public static final String DIALOG_ERROR_CREDENTIALS = "errorCrd";

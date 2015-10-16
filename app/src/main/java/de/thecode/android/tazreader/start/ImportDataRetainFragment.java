@@ -13,13 +13,13 @@ import java.util.List;
 import de.greenrobot.event.EventBus;
 import de.thecode.android.tazreader.download.PaperDeletedEvent;
 import de.thecode.android.tazreader.download.PaperDownloadFinishedEvent;
-import de.thecode.android.tazreader.utils.LeakCanaryFragment;
+import de.thecode.android.tazreader.utils.BaseFragment;
 import de.thecode.android.tazreader.utils.Log;
 
 /**
  * Created by mate on 13.04.2015.
  */
-public class ImportDataRetainFragment extends LeakCanaryFragment implements LoaderManager.LoaderCallbacks<List<ImportDirectoryLoader.ImportFileWrapper>> {
+public class ImportDataRetainFragment extends BaseFragment implements LoaderManager.LoaderCallbacks<List<ImportDirectoryLoader.ImportFileWrapper>> {
 
 
     private static final String TAG = "RetainFragmentImport";

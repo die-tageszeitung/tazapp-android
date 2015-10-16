@@ -79,8 +79,8 @@ public class DownloadReceiver extends BroadcastReceiver {
                                 failed = true;
                             }
                             if (!failed) {
-                                Intent unzipIntent = new Intent(context, FinishPaperDownloadService.class);
-                                unzipIntent.putExtra(FinishPaperDownloadService.PARAM_PAPER_ID, paper.getId());
+                                Intent unzipIntent = new Intent(context, DownloadFinishedPaperService.class);
+                                unzipIntent.putExtra(DownloadFinishedPaperService.PARAM_PAPER_ID, paper.getId());
                                 context.startService(unzipIntent);
                             }
                         }
@@ -144,8 +144,8 @@ public class DownloadReceiver extends BroadcastReceiver {
                                 failed = true;
                             }
                             if (!failed) {
-                                Intent unzipIntent = new Intent(context, FinishResourceDownloadService.class);
-                                unzipIntent.putExtra(FinishResourceDownloadService.PARAM_RESOURCE_KEY, resource.getKey());
+                                Intent unzipIntent = new Intent(context, DownloadFinishedResourceService.class);
+                                unzipIntent.putExtra(DownloadFinishedResourceService.PARAM_RESOURCE_KEY, resource.getKey());
                                 context.startService(unzipIntent);
                             }
                         }

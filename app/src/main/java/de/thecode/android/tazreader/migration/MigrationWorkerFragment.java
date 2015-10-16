@@ -24,13 +24,13 @@ import de.thecode.android.tazreader.data.Store;
 import de.thecode.android.tazreader.reader.ReaderActivity;
 import de.thecode.android.tazreader.utils.AsyncTaskWithExecption;
 import de.thecode.android.tazreader.utils.StorageManager;
-import de.thecode.android.tazreader.utils.LeakCanaryFragment;
+import de.thecode.android.tazreader.utils.BaseFragment;
 import de.thecode.android.tazreader.utils.Log;
 
 /**
  * Created by mate on 21.04.2015.
  */
-public class MigrationWorkerFragment extends LeakCanaryFragment {
+public class MigrationWorkerFragment extends BaseFragment {
 
     private MigrationWorkerCallback callback;
     Context applicationContext;

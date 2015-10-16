@@ -11,13 +11,13 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import de.thecode.android.tazreader.R;
-import de.thecode.android.tazreader.utils.LeakCanaryFragment;
+import de.thecode.android.tazreader.utils.BaseFragment;
 import de.thecode.android.tazreader.utils.Log;
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class ImprintFragment extends LeakCanaryFragment {
+public class ImprintFragment extends BaseFragment {
 
     private static final String DIALOG_LICENCES = "dialogLicences";
 

@@ -21,13 +21,13 @@ import java.util.List;
 import de.greenrobot.event.EventBus;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.TazSettings;
-import de.thecode.android.tazreader.utils.LeakCanaryFragment;
+import de.thecode.android.tazreader.utils.BaseFragment;
 import de.thecode.android.tazreader.utils.Log;
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class NavigationDrawerFragment extends LeakCanaryFragment {
+public class NavigationDrawerFragment extends BaseFragment {
 
     private static final String KEY_ACTIVE = "active";
     private static final int CLOSE_DRAWER_DELAY = 300;

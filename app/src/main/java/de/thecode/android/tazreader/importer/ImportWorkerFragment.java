@@ -20,16 +20,16 @@ import java.util.List;
 
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
-import de.thecode.android.tazreader.download.TPaperFileUnzipTask;
+import de.thecode.android.tazreader.download.UnzipPaperTask;
 import de.thecode.android.tazreader.utils.AsyncTaskWithExecption;
-import de.thecode.android.tazreader.utils.StorageManager;
-import de.thecode.android.tazreader.utils.LeakCanaryFragment;
+import de.thecode.android.tazreader.utils.BaseFragment;
 import de.thecode.android.tazreader.utils.Log;
+import de.thecode.android.tazreader.utils.StorageManager;
 
 /**
  * Created by mate on 17.04.2015.
  */
-public class ImportWorkerFragment extends LeakCanaryFragment {
+public class ImportWorkerFragment extends BaseFragment {
 
     private ImportRetainFragmentCallback callback;
     private List<Uri> dataUriStack;
@@ -327,7 +327,7 @@ public class ImportWorkerFragment extends LeakCanaryFragment {
         paper.setResource(null);
 
 
-        new TPaperFileUnzipTask(paper, cacheFile, storage.getPaperDirectory(paper), false, true) {
+        new UnzipPaperTask(paper, cacheFile, storage.getPaperDirectory(paper), deleteFile) {
             Context context;
             Uri dataUri;
             File cacheFile;
@@ -344,7 +344,6 @@ public class ImportWorkerFragment extends LeakCanaryFragment {
 
             @Override
             public void onPostError(Exception exception, File sourceZipFile) {
-                super.onPostError(exception, sourceZipFile);
                 onError(dataUri, exception, cacheFile, deleteFile);
             }
 
@@ -352,7 +351,7 @@ public class ImportWorkerFragment extends LeakCanaryFragment {
             protected void onPostSuccess(File destinationFile) {
                 super.onPostSuccess(destinationFile);
                 try {
-                    Paper paper = getPaper();
+                    Paper paper = getUnzipPaper().getPaper();
                     paper.parseMissingAttributes(false);
                     if (paper.getId() != null) {
                         int affected = getActivity().getApplicationContext()
@@ -380,11 +379,8 @@ public class ImportWorkerFragment extends LeakCanaryFragment {
 
     public interface ImportRetainFragmentCallback {
         public void onImportRetainFragmentCreate(ImportWorkerFragment importRetainWorkerFragment);
-
         public void onFinishedImporting(List<Paper> papersToDownload);
-
         public void onErrorWhileImport(Uri dataUri, Exception e);
-
         public void onImportAlreadyExists(Uri dataUri, ImportMetadata metadata, File cacheFile, boolean deleteFile);
     }
 

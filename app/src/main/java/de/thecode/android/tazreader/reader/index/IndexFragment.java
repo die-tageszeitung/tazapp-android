@@ -34,10 +34,10 @@ import de.thecode.android.tazreader.reader.HelpActivity;
 import de.thecode.android.tazreader.reader.IReaderCallback;
 import de.thecode.android.tazreader.reader.ReaderActivity;
 import de.thecode.android.tazreader.reader.SettingsDialog;
-import de.thecode.android.tazreader.utils.LeakCanaryFragment;
+import de.thecode.android.tazreader.utils.BaseFragment;
 import de.thecode.android.tazreader.utils.Log;
 
-public class IndexFragment extends LeakCanaryFragment {
+public class IndexFragment extends BaseFragment {
 
     private static final String ARGUMENT_BOOKMARKFILTER = "bookmarkfilter";
 

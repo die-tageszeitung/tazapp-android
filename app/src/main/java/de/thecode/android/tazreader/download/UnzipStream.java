@@ -5,25 +5,28 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import de.thecode.android.tazreader.utils.AsyncTaskWithExecption;
 import de.thecode.android.tazreader.utils.Log;
 import de.thecode.android.tazreader.utils.Utils;
 
 /**
- * Created by Mate on 27.04.2015.
+ * Created by mate on 07.08.2015.
  */
-public class UnzipStreamTask extends AsyncTaskWithExecption<Object, UnzipStreamTask.Progress, File> {
+public class UnzipStream {
 
     private InputStream inputStream;
     private File destinationDir;
     private boolean deleteDestinationOnFailure;
     private Progress progress;
+    List<WeakReference<UnzipStreamProgressListener>> listeners = new ArrayList<>();
+    private boolean canceled;
 
-
-    public UnzipStreamTask(InputStream inputStream, File destinationDir, boolean deleteDestinationOnFailure, Long totalUncompressedSize) {
+    public UnzipStream(InputStream inputStream, File destinationDir, boolean deleteDestinationOnFailure, Long totalUncompressedSize) {
         //Log.d(destinationDir);
         this.inputStream = inputStream;
         this.destinationDir = destinationDir;
@@ -31,19 +34,9 @@ public class UnzipStreamTask extends AsyncTaskWithExecption<Object, UnzipStreamT
         progress = new Progress();
         if (totalUncompressedSize == null) totalUncompressedSize = 0L;
         setTotalUncompressedSize(totalUncompressedSize);
-
     }
 
-    public Progress getProgress() {
-        return progress;
-    }
-
-    public void setTotalUncompressedSize(long totalUncompressedSize) {
-        progress.setTotalUncompressedSize(totalUncompressedSize);
-    }
-
-    @Override
-    public File doInBackgroundWithException(Object... params) throws Exception {
+    public File start() throws IOException, UnzipCanceledException {
         try {
             ZipInputStream zis = new ZipInputStream(new BufferedInputStream(inputStream));
             Log.t("... start working with inputstream");
@@ -51,7 +44,9 @@ public class UnzipStreamTask extends AsyncTaskWithExecption<Object, UnzipStreamT
                 ZipEntry ze;
 
                 while ((ze = zis.getNextEntry()) != null) {
-                    Log.t("... zipentry:",ze,ze.getSize());
+                    if (canceled)
+                        throw new UnzipCanceledException();
+                    Log.t("... zipentry:", ze, ze.getSize());
                     if (ze.isDirectory()) {
                         File zipDir = new File(destinationDir, ze.getName());
                         if (dirHelper(zipDir)) {
@@ -65,7 +60,7 @@ public class UnzipStreamTask extends AsyncTaskWithExecption<Object, UnzipStreamT
                         File destinationFile = new File(destinationDir, ze.getName());
                         if (dirHelper(destinationFile.getParentFile())) {
                             progress.setCurrentFile(destinationFile);
-                            publishProgress(progress);
+                            notifyListeners(progress);
 
                             FileOutputStream fout = new FileOutputStream(destinationFile);
                             try {
@@ -83,20 +78,38 @@ public class UnzipStreamTask extends AsyncTaskWithExecption<Object, UnzipStreamT
                     }
                     zis.closeEntry();
                 }
-                publishProgress(progress);
+                notifyListeners(progress);
+
             } finally {
-                Log.t("... all uncompressed bytes:",progress.getBytesSoFar());
+                Log.t("... all uncompressed bytes:", progress.getBytesSoFar());
                 try {
                     zis.close();
                 } catch (IOException ignored) {
 
                 }
             }
-        } catch (Exception e) {
-            Log.sendExceptionWithCrashlytics(e);
+        } catch (IOException | UnzipCanceledException e) {
+            onError(e);
             throw e;
         }
+        onSuccess();
         return destinationDir;
+    }
+
+    public void cancel(){
+        canceled = true;
+    }
+
+    public void onError(Exception e) {
+        Log.e(e);
+        if (deleteDestinationOnFailure) {
+            if (destinationDir.exists()) Utils.deleteDir(destinationDir);
+        }
+        //Log.sendExceptionWithCrashlytics(e);
+    }
+
+    public void onSuccess() {
+        Log.t("... finished unzipping stream");
     }
 
     File lastFilePublished;
@@ -109,20 +122,17 @@ public class UnzipStreamTask extends AsyncTaskWithExecption<Object, UnzipStreamT
         if (progress.getPercentage() != lastPercentagePublished || progress.getCurrentFile() != lastFilePublished) {
             lastPercentagePublished = progress.getPercentage();
             lastFilePublished = currentFile;
-            publishProgress(progress);
+            notifyListeners(progress);
         }
     }
 
-    @Override
-    protected void onPostError(Exception exception) {
-        if (deleteDestinationOnFailure) {
-            if (destinationDir.exists()) Utils.deleteDir(destinationDir);
-        }
+    public Progress getProgress() {
+        return progress;
     }
 
-    @Override
-    protected void onPostSuccess(File file) {
-        Log.t("... finished unzipping stream");
+
+    public void setTotalUncompressedSize(long totalUncompressedSize) {
+        progress.setTotalUncompressedSize(totalUncompressedSize);
     }
 
     private boolean dirHelper(File directory) throws IOException {
@@ -137,6 +147,39 @@ public class UnzipStreamTask extends AsyncTaskWithExecption<Object, UnzipStreamT
         } else {
             return directory.mkdirs();
         }
+    }
+
+    public void addProgressListener(UnzipStreamProgressListener listener) {
+        tidyListerners();
+        boolean alreadyRegistered = false;
+        for (WeakReference<UnzipStreamProgressListener> weakRefListner : listeners) {
+            if (weakRefListner.get() == listener) alreadyRegistered = true;
+        }
+        if (!alreadyRegistered) {
+            listeners.add(new WeakReference<>(listener));
+        }
+    }
+
+    private void tidyListerners() {
+        for (int i = 0; i < listeners.size(); i++) {
+            WeakReference<UnzipStreamProgressListener> weakListener = listeners.get(i);
+            if (weakListener.get() == null) {
+                listeners.remove(i);
+                i--;
+            }
+        }
+    }
+
+    protected void notifyListeners(Progress progress) {
+        tidyListerners();
+        for (WeakReference<UnzipStreamProgressListener> weakRefListner : listeners) {
+            weakRefListner.get()
+                          .onProgress(progress);
+        }
+    }
+
+    public File getDestinationDir() {
+        return destinationDir;
     }
 
     public static class Progress {
@@ -204,5 +247,11 @@ public class UnzipStreamTask extends AsyncTaskWithExecption<Object, UnzipStreamT
         }
     }
 
+    public interface UnzipStreamProgressListener {
+        public void onProgress(Progress progress);
+    }
 
+    public class UnzipCanceledException extends Exception {
+
+    }
 }
