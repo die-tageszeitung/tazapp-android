@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/toolbar_settings"
+        app:showAsAction="always" 
+        android:icon="@drawable/ic_content_text_format"
+        android:title="@string/reader_index_main_menu_format_settings">
+    </item>
+</menu>

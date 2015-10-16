@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="header_fontsize">Schriftgröße</string>
+    <string name="header_column">Spaltenbreite</string>
+    <string name="paging">Blättern</string>
+    <string name="header_screen">BILDSCHIRM</string>
+    <string name="screen_active">beim lesen aktiv lassen</string>
+    <string name="pageindex_button">Button für Seitenübersicht anzeigen</string>
+    <string name="pageindex_button_exp">Wenn Sie nicht vom rechten Bildschirmrand wischen können, wird rechts oben ein zusätzlicher Button eingeblendet.</string>
+    <string name="screen_orientation">Ausrichtung</string>
+
+    <string name="theme_normal">Normal</string>
+    <string name="theme_sepia">Sepia</string>
+    <string name="theme_night">Nacht</string>
+    
+    <string name="orientationAuto">Auto</string>
+    <string name="orientationPort">Hoch</string>
+    <string name="orientationLand">Quer</string>
+
+
+    <string-array name="orientationValue">
+        <item>auto</item>
+        <item>port</item>
+        <item>land</item>
+    </string-array>
+
+</resources>

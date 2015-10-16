@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <color name="TAZred">#A80A19</color>
+    <color name="TAZwhite">#FFFFFF</color>
+    <color name="TAZredDark">#900915</color>
+    <color name="TAZRedAccent">#c00b1d</color>
+    <color name="TAZocker">#C3BCA3</color>
+    <color name="TAZockerLight">#dcd8c4</color>
+    <color name="TAZockerTransparent">#99C3BCA3</color>
+    <color name="TAZredTransparent">#99A80A19</color>
+    <color name="TAZLightGrayTransparent">#99BBBBBB</color>
+
+    <!-- StyleGuide Farben Layout -->
+    <color name="TazRot">#A80A19</color>
+    <color name="HighlightAufTazRot">#910000</color>
+    <color name="StandardHintergrund">#222</color>
+    <color name="HintergrundAbgeschwaecht">#333</color>
+    <color name="LinienStandard">#DDD</color>
+    <color name="LinienInnerhalbVonModulen">#EEE</color>
+    <color name="ElementeAufDunklemGrund">#FFF</color>
+    <color name="CommunityFarbe">#779BAB</color>
+
+    <item name="color_primary" type="color">@color/TazRot</item>
+    <item name="color_primary_dark" type="color">@color/TAZredDark</item>
+    <item name="color_accent" type="color">@color/TAZRedAccent</item>
+
+  
+
+    <item name="index_background_source" type="color">@color/TazRot</item>
+    <item name="index_background_category" type="color">@color/TAZocker</item>
+    <item name="index_background_page" type="color">@color/TAZockerLight</item>
+    <item name="index_background_article" type="color">@color/TAZockerLight</item>
+    <item name="index_background_toplink" type="color">@color/TAZockerLight</item>
+    <item name="index_text_source" type="color">@color/TAZwhite</item>
+    <item name="index_text_category" type="color">@android:color/black</item>
+    <item name="index_text_page" type="color">@android:color/black</item>
+    <item name="index_text_article" type="color">@android:color/black</item>
+    <item name="index_text_toplink" type="color">@android:color/black</item>
+    <item name="index_bookmark_off" type="color">@color/TAZocker</item>
+    <item name="index_bookmark_on" type="color">@color/TAZred</item>
+    <item name="index_currentmarker" type="color">@color/TazRot</item>
+    <item name="pageindex_loadingpage_bitmapbackground" type="color">@color/ElementeAufDunklemGrund</item>
+    <item name="library_item_selected_overlay" type="color">@color/TAZredTransparent</item>
+
+    <item name="start_navigation_background" type="color">@color/TAZwhite</item>
+    <item name="start_navigation_header_background" type="color">@color/TazRot</item>
+    <item name="start_fragment_background" type="color">@color/TAZwhite</item>
+    <item name="start_login_calltoaction_button_background" type="color">@color/TazRot</item>
+
+
+    <item type="color" name="settings_text_color">@android:color/black</item>
+    <item type="color" name="settings_header_text_color">@android:color/darker_gray</item>
+    <item type="color" name="settings_note_text_color">@android:color/darker_gray</item>
+    <item type="color" name="settings_text_enabled">@color/settings_text_color</item>
+    <item type="color" name="settings_text_disabled">@android:color/darker_gray</item>
+    <item type="color" name="settings_edit_text_enabled">@color/color_primary</item>
+    <item type="color" name="settings_edit_text_disabled">@android:color/darker_gray</item>
+
+    <item type="color" name="library_fab_normal">@color/TAZwhite</item>
+    <item type="color" name="library_fab_pressed">@android:color/darker_gray</item>
+    <item type="color" name="library_fab_ripple">@color/color_accent</item>
+
+    <item name="library_card_background" type="color">@color/color_primary_dark</item>
+
+    <item type="color" name="help_indicator_fill">@color/color_primary</item>
+    <item type="color" name="help_indicator_page">@color/TAZwhite</item>
+    <item type="color" name="help_indicator_stroke">@color/color_accent</item>
+
+     <item type="color" name="reader_settings_button_text_activated">@color/color_accent</item>
+     <item type="color" name="reader_settings_button_text">@android:color/primary_text_light</item>
+
+
+    <!-- <item type="color" name=""></item> -->
+    <!-- <item type="color" name=""></item> -->
+    <!-- <item type="color" name=""></item> -->
+    <!-- <item type="color" name=""></item> -->
+    <!-- <item type="color" name=""></item> -->
+    <!-- <item type="color" name=""></item> -->
+
+</resources>

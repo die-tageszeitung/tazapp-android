@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <de.thecode.android.tazreader.reader.page.TAZReaderView
+        android:id="@+id/readerview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentLeft="true"
+        android:layout_marginLeft="0dp"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="0dp"/>
+
+    <LinearLayout
+
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:layout_alignParentTop="true"
+        android:orientation="horizontal"
+        android:layout_alignParentRight="true"
+        android:alpha="0.7"
+        >
+        <de.thecode.android.tazreader.widget.ShareButton
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:id="@+id/share"
+            android:paddingBottom="18dp"/>
+        <de.thecode.android.tazreader.widget.PageIndexButton
+            android:id="@+id/pageindex"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:paddingBottom="18dp"
+            />
+        </LinearLayout>
+
+
+</RelativeLayout>

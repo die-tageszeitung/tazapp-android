@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+   <string name = "reader_index_menu_openall">Alles ausklappen</string>
+   <string name = "reader_index_menu_closeall">Alles einklappen</string>
+   <string name = "reader_index_menu_bookmarkfilter_off">Alles anzeigen</string>
+   <string name = "reader_index_menu_bookmarkfilter_on">nur Lesezeichen anzeigen</string>
+   <string name = "reader_index_menu_index_short">kurzes Inhaltsverzeichnis</string>
+   <string name = "reader_index_menu_index_full">ausführliches Inhaltsverzeichnis</string>
+   <string name = "reader_index_menu_help">Hilfe</string>
+   <string name = "reader_index_main_menu_format_settings">Einstellungen</string>
+</resources>

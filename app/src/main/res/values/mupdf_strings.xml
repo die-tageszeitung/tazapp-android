@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string name="cancel">Abbrechen</string>
+	<string name="cannot_open_buffer">Zwischenspeicher kann nicht geöffnet werden</string>
+	<string name="cannot_open_file_Path">Datei kann nicht geöffnet werden: %1$s</string>
+	<string name="choose_value">Wert auswählen</string>
+	<string name="enter_password">Passwort eingeben</string>
+	<string name="fill_out_text_field">Textfeld ausfüllen</string>
+	<string name="not_supported">Nicht unterstützt</string>
+	<string name="okay">OK</string>
+	<string name="yes">Ja</string>
+</resources>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             xmlns:app="http://schemas.android.com/apk/res-auto"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent"
+             android:foreground="?attr/selectableItemBackground">
+
+    <LinearLayout
+        android:id="@+id/layout"
+        style="@style/LayoutIndexPage"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <de.thecode.android.tazreader.widget.TypefacedTextView
+            android:id="@+id/title"
+            style="@style/TextIndexPage"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:paddingLeft="@dimen/index_image"
+            android:text="@string/dummy"
+            app:typeface="@string/TypefaceTazBold"/>
+
+        <View
+            android:id="@+id/currentMarker"
+            android:layout_width="@dimen/index_currentmarker_width"
+            android:layout_height="fill_parent"
+            android:layout_weight="0"
+            android:background="@color/index_currentmarker"/>
+
+    </LinearLayout>
+</FrameLayout>

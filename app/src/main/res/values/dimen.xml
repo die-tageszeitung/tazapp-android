@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <dimen name="cover_image_height">181dp</dimen>
+    <dimen name="cover_image_width">120dp</dimen>
+    <!--<dimen name="lib_item_margin">20dp</dimen>&lt;!&ndash;Wird außerdem verwendet für einen Rand die Library&ndash;&gt;-->
+    <dimen name="lib_item_width">140dp</dimen><!--Sollte Summe aus cover_image_width + 2x lib_item_margin sein-->
+    <dimen name="lib_item_height">230dp</dimen>
+    <dimen name="lib_margin">0dp</dimen>
+    <dimen name="lib_cardview_corner_radius">0dp</dimen>
+
+
+    <dimen name="pageindex_thumbnail_image_width">180dp</dimen>
+    <dimen name="pageindex_thumbnail_image_height">270dp</dimen>
+    <dimen name="pageindex_padding">5dp</dimen>
+    <dimen name="pageindex_thumbnail_current_borderwidth">10dp</dimen>
+    
+    
+    
+    <dimen name="reader_bookmark_offset">-12dp</dimen>
+    
+    <dimen name="index_min_height">48dp</dimen>
+    <item name="index_image" type="dimen">@dimen/index_min_height</item>
+    <dimen name="index_currentmarker_width">5dp</dimen>
+
+    <dimen name="reader_navdrawer_topmargin">0dp</dimen>
+
+    <dimen name="help_padding">24dp</dimen>
+
+</resources>

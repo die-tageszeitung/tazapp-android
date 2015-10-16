@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/ic_action_download"
+        android:icon="@drawable/ic_action_file_file_download"
+        android:title="@string/ic_action_download"
+        app:showAsAction="ifRoom|withText">
+    </item>
+    <item
+        android:id="@+id/ic_action_delete"
+        android:icon="@drawable/ic_action_action_delete"
+        android:title="@string/ic_action_delete"
+        app:showAsAction="ifRoom|withText">
+    </item>
+    <group
+        android:id="@+id/ic_group_selection">
+        <item
+            android:id="@+id/ic_action_selectnotloaded"
+            android:title="@string/ic_action_selectnotloaded"
+            app:showAsAction="never">
+        </item>
+        <item
+            android:id="@+id/ic_action_selectall"
+            android:title="@string/ic_action_selectall"
+            app:showAsAction="never">
+        </item>
+        <item
+            android:id="@+id/ic_action_selectnone"
+            android:title="@string/ic_action_selectnone"
+            app:showAsAction="never">
+        </item>
+        <item
+            android:id="@+id/ic_action_selectinvert"
+            android:title="@string/ic_action_selectinvert"
+            app:showAsAction="never">
+        </item>
+    </group>
+
+</menu>

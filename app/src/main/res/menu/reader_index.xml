@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/toolbar_expand"
+        app:showAsAction="always" 
+        android:icon="@drawable/ic_index_plus"
+        android:title="@string/reader_index_menu_openall">
+    </item>
+    <item
+        android:id="@+id/toolbar_collapse"
+        app:showAsAction="always"
+        android:icon="@drawable/ic_index_minus"
+        android:title="@string/reader_index_menu_closeall">
+    </item>
+    <item
+        android:id="@+id/toolbar_bookmark_on"
+        app:showAsAction="always"
+        android:icon="@drawable/ic_index_bookmark_off"
+        android:title="@string/reader_index_menu_bookmarkfilter_on">
+    </item>              
+    <item
+        android:id="@+id/toolbar_bookmark_off"
+        app:showAsAction="always"
+        android:icon="@drawable/ic_index_bookmark_on"
+        android:title="@string/reader_index_menu_bookmarkfilter_off">
+    </item>              
+    <item
+        android:id="@+id/toolbar_index_full"
+        app:showAsAction="never"
+        android:title="@string/reader_index_menu_index_full">
+    </item>              
+    <item
+        android:id="@+id/toolbar_index_short"
+        app:showAsAction="never"
+        android:title="@string/reader_index_menu_index_short">
+    </item>
+    <item
+        android:id="@+id/toolbar_index_help"
+        app:showAsAction="never"
+        android:title="@string/reader_index_menu_help">
+    </item>
+
+</menu>

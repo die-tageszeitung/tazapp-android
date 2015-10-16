@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name" translatable="false">taz.app</string>
+    <string name="string_pref_text_user">Nutzername</string>
+    <string name="string_pref_text_pass">Passwort</string>
+    <string name="string_nopapernopref_button_abo">ePaper-Abo bestellen</string>
+    <string name="string_badge_update">Update</string>
+    <string name="string_badge_kiosk">Kiosk</string>
+    <string name="dialog_yes">Ja</string>
+    <string name="dialog_wifi">WiFi</string>
+    <string name="string_titel_seperator">vom</string>
+    <string name="ic_action_delete">Löschen</string>
+    <string name="ic_action_download">Laden</string>
+    <string name="ic_action_edit">Bearbeiten</string>
+    <string name="ic_action_selectall">Alle auswählen</string>
+    <string name="ic_action_selectnone">Keine auswählen</string>
+    <string name="ic_action_selectinvert">Auswahl umkehren</string>
+    <string name="ic_action_selectnotloaded">Nicht geladene auswählen</string>
+    <string name="string_login_button">Daten prüfen</string>
+    <string name="string_deleteAccount_button">Daten löschen</string>
+    <string name="string_library_selected">%1$d ausgewählt</string>
+    <string name="dialog_error_title">Fehler</string>
+    <string name="dialog_check_credentials">Kontaktiere Server und überprüfe Daten</string>
+    <string name="dialog_noconnection">Keine Verbindung zum Internet.</string>
+    <string name="dialog_error_no_credentials">Email/Passwort Feld leer</string>
+    <string name="dialog_error_credentials_not_allowed">Benutzer ist nicht erlaubt</string>
+    <string name="dialog_resources_loading">Ressourcen werden im Moment heruntergeladen, bitte versuchen Sie es in einigen Augenblicken nochmal.</string>
+    <string name="dialog_resources_not_found">Ressourcen, die zum Anzeigen der Ausgabe benötigt werden, wurden nicht gefunden. Möchten Sie diese jetzt herunterladen?</string>
+    <!--<string name="dialog_migration_wait">Migriere Ausgaben für die neue App-Version, bitte warten …\n\nBitte beenden Sie die App während der Migration nicht, um mögliche Fehler zu vermeiden. Vielen Dank.</string>-->
+    <!--<string name="dialog_migration_download">%1$d Ausgaben wurden migriert. Möchten Sie die Ausgaben jetzt herunterladen?</string>-->
+    <string name="dialog_mobile_download">Sie sind mit dem Mobilfunknetz verbunden.\nBeim Download können zusätzliche Kosten entstehen.</string>
+    <string name="dialog_account_error">Leider ist ein Fehler im Account-Management aufgetreten. Sie haben nicht die nötigen Rechte, um einen Account anzulegen.\nWenn Sie einen eingeschränkten Android-Account auf Ihrem Gerät verwenden, so muss der Hauptuser ebenfalls die taz.app installiert haben.</string>
+    <string name="dialog_downloadmanager_error">Leider ist ein Fehler beim Download aufgetreten. Sie haben wahrscheinlich den DownloadManager deaktiviert. Bitte aktivieren Sie den DownloadManager\n\n1. Android-Einstellungen\n2. Apps (ALLE)\n3. Download Manager\n4. Aktivieren</string>
+    <string name="dialog_first">Sie haben die App zum Lesen der digitalen Ausgabe der taz erfolgreich installiert. Wenn es das erste Mal für Sie ist, tippen Sie im Menü auf \"Hilfe\", um ein wenig Hilfestellung bei Ihren ersten Schritten zu bekommen.\n\nDie Ausgaben werden in Kürze aktualisiert, oder Sie wischen in der Ausgabenansicht nach unten.</string>
+    <string name="dialog_archive_year_title">taz-Archiv - Jahr wählen</string>
+    <string name="dialog_archive_month_title">taz-Archiv - Monat wählen</string>
+    <string name="dialog_error_download">Beim Download \"%1$s\" ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.</string>
+    <string name="notification_message_install_finished">Download fertig!</string>
+    <string name="notification_content_text_summary">%1$d Ausgaben heruntergeladen</string>
+    <string name="notification_error_download_title">Fehler</string>
+
+    <string name="demo_titel_appendix">- DEMOMODUS</string>
+
+    <string name="dummy">dummy</string>
+
+    <string name="drawer_open">Öffnen</string>
+    <string name="drawer_close">Schließen</string>
+
+    <string name="drawer_no_account">nicht angemeldet</string>
+    <string name="drawer_account">Kundendaten</string>
+    <string name="drawer_library">Ausgaben</string>
+    <string name="drawer_settings">Einstellungen</string>
+    <string name="drawer_help">Hilfe</string>
+    <string name="drawer_imprint">Impressum</string>
+    <string name="drawer_import">Importieren</string>
+
+    <string name="drawer_header_alpha" translatable="false">α</string>
+    <string name="drawer_header_beta" translatable="false">β</string>
+    <string name="drawer_header_debug" translatable="false">δ</string>
+
+    <string name="imprint_licenses">Lizenzen</string>
+
+    <string name="import_parent_directory">Übergeordnetes Verzeichnis</string>
+    <string name="import_wait">Lade Verzeichnis…</string>
+    <string name="import_error_detail">Fehler beim Auslesen der Datei</string>
+    <string name="import_error">Fehler beim Importieren von\n\n%1$s\n\n%2$s</string>
+    <string name="import_already_exists">Eine Ausgabe mit der Id %1$s ist bereits vorhanden. Möchten sie die Ausgabe überschreiben?</string>
+    <string name="import_layout_text">Importiere…</string>
+
+    <plurals name="import_download">
+        <item quantity="one">Die Ausgabe muss neu geladen werden. Möchten Sie den Download jetzt starten? Sie können die Ausgabe auch später in der Ausgabenansicht laden.</item>
+        <item quantity="other">%d Ausgaben müssen neu geladen werden. Möchten Sie den Download jetzt starten? Sie können die Ausgaben auch später in der Ausgabenansicht laden.</item>
+    </plurals>
+
+    <string name="import_download_positive">Jetzt</string>
+    <string name="import_download_negative">Später</string>
+
+    <string name="migration_layout_text">Neue Version wird vorbereitet…</string>
+    <string name="migration_wait_text">Bitte warten…</string>
+</resources>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<de.thecode.android.tazreader.widget.SlidingRelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                                                           xmlns:app="http://schemas.android.com/apk/res-auto"
+                                                           android:layout_width="match_parent"
+                                                           android:layout_height="match_parent">
+
+    <de.thecode.android.tazreader.reader.article.ArticleWebView
+        android:id="@+id/webview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"/>
+    
+    <LinearLayout
+
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:layout_alignParentTop="true"
+        android:orientation="horizontal"
+        android:layout_alignParentRight="true"
+        android:alpha="0.7"
+        >
+        <FrameLayout
+            android:id="@+id/bookmarkClickLayout"
+            android:layout_width="48dp"
+            android:layout_height="48dp">
+            <ImageView
+                android:id="@+id/bookmark"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+
+                android:layout_marginTop="-12dp"
+
+                android:src="@drawable/ic_bookmark"/>
+        </FrameLayout>
+        <de.thecode.android.tazreader.widget.ShareButton
+            android:id="@+id/share"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+
+            android:paddingBottom="18dp"
+            />
+        <de.thecode.android.tazreader.widget.PageIndexButton
+            android:id="@+id/pageindex"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:paddingBottom="18dp"
+            />
+    </LinearLayout>
+
+
+
+
+
+
+
+</de.thecode.android.tazreader.widget.SlidingRelativeLayout>

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+    <string name="download_status_successful">successful</string>
+    <string name="download_status_running">running</string>
+    <string name="download_status_pending">pending</string>
+    <string name="download_status_paused">paused</string>
+    <string name="download_status_failed">failed</string>
+    <string name="download_status_unknown">unknown</string>
+    <string name="download_status_canceled">canceled</string>
+
+
+    <string name="download_reason_0">no reason</string>
+    <string name="download_reason_100">Continue</string>
+    <string name="download_reason_101">Switching Protocols</string>
+    <string name="download_reason_200">OK</string>
+    <string name="download_reason_201">Created</string>
+    <string name="download_reason_202">Accepted</string>
+    <string name="download_reason_203">Non-Authoritative Information</string>
+    <string name="download_reason_204">No Content</string>
+    <string name="download_reason_205">Reset Content</string>
+    <string name="download_reason_206">Partial Content</string>
+    <string name="download_reason_300">Multiple Choices</string>
+    <string name="download_reason_301">Moved Permanently</string>
+    <string name="download_reason_302">Found</string>
+    <string name="download_reason_303">See Other</string>
+    <string name="download_reason_304">Not Modified</string>
+    <string name="download_reason_305">Use Proxy</string>
+    <string name="download_reason_307">Temporary Redirect</string>
+    <string name="download_reason_400">Bad Request</string>
+    <string name="download_reason_401">Unauthorized</string>
+    <string name="download_reason_402">Payment Required</string>
+    <string name="download_reason_403">Forbidden</string>
+    <string name="download_reason_404">Not Found</string>
+    <string name="download_reason_405">Method Not Allowed</string>
+    <string name="download_reason_406">Not Acceptable</string>
+    <string name="download_reason_407">Proxy Authentication Required</string>
+    <string name="download_reason_408">Request Time-out</string>
+    <string name="download_reason_409">Conflict</string>
+    <string name="download_reason_410">Gone</string>
+    <string name="download_reason_411">Length Required</string>
+    <string name="download_reason_412">Precondition Failed</string>
+    <string name="download_reason_413">Request Entity Too Large</string>
+    <string name="download_reason_414">Request-URI Too Large</string>
+    <string name="download_reason_415">Unsupported Media Type</string>
+    <string name="download_reason_416">Requested range not satisfiable</string>
+    <string name="download_reason_417">Expectation Failed</string>
+    <string name="download_reason_500">Internal Server Error</string>
+    <string name="download_reason_501">Not Implemented</string>
+    <string name="download_reason_502">Bad Gateway</string>
+    <string name="download_reason_503">Service Unavailable</string>
+    <string name="download_reason_504">Gateway Time-out</string>
+    <string name="download_reason_505">HTTP Version not supported</string>
+    <string name="download_reason_3">Download exceeds a size limit for downloads over the mobile network and the download manager is waiting for a Wi-Fi connection to proceed.</string>
+    <string name="download_reason_4">The download is paused for some other reason.</string>
+    <string name="download_reason_2">The download is waiting for network connectivity to proceed.</string>
+    <string name="download_reason_1">The download is paused because some network error occurred and the download manager is waiting before retrying the request.</string>
+    <string name="download_reason_1002">An HTTP code was received that download manager can\'t handle</string>
+    <string name="download_reason_1005">There were too many redirects.</string>
+    <string name="download_reason_1006">There was insufficient storage space. Typically, this is because the SD card is full.</string>
+    <string name="download_reason_1004">An error receiving or processing data occurred at the HTTP level</string>
+    <string name="download_reason_1001">A storage issue arises which doesn\'t fit under any other error code. </string>
+    <string name="download_reason_1009">The requested destination file already exists</string>
+    <string name="download_reason_1007">No external storage device was found. Typically, this is because the SD card is not mounted.</string>
+    <string name="download_reason_1008">Some possibly transient error occurred but we can\'t resume the download.</string>
+
+    <string name="download_reason_notext">no text for this reason</string>
+</resources>
