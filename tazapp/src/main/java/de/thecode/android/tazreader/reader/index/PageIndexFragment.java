@@ -207,7 +207,7 @@ public class PageIndexFragment extends BaseFragment {
     private void makeOverlayBitmap(float x1, float y1, float x2, float y2) {
         try {
         Log.d(x1, y1, x2, y2, mThumbnailImageWidth, mThumbnailImageHeight);
-        mCurrentArticleOverlay = Bitmap.createBitmap(mThumbnailImageWidth, mThumbnailImageHeight, Bitmap.Config.RGB_565);
+        mCurrentArticleOverlay = Bitmap.createBitmap(mThumbnailImageWidth, mThumbnailImageHeight, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(mCurrentArticleOverlay);
         Paint paint = new Paint();
         int padding = getResources().getDimensionPixelSize(R.dimen.pageindex_thumbnail_current_borderwidth);
@@ -337,7 +337,7 @@ public class PageIndexFragment extends BaseFragment {
                 return BitmapFactory.decodeFile(imageFile.getAbsolutePath(), options);
             } else {
                 try {
-                    Bitmap lq = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
+                    Bitmap lq = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
 
                     File paperDirectory = StorageManager.getInstance(getActivity()).getPaperDirectory(paper);
                     TAZMuPDFCore core = new TAZMuPDFCore(getActivity(), new File(paperDirectory, key).getAbsolutePath());
