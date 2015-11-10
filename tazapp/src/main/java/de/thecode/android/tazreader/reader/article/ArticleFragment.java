@@ -13,7 +13,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -40,17 +39,17 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import de.thecode.android.tazreader.R;
-import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Paper.Plist.Page.Article;
 import de.thecode.android.tazreader.data.Store;
+import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.reader.AbstractContentFragment;
 import de.thecode.android.tazreader.reader.ReaderActivity;
 import de.thecode.android.tazreader.reader.ReaderActivity.DIRECTIONS;
 import de.thecode.android.tazreader.reader.article.ArticleWebView.ArticleWebViewCallback;
 import de.thecode.android.tazreader.reader.index.IIndexItem;
-import de.thecode.android.tazreader.utils.StorageManager;
 import de.thecode.android.tazreader.utils.Log;
+import de.thecode.android.tazreader.utils.StorageManager;
 import de.thecode.android.tazreader.widget.PageIndexButton;
 import de.thecode.android.tazreader.widget.ShareButton;
 
@@ -257,10 +256,6 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
         mWebView.loadUrl("javascript:TAZAPI." + function + "(" + value + ")");
     }
 
-    private void callTazapiWithReturn(String function, String value) {
-        mWebView.loadUrl("javascript:ANDROIDAPI.onReturnValue('"+function+"("+ TextUtils.htmlEncode(value)+")',TAZAPI." + function + "(" + value + "))");
-    }
-
     private void onGestureToTazapi(GESTURES gesture, MotionEvent e1) {
         //mOpenGesureResult = true;
         Log.d(mArticle.getKey(), gesture);
@@ -311,12 +306,6 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
         Log.v(view.getScrollX(), view.getScrollY());
     }
 
-    @Override
-    public boolean onSingleTapConfirmed(ArticleWebView view, MotionEvent e) {
-        Log.v(e);
-        callTazapiWithReturn("willHandleTap","'"+e.getX() + "," + e.getY()+"'");
-        return false;
-    }
 
     float mAlpha = 1F;
 
@@ -500,8 +489,6 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
                         mCallback.updateIndexes(mArticle.getKey(), newposition);
                         mIndexUpdated = true;
                     }
-
-                    Log.d(mWebView.getContentWidth());
                 }
             });
         }
@@ -592,14 +579,6 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
             Log.d();
 
         }
-
-        @JavascriptInterface
-        public void onReturnValue(String function,String returnValue) {
-            Log.i(function,returnValue);
-        }
-
-
-
     }
 
     public class ArticleWebViewClient extends WebViewClient {

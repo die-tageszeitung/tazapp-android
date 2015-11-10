@@ -51,12 +51,6 @@ public class ArticleWebView extends WebView {
         setOverScrollMode(View.OVER_SCROLL_NEVER);
     }
 
-    @Override
-    public boolean onInterceptTouchEvent(MotionEvent ev) {
-        Log.i();
-        return super.onInterceptTouchEvent(ev);
-    }
-
     private void setIsScroll() {
         isScroll = TazSettings.getPrefBoolean(mContext, TazSettings.PREFKEY.ISSCROLL, false);
     }
@@ -159,24 +153,12 @@ public class ArticleWebView extends WebView {
         public void onSwipeBottom(ArticleWebView view, MotionEvent e1, MotionEvent e2);
 
         public void onSwipeTop(ArticleWebView view, MotionEvent e1, MotionEvent e2);
-
-        public boolean onSingleTapConfirmed(ArticleWebView view, MotionEvent e);
     }
-
-
 
     GestureDetector.SimpleOnGestureListener simpleOnGestureListener = new SimpleOnGestureListener() {
 
         private static final int SWIPE_THRESHOLD = 100;
         private static final int SWIPE_VELOCITY_THRESHOLD = 100;
-
-
-        @Override
-        public boolean onSingleTapConfirmed(MotionEvent e) {
-            Log.i();
-            return true;
-        }
-
 
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
