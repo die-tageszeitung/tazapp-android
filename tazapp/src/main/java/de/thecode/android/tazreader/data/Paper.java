@@ -1,9 +1,13 @@
 package de.thecode.android.tazreader.data;
 
+import android.content.ComponentName;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.LabeledIntent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.BaseColumns;
@@ -1108,15 +1112,36 @@ public class Paper {
                                         .appendEncodedPath(pagePath)
                                         .build();
 
+                    //share Intent
                     Intent intent = new Intent(Intent.ACTION_SEND);
                     intent.setType("application/pdf");
                     intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                     intent.putExtra(Intent.EXTRA_STREAM, contentUri);
-
                     intent.putExtra(Intent.EXTRA_SUBJECT, getPaper().getTitelWithDate(context) + ": " + getTitle());
                     intent.putExtra(Intent.EXTRA_TEXT, getPaper().getTitelWithDate(context) + "\n" + getTitle());
 
-                    return intent;
+                    //get extra intents to view pdf
+                    Intent viewIntent = new Intent(Intent.ACTION_VIEW);
+                    viewIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    viewIntent.setData(contentUri);
+                    PackageManager packageManager = context.getPackageManager();
+                    List<ResolveInfo> resInfo = packageManager.queryIntentActivities(viewIntent, 0);
+                    Intent[] extraIntents = new Intent[resInfo.size()];
+                    for (int i = 0; i < resInfo.size(); i++) {
+                        // Extract the label, append it, and repackage it in a LabeledIntent
+                        ResolveInfo ri = resInfo.get(i);
+                        String packageName = ri.activityInfo.packageName;
+                        Intent extraViewIntent = new Intent();
+                        extraViewIntent.setComponent(new ComponentName(packageName, ri.activityInfo.name));
+                        extraViewIntent.setAction(Intent.ACTION_VIEW);
+                        extraViewIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                        extraViewIntent.setData(contentUri);
+                        CharSequence label = ri.loadLabel(packageManager);
+                        extraIntents[i] = new LabeledIntent(extraViewIntent, packageName, label, ri.icon);
+                    }
+                    Intent chooserIntent = Intent.createChooser(intent, context.getString(R.string.reader_action_share_open));
+                    if (extraIntents.length > 0) chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, extraIntents);
+                    return chooserIntent;
 
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -1283,7 +1308,7 @@ public class Paper {
                     intent.putExtra(Intent.EXTRA_SUBJECT, getPaper().getTitelWithDate(context) + ": " + getTitle());
                     intent.putExtra(Intent.EXTRA_TEXT, text.toString());
 
-                    return intent;
+                    return Intent.createChooser(intent, context.getString(R.string.reader_action_share));
                 }
             }
 

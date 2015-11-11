@@ -8,6 +8,7 @@ import android.os.Build;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.reader.ReaderActivity;
@@ -53,9 +54,16 @@ public class PageIndexButton extends ImageView {
         setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (v.getContext() instanceof ReaderActivity){
+                if (v.getContext() instanceof ReaderActivity) {
                     ((ReaderActivity) v.getContext()).openPageIndexDrawer();
                 }
+            }
+        });
+        setOnLongClickListener(new OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                Toast.makeText(v.getContext(),R.string.reader_action_pageindex,Toast.LENGTH_LONG).show();
+                return true;
             }
         });
     }

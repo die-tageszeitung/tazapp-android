@@ -78,4 +78,8 @@
 
     <string name="migration_layout_text">Neue Version wird vorbereitet…</string>
     <string name="migration_wait_text">Bitte warten…</string>
+
+    <string name="reader_action_share">Teilen</string>
+    <string name="reader_action_share_open">Öffnen / Teilen</string>
+    <string name="reader_action_pageindex">Seitenübersicht</string>
 </resources>

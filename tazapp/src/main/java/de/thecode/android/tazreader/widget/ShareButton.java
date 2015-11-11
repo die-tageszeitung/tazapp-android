@@ -9,13 +9,14 @@ import android.os.Build;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import de.thecode.android.tazreader.R;
 
 /**
  * Created by mate on 22.01.2015.
  */
-public class ShareButton extends ImageView implements View.OnClickListener {
+public class ShareButton extends ImageView implements View.OnClickListener, View.OnLongClickListener {
 
     ColorFilter cfPressed;
     ColorFilter cfNormal;
@@ -49,13 +50,15 @@ public class ShareButton extends ImageView implements View.OnClickListener {
         mContext = context;
         setImageDrawable(getResources().getDrawable(R.drawable.abc_ic_menu_share_mtrl_alpha));
         setScaleType(ScaleType.CENTER);
-        cfPressed = new LightingColorFilter(context.getResources().getColor(R.color.index_bookmark_on), 1);
-        cfNormal = new LightingColorFilter(context.getResources().getColor(R.color.index_bookmark_off), 1);
+        cfPressed = new LightingColorFilter(context.getResources()
+                                                   .getColor(R.color.index_bookmark_on), 1);
+        cfNormal = new LightingColorFilter(context.getResources()
+                                                  .getColor(R.color.index_bookmark_off), 1);
         setColorFilter(cfNormal);
         setClickable(true);
         setOnClickListener(this);
-        if (!isInEditMode())
-            setVisibility(View.INVISIBLE);
+        setOnLongClickListener(this);
+        if (!isInEditMode()) setVisibility(View.INVISIBLE);
     }
 
     @Override
@@ -72,8 +75,7 @@ public class ShareButton extends ImageView implements View.OnClickListener {
         this.mCallback = callback;
         if (!mCallback.isShareable()) {
             setVisibility(View.INVISIBLE);
-        } else
-            setVisibility(View.VISIBLE);
+        } else setVisibility(View.VISIBLE);
     }
 
     @Override
@@ -86,9 +88,18 @@ public class ShareButton extends ImageView implements View.OnClickListener {
         }
     }
 
+    @Override
+    public boolean onLongClick(View v) {
+        if (mContext != null) {
+            Toast.makeText(mContext, R.string.reader_action_share, Toast.LENGTH_LONG).show();
+            return true;
+        }
+        return false;
+    }
 
     public interface ShareButtonCallback {
         public Intent getShareIntent(Context context);
+
         public boolean isShareable();
     }
 }
