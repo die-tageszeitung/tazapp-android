@@ -5,37 +5,28 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.app.LoaderManager;
-import android.content.Context;
 import android.content.Loader;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.StringRes;
 import android.support.v4.widget.DrawerLayout;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.google.common.base.Strings;
 
 import org.json.JSONArray;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 import java.util.WeakHashMap;
 
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
-import de.thecode.android.tazreader.data.Paper.Plist.Book;
-import de.thecode.android.tazreader.data.Paper.Plist.Category;
-import de.thecode.android.tazreader.data.Paper.Plist.Page;
-import de.thecode.android.tazreader.data.Paper.Plist.Page.Article;
-import de.thecode.android.tazreader.data.Paper.Plist.Source;
-import de.thecode.android.tazreader.data.Paper.Plist.TopLink;
 import de.thecode.android.tazreader.data.Store;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.dialog.TcDialog;
@@ -48,12 +39,12 @@ import de.thecode.android.tazreader.reader.index.IndexFragment;
 import de.thecode.android.tazreader.reader.index.PageIndexFragment;
 import de.thecode.android.tazreader.reader.page.PagesFragment;
 import de.thecode.android.tazreader.utils.BaseActivity;
-import de.thecode.android.tazreader.utils.StorageManager;
 import de.thecode.android.tazreader.utils.Log;
+import de.thecode.android.tazreader.utils.StorageManager;
 import de.thecode.android.tazreader.utils.Utils;
 
 @SuppressLint("RtlHardcoded")
-public class ReaderActivity extends BaseActivity implements LoaderManager.LoaderCallbacks<PaperLoader.PaperLoaderResult>, IReaderCallback, TcDialogButtonListener, TcDialog.TcDialogDismissListener {
+public class ReaderActivity extends BaseActivity implements LoaderManager.LoaderCallbacks<PaperLoader.PaperLoaderResult>, IReaderCallback, TcDialogButtonListener, TcDialog.TcDialogDismissListener, ReaderDataFragment.ReaderDataFramentCallback {
 
     public static enum THEMES {
         normal("bgColorNormal"), sepia("bgColorSepia"), night("bgColorNight");
@@ -72,6 +63,8 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
     public static enum DIRECTIONS {
         LEFT, RIGHT, TOP, BOTTOM, NONE
     }
+
+
 
     private static final String TAG_FRAGMENT_INDEX = "IndexFragment";
     private static final String TAG_FRAGMENT_PAGEINDEX = "PageIndexFragment";
@@ -97,7 +90,7 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
 
     StorageManager mStorage;
 
-    RetainDataFragment retainDataFragment;
+    ReaderDataFragment retainDataFragment;
 
     IndexFragment mIndexFragment;
 
@@ -108,6 +101,9 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
     ProgressBar mLoadingProgress;
 
     //Handler mUiThreadHandler;
+
+
+
 
 
     @Override
@@ -148,18 +144,22 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
         mFragmentManager = getFragmentManager();
 
 
-        retainDataFragment = RetainDataFragment.findRetainFragment(getFragmentManager());
+        retainDataFragment = ReaderDataFragment.findRetainFragment(getFragmentManager());
         if (retainDataFragment != null && retainDataFragment.getPaper() != null) {
+            retainDataFragment.setCallback(this);
             Log.d("Found data fragment");
             initializeFragments();
         } else {
-            retainDataFragment = RetainDataFragment.createRetainFragment(getFragmentManager());
+            retainDataFragment = ReaderDataFragment.createRetainFragment(getFragmentManager());
+            retainDataFragment.setCallback(this);
+            retainDataFragment.initTts(this);
             Log.d("Did not find data fragment, initialising loader");
             LoaderManager lm = getLoaderManager();
             Bundle paperLoaderBundle = new Bundle();
             paperLoaderBundle.putLong(KEY_EXTRA_PAPER_ID, paperId);
             lm.initLoader(LOADER_ID_PAPER, paperLoaderBundle, this);
         }
+
     }
 
     @Override
@@ -202,29 +202,6 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
         //setImmersiveMode();
     }
 
-    @Override
-    protected void onPause() {
-        Log.v();
-        super.onPause();
-    }
-
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        Log.v();
-        super.onSaveInstanceState(outState);
-    }
-
-    @Override
-    protected void onStop() {
-        Log.v();
-        super.onStop();
-    }
-
-    @Override
-    protected void onDestroy() {
-        Log.v();
-        super.onDestroy();
-    }
 
     private void initializeFragments() {
         loadIndexFragment();
@@ -409,7 +386,7 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
         Log.v();
         int prevPosition = retainDataFragment.getArticleCollectionOrderPosition(retainDataFragment.getCurrentKey()) - 1;
 
-        if (retainDataFragment.filterBookmarks) {
+        if (retainDataFragment.isFilterBookmarks()) {
             while (prevPosition >= 0) {
                 IIndexItem item = retainDataFragment.getPaper()
                                                     .getPlist()
@@ -433,7 +410,7 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
         Log.v();
         int nextPositiion = retainDataFragment.getArticleCollectionOrderPosition(retainDataFragment.getCurrentKey()) + 1;
 
-        if (retainDataFragment.filterBookmarks) {
+        if (retainDataFragment.isFilterBookmarks()) {
             while (nextPositiion < retainDataFragment.getArticleCollectionSize()) {
                 IIndexItem item = retainDataFragment.getPaper()
                                                     .getPlist()
@@ -585,193 +562,15 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
 
     @Override
     public void setFilterBookmarks(boolean bool) {
-        retainDataFragment.filterBookmarks = bool;
+        retainDataFragment.setFilterBookmarks(bool);
     }
 
     @Override
     public boolean isFilterBookmarks() {
-        return retainDataFragment.filterBookmarks;
+        return retainDataFragment.isFilterBookmarks();
     }
 
-    public static class RetainDataFragment extends Fragment {
 
-        private static final String TAG = "RetainDataFragment";
-
-        private Paper _paper;
-        private String mCurrentKey;
-        private String mPosition;
-        private boolean filterBookmarks;
-
-        private HashMap<String, Integer> articleCollectionOrder = new HashMap<>();
-        private HashMap<Integer, String> articleCollectionPositionIndex = new HashMap<>();
-
-        public RetainDataFragment() {
-        }
-
-        public static RetainDataFragment findRetainFragment(FragmentManager fm) {
-            return (RetainDataFragment) fm.findFragmentByTag(TAG);
-        }
-
-        public static RetainDataFragment createRetainFragment(FragmentManager fm) {
-            RetainDataFragment fragment = new RetainDataFragment();
-            fm.beginTransaction()
-              .add(fragment, TAG)
-              .commit();
-            return fragment;
-        }
-
-        @Override
-        public void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-            setRetainInstance(true);
-        }
-
-        public Paper getPaper() {
-            return _paper;
-        }
-
-        public void setPaper(Paper paper) {
-            this._paper = paper;
-            //            articleItems = new ArrayList<>();
-
-            //Reihenfolge der Artikel festlegen
-            List<TopLink> toplinksToSortIn = new ArrayList<>(paper.getPlist()
-                                                                  .getToplinks());
-            int position = 0;
-            for (Source source : paper.getPlist()
-                                      .getSources()) {
-                for (Book book : source.getBooks()) {
-                    for (Category category : book.getCategories()) {
-                        for (Page page : category.getPages()) {
-
-                            Iterator<TopLink> i = toplinksToSortIn.iterator();
-
-
-                            while (i.hasNext()) {
-                                TopLink topLink = i.next();
-                                if (!topLink.isLink()) {
-                                    if (topLink.getKey()
-                                               .equals(page.getDefaultLink())) {
-                                        articleCollectionOrder.put(topLink.getKey(), position);
-                                        articleCollectionPositionIndex.put(position, topLink.getKey());
-                                        position++;
-                                        //articleItems.add(topLink);
-                                        i.remove();
-                                    }
-                                }
-                            }
-                            for (Article article : page.getArticles()) {
-                                if (!article.isLink()) {
-                                    articleCollectionOrder.put(article.getKey(), position);
-                                    articleCollectionPositionIndex.put(position, article.getKey());
-                                    position++;
-                                    //articleItems.add(article);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            for (TopLink topLink : toplinksToSortIn) {
-                if (!topLink.isLink()) {
-                    articleCollectionOrder.put(topLink.getKey(), position);
-                    articleCollectionPositionIndex.put(position, topLink.getKey());
-                    position++;
-                }
-            }
-
-            //            articleItems.addAll(toplinksToSortIn);
-        }
-
-        public int getArticleCollectionOrderPosition(String key) {
-            return articleCollectionOrder.get(key);
-        }
-
-        public int getArticleCollectionSize() {
-            return articleCollectionOrder.size();
-        }
-
-        public String getArticleCollectionOrderKey(int postion) {
-            return articleCollectionPositionIndex.get(postion);
-        }
-
-        public void setCurrentKey(Context context, String currentKey, String position) {
-            Log.d(currentKey, position);
-            mCurrentKey = currentKey;
-            mPosition = position;
-            try {
-                _paper.saveStoreValue(context, STORE_KEY_CURRENTPOSITION, mCurrentKey);
-                _paper.saveStoreValue(context, STORE_KEY_POSITION_IN_ARTICLE, position);
-            } catch (Exception e) {
-                Log.w(e);
-            }
-
-            boolean addtobackstack = true;
-            BackStack newBackStack = new BackStack(currentKey, position);
-            if (backstack.size() > 0) {
-                BackStack lastBackstack = backstack.get(backstack.size() - 1);
-                if (lastBackstack.equals(newBackStack)) addtobackstack = false;
-            }
-            if (addtobackstack) {
-                Log.d("Adding to backstack", currentKey, position);
-                backstack.add(newBackStack);
-            }
-        }
-
-        public String getCurrentKey() {
-            return mCurrentKey;
-        }
-
-        public String getPostion() {
-            return mPosition;
-        }
-
-        ArrayList<BackStack> backstack = new ArrayList<>();
-
-        public class BackStack {
-            String key;
-            String position;
-
-            public BackStack(String key, String position) {
-                Log.d(key, position);
-                this.key = key;
-                this.position = position;
-            }
-
-            public String getKey() {
-                return key;
-            }
-
-            public String getPosition() {
-                return position;
-            }
-
-            @Override
-            public boolean equals(Object other) {
-                if (other instanceof BackStack) {
-                    BackStack otherBS = (BackStack) other;
-                    boolean keyCompare = false;
-                    boolean positionCompare = false;
-
-                    if (key == null && otherBS.key == null) keyCompare = true;
-                    else if (key != null) {
-                        if (key.equals(otherBS.key)) keyCompare = true;
-                    }
-                    if (position == null && otherBS.position == null) positionCompare = true;
-                    else if (position != null) {
-                        if (position.equals(otherBS.position)) positionCompare = true;
-                    }
-                    if (keyCompare && positionCompare) return true;
-
-                }
-                return false;
-            }
-        }
-
-        public ArrayList<BackStack> getBackstack() {
-            return backstack;
-        }
-    }
 
     @Override
     public Paper getPaper() {
@@ -783,7 +582,7 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
     public void onBackPressed() {
         if (retainDataFragment != null && retainDataFragment.getBackstack() != null && retainDataFragment.getBackstack()
                                                                                                          .size() > 1) {
-            RetainDataFragment.BackStack loadBackStack = retainDataFragment.getBackstack()
+            ReaderDataFragment.BackStack loadBackStack = retainDataFragment.getBackstack()
                                                                            .get(retainDataFragment.getBackstack()
                                                                                                   .size() - 2);
             retainDataFragment.getBackstack()
@@ -813,9 +612,9 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
     @Override
     public void setImmersiveMode() {
 
-        boolean onOff = TazSettings.getPrefBoolean(this,TazSettings.PREFKEY.FULLSCREEN,false);
+        boolean onOff = TazSettings.getPrefBoolean(this, TazSettings.PREFKEY.FULLSCREEN, false);
 
-        Log.v("immersive:"+onOff);
+        Log.v("immersive:" + onOff);
 
 
         mContentFrame.setFitsSystemWindows(!onOff);
@@ -856,5 +655,26 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
                    .setSystemUiVisibility(newUiOptions);
         mContentFrame.requestLayout();
 
+    }
+
+    @Override
+    public void onTtsStateChanged(ReaderDataFragment.TTS newState) {
+        if (mContentFragment != null) mContentFragment.onTtsStateChanged(newState);
+    }
+
+    @Override
+    public ReaderDataFragment.TTS getTtsState() {
+        Log.d(retainDataFragment.getTtsState());
+        return retainDataFragment.getTtsState();
+    }
+
+    @Override
+    public void speak(CharSequence text) {
+        retainDataFragment.speak(text);
+    }
+
+    @Override
+    public void showToast(@StringRes int stringId, int toastLenght) {
+        Toast.makeText(this, stringId, toastLenght).show();
     }
 }

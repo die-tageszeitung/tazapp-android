@@ -41,6 +41,7 @@ public class SettingsFragment extends BaseFragment {
     private RadioGroup orientationGroup;
     private TextView autodeleteDaysUnitText;
     private CheckBox pageIndexButtonCheckBox;
+    private CheckBox ttsCheckBox;
 
 
     public SettingsFragment() {
@@ -72,6 +73,7 @@ public class SettingsFragment extends BaseFragment {
         notificationSound = (TextView) view.findViewById(R.id.notificationSound);
         notificationVibrateCheckBox = (CheckBox) view.findViewById(R.id.notificationVibrateCheckBox);
         pageIndexButtonCheckBox = (CheckBox) view.findViewById(R.id.showPageIndexButtonCheckBox);
+        ttsCheckBox = (CheckBox) view.findViewById(R.id.ttsCheckBox);
 
         autoloadCheckBox.setChecked(TazSettings.getPrefBoolean(getActivity(), TazSettings.PREFKEY.AUTOLOAD, false));
         autoloadCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -200,6 +202,15 @@ public class SettingsFragment extends BaseFragment {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 TazSettings.setPref(getActivity(), TazSettings.PREFKEY.PAGEINDEXBUTTON, isChecked);
+            }
+        });
+
+        ttsCheckBox.setChecked(TazSettings.getPrefBoolean(getActivity(), TazSettings.PREFKEY.TEXTTOSPEACH, false));
+        ttsCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                TazSettings.setPref(getActivity(), TazSettings.PREFKEY.TEXTTOSPEACH, isChecked);
             }
         });
 

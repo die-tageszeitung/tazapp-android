@@ -56,4 +56,6 @@ public abstract class AbstractContentFragment extends BaseFragment implements Re
         }
         return result.toString();
     }
+
+    public abstract void onTtsStateChanged(ReaderDataFragment.TTS state);
 }

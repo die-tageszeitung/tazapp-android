@@ -46,6 +46,7 @@ public final class TazSettings {
         public static final String PAPERNOTIFICATIONIDS = "paperNotificationIds";
         public static final String ISSOCIAL = "isSocial";
         public static final String PAGEINDEXBUTTON = "pageIndexButton";
+        public static final String TEXTTOSPEACH = "textToSpeech";
 
     }
 

@@ -85,6 +85,7 @@ public class TazReaderApplication extends Application {
         TazSettings.setDefaultPref(this, TazSettings.PREFKEY.VIBRATE, true);
         TazSettings.setDefaultPref(this, TazSettings.PREFKEY.ISSOCIAL, false);
         TazSettings.setDefaultPref(this, TazSettings.PREFKEY.PAGEINDEXBUTTON, false);
+        TazSettings.setDefaultPref(this, TazSettings.PREFKEY.TEXTTOSPEACH, false);
 
         listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
 

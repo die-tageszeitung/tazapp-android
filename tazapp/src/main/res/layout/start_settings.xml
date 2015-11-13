@@ -158,6 +158,25 @@
                         android:text="@string/orientationLand"/>
                 </RadioGroup>
             </FrameLayout>
+            <View style="@style/SettingsDivider"/>
+
+
+            <de.thecode.android.tazreader.widget.TypefacedTextView
+                style="@style/SettingsHeadline"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/header_read"
+                app:typeface="@string/TypefaceTazBold"/>
+
+            <de.thecode.android.tazreader.widget.TypefacedCheckBox
+                android:id="@+id/ttsCheckBox"
+                style="@style/SettingsCheckbox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/texttospeach"
+                app:typeface="@string/TypefaceTazRegular"
+                android:checked="false"/>
+
 
             <de.thecode.android.tazreader.widget.TypefacedCheckBox
                 android:id="@+id/showPageIndexButtonCheckBox"

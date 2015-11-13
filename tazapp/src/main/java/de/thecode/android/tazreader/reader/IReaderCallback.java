@@ -37,5 +37,9 @@ public interface IReaderCallback {
     public boolean isFilterBookmarks();
 
     public void setImmersiveMode();
+
+    public ReaderDataFragment.TTS getTtsState();
+
+    public void speak(CharSequence text);
     
 }

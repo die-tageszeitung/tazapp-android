@@ -13,6 +13,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -46,6 +47,7 @@ import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.reader.AbstractContentFragment;
 import de.thecode.android.tazreader.reader.ReaderActivity;
 import de.thecode.android.tazreader.reader.ReaderActivity.DIRECTIONS;
+import de.thecode.android.tazreader.reader.ReaderDataFragment;
 import de.thecode.android.tazreader.reader.article.ArticleWebView.ArticleWebViewCallback;
 import de.thecode.android.tazreader.reader.index.IIndexItem;
 import de.thecode.android.tazreader.utils.Log;
@@ -58,6 +60,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
     private static final String JAVASCRIPT_API_NAME = "ANDROIDAPI";
     public static final String ARGUMENT_KEY = "key";
     private boolean debugArticles = false;
+    private boolean ttsActive = false;
 
 
     private static enum GESTURES {
@@ -155,6 +158,8 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
                 }
             });
         } else mPageIndexButton.setVisibility(View.GONE);
+
+        ttsActive = TazSettings.getPrefBoolean(mContext, TazSettings.PREFKEY.TEXTTOSPEACH, false);
 
         return (result);
     }
@@ -288,6 +293,14 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
         Log.v();
         mLastGesture = GESTURES.swipeDown;
         onGestureToTazapi(mLastGesture, e1);
+    }
+
+    @Override
+    public boolean onDoubleTap(MotionEvent e) {
+        if (mCallback != null && ttsActive) {
+            mCallback.speak(getTextToSpeech());
+        }
+        return true;
     }
 
     @Override
@@ -661,4 +674,20 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
         // (\<[^\>]+?(?:href|src)\=(?:\"|\'))(res)(.+?(?:\"|\')\>)
     }
 
+    @Override
+    public void onTtsStateChanged(ReaderDataFragment.TTS state) {
+        Log.d(state);
+    }
+
+    private CharSequence getTextToSpeech() {
+        Pattern pattern=Pattern.compile(".*?<body.*?>(.*?)</body>.*?", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+        Matcher matcher=pattern.matcher(getHtml());
+        if (matcher.matches()) {
+
+            Pattern replacePattern = Pattern.compile("[\u00AD]?", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+            Matcher replaceMatcher = replacePattern.matcher(Html.fromHtml(matcher.group(1)));
+            return replaceMatcher.replaceAll("");
+        }
+        return null;
+    }
 }

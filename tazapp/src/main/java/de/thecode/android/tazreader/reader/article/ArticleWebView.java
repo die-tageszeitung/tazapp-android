@@ -119,9 +119,6 @@ public class ArticleWebView extends WebView {
 
     @Override
     public boolean onTouchEvent(MotionEvent ev) {
-
-
-
         if (!mScrolling) return gestureDetector.onTouchEvent(ev) || super.onTouchEvent(ev);
         else return super.onTouchEvent(ev);
 
@@ -153,6 +150,8 @@ public class ArticleWebView extends WebView {
         public void onSwipeBottom(ArticleWebView view, MotionEvent e1, MotionEvent e2);
 
         public void onSwipeTop(ArticleWebView view, MotionEvent e1, MotionEvent e2);
+
+        public boolean onDoubleTap(MotionEvent e);
     }
 
     GestureDetector.SimpleOnGestureListener simpleOnGestureListener = new SimpleOnGestureListener() {
@@ -161,35 +160,42 @@ public class ArticleWebView extends WebView {
         private static final int SWIPE_VELOCITY_THRESHOLD = 100;
 
         @Override
+        public boolean onDoubleTap(MotionEvent e) {
+            if (mCallback!= null)
+                return mCallback.onDoubleTap(e);
+            return super.onDoubleTap(e);
+        }
+
+        @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
             Log.i();
             boolean result = false;
-            if (!mScrolling) {
-                try {
-                    float diffY = e2.getY() - e1.getY();
-                    float diffX = e2.getX() - e1.getX();
-                    if (Math.abs(diffX) > Math.abs(diffY)) {
-                        if (Math.abs(diffX) > SWIPE_THRESHOLD && Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
-                            if (diffX > 0) {
-                                if (mCallback != null) mCallback.onSwipeRight(ArticleWebView.this, e1, e2);
-                            } else {
-                                if (mCallback != null) mCallback.onSwipeLeft(ArticleWebView.this, e1, e2);
-                            }
-                        }
-                        result = true;
-                    } else if (!isScroll && Math.abs(diffY) > SWIPE_THRESHOLD && Math.abs(velocityY) > SWIPE_VELOCITY_THRESHOLD) {
-                        if (diffY > 0) {
-                            if (mCallback != null) mCallback.onSwipeBottom(ArticleWebView.this, e1, e2);
-                        } else {
-                            if (mCallback != null) mCallback.onSwipeTop(ArticleWebView.this, e1, e2);
-                        }
-                        result = true;
-                    }
 
-                } catch (Exception exception) {
-                    exception.printStackTrace();
+            try {
+                float diffY = e2.getY() - e1.getY();
+                float diffX = e2.getX() - e1.getX();
+                if (Math.abs(diffX) > Math.abs(diffY)) {
+                    if (Math.abs(diffX) > SWIPE_THRESHOLD && Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
+                        if (diffX > 0) {
+                            if (mCallback != null) mCallback.onSwipeRight(ArticleWebView.this, e1, e2);
+                        } else {
+                            if (mCallback != null) mCallback.onSwipeLeft(ArticleWebView.this, e1, e2);
+                        }
+                    }
+                    result = true;
+                } else if (!isScroll && Math.abs(diffY) > SWIPE_THRESHOLD && Math.abs(velocityY) > SWIPE_VELOCITY_THRESHOLD) {
+                    if (diffY > 0) {
+                        if (mCallback != null) mCallback.onSwipeBottom(ArticleWebView.this, e1, e2);
+                    } else {
+                        if (mCallback != null) mCallback.onSwipeTop(ArticleWebView.this, e1, e2);
+                    }
+                    result = true;
                 }
+
+            } catch (Exception exception) {
+                exception.printStackTrace();
             }
+
             return result;
         }
     };

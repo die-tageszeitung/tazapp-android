@@ -7,6 +7,8 @@
     <string name="fullscreen">Vollbild</string>
     <string name="header_screen">BILDSCHIRM</string>
     <string name="screen_active">beim lesen aktiv lassen</string>
+    <string name="header_read">LESEN</string>
+    <string name="texttospeach">Text vorlesen durch "doppeltes Tippen"</string>
     <string name="pageindex_button">Button für Seitenübersicht anzeigen</string>
     <string name="pageindex_button_exp">Wenn Sie nicht vom rechten Bildschirmrand wischen können, wird rechts oben ein zusätzlicher Button eingeblendet.</string>
     <string name="screen_orientation">Ausrichtung</string>

@@ -37,4 +37,8 @@ public class TopLinkFragment extends ArticleFragment {
         mCallback.onLoadPrevArticle(DIRECTIONS.LEFT,position);
     }
 
+    @Override
+    public boolean onDoubleTap(MotionEvent e) {
+        return false;
+    }
 }
