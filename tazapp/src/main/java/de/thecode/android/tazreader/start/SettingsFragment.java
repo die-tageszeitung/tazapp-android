@@ -18,6 +18,8 @@ import android.widget.FrameLayout;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 
+import java.lang.ref.WeakReference;
+
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.utils.Utils;
@@ -27,7 +29,7 @@ public class SettingsFragment extends BaseFragment {
 
     public static final int REQUESTCODE_NOTIFICATION_SOUND = 8001;
 
-    IStartCallback callback;
+    WeakReference<IStartCallback> callback;
 
     private CheckBox autoloadCheckBox;
     private CheckBox autoloadWifiCheckBox;
@@ -55,8 +57,8 @@ public class SettingsFragment extends BaseFragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        callback = (IStartCallback) getActivity();
-        callback.onUpdateDrawer(this);
+        callback = new WeakReference<>((IStartCallback) getActivity());
+        if (hasCallback()) getCallback().onUpdateDrawer(this);
 
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.start_settings, container, false);
@@ -216,6 +218,15 @@ public class SettingsFragment extends BaseFragment {
 
         return view;
     }
+
+    private boolean hasCallback() {
+        return callback.get() != null;
+    }
+
+    private IStartCallback getCallback() {
+        return callback.get();
+    }
+
 
     private void updateNotificationSoundLayout() {
         Uri ringtonUri = TazSettings.getRingtone(getActivity());

@@ -12,6 +12,8 @@ import android.widget.ImageView;
 
 import com.viewpagerindicator.CirclePageIndicator;
 
+import java.lang.ref.WeakReference;
+
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.utils.BaseFragment;
 
@@ -19,7 +21,7 @@ import de.thecode.android.tazreader.utils.BaseFragment;
  * A simple {@link Fragment} subclass.
  */
 public class HelpFragment extends BaseFragment {
-    private IStartCallback callback;
+    private WeakReference<IStartCallback> callback;
     private ViewPager viewPager;
 
     public HelpFragment() {
@@ -30,8 +32,8 @@ public class HelpFragment extends BaseFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         if (getActivity() instanceof IStartCallback) {
-            callback = (IStartCallback) getActivity();
-            callback.onUpdateDrawer(this);
+            callback = new WeakReference<>((IStartCallback) getActivity());
+            if (hasCallback()) getCallback().onUpdateDrawer(this);
         }
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.start_help, container, false);
@@ -41,6 +43,14 @@ public class HelpFragment extends BaseFragment {
         CirclePageIndicator indicator = (CirclePageIndicator) view.findViewById(R.id.indicator);
         indicator.setViewPager(viewPager);
         return view;
+    }
+
+    private boolean hasCallback() {
+        return callback.get() != null;
+    }
+
+    private IStartCallback getCallback() {
+        return callback.get();
     }
 
 

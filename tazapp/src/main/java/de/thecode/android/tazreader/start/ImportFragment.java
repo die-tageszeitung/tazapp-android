@@ -16,6 +16,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.io.File;
+import java.lang.ref.WeakReference;
 
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.importer.ImportActivity;
@@ -29,7 +30,7 @@ public class ImportFragment extends BaseFragment implements ImportDataRetainFrag
 
     ImportRecyclerAdapter adapter;
 
-    private IStartCallback callback;
+    private WeakReference<IStartCallback> callback;
     private ImportDataRetainFragment dataFragment;
 
     public ImportFragment() {
@@ -39,9 +40,17 @@ public class ImportFragment extends BaseFragment implements ImportDataRetainFrag
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         Log.d();
-        callback = (IStartCallback) getActivity();
-        callback.onUpdateDrawer(this);
+        callback = new WeakReference<>((IStartCallback) getActivity());
+        if (hasCallback()) getCallback().onUpdateDrawer(this);
         dataFragment = ImportDataRetainFragment.findOrCreateRetainFragment(getFragmentManager(), this);
+    }
+
+    private boolean hasCallback() {
+        return callback.get() != null;
+    }
+
+    private IStartCallback getCallback() {
+        return callback.get();
     }
 
     @Override

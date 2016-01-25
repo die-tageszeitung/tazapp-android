@@ -10,6 +10,8 @@ import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.TextView;
 
+import java.lang.ref.WeakReference;
+
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.utils.BaseFragment;
 import de.thecode.android.tazreader.utils.Log;
@@ -21,18 +23,17 @@ public class ImprintFragment extends BaseFragment {
 
     private static final String DIALOG_LICENCES = "dialogLicences";
 
-    private IStartCallback callback;
+    private WeakReference<IStartCallback> callback;
 
     public ImprintFragment() {
         // Required empty public constructor
     }
 
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-        callback = (IStartCallback) getActivity();
-        callback.onUpdateDrawer(this);
+        callback = new WeakReference<>((IStartCallback) getActivity());
+        if (hasCallback()) getCallback().onUpdateDrawer(this);
 
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.start_imprint, container, false);
@@ -53,6 +54,15 @@ public class ImprintFragment extends BaseFragment {
 
         return view;
     }
+
+    private boolean hasCallback() {
+        return callback.get() != null;
+    }
+
+    private IStartCallback getCallback() {
+        return callback.get();
+    }
+
 
     private void showLicences() {
         new LicencesDialog().withPositiveButton()

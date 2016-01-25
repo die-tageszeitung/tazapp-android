@@ -49,7 +49,7 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
     int mCoverImageWidth;
     Bitmap mPlaceHolderBitmap;
     Context mContext;
-    IStartCallback callback;
+    WeakReference<IStartCallback> callback;
     OnItemClickListener mClickListener;
     OnItemLongClickListener mLongClickListener;
 
@@ -62,7 +62,7 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
                 .register(this);
 
         mContext = context;
-        this.callback = callback;
+        this.callback = new WeakReference<IStartCallback>(callback);
 
         downloadHelper = DownloadManager.getInstance(context);
 
@@ -75,14 +75,23 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
         mPlaceHolderBitmap = bitmapFromResource(context, R.drawable.taz_dummy, mCoverImageWidth, mCoverImageHeight);
     }
 
+    private boolean hasCallback() {
+        return callback.get() != null;
+    }
+
+    public IStartCallback getCallback() {
+        return callback.get();
+    }
+
     public void destroy() {
         EventBus.getDefault()
                 .unregister(this);
     }
 
     public List<Long> getSelected() {
-        return callback.getRetainData()
-                       .getSelectedInLibrary();
+        if (hasCallback()) return getCallback().getRetainData()
+                                               .getSelectedInLibrary();
+        return null;
     }
 
     public void select(long paperId) {
@@ -143,8 +152,7 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
                 if (cursor.moveToPosition(i)) {
                     Paper paper = new Paper(cursor);
                     if (!(paper.isDownloaded() || paper.isDownloading())) {
-                        if (!isSelected(paper.getId()))
-                            select(paper.getId());
+                        if (!isSelected(paper.getId())) select(paper.getId());
                     }
                 }
             }
@@ -159,9 +167,9 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
         this.mLongClickListener = onItemLongClickListener;
     }
 
-    public void removeClickLIstener(){
+    public void removeClickLIstener() {
         this.mLongClickListener = null;
-        this.mClickListener= null;
+        this.mClickListener = null;
     }
 
 
@@ -241,13 +249,15 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
     public void onViewAttachedToWindow(ViewHolder holder) {
         super.onViewAttachedToWindow(holder);
         Log.d(holder);
-        EventBus.getDefault().register(holder);
+        EventBus.getDefault()
+                .register(holder);
     }
 
     @Override
     public void onViewDetachedFromWindow(ViewHolder holder) {
         Log.d(holder);
-        EventBus.getDefault().unregister(holder);
+        EventBus.getDefault()
+                .unregister(holder);
         super.onViewDetachedFromWindow(holder);
     }
 
@@ -357,16 +367,17 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
 
     public void addBitmapToMemoryCache(String key, Bitmap bitmap) {
         if (getBitmapFromMemCache(key) == null) {
-            callback.getRetainData()
-                    .getCache()
-                    .put(key, bitmap);
+            if (hasCallback()) getCallback().getRetainData()
+                                            .getCache()
+                                            .put(key, bitmap);
         }
     }
 
     public Bitmap getBitmapFromMemCache(String key) {
-        return callback.getRetainData()
-                       .getCache()
-                       .get(key);
+        if (hasCallback()) return getCallback().getRetainData()
+                                               .getCache()
+                                               .get(key);
+        return null;
     }
 
 
@@ -482,7 +493,7 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
                     if (paper.isDownloading()) {
                         DownloadManager.DownloadState downloadState = downloadHelper.getDownloadState(paper.getDownloadId());
                         setDownloadProgress(downloadState.getDownloadProgress());
-                        downloadProgressThread = downloadHelper.new DownloadProgressThread(paper.getDownloadId(),paper.getId());
+                        downloadProgressThread = downloadHelper.new DownloadProgressThread(paper.getDownloadId(), paper.getId());
                         downloadProgressThread.start();
                     } else setProgress(0);
                 }
@@ -504,23 +515,21 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
         }
 
         public void onEventMainThread(DownloadProgressEvent event) {
-            if (_paper != null)
-            {
+            if (_paper != null) {
                 if (_paper.getId() == event.getPaperId()) {
                     setDownloadProgress(event.getProgress());
                 }
             }
         }
+
         public void onEventMainThread(UnzipProgressEvent event) {
-            if (_paper != null)
-            {
+            if (_paper != null) {
                 if (_paper.getId() == event.getPaperId()) {
                     setUnzipProgress(event.getProgress());
                 }
             }
 
         }
-
 
 
     }

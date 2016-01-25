@@ -4,6 +4,8 @@ package de.thecode.android.tazreader.reader;
 import android.app.Activity;
 import android.content.Context;
 
+import java.lang.ref.WeakReference;
+
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.utils.BaseFragment;
@@ -15,7 +17,7 @@ import de.thecode.android.tazreader.utils.Log;
 public abstract class AbstractContentFragment extends BaseFragment implements ReaderActivity.ConfigurationChangeListener {
 
     public Context mContext;
-    public IReaderCallback mCallback;
+    private WeakReference<IReaderCallback> mCallback;
 
     public AbstractContentFragment() {
         Log.v();
@@ -27,8 +29,16 @@ public abstract class AbstractContentFragment extends BaseFragment implements Re
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         mContext = activity;
-        mCallback = (IReaderCallback) activity;
-        mCallback.addConfigChangeListener(this);
+        mCallback = new WeakReference<>((IReaderCallback) activity);
+        if (hasCallback()) getCallback().addConfigChangeListener(this);
+    }
+
+    public boolean hasCallback() {
+        return mCallback != null && mCallback.get() != null;
+    }
+
+    public IReaderCallback getCallback() {
+        return mCallback.get();
     }
 
     // Configuration Handling///////

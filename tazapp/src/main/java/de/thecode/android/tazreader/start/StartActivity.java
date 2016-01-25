@@ -16,6 +16,7 @@ import android.util.LruCache;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import java.lang.ref.WeakReference;
 import java.text.DateFormatSymbols;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -142,8 +143,7 @@ public class StartActivity extends BaseActivity implements IStartCallback, TcDia
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        if (getSupportActionBar()!= null)
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        if (getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         updateTitle();
 
         mDrawerFragment = (NavigationDrawerFragment) getFragmentManager().findFragmentById(R.id.fragment_navigation_drawer);
@@ -290,7 +290,7 @@ public class StartActivity extends BaseActivity implements IStartCallback, TcDia
 
     @Override
     public void startDownload(long paperId) throws Paper.PaperNotFoundException {
-        Paper downloadPaper = new Paper(this,paperId);
+        Paper downloadPaper = new Paper(this, paperId);
         if (!downloadPaper.isDownloading()) {
             switch (Utils.getConnectionType(this)) {
                 case Utils.CONNECTION_NOT_AVAILABLE:
@@ -326,7 +326,8 @@ public class StartActivity extends BaseActivity implements IStartCallback, TcDia
         while (retainDataFragment.downloadQueue.size() > 0) {
             long paperId = retainDataFragment.downloadQueue.get(0);
             try {
-                DownloadManager.getInstance(this).enquePaper(paperId);
+                DownloadManager.getInstance(this)
+                               .enquePaper(paperId);
             } catch (IllegalArgumentException | Paper.PaperNotFoundException | AccountHelper.CreateAccountException e) {
                 showDownloadManagerErrorDialog();
             } catch (DownloadManager.DownloadNotAllowedException e) {
@@ -428,16 +429,13 @@ public class StartActivity extends BaseActivity implements IStartCallback, TcDia
     }
 
 
-
     @Override
     public void toggleWaitDialog(String tag) {
         DialogFragment dialog = (DialogFragment) getFragmentManager().findFragmentByTag(tag);
-        if (dialog == null)
-            new TcDialogIndeterminateProgress().withCancelable(false)
-                                               .withMessage("Bitte warten...")
-                                               .show(getFragmentManager(), tag);
-        else
-            dialog.dismiss();
+        if (dialog == null) new TcDialogIndeterminateProgress().withCancelable(false)
+                                                               .withMessage("Bitte warten...")
+                                                               .show(getFragmentManager(), tag);
+        else dialog.dismiss();
     }
 
     @Override
@@ -466,7 +464,8 @@ public class StartActivity extends BaseActivity implements IStartCallback, TcDia
                     default:
                         toggleWaitDialog(DIALOG_WAIT + openPaper.getBookId());
                         //DownloadHelper downloadHelper = new DownloadHelper(this);
-                        DownloadManager.getInstance(this).enqueResource(openPaper);
+                        DownloadManager.getInstance(this)
+                                       .enqueResource(openPaper);
                         retainDataFragment.openPaperWaitingForRessource = id;
                 }
             }
@@ -478,9 +477,10 @@ public class StartActivity extends BaseActivity implements IStartCallback, TcDia
     public void updateTitle() {
         StringBuilder titleBuilder = new StringBuilder(getString(getApplicationInfo().labelRes));
         if (!mAccountHelper.isAuthenticated()) {
-            titleBuilder.append(" ").append(getString(R.string.demo_titel_appendix));
+            titleBuilder.append(" ")
+                        .append(getString(R.string.demo_titel_appendix));
         }
-        if (getSupportActionBar()!= null) {
+        if (getSupportActionBar() != null) {
             getSupportActionBar().setTitle(titleBuilder.toString());
         }
     }
@@ -594,8 +594,6 @@ public class StartActivity extends BaseActivity implements IStartCallback, TcDia
     }
 
 
-
-
     public static class RetainDataFragment extends BaseFragment {
 
         private static final String TAG = "RetainDataFragment";
@@ -608,7 +606,7 @@ public class StartActivity extends BaseActivity implements IStartCallback, TcDia
         private long openPaperWaitingForRessource = -1;
         private boolean useOpenPaperafterDownload = true;
         List<NavigationDrawerFragment.NavigationItem> navBackstack = new ArrayList<>();
-        IStartCallback callback;
+        WeakReference<IStartCallback> callback;
 
         public RetainDataFragment() {
         }
@@ -621,7 +619,7 @@ public class StartActivity extends BaseActivity implements IStartCallback, TcDia
                   .add(fragment, TAG)
                   .commit();
             }
-            fragment.callback = callback;
+            fragment.callback = new WeakReference<>(callback);
             return fragment;
         }
 
@@ -629,6 +627,14 @@ public class StartActivity extends BaseActivity implements IStartCallback, TcDia
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             setRetainInstance(true);
+        }
+
+        private boolean hasCallback() {
+            return callback.get() != null;
+        }
+
+        private IStartCallback getCallback() {
+            return callback.get();
         }
 
         public LruCache<String, Bitmap> getCache() {
@@ -672,18 +678,18 @@ public class StartActivity extends BaseActivity implements IStartCallback, TcDia
         }
 
         public void deletePaper(Long... ids) {
-            callback.toggleWaitDialog(DIALOG_WAIT+"delete");
-            new DeleteTask(getActivity()){
+            if (hasCallback()) getCallback().toggleWaitDialog(DIALOG_WAIT + "delete");
+            new DeleteTask(getActivity()) {
 
                 @Override
                 protected void onPostError(Exception exception) {
                     Log.e(exception);
-                    callback.toggleWaitDialog(DIALOG_WAIT+"delete");
+                    if (hasCallback()) getCallback().toggleWaitDialog(DIALOG_WAIT + "delete");
                 }
 
                 @Override
                 protected void onPostSuccess(Void aVoid) {
-                    callback.toggleWaitDialog(DIALOG_WAIT+"delete");
+                    if (hasCallback()) getCallback().toggleWaitDialog(DIALOG_WAIT + "delete");
                 }
             }.execute(ids);
         }

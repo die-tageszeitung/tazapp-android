@@ -116,7 +116,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
         mWebView = (ArticleWebView) result.findViewById(R.id.webview);
         mWebView.setArticleWebViewCallback(this);
 
-        mWebView.setBackgroundColor(mCallback.onGetBackgroundColor(TazSettings.getPrefString(mContext, TazSettings.PREFKEY.THEME, "normal")));
+        mWebView.setBackgroundColor(getCallback().onGetBackgroundColor(TazSettings.getPrefString(mContext, TazSettings.PREFKEY.THEME, "normal")));
 
         mWebView.setWebViewClient(new ArticleWebViewClient());
         mWebView.setWebChromeClient(new ArticleWebChromeClient());
@@ -297,8 +297,8 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
     @Override
     public boolean onDoubleTap(MotionEvent e) {
-        if (mCallback != null && ttsActive) {
-            mCallback.speak(getTextToSpeech());
+        if (hasCallback() && ttsActive) {
+            getCallback().speak(getTextToSpeech());
         }
         return true;
     }
@@ -350,7 +350,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
                 @Override
                 public void onClick(View v) {
-                    mCallback.onBookmarkClick(mArticle);
+                    if (hasCallback()) getCallback().onBookmarkClick(mArticle);
                 }
             });
 
@@ -439,7 +439,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
             } else if (url.startsWith(mArticle.getKey()) || url.startsWith("?")) {
                 loadArticleInWebview();
             } else {
-                mCallback.onLoad(url);
+                if (hasCallback()) getCallback().onLoad(url);
             }
 
         }
@@ -499,7 +499,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
                     if (!mIndexUpdated) {
                         String newposition = position;
                         if (TazSettings.getPrefBoolean(mContext, TazSettings.PREFKEY.ISSCROLL, false)) newposition = "0";
-                        mCallback.updateIndexes(mArticle.getKey(), newposition);
+                        if (hasCallback()) getCallback().updateIndexes(mArticle.getKey(), newposition);
                         mIndexUpdated = true;
                     }
                 }
@@ -540,7 +540,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
                             break;
                     }
 
-                    mCallback.onLoadNextArticle(direction, String.valueOf(position));
+                    if (hasCallback()) getCallback().onLoadNextArticle(direction, String.valueOf(position));
                 }
             });
 
@@ -574,7 +574,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
                             break;
                     }
 
-                    mCallback.onLoadPrevArticle(direction, positionString);
+                    if (hasCallback()) getCallback().onLoadPrevArticle(direction, positionString);
                 }
             });
         }
@@ -610,11 +610,11 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
                     Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
                     startActivity(browserIntent);
                 } else {
-                    if (mCallback != null) {
-                        IIndexItem indexItem = mCallback.getPaper()
-                                                        .getPlist()
-                                                        .getIndexItem(url);
-                        if (indexItem != null) mCallback.onLoad(url);
+                    if (hasCallback()) {
+                        IIndexItem indexItem = getCallback().getPaper()
+                                                            .getPlist()
+                                                            .getIndexItem(url);
+                        if (indexItem != null) getCallback().onLoad(url);
                     }
                 }
             }
@@ -680,8 +680,8 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
     }
 
     private CharSequence getTextToSpeech() {
-        Pattern pattern=Pattern.compile(".*?<body.*?>(.*?)</body>.*?", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
-        Matcher matcher=pattern.matcher(getHtml());
+        Pattern pattern = Pattern.compile(".*?<body.*?>(.*?)</body>.*?", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+        Matcher matcher = pattern.matcher(getHtml());
         if (matcher.matches()) {
 
             Pattern replacePattern = Pattern.compile("[\u00AD]?", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);

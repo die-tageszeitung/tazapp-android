@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.os.Environment;
 
 import java.io.File;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,7 +30,7 @@ public class ImportDataRetainFragment extends BaseFragment implements LoaderMana
     private File rootDir;
     private File currentDir;
 
-    private ImportDataCallback callback;
+    private WeakReference<ImportDataCallback> callback;
 
     public ImportDataRetainFragment() {
     }
@@ -53,7 +54,15 @@ public class ImportDataRetainFragment extends BaseFragment implements LoaderMana
     }
 
     public void setCallback(ImportDataCallback callback) {
-        this.callback = callback;
+        this.callback = new WeakReference<>(callback);
+    }
+
+    private boolean hasCallback() {
+        return callback.get() != null;
+    }
+
+    private ImportDataCallback getCallback() {
+        return callback.get();
     }
 
     public void setCurrentDir(File currentDir) {
@@ -81,8 +90,7 @@ public class ImportDataRetainFragment extends BaseFragment implements LoaderMana
         Log.d();
         this.data = data;
 
-        if (callback != null)
-            callback.dataChanged();
+        if (hasCallback()) getCallback().dataChanged();
     }
 
     public void restart() {
@@ -144,8 +152,7 @@ public class ImportDataRetainFragment extends BaseFragment implements LoaderMana
         ImportDirectoryLoader.ImportFileWrapper waitIpf = new ImportDirectoryLoader.ImportFileWrapper();
         waitIpf.type = ImportDirectoryLoader.ImportFileWrapper.TYPE.WAIT;
         data.add(waitIpf);
-        if (callback != null)
-            callback.dataChanged();
+        if (hasCallback()) getCallback().dataChanged();
 
         return new ImportDirectoryLoader(getActivity(), getRootDir(), getCurrentDir());
     }

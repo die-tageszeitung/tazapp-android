@@ -17,6 +17,7 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,7 +46,7 @@ public class NavigationDrawerFragment extends BaseFragment {
     private Item.ClickListener mClickListener;
     private NavigationAdapter navigationAdapter;
 
-    IStartCallback startCallback;
+    WeakReference<IStartCallback> startCallback;
 
     int mActive = -1;
 
@@ -60,7 +61,7 @@ public class NavigationDrawerFragment extends BaseFragment {
         super.onCreate(savedInstanceState);
         Log.v();
 
-        startCallback = (IStartCallback) getActivity();
+        startCallback = new WeakReference<>((IStartCallback) getActivity());
 
         if (savedInstanceState != null) mActive = savedInstanceState.getInt(KEY_ACTIVE);
 
@@ -93,6 +94,14 @@ public class NavigationDrawerFragment extends BaseFragment {
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
         return view;
+    }
+
+    private boolean hasCallback() {
+        return startCallback.get() != null;
+    }
+
+    private IStartCallback getCallback() {
+        return startCallback.get();
     }
 
 
@@ -149,12 +158,12 @@ public class NavigationDrawerFragment extends BaseFragment {
     public void setEnabled(boolean bool) {
         if (!bool) {
             mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
-            startCallback.getToolbar()
-                         .setVisibility(View.INVISIBLE);
+            if (hasCallback()) getCallback().getToolbar()
+                                            .setVisibility(View.INVISIBLE);
         } else {
             mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
-            startCallback.getToolbar()
-                         .setVisibility(View.VISIBLE);
+            if (hasCallback()) getCallback().getToolbar()
+                                            .setVisibility(View.VISIBLE);
         }
     }
 
@@ -204,7 +213,7 @@ public class NavigationDrawerFragment extends BaseFragment {
         //navigationAdapter.setActive(position);
         Item item = navigationAdapter.getItem(position);
         if (item instanceof NavigationItem) {
-            startCallback.loadFragment((NavigationItem) item);
+            if (hasCallback()) getCallback().loadFragment((NavigationItem) item);
         }
     }
 

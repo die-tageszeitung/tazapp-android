@@ -11,7 +11,6 @@ import android.media.RingtoneManager;
 
 import com.crashlytics.android.Crashlytics;
 import com.crashlytics.android.core.CrashlyticsCore;
-import com.squareup.leakcanary.RefWatcher;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -32,13 +31,6 @@ public class TazReaderApplication extends Application {
 
     private static PendingIntent autoDownloadSender;
 
-    private RefWatcher refWatcher;
-
-    public static RefWatcher getRefWatcher(Context context) {
-        TazReaderApplication application = (TazReaderApplication) context.getApplicationContext();
-        return application.refWatcher;
-    }
-
     @Override
     public void onCreate() {
 
@@ -51,7 +43,6 @@ public class TazReaderApplication extends Application {
         Log.init(this, LOGTAG);
 
         Log.i("TAZReader onCreate()");
-        refWatcher = installLeakCanary();
 
         // Migration von alter Version
         int lastVersionCode = TazSettings.getPrefInt(this, TazSettings.PREFKEY.LASTVERSION, Log.getVersionCode());
@@ -195,10 +186,4 @@ public class TazReaderApplication extends Application {
         Log.d("nächste Zeit:" + cal.getTimeInMillis());
         return cal.getTimeInMillis();
     }
-
-    public RefWatcher installLeakCanary() {
-        return RefWatcher.DISABLED;
-    }
-
-
 }
