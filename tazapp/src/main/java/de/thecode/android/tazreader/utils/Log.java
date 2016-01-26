@@ -28,6 +28,7 @@ import de.thecode.android.tazreader.BuildConfig;
  * <li>logClass</li>
  * <li>muteClass</li>
  */
+@Deprecated
 public final class Log {
 
     public static final int VERBOSE = android.util.Log.VERBOSE;

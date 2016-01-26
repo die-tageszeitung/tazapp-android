@@ -17,7 +17,6 @@ import com.android.volley.Request;
 import com.android.volley.toolbox.ImageRequest;
 import com.android.volley.toolbox.RequestFuture;
 import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
 import com.crashlytics.android.Crashlytics;
 import com.dd.plist.NSArray;
 import com.dd.plist.NSDictionary;
@@ -56,10 +55,10 @@ import de.thecode.android.tazreader.download.CoverDownloadedEvent;
 import de.thecode.android.tazreader.download.DownloadManager;
 import de.thecode.android.tazreader.reader.ReaderActivity;
 import de.thecode.android.tazreader.start.ScrollToPaperEvent;
-import de.thecode.android.tazreader.utils.StorageManager;
 import de.thecode.android.tazreader.utils.Log;
+import de.thecode.android.tazreader.utils.StorageManager;
 import de.thecode.android.tazreader.utils.Utils;
-import de.thecode.android.tazreader.volley.VolleySingleton;
+import de.thecode.android.tazreader.volley.RequestManager;
 
 /**
  * The type Sync adapter.
@@ -245,8 +244,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 RequestFuture<String> future = RequestFuture.newFuture();
                 StringRequest request = new StringRequest(Request.Method.GET, url, future, future);
                 request.setShouldCache(false);
-                Volley.newRequestQueue(getContext())
-                      .add(request);
+                RequestManager.getInstance().doRequest().add(request);
+//                Volley.newRequestQueue(getContext())
+//                      .add(request);
                 //VolleySingleton.getInstance(getContext()).addToRequestQueue(request);
                 response = future.get(30, TimeUnit.SECONDS);
 
@@ -288,8 +288,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                         RequestFuture<String> future = RequestFuture.newFuture();
                         StringRequest request = new StringRequest(Request.Method.GET, importedPaperPlistUrl, future, future);
                         request.setShouldCache(false);
-                        Volley.newRequestQueue(getContext())
-                              .add(request);
+//                        Volley.newRequestQueue(getContext())
+//                              .add(request);
+                        RequestManager.getInstance().doRequest().add(request);
                         String imageResponse = future.get(30, TimeUnit.SECONDS);
                         NSDictionary root = (NSDictionary) PropertyListParser.parse(new ByteArrayInputStream(imageResponse.getBytes("UTF-8")));
                         handlePlist(root);
@@ -372,8 +373,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         //Download Image
         RequestFuture<Bitmap> imageFuture = RequestFuture.newFuture();
         ImageRequest imageRequest = new ImageRequest(paper.getImage(), imageFuture, 0, 0, null, imageFuture);
-        VolleySingleton.getInstance(getContext())
-                       .addToRequestQueue(imageRequest);
+        RequestManager.getInstance().doRequest().add(imageRequest);
+//        VolleySingleton.getInstance(getContext())
+//                       .addToRequestQueue(imageRequest);
         Bitmap bitmap = imageFuture.get(30, TimeUnit.SECONDS);
         if (mCoverHelper.save(bitmap, paper.getImageHash())) {
             if (paper.getId() != null) {

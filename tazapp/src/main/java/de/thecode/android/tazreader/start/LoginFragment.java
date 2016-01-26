@@ -29,8 +29,8 @@ import de.thecode.android.tazreader.dialog.TcDialogIndeterminateProgress;
 import de.thecode.android.tazreader.secure.Base64;
 import de.thecode.android.tazreader.sync.AccountHelper;
 import de.thecode.android.tazreader.utils.BaseFragment;
+import de.thecode.android.tazreader.volley.RequestManager;
 import de.thecode.android.tazreader.volley.TazStringRequest;
-import de.thecode.android.tazreader.volley.VolleySingleton;
 
 import static android.graphics.PorterDuff.Mode.SRC_ATOP;
 
@@ -229,8 +229,8 @@ public class LoginFragment extends BaseFragment {
             }
         };
 
-        VolleySingleton.getInstance(getActivity())
-                       .addToRequestQueue(stringRequest);
+        RequestManager.getInstance().doRequest().add(stringRequest);
+
     }
 
 

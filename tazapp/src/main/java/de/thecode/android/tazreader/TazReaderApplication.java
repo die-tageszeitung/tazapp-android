@@ -21,6 +21,7 @@ import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.reader.ReaderActivity;
 import de.thecode.android.tazreader.service.TazRequestSyncReceiver;
 import de.thecode.android.tazreader.utils.Log;
+import de.thecode.android.tazreader.volley.RequestManager;
 import io.fabric.sdk.android.Fabric;
 
 public class TazReaderApplication extends Application {
@@ -39,6 +40,8 @@ public class TazReaderApplication extends Application {
                                                             .build();
         Fabric.with(this, new Crashlytics.Builder().core(core)
                                                    .build());
+
+        RequestManager.init(this);
 
         Log.init(this, LOGTAG);
 
