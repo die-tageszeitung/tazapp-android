@@ -84,8 +84,18 @@ android {
     // If you want the right .apk to be served, there is only one rule to follow here:
     // x86 version number > ARMv7 version number > ARMv5 version number
     // http://ph0b.com/improving-x86-support-of-android-apps-libs-engines/#ArchDependentAPKs
+
+    flavorDimensions /*"owner",*/"abi"
+
     productFlavors {
+//        taz {
+//            dimension "owner"
+//        }
+//        lmd {
+//            dimension "owner"
+//        }
         x86 {
+            dimension "abi"
             versionCode Integer.parseInt("6" + defaultConfig.versionCode)
             versionName defaultConfig.versionName + "_x86"
 
@@ -94,6 +104,7 @@ android {
             }
         }
         mips {
+            dimension "abi"
             versionCode Integer.parseInt("4" + defaultConfig.versionCode)
             versionName defaultConfig.versionName + "_mips"
             ndk {
@@ -101,6 +112,7 @@ android {
             }
         }
         armv7 {
+            dimension "abi"
             versionCode Integer.parseInt("2" + defaultConfig.versionCode)
             versionName defaultConfig.versionName + "_armv7"
             ndk {
@@ -108,6 +120,7 @@ android {
             }
         }
         arm {
+            dimension "abi"
             versionCode Integer.parseInt("1" + defaultConfig.versionCode)
             versionName defaultConfig.versionName + "_arm"
             ndk {
@@ -115,6 +128,7 @@ android {
             }
         }
         fat {
+            dimension "abi"
             versionCode Integer.parseInt("9" + defaultConfig.versionCode)
             versionName defaultConfig.versionName + "_fat"
         }
