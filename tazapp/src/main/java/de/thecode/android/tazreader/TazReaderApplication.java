@@ -8,9 +8,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.media.RingtoneManager;
-import android.os.Build;
-import android.util.DisplayMetrics;
-import android.view.WindowManager;
 
 import com.crashlytics.android.Crashlytics;
 import com.crashlytics.android.core.CrashlyticsCore;
@@ -26,6 +23,7 @@ import java.util.TimeZone;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.reader.ReaderActivity;
 import de.thecode.android.tazreader.service.TazRequestSyncReceiver;
+import de.thecode.android.tazreader.utils.Display;
 import de.thecode.android.tazreader.volley.RequestManager;
 import io.fabric.sdk.android.Fabric;
 
@@ -51,23 +49,6 @@ public class TazReaderApplication extends Application {
 
         RequestManager.init(this);
 
-
-        DisplayMetrics dm = new DisplayMetrics();
-        WindowManager windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            windowManager.getDefaultDisplay()
-                         .getRealMetrics(dm);
-        } else {
-            windowManager.getDefaultDisplay()
-                         .getMetrics(dm);
-        }
-        double x = Math.pow(dm.widthPixels / dm.xdpi, 2);
-        double y = Math.pow(dm.heightPixels / dm.ydpi, 2);
-        double screenInches = Math.sqrt(x + y);
-
-        log.debug("ScreenSize: {}", screenInches);
-
-
         log.info("");
 
         // Migration von alter Version
@@ -91,7 +72,7 @@ public class TazReaderApplication extends Application {
         TazSettings.setDefaultPref(this, TazSettings.PREFKEY.FONTSIZE, "10");
         TazSettings.setDefaultPref(this, TazSettings.PREFKEY.AUTOLOAD, false);
         TazSettings.setDefaultPref(this, TazSettings.PREFKEY.AUTOLOAD_WIFI, true);
-        TazSettings.setDefaultPref(this, TazSettings.PREFKEY.ISSCROLL, false);
+        TazSettings.setDefaultPref(this, TazSettings.PREFKEY.ISSCROLL, Display.getScreenSizeInch(this) <= 6.5D);
         TazSettings.setDefaultPref(this, TazSettings.PREFKEY.COLSIZE, "0.5");
         TazSettings.setDefaultPref(this, TazSettings.PREFKEY.THEME, ReaderActivity.THEMES.normal.name());
         TazSettings.setDefaultPref(this, TazSettings.PREFKEY.FULLSCREEN, false);
