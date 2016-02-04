@@ -15,6 +15,8 @@ import android.util.LruCache;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.ref.WeakReference;
 import java.text.DateFormatSymbols;
@@ -45,13 +47,15 @@ import de.thecode.android.tazreader.sync.AccountHelper;
 import de.thecode.android.tazreader.sync.SyncHelper;
 import de.thecode.android.tazreader.utils.BaseActivity;
 import de.thecode.android.tazreader.utils.BaseFragment;
-import de.thecode.android.tazreader.utils.Log;
-import de.thecode.android.tazreader.utils.Utils;
+import de.thecode.android.tazreader.utils.Connection;
+import de.thecode.android.tazreader.utils.Orientation;
 
 /**
  * Created by mate on 27.01.2015.
  */
 public class StartActivity extends BaseActivity implements IStartCallback, TcDialog.TcDialogButtonListener, TcDialog.TcDialogDismissListener, TcDialog.TcDialogCancelListener, TcDialogAdapterList.TcDialogAdapterListListener {
+
+    private static final Logger log = LoggerFactory.getLogger(StartActivity.class);
 
     private static final String DIALOG_FIRST = "dialogFirst";
     //private static final String DIALOG_MISSING_RESOURCE = "dialogMissingResource";
@@ -110,7 +114,7 @@ public class StartActivity extends BaseActivity implements IStartCallback, TcDia
         }
         TazSettings.removePref(this, TazSettings.PREFKEY.PAPERMIGRATEFROM);
 
-        Utils.setActivityOrientationFromPrefs(this);
+        Orientation.setActivityOrientationFromPrefs(this);
 
 
         retainDataFragment = RetainDataFragment.findOrCreateRetainFragment(getFragmentManager(), this);
@@ -189,13 +193,13 @@ public class StartActivity extends BaseActivity implements IStartCallback, TcDia
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-        Log.d();
+        log.debug("intent: {}",intent);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        Log.d(requestCode, resultCode, data);
+        log.debug("requestCode: {}, resultCode: {}, data: {}",requestCode, resultCode, data);
         if (requestCode == ImportActivity.REQUEST_CODE_IMPORT_ACTIVITY) {
             if (resultCode == RESULT_OK) {
 
@@ -220,9 +224,9 @@ public class StartActivity extends BaseActivity implements IStartCallback, TcDia
                 ft.commit();
                 getRetainData().addToNavBackstack(item);
             } catch (InstantiationException e) {
-                Log.e(e);
+                log.error("",e);
             } catch (IllegalAccessException e) {
-                Log.e(e);
+                log.error("",e);
             }
         }
     }
@@ -292,12 +296,12 @@ public class StartActivity extends BaseActivity implements IStartCallback, TcDia
     public void startDownload(long paperId) throws Paper.PaperNotFoundException {
         Paper downloadPaper = new Paper(this, paperId);
         if (!downloadPaper.isDownloading()) {
-            switch (Utils.getConnectionType(this)) {
-                case Utils.CONNECTION_NOT_AVAILABLE:
+            switch (Connection.getConnectionType(this)) {
+                case Connection.CONNECTION_NOT_AVAILABLE:
                     showNoConnectionDialog();
                     break;
-                case Utils.CONNECTION_MOBILE:
-                case Utils.CONNECTION_MOBILE_ROAMING:
+                case Connection.CONNECTION_MOBILE:
+                case Connection.CONNECTION_MOBILE_ROAMING:
                     showMobileConnectionDialog();
                     addToDownloadQueue(paperId);
                     break;
@@ -391,7 +395,7 @@ public class StartActivity extends BaseActivity implements IStartCallback, TcDia
     }
 
     private void showArchiveMonthPicker(int year) {
-        Log.d(year);
+        log.debug("year: {}",year);
         Calendar cal = Calendar.getInstance();
         int currentYear = cal.get(Calendar.YEAR);
         int maxMonth = 11;
@@ -424,7 +428,7 @@ public class StartActivity extends BaseActivity implements IStartCallback, TcDia
                           .withPositiveButton()
                           .show(getFragmentManager(), DIALOG_DOWNLOADMANAGER_ERROR);
         } catch (Paper.PaperNotFoundException e) {
-            Log.e(e);
+            log.error("",e);
         }
     }
 
@@ -452,13 +456,13 @@ public class StartActivity extends BaseActivity implements IStartCallback, TcDia
             Resource paperResource = new Resource(this, openPaper.getResource());
 
             if (paperResource.isDownloaded()) {
-                Log.t("Start reader for paper:", openPaper);
+                log.trace("start reader for paper: {}",openPaper);
                 Intent intent = new Intent(this, ReaderActivity.class);
                 intent.putExtra(ReaderActivity.KEY_EXTRA_PAPER_ID, id);
                 startActivity(intent);
             } else {
-                switch (Utils.getConnectionType(this)) {
-                    case Utils.CONNECTION_NOT_AVAILABLE:
+                switch (Connection.getConnectionType(this)) {
+                    case Connection.CONNECTION_NOT_AVAILABLE:
                         showNoConnectionDialog();
                         break;
                     default:
@@ -470,7 +474,7 @@ public class StartActivity extends BaseActivity implements IStartCallback, TcDia
                 }
             }
         } catch (Paper.PaperNotFoundException e) {
-            Log.e(e);
+            log.error("",e);
         }
     }
 
@@ -495,7 +499,7 @@ public class StartActivity extends BaseActivity implements IStartCallback, TcDia
     }
 
     public void onEventMainThread(PaperDownloadFinishedEvent event) {
-        Log.d(event);
+       log.debug("event: {}",event);
         if (retainDataFragment.useOpenPaperafterDownload) {
             if (event.getPaperId() == retainDataFragment.openPaperIdAfterDownload) {
                 openReader(retainDataFragment.openPaperIdAfterDownload);
@@ -540,7 +544,8 @@ public class StartActivity extends BaseActivity implements IStartCallback, TcDia
                         startDownload(json.getLong(i));
                     }
                 } catch (JSONException | Paper.PaperNotFoundException e) {
-                    Log.w(e);
+                    log.warn("",e);
+
                 }
 
             }
@@ -683,7 +688,8 @@ public class StartActivity extends BaseActivity implements IStartCallback, TcDia
 
                 @Override
                 protected void onPostError(Exception exception) {
-                    Log.e(exception);
+                    log.error("",exception);
+
                     if (hasCallback()) getCallback().toggleWaitDialog(DIALOG_WAIT + "delete");
                 }
 

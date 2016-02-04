@@ -10,16 +10,21 @@ import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.TextView;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.lang.ref.WeakReference;
 
+import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.utils.BaseFragment;
-import de.thecode.android.tazreader.utils.Log;
 
 /**
  * A simple {@link Fragment} subclass.
  */
 public class ImprintFragment extends BaseFragment {
+
+    private static final Logger log = LoggerFactory.getLogger(ImprintFragment.class);
 
     private static final String DIALOG_LICENCES = "dialogLicences";
 
@@ -37,7 +42,7 @@ public class ImprintFragment extends BaseFragment {
 
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.start_imprint, container, false);
-        ((TextView) view.findViewById(R.id.version)).setText(Log.getVersionName());
+        ((TextView) view.findViewById(R.id.version)).setText(BuildConfig.VERSION_NAME);
         Button licencesButton = (Button) view.findViewById(R.id.buttonLicences);
         licencesButton.setOnClickListener(new View.OnClickListener() {
             @Override

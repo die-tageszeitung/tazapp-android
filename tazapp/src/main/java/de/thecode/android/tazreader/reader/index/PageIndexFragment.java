@@ -23,6 +23,9 @@ import android.widget.TextView;
 
 import com.artifex.mupdfdemo.MuPDFCore.Cookie;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -43,9 +46,10 @@ import de.thecode.android.tazreader.reader.IReaderCallback;
 import de.thecode.android.tazreader.reader.page.TAZMuPDFCore;
 import de.thecode.android.tazreader.utils.StorageManager;
 import de.thecode.android.tazreader.utils.BaseFragment;
-import de.thecode.android.tazreader.utils.Log;
 
 public class PageIndexFragment extends BaseFragment {
+
+    private static final Logger log = LoggerFactory.getLogger(PageIndexFragment.class);
 
     List<IIndexItem> index;
     Paper paper;
@@ -71,29 +75,30 @@ public class PageIndexFragment extends BaseFragment {
 
 
     public PageIndexFragment() {
-        Log.v();
+        log.trace("");
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        Log.v();
+        log.trace("");
         super.onCreate(savedInstanceState);
         //setRetainInstance(true);
-        final int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
+        final int maxMemory = (int) (Runtime.getRuntime()
+                                            .maxMemory() / 1024);
         final int cacheSize = maxMemory / 8;
         mMemoryCache = new LruCache<String, Bitmap>(cacheSize) {
 
             @SuppressLint("NewApi")
             @Override
             protected int sizeOf(String key, Bitmap bitmap) {
-                    return bitmap.getByteCount() / 1024;
+                return bitmap.getByteCount() / 1024;
             }
         };
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        Log.v();
+        log.trace("");
 
         View view = inflater.inflate(R.layout.reader_pageindex, container, false);
         mRecyclerView = (RecyclerView) view.findViewById(R.id.recycler);
@@ -117,15 +122,17 @@ public class PageIndexFragment extends BaseFragment {
 
     @Override
     public void onAttach(Activity activity) {
-        Log.v();
+        log.trace("");
         super.onAttach(activity);
         mReaderCallback = (IReaderCallback) activity;
 
 
-        mThumbnailImageHeight = activity.getResources().getDimensionPixelSize(R.dimen.pageindex_thumbnail_image_height)
-                - (2 * activity.getResources().getDimensionPixelSize(R.dimen.pageindex_padding));
-        mThumbnailImageWidth = activity.getResources().getDimensionPixelSize(R.dimen.pageindex_thumbnail_image_width)
-                - (2 * activity.getResources().getDimensionPixelSize(R.dimen.pageindex_padding));
+        mThumbnailImageHeight = activity.getResources()
+                                        .getDimensionPixelSize(R.dimen.pageindex_thumbnail_image_height) - (2 * activity.getResources()
+                                                                                                                        .getDimensionPixelSize(R.dimen.pageindex_padding));
+        mThumbnailImageWidth = activity.getResources()
+                                       .getDimensionPixelSize(R.dimen.pageindex_thumbnail_image_width) - (2 * activity.getResources()
+                                                                                                                      .getDimensionPixelSize(R.dimen.pageindex_padding));
 
         mPlaceHolderBitmap = Bitmap.createBitmap(mThumbnailImageWidth, mThumbnailImageHeight, Bitmap.Config.ARGB_8888);
         mPlaceHolderBitmap.eraseColor(getResources().getColor(R.color.pageindex_loadingpage_bitmapbackground));
@@ -133,9 +140,10 @@ public class PageIndexFragment extends BaseFragment {
     }
 
     public void init(Paper paper) {
-        Log.d("initialising PageIndexFragment");
+        log.debug("initialising PageIndexFragment with paper: {}", paper);
         index = new ArrayList<>();
-        for (Source source : paper.getPlist().getSources()) {
+        for (Source source : paper.getPlist()
+                                  .getSources()) {
             index.add(source);
             for (Book book : source.getBooks()) {
                 for (Category category : book.getCategories()) {
@@ -149,9 +157,10 @@ public class PageIndexFragment extends BaseFragment {
     }
 
     public void updateCurrentPosition(String key) {
-        Log.d(key);
+        log.debug("key: {}", key);
 
-        IIndexItem indexItem = paper.getPlist().getIndexItem(key);
+        IIndexItem indexItem = paper.getPlist()
+                                    .getIndexItem(key);
         Page page = null;
         if (indexItem != null) {
             switch (indexItem.getType()) {
@@ -176,15 +185,12 @@ public class PageIndexFragment extends BaseFragment {
                 for (Geometry geometry : page.getGeometries()) {
 
 
-                    if (geometry.getLink().equals(key)) {
-                        if (x1 == 0 || geometry.getX1() < x1)
-                            x1 = geometry.getX1();
-                        if (y1 == 0 || geometry.getY1() < y1)
-                            y1 = geometry.getY1();
-                        if (x2 == 1F || geometry.getX2() > x2)
-                            x2 = geometry.getX2();
-                        if (y2 == 1F || geometry.getY2() > y2)
-                            y2 = geometry.getY2();
+                    if (geometry.getLink()
+                                .equals(key)) {
+                        if (x1 == 0 || geometry.getX1() < x1) x1 = geometry.getX1();
+                        if (y1 == 0 || geometry.getY1() < y1) y1 = geometry.getY1();
+                        if (x2 == 1F || geometry.getX2() > x2) x2 = geometry.getX2();
+                        if (y2 == 1F || geometry.getY2() > y2) y2 = geometry.getY2();
                     }
                 }
                 makeOverlayBitmap(x1, y1, x2, y2);
@@ -206,32 +212,33 @@ public class PageIndexFragment extends BaseFragment {
 
     private void makeOverlayBitmap(float x1, float y1, float x2, float y2) {
         try {
-        Log.d(x1, y1, x2, y2, mThumbnailImageWidth, mThumbnailImageHeight);
-        mCurrentArticleOverlay = Bitmap.createBitmap(mThumbnailImageWidth, mThumbnailImageHeight, Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(mCurrentArticleOverlay);
-        Paint paint = new Paint();
-        int padding = getResources().getDimensionPixelSize(R.dimen.pageindex_thumbnail_current_borderwidth);
-        float halfPadding = ((float) padding) / 2;
-        paint.setColor(getResources().getColor(R.color.TazRot));
-        paint.setAlpha(128);
-        paint.setStrokeWidth(padding);
-        paint.setStyle(Paint.Style.STROKE);
+            log.debug("x1: {}, y1: {}, x2: {}, y2: {}, mThumbnailImageWidth: {}, mThumbnailImageHeight: {}", x1, y1, x2, y2, mThumbnailImageWidth, mThumbnailImageHeight);
+            mCurrentArticleOverlay = Bitmap.createBitmap(mThumbnailImageWidth, mThumbnailImageHeight, Bitmap.Config.ARGB_8888);
+            Canvas canvas = new Canvas(mCurrentArticleOverlay);
+            Paint paint = new Paint();
+            int padding = getResources().getDimensionPixelSize(R.dimen.pageindex_thumbnail_current_borderwidth);
+            float halfPadding = ((float) padding) / 2;
+            paint.setColor(getResources().getColor(R.color.TazRot));
+            paint.setAlpha(128);
+            paint.setStrokeWidth(padding);
+            paint.setStyle(Paint.Style.STROKE);
 
-        float dx1 = (x1 * mThumbnailImageWidth) - halfPadding;
-        if (dx1 < halfPadding) dx1 = halfPadding;
+            float dx1 = (x1 * mThumbnailImageWidth) - halfPadding;
+            if (dx1 < halfPadding) dx1 = halfPadding;
 
-        float dy1 = (y1 * mThumbnailImageHeight) - halfPadding;
-        if (dy1 < halfPadding) dy1 = halfPadding;
+            float dy1 = (y1 * mThumbnailImageHeight) - halfPadding;
+            if (dy1 < halfPadding) dy1 = halfPadding;
 
-        float dx2 = (x2 * mThumbnailImageWidth) + halfPadding;
-        if (dx2 > mThumbnailImageWidth - halfPadding) dx2 = mThumbnailImageWidth - halfPadding;
+            float dx2 = (x2 * mThumbnailImageWidth) + halfPadding;
+            if (dx2 > mThumbnailImageWidth - halfPadding) dx2 = mThumbnailImageWidth - halfPadding;
 
-        float dy2 = (y2 * mThumbnailImageHeight) + halfPadding;
-        if (dy2 > mThumbnailImageHeight - halfPadding) dy2 = mThumbnailImageHeight - halfPadding;
+            float dy2 = (y2 * mThumbnailImageHeight) + halfPadding;
+            if (dy2 > mThumbnailImageHeight - halfPadding) dy2 = mThumbnailImageHeight - halfPadding;
 
-        //Log.d(dx1, dy1, dx2, dy2);
+            //Log.d(dx1, dy1, dx2, dy2);
 
-        canvas.drawRect(dx1, dy1, dx2, dy2, paint); } catch (IllegalStateException e) {
+            canvas.drawRect(dx1, dy1, dx2, dy2, paint);
+        } catch (IllegalStateException e) {
 
         }
     }
@@ -264,8 +271,7 @@ public class PageIndexFragment extends BaseFragment {
                 imageView.setImageBitmap(bitmap);
             } else {
                 final BitmapWorkerTask task = new BitmapWorkerTask(imageView);
-                final AsyncDrawable asyncDrawable =
-                        new AsyncDrawable(getActivity().getResources(), mPlaceHolderBitmap, task);
+                final AsyncDrawable asyncDrawable = new AsyncDrawable(getActivity().getResources(), mPlaceHolderBitmap, task);
                 imageView.setImageDrawable(asyncDrawable);
                 task.execute(key);
             }
@@ -309,8 +315,7 @@ public class PageIndexFragment extends BaseFragment {
 
             if (bitmap != null) {
                 final ImageView imageView = imageViewReference.get();
-                final BitmapWorkerTask bitmapWorkerTask =
-                        getBitmapWorkerTask(imageView);
+                final BitmapWorkerTask bitmapWorkerTask = getBitmapWorkerTask(imageView);
                 if (this == bitmapWorkerTask && imageView != null) {
                     imageView.setImageBitmap(bitmap);
                     addBitmapToMemoryCache(key, bitmap);
@@ -319,11 +324,11 @@ public class PageIndexFragment extends BaseFragment {
         }
 
         public Bitmap getBitmap(String key, int width, int height) {
-            if (mPdfThumbHelper==null){
+            if (mPdfThumbHelper == null) {
                 mPdfThumbHelper = new FileCachePDFThumbHelper(StorageManager.getInstance(getActivity()), paper.getFileHash());
             }
             File imageFile = mPdfThumbHelper.getFile(key);
-            Log.d(imageFile.getName());
+            log.debug("imagefile {}", imageFile.getName());
             if (imageFile.exists()) {
                 final BitmapFactory.Options options = new BitmapFactory.Options();
                 options.inJustDecodeBounds = true;
@@ -339,7 +344,8 @@ public class PageIndexFragment extends BaseFragment {
                 try {
                     Bitmap lq = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
 
-                    File paperDirectory = StorageManager.getInstance(getActivity()).getPaperDirectory(paper);
+                    File paperDirectory = StorageManager.getInstance(getActivity())
+                                                        .getPaperDirectory(paper);
                     TAZMuPDFCore core = new TAZMuPDFCore(getActivity(), new File(paperDirectory, key).getAbsolutePath());
                     core.countPages();
                     core.setPageSize(core.getPageSize(0));
@@ -352,10 +358,10 @@ public class PageIndexFragment extends BaseFragment {
 
                     return lq;
 
-                } catch (IOException e) {
-                    Log.e(e);
+                } catch (IOException ex) {
+                    log.error("", ex);
                 } catch (Exception e) {
-                    Log.e(e);
+                    log.error("", e);
                 }
 
             }
@@ -364,8 +370,7 @@ public class PageIndexFragment extends BaseFragment {
     }
 
 
-    private static int calculateInSampleSize(
-            BitmapFactory.Options options, int reqWidth, int reqHeight) {
+    private static int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {
         // Raw height and width of image
         final int height = options.outHeight;
         final int width = options.outWidth;
@@ -378,12 +383,11 @@ public class PageIndexFragment extends BaseFragment {
 
             // Calculate the largest inSampleSize value that is a power of 2 and keeps both
             // height and width larger than the requested height and width.
-            while ((halfHeight / inSampleSize) > reqHeight
-                    && (halfWidth / inSampleSize) > reqWidth) {
+            while ((halfHeight / inSampleSize) > reqHeight && (halfWidth / inSampleSize) > reqWidth) {
                 inSampleSize *= 2;
             }
         }
-        Log.d(reqWidth, width, reqHeight, height, inSampleSize);
+        log.debug("reqWidth: {}, reqHeight: {}, {} {}", reqWidth, reqHeight, width, height);
         return inSampleSize;
     }
 
@@ -391,11 +395,9 @@ public class PageIndexFragment extends BaseFragment {
 
         private final WeakReference<BitmapWorkerTask> bitmapWorkerTaskReference;
 
-        public AsyncDrawable(Resources res, Bitmap bitmap,
-                             BitmapWorkerTask bitmapWorkerTask) {
+        public AsyncDrawable(Resources res, Bitmap bitmap, BitmapWorkerTask bitmapWorkerTask) {
             super(res, bitmap);
-            bitmapWorkerTaskReference =
-                    new WeakReference<BitmapWorkerTask>(bitmapWorkerTask);
+            bitmapWorkerTaskReference = new WeakReference<BitmapWorkerTask>(bitmapWorkerTask);
         }
 
         public BitmapWorkerTask getBitmapWorkerTask() {
@@ -405,10 +407,8 @@ public class PageIndexFragment extends BaseFragment {
 
     private Bitmap getBitmapFromMemCache(String key) {
         Bitmap bitmap = mMemoryCache.get(key);
-        if (bitmap == null)
-            Log.d(key + " not found in MemCache");
-        else
-            Log.d(key + " found in MemCache");
+        if (bitmap == null) log.debug("did not find key: {} in memcache", key);
+        else log.debug("found key: {} in memcache", key);
         return bitmap;
     }
 
@@ -419,7 +419,7 @@ public class PageIndexFragment extends BaseFragment {
     }
 
     public void onItemClick(int position) {
-        Log.d(position);
+        log.debug("position: {}", position);
         IIndexItem item = adapter.getItem(position);
         mReaderCallback.onLoad(item.getKey());
     }
@@ -428,20 +428,20 @@ public class PageIndexFragment extends BaseFragment {
 
         @Override
         public int getItemViewType(int position) {
-            return index.get(position).getType().ordinal();
+            return index.get(position)
+                        .getType()
+                        .ordinal();
         }
 
         @Override
         public int getItemCount() {
-            if (index != null)
-                return index.size();
+            if (index != null) return index.size();
             return 0;
         }
 
         public IIndexItem getItem(int position) {
             // Log.v();
-            if (index != null)
-                return index.get(position);
+            if (index != null) return index.get(position);
             return null;
         }
 
@@ -450,12 +450,13 @@ public class PageIndexFragment extends BaseFragment {
 
 
             for (IIndexItem indexItem : index) {
-                if (indexItem.getKey().equals(key)) {
+                if (indexItem.getKey()
+                             .equals(key)) {
                     result = index.indexOf(indexItem);
                     break;
                 }
             }
-            Log.d(key, result);
+            log.debug("key: {} {}", key, result);
             return result;
         }
 
@@ -473,13 +474,12 @@ public class PageIndexFragment extends BaseFragment {
                     break;
                 case PAGE:
                     loadBitmap(((Page) item).getKey(), ((PageViewholder) viewholder).image);
-                    if (item.getKey().equals(mCurrentKey)) {
+                    if (item.getKey()
+                            .equals(mCurrentKey)) {
                         //((PageViewholder) viewholder).image.setBackgroundColor(getResources().getColor(R.color.pageindex_current_border));
                         ((PageViewholder) viewholder).articelOverlayImage.setVisibility(View.VISIBLE);
-                        if (mCurrentArticleOverlay != null)
-                            ((PageViewholder) viewholder).articelOverlayImage.setImageBitmap(mCurrentArticleOverlay);
-                        else
-                            ((PageViewholder) viewholder).articelOverlayImage.setVisibility(View.GONE);
+                        if (mCurrentArticleOverlay != null) ((PageViewholder) viewholder).articelOverlayImage.setImageBitmap(mCurrentArticleOverlay);
+                        else ((PageViewholder) viewholder).articelOverlayImage.setVisibility(View.GONE);
                     } else {
                         //((PageViewholder) viewholder).image.setBackgroundColor(Color.TRANSPARENT);
                         ((PageViewholder) viewholder).articelOverlayImage.setVisibility(View.GONE);
@@ -494,11 +494,13 @@ public class PageIndexFragment extends BaseFragment {
             View v;
             switch (IIndexItem.Type.values()[itemType]) {
                 case SOURCE:
-                    v = LayoutInflater.from(parent.getContext()).inflate(R.layout.reader_pageindex_source, parent, false);
+                    v = LayoutInflater.from(parent.getContext())
+                                      .inflate(R.layout.reader_pageindex_source, parent, false);
                     return new SourceViewholder(v);
 
                 case PAGE:
-                    v = LayoutInflater.from(parent.getContext()).inflate(R.layout.reader_pageindex_page, parent, false);
+                    v = LayoutInflater.from(parent.getContext())
+                                      .inflate(R.layout.reader_pageindex_page, parent, false);
                     return new PageViewholder(v);
             }
             return null;
@@ -507,7 +509,6 @@ public class PageIndexFragment extends BaseFragment {
     }
 
     private class Viewholder extends RecyclerView.ViewHolder implements View.OnClickListener {
-
 
 
         public Viewholder(View itemView) {
@@ -519,8 +520,7 @@ public class PageIndexFragment extends BaseFragment {
         @Override
         public void onClick(View v) {
 
-            if (mRecyclerViewClickListener != null)
-                mRecyclerViewClickListener.onItemClick(getPosition());
+            if (mRecyclerViewClickListener != null) mRecyclerViewClickListener.onItemClick(getPosition());
         }
 
 

@@ -5,27 +5,31 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import de.thecode.android.tazreader.TazReaderApplication;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Publication;
 import de.thecode.android.tazreader.data.Resource;
 import de.thecode.android.tazreader.data.Store;
-import de.thecode.android.tazreader.utils.Log;
 
 
 public class DatabaseHelper extends SQLiteOpenHelper {
+
+    private static final Logger log = LoggerFactory.getLogger(DatabaseHelper.class);
+
 
     private static final String DATABASE_NAME = "db";
     private static final int DB_VERSION = 6;
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DB_VERSION);
-        Log.init(context, TazReaderApplication.LOGTAG);
+
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        Log.v();
+        log.trace("");
         db.execSQL(CREATE_PAPER_V6);
         db.execSQL(CREATE_STORE_V6);
         db.execSQL(CREATE_PUBLICATION_V6);
@@ -34,7 +38,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        Log.d("DB Version", oldVersion, "to", newVersion);
+        log.debug("DB Version {} to {}", oldVersion, newVersion);
         switch (oldVersion) {
             case 1:
                 upgradeFrom1To2(db);
@@ -80,10 +84,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 
     private void upgradeFrom1To2(SQLiteDatabase db) {
-        Log.d("Umbenennen der alten Paper Tabelle");
+        log.debug("Umbenennen der alten Paper Tabelle");
         db.execSQL("ALTER TABLE " + Paper.TABLE_NAME + " RENAME TO " + Paper.TABLE_NAME + "_REN;");
 
-        Log.d("Anlegen der neuen Paper Tabelle");
+        log.debug("Anlegen der neuen Paper Tabelle");
         db.execSQL(CREATE_PAPER_V2);
 
         db.execSQL("UPDATE " + Paper.TABLE_NAME + "_REN SET DEMO=0 WHERE DEMO IS NULL;");
@@ -94,7 +98,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         db.execSQL("DELETE FROM " + Paper.TABLE_NAME + "_REN WHERE " + Paper.Columns.ISDOWNLOADED + " != 1 AND " + "isDownloading" + " != 1 AND " + Paper.Columns.IMPORTED + " != 1 AND " + Paper.Columns.KIOSK + " != 1;");
 
-        Log.d("Kopieren der Werte");
+        log.debug("Kopieren der Werte");
         db.execSQL("INSERT INTO " + Paper.TABLE_NAME + " (" +
                 Paper.Columns._ID + "," +
                 Paper.Columns.BOOKID + "," +
@@ -134,18 +138,18 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 Paper.Columns.TITLE +
                 " FROM " + Paper.TABLE_NAME + "_REN;");
 
-        Log.d("Löschen der alten PaperTabelle");
+        log.debug("Löschen der alten PaperTabelle");
         db.execSQL("DROP TABLE " + Paper.TABLE_NAME + "_REN;");
 
 
-        Log.d("Umbenennen der alten Store Tabelle");
+        log.debug("Umbenennen der alten Store Tabelle");
         db.execSQL("ALTER TABLE " + Store.TABLE_NAME + " RENAME TO " + Store.TABLE_NAME + "_REN;");
 
-        Log.d("Anlegen der neuen Store Tabelle");
+        log.debug("Anlegen der neuen Store Tabelle");
         db.execSQL(CREATE_STORE_V2);
 
 
-        Log.d("Kopieren der Werte");
+        log.debug("Kopieren der Werte");
         Cursor cursor = db.query(Store.TABLE_NAME + "_REN", null, null, null, null, null, Store.Columns._ID + " ASC");
         try {
             while (cursor.moveToNext()) {
@@ -154,7 +158,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 
                 String newKey = oldKey.substring(oldKey.indexOf("/"));
-                Log.d(newKey);
+                log.debug(newKey);
 
                 Cursor cursorNew = db.query(Store.TABLE_NAME, null, Store.Columns.KEY + " LIKE '" + newKey + "'", null, null, null, null);
                 try {
@@ -175,11 +179,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
 
 
-        Log.d("Löschen der alten Store Tabelle");
+        log.debug("Löschen der alten Store Tabelle");
         db.execSQL("DROP TABLE " + Store.TABLE_NAME + "_REN;");
 
 
-        Log.d("Anlegen der Publications Tabelle");
+        log.debug("Anlegen der Publications Tabelle");
         db.execSQL(CREATE_PUBLICATION_V2);
     }
 

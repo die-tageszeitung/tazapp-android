@@ -8,15 +8,19 @@ import android.content.SharedPreferences.Editor;
 
 import com.crashlytics.android.Crashlytics;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.provider.TazProvider;
 import de.thecode.android.tazreader.secure.HashHelper;
-import de.thecode.android.tazreader.utils.Log;
 
 public class AccountHelper {
+
+    private static final Logger log = LoggerFactory.getLogger(AccountHelper.class);
 
     public static final String ACCOUNT_TYPE = "de.thecode.android.tazreader";
 
@@ -32,7 +36,8 @@ public class AccountHelper {
     Account mAccount;
 
     public AccountHelper(Context context) throws CreateAccountException {
-        Log.v();
+
+        log.trace("");
         mAccountManager = (AccountManager) context.getSystemService(Context.ACCOUNT_SERVICE);
         Account[] accounts = mAccountManager.getAccountsByType(ACCOUNT_TYPE);
 
@@ -48,7 +53,7 @@ public class AccountHelper {
                 if (TazSettings.getSharedPreferences(context)
                                .contains("credentialsWorking")) {
                     setAuth = true;
-                    Log.d("Migration vorhandener Credentials");
+                    log.debug("Migration vorhandener Credentials");
                     user = TazSettings.getDecryptedPrefString(context, "user", AccountHelper.ACCOUNT_DEMO_USER);
                     pass = TazSettings.getDecryptedPrefString(context, "pass", AccountHelper.ACCOUNT_DEMO_PASS);
                     Editor edit = TazSettings.getSharedPreferences(context)
@@ -63,12 +68,12 @@ public class AccountHelper {
             }
             logUser();
         } else {
-            Log.sendExceptionWithCrashlytics(new CreateAccountException("accounts is null"));
+            Crashlytics.getInstance().core.logException(new CreateAccountException("accounts is null"));
         }
     }
 
     public AccountHelper(Context context, Account account) {
-        Log.v();
+        log.trace("");
         mAccountManager = (AccountManager) context.getSystemService(Context.ACCOUNT_SERVICE);
         mAccount = account;
         if (mAccount != null && ACCOUNT_DEMO_USER.equals(getUser())) {
@@ -93,14 +98,14 @@ public class AccountHelper {
         if (mAccount != null) return false;
         Account newAccount = new Account(ACCOUNT_NAME, ACCOUNT_TYPE);
         if (mAccountManager.addAccountExplicitly(newAccount, password, null)) {
-            Log.d("addAccountExplicitly");
+            log.debug("addAccountExplicitly");
             mAccount = newAccount;
             setUser(username);
             ContentResolver.setSyncAutomatically(mAccount, TazProvider.AUTHORITY, true);
             // makeAccountUnremovable();
             return true;
         } else {
-            Log.e("Fehler bei Anlegen des Accounts");
+            log.error("Fehler bei Anlegen des Accounts");
             throw new CreateAccountException();
             /*
              * The account exists or some other error occurred. Log this, report it, or handle it internally.
@@ -132,12 +137,12 @@ public class AccountHelper {
             try {
                 if ("1".equals(mAccountManager.getUserData(mAccount, KEY_AUTH)) && !ACCOUNT_DEMO_USER.equals(getUser())) return true;
             } catch (IllegalArgumentException e) {
-                Log.e(e);
-                Log.sendExceptionWithCrashlytics(e);
+                log.error("", e);
+                Crashlytics.logException(e);
             }
         } else {
-            Log.t(mAccountManager);
-            Log.sendExceptionWithCrashlytics(new IllegalStateException("isAuthenticated called, but mAccount is null"));
+            log.trace("{}",mAccountManager);
+            Crashlytics.logException(new IllegalStateException("isAuthenticated called, but mAccount is null"));
         }
         return false;
     }

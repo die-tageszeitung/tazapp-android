@@ -8,9 +8,15 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.media.RingtoneManager;
+import android.os.Build;
+import android.util.DisplayMetrics;
+import android.view.WindowManager;
 
 import com.crashlytics.android.Crashlytics;
 import com.crashlytics.android.core.CrashlyticsCore;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -20,13 +26,15 @@ import java.util.TimeZone;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.reader.ReaderActivity;
 import de.thecode.android.tazreader.service.TazRequestSyncReceiver;
-import de.thecode.android.tazreader.utils.Log;
 import de.thecode.android.tazreader.volley.RequestManager;
 import io.fabric.sdk.android.Fabric;
 
 public class TazReaderApplication extends Application {
 
+    private static final Logger log = LoggerFactory.getLogger(TazReaderApplication.class);
+
     public static final String LOGTAG = "TAZ";
+
 
     private OnSharedPreferenceChangeListener listener;
 
@@ -43,12 +51,28 @@ public class TazReaderApplication extends Application {
 
         RequestManager.init(this);
 
-        Log.init(this, LOGTAG);
 
-        Log.i("TAZReader onCreate()");
+        DisplayMetrics dm = new DisplayMetrics();
+        WindowManager windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            windowManager.getDefaultDisplay()
+                         .getRealMetrics(dm);
+        } else {
+            windowManager.getDefaultDisplay()
+                         .getMetrics(dm);
+        }
+        double x = Math.pow(dm.widthPixels / dm.xdpi, 2);
+        double y = Math.pow(dm.heightPixels / dm.ydpi, 2);
+        double screenInches = Math.sqrt(x + y);
+
+        log.debug("ScreenSize: {}", screenInches);
+
+
+        log.info("");
 
         // Migration von alter Version
-        int lastVersionCode = TazSettings.getPrefInt(this, TazSettings.PREFKEY.LASTVERSION, Log.getVersionCode());
+        int lastVersionCode = TazSettings.getPrefInt(this, TazSettings.PREFKEY.LASTVERSION, Integer.parseInt(String.valueOf(BuildConfig.VERSION_CODE)
+                                                                                                                   .substring(1)));
         if (lastVersionCode < 16) {
             if (TazSettings.getPrefString(this, TazSettings.PREFKEY.COLSIZE, "0")
                            .equals("4")) TazSettings.setPref(this, TazSettings.PREFKEY.COLSIZE, "3");
@@ -60,7 +84,8 @@ public class TazReaderApplication extends Application {
         }
 
         // MIGRATION BEENDET, setzten der aktuellen Version
-        TazSettings.setPref(this, TazSettings.PREFKEY.LASTVERSION, Log.getVersionCode());
+        TazSettings.setPref(this, TazSettings.PREFKEY.LASTVERSION, Integer.parseInt(String.valueOf(BuildConfig.VERSION_CODE)
+                                                                                          .substring(1)));
 
         TazSettings.setPref(this, TazSettings.PREFKEY.ISFOOT, false);
         TazSettings.setDefaultPref(this, TazSettings.PREFKEY.FONTSIZE, "10");
@@ -81,11 +106,11 @@ public class TazReaderApplication extends Application {
         TazSettings.setDefaultPref(this, TazSettings.PREFKEY.PAGEINDEXBUTTON, false);
         TazSettings.setDefaultPref(this, TazSettings.PREFKEY.TEXTTOSPEACH, false);
 
-        listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+        listener = new OnSharedPreferenceChangeListener() {
 
             public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
                 if (key.equals(TazSettings.PREFKEY.AUTOLOAD)) {
-                    Log.d("AutoLoad Pref geändert");
+                    log.debug("AutoLoad Pref geändert");
                     checkAutoDownload(TazReaderApplication.this);
                 }
             }
@@ -119,13 +144,13 @@ public class TazReaderApplication extends Application {
 
 
     public static void registerAutoDownload(Context context, boolean notToday) {
-        Log.d("registerAutoDownload");
+        log.debug("registerAutoDownload");
         AlarmManager am = (AlarmManager) context.getSystemService(ALARM_SERVICE);
         am.set(AlarmManager.RTC_WAKEUP, getNextAutodownloadCheckTime(notToday), autoDownloadSender);
     }
 
     private static void unregisterAutoDownload(Context context) {
-        Log.d("unregisterAutoDownload");
+        log.debug("unregisterAutoDownload");
         AlarmManager am = (AlarmManager) context.getSystemService(ALARM_SERVICE);
         am.cancel(autoDownloadSender);
     }
@@ -159,11 +184,11 @@ public class TazReaderApplication extends Application {
         }
 
         cal.setTimeInMillis(System.currentTimeMillis());// set the current time and date for this calendar
-        Log.d("aktuelle Zeit:" + cal.getTime()
-                                    .toString());
-        Log.d("aktuelle Zeit:" + cal.getTimeInMillis());
+        log.debug("aktuelle Zeit: {}", cal.getTime()
+                                          .toString());
+        log.debug("aktuelle Zeit: {}", cal.getTimeInMillis());
         if (notToday) {
-            Log.d("nicht heute!");
+            log.debug("nicht heute!");
             cal.add(DAY_OF_WEEK, 1);
             cal.set(HOUR_OF_DAY, 0);
             cal.set(MINUTE, 0);
@@ -184,9 +209,9 @@ public class TazReaderApplication extends Application {
                 cal.add(MINUTE, 1);
             }
         }
-        Log.d("nächste Zeit:" + cal.getTime()
-                                   .toString());
-        Log.d("nächste Zeit:" + cal.getTimeInMillis());
+        log.debug("nächste Zeit: {}", cal.getTime()
+                                         .toString());
+        log.debug("nächste Zeit: {}", cal.getTimeInMillis());
         return cal.getTimeInMillis();
     }
 }

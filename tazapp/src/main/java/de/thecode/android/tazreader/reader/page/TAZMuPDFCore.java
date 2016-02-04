@@ -5,10 +5,13 @@ import android.graphics.PointF;
 
 import com.artifex.mupdfdemo.MuPDFCore;
 
-import de.thecode.android.tazreader.utils.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class TAZMuPDFCore extends MuPDFCore {
+
+    private static final Logger log = LoggerFactory.getLogger(TAZMuPDFCore.class);
     
     PointF pageSize;
     String tag;
@@ -32,7 +35,7 @@ public class TAZMuPDFCore extends MuPDFCore {
 
     private void init() {
         isDestroyed = false;
-        Log.v(tag);
+        log.debug("{}",tag);
         this.countPages();
         pageSize = this.getPageSize(0);
     }
@@ -49,7 +52,7 @@ public class TAZMuPDFCore extends MuPDFCore {
 
     @Override
     public synchronized void onDestroy() {
-        Log.v(tag);
+        log.debug(tag);
         super.onDestroy();
         isDestroyed = true;
     }

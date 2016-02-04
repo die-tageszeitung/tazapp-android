@@ -21,6 +21,9 @@ import android.widget.TextView;
 
 import com.google.common.base.Strings;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.lang.ref.WeakReference;
 import java.text.DateFormat;
@@ -35,14 +38,13 @@ import de.thecode.android.tazreader.download.DownloadManager;
 import de.thecode.android.tazreader.download.DownloadProgressEvent;
 import de.thecode.android.tazreader.download.PaperDownloadFailedEvent;
 import de.thecode.android.tazreader.download.UnzipProgressEvent;
-import de.thecode.android.tazreader.utils.Log;
 import de.thecode.android.tazreader.utils.StorageManager;
 
 /**
  * Created by mate on 10.02.2015.
  */
 public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.ViewHolder> {
-
+    private static final Logger log = LoggerFactory.getLogger(LibraryAdapter.class);
 
     FileCacheCoverHelper mCoverHelper;
     int mCoverImageHeight;
@@ -177,7 +179,7 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
         try {
             notifyItemChanged(getItemPosition(event.getPaperId()));
         } catch (IllegalStateException e) {
-            Log.w(e.getMessage());
+            log.warn("",e);
         }
     }
 
@@ -234,7 +236,7 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
         try {
             viewHolder.card.setContentDescription(paper.getDate(DateFormat.LONG));
         } catch (ParseException e) {
-            Log.e(e);
+            log.error("",e);
         }
 
     }
@@ -248,14 +250,14 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
     @Override
     public void onViewAttachedToWindow(ViewHolder holder) {
         super.onViewAttachedToWindow(holder);
-        Log.d(holder);
+        log.debug("holder: {}",holder);
         EventBus.getDefault()
                 .register(holder);
     }
 
     @Override
     public void onViewDetachedFromWindow(ViewHolder holder) {
-        Log.d(holder);
+        log.debug("holder: {}",holder);
         EventBus.getDefault()
                 .unregister(holder);
         super.onViewDetachedFromWindow(holder);
@@ -263,7 +265,7 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
 
     @Override
     public void onViewRecycled(ViewHolder holder) {
-        Log.d(holder);
+        log.debug("holder: {}",holder);
         super.onViewRecycled(holder);
     }
 

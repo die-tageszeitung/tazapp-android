@@ -22,8 +22,8 @@ import java.lang.ref.WeakReference;
 
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.TazSettings;
-import de.thecode.android.tazreader.utils.Utils;
 import de.thecode.android.tazreader.utils.BaseFragment;
+import de.thecode.android.tazreader.utils.Orientation;
 
 public class SettingsFragment extends BaseFragment {
 
@@ -169,7 +169,7 @@ public class SettingsFragment extends BaseFragment {
                         break;
                 }
                 TazSettings.setPref(getActivity(), TazSettings.PREFKEY.ORIENTATION, newOrientation);
-                Utils.setActivityOrientationFromPrefs(getActivity());
+                Orientation.setActivityOrientationFromPrefs(getActivity());
             }
         });
 

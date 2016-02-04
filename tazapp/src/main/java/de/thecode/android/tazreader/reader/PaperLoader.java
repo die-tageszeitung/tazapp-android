@@ -8,6 +8,8 @@ import com.google.common.base.Strings;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 import java.io.File;
@@ -19,11 +21,10 @@ import javax.xml.parsers.ParserConfigurationException;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.reader.index.IIndexItem;
 import de.thecode.android.tazreader.utils.StorageManager;
-import de.thecode.android.tazreader.utils.Log;
 
 public class PaperLoader extends AsyncTaskLoader<PaperLoader.PaperLoaderResult> {
 
-
+    private static final Logger log = LoggerFactory.getLogger(PaperLoader.class);
 
     StorageManager mStorage;
     long mPaperId;
@@ -37,13 +38,13 @@ public class PaperLoader extends AsyncTaskLoader<PaperLoader.PaperLoaderResult> 
 
     @Override
     public PaperLoaderResult loadInBackground() {
-        Log.t("PaperLoader load in Background");
+        log.trace("PaperLoader load in Background");
 
         PaperLoaderResult result = new PaperLoaderResult();
 
         try {
             Paper paper = new Paper(getContext(), mPaperId);
-            Log.t("...", paper);
+            log.trace("... {}", paper);
             //paper.parsePlist(mStorage.getPaperFile(paper));
 
             paper.parsePlist(new File(mStorage.getPaperDirectory(paper), Paper.CONTENT_PLIST_FILENAME));
@@ -62,7 +63,7 @@ public class PaperLoader extends AsyncTaskLoader<PaperLoader.PaperLoaderResult> 
             result.paper = paper;
 
         } catch (IllegalStateException | Paper.PaperNotFoundException | SAXException | ParserConfigurationException | PropertyListFormatException | JSONException | ParseException | IOException e) {
-            Log.e(e);
+            log.error("",e);
             result.exception = e;
         }
         return result;
@@ -70,7 +71,7 @@ public class PaperLoader extends AsyncTaskLoader<PaperLoader.PaperLoaderResult> 
 
     @Override
     public void deliverResult(PaperLoaderResult data) {
-        Log.t("PaperLoader deliver result");
+        log.trace("PaperLoader deliver result");
         if (isReset()) {
             // The Loader has been reset; ignore the result and invalidate the data.
             releaseResources(data);
@@ -97,7 +98,7 @@ public class PaperLoader extends AsyncTaskLoader<PaperLoader.PaperLoaderResult> 
 
     @Override
     protected void onStartLoading() {
-        Log.t("PaperLoader onStartLoading");
+        log.trace("PaperLoader onStartLoading");
         if (mData != null) {
             // Deliver any previously loaded data immediately.
             deliverResult(mData);
@@ -114,7 +115,7 @@ public class PaperLoader extends AsyncTaskLoader<PaperLoader.PaperLoaderResult> 
 
     @Override
     protected void onStopLoading() {
-        Log.t("PaperLoader onStopLoading");
+        log.trace("PaperLoader onStopLoading");
         // The Loader is in a stopped state, so we should attempt to cancel the
         // current load (if there is one).
         cancelLoad();
@@ -122,7 +123,7 @@ public class PaperLoader extends AsyncTaskLoader<PaperLoader.PaperLoaderResult> 
 
     @Override
     protected void onReset() {
-        Log.t("PaperLoader onReset");
+        log.trace("PaperLoader onReset");
         // Ensure the loader has been stopped.
         onStopLoading();
 
@@ -135,7 +136,7 @@ public class PaperLoader extends AsyncTaskLoader<PaperLoader.PaperLoaderResult> 
 
     @Override
     public void onCanceled(PaperLoaderResult data) {
-        Log.t("PaperLoader onCanceled");
+        log.trace("PaperLoader onCanceled");
         // Attempt to cancel the current asynchronous load.
         super.onCanceled(data);
 
@@ -145,7 +146,7 @@ public class PaperLoader extends AsyncTaskLoader<PaperLoader.PaperLoaderResult> 
     }
 
     private void releaseResources(PaperLoaderResult data) {
-        Log.v();
+        log.trace("");
         // All resources associated with the Loader
         // should be released here.
     }

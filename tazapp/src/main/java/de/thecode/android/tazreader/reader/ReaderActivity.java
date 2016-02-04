@@ -19,9 +19,12 @@ import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.crashlytics.android.Crashlytics;
 import com.google.common.base.Strings;
 
 import org.json.JSONArray;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.WeakHashMap;
 
@@ -39,12 +42,13 @@ import de.thecode.android.tazreader.reader.index.IndexFragment;
 import de.thecode.android.tazreader.reader.index.PageIndexFragment;
 import de.thecode.android.tazreader.reader.page.PagesFragment;
 import de.thecode.android.tazreader.utils.BaseActivity;
-import de.thecode.android.tazreader.utils.Log;
+import de.thecode.android.tazreader.utils.Orientation;
 import de.thecode.android.tazreader.utils.StorageManager;
-import de.thecode.android.tazreader.utils.Utils;
 
 @SuppressLint("RtlHardcoded")
 public class ReaderActivity extends BaseActivity implements LoaderManager.LoaderCallbacks<PaperLoader.PaperLoaderResult>, IReaderCallback, TcDialogButtonListener, TcDialog.TcDialogDismissListener, ReaderDataFragment.ReaderDataFramentCallback {
+
+    private static final Logger log = LoggerFactory.getLogger(ReaderActivity.class);
 
     public static enum THEMES {
         normal("bgColorNormal"), sepia("bgColorSepia"), night("bgColorNight");
@@ -110,8 +114,8 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Log.v();
-        Utils.setActivityOrientationFromPrefs(this);
+        log.trace("");
+        Orientation.setActivityOrientationFromPrefs(this);
 
         mStorage = StorageManager.getInstance(this);
 
@@ -147,13 +151,13 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
         retainDataFragment = ReaderDataFragment.findRetainFragment(getFragmentManager());
         if (retainDataFragment != null && retainDataFragment.getPaper() != null) {
             retainDataFragment.setCallback(this);
-            Log.d("Found data fragment");
+            log.debug("Found data fragment");
             initializeFragments();
         } else {
             retainDataFragment = ReaderDataFragment.createRetainFragment(getFragmentManager());
             retainDataFragment.setCallback(this);
             retainDataFragment.initTts(this);
-            Log.d("Did not find data fragment, initialising loader");
+            log.debug("Did not find data fragment, initialising loader");
             LoaderManager lm = getLoaderManager();
             Bundle paperLoaderBundle = new Bundle();
             paperLoaderBundle.putLong(KEY_EXTRA_PAPER_ID, paperId);
@@ -166,37 +170,37 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
     public void onAttachFragment(Fragment fragment) {
         super.onAttachFragment(fragment);
 
-        Log.v(fragment.getTag());
+        log.trace(fragment.getTag());
     }
 
 
     @Override
     protected void onRestart() {
         super.onRestart();
-        Log.v();
+        log.trace("");
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        Log.v();
+        log.trace("");
     }
 
     @Override
     protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-        Log.v();
+        log.trace("");
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        Log.v();
+        log.trace("");
         if (TazSettings.getPrefBoolean(this, TazSettings.PREFKEY.KEEPSCREEN, false)) {
-            Log.d("Bildschirm bleibt an!");
+            log.debug("Bildschirm bleibt an!");
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         } else {
-            Log.d("Bildschirm bleibt nicht an!");
+            log.debug("Bildschirm bleibt nicht an!");
             getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
         //setImmersiveMode();
@@ -210,10 +214,10 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
     }
 
     private void loadIndexFragment() {
-        Log.v();
+        log.trace("");
         mIndexFragment = (IndexFragment) mFragmentManager.findFragmentByTag(TAG_FRAGMENT_INDEX);
         if (mIndexFragment == null) {
-            Log.d("Did not find IndexFragment, create one ...");
+            log.debug("Did not find IndexFragment, create one ...");
             mIndexFragment = new IndexFragment();
             FragmentTransaction indexesFragmentTransaction = mFragmentManager.beginTransaction();
             indexesFragmentTransaction.replace(R.id.left_drawer, mIndexFragment, TAG_FRAGMENT_INDEX);
@@ -224,10 +228,10 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
     }
 
     private void loadPageIndexFragment() {
-        Log.v();
+        log.trace("");
         mPageIndexFragment = (PageIndexFragment) mFragmentManager.findFragmentByTag(TAG_FRAGMENT_PAGEINDEX);
         if (mPageIndexFragment == null) {
-            Log.d("Did not find PageIndexFragment, create one ...");
+            log.debug("Did not find PageIndexFragment, create one ...");
             mPageIndexFragment = new PageIndexFragment();
             FragmentTransaction indexesFragmentTransaction = mFragmentManager.beginTransaction();
             indexesFragmentTransaction.replace(R.id.right_drawer, mPageIndexFragment, TAG_FRAGMENT_PAGEINDEX);
@@ -237,7 +241,7 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
     }
 
     private void loadContentFragment(String key, String position) {
-        Log.v();
+        log.trace("");
         IIndexItem indexItem = retainDataFragment.getPaper()
                                                  .getPlist()
                                                  .getIndexItem(key);
@@ -262,7 +266,7 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
     }
 
     private void loadArticleFragment(IIndexItem indexItem, DIRECTIONS direction, String position) {
-        Log.v();
+        log.trace("");
 
         FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
 
@@ -303,7 +307,7 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
     }
 
     private void loadPagesFragment(IIndexItem indexItem) {
-        Log.v();
+        log.trace("");
         if (indexItem.getType() == IIndexItem.Type.PAGE) {
             boolean needInit = false;
             if (mContentFragment == null) {
@@ -324,14 +328,14 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
 
     @Override
     public Loader<PaperLoader.PaperLoaderResult> onCreateLoader(int arg0, Bundle arg1) {
-        Log.v();
+        log.trace("");
         mLoadingProgress.setVisibility(View.VISIBLE);
         return new PaperLoader(this, paperId);
     }
 
     @Override
     public void onLoadFinished(Loader<PaperLoader.PaperLoaderResult> loader, final PaperLoader.PaperLoaderResult result) {
-        Log.v();
+        log.trace("");
         this.runOnUiThread(new Runnable() {
 
             @Override
@@ -368,8 +372,8 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
                     retainDataFragment.setCurrentKey(ReaderActivity.this, currentKey, position);
                     initializeFragments();
                 } else {
-                    Log.e(result.getError());
-                    Log.sendExceptionWithCrashlytics(result.getError());
+                    log.error("",result.getError());
+                    Crashlytics.logException(result.getError());
                     ReaderActivity.this.finish();
                 }
             }
@@ -378,12 +382,12 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
 
     @Override
     public void onLoaderReset(Loader<PaperLoader.PaperLoaderResult> arg0) {
-        Log.v();
+        log.trace("");
     }
 
     @Override
     public boolean onLoadPrevArticle(DIRECTIONS fromDirection, String position) {
-        Log.v();
+        log.trace("");
         int prevPosition = retainDataFragment.getArticleCollectionOrderPosition(retainDataFragment.getCurrentKey()) - 1;
 
         if (retainDataFragment.isFilterBookmarks()) {
@@ -407,7 +411,7 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
 
     @Override
     public boolean onLoadNextArticle(DIRECTIONS fromDirection, String position) {
-        Log.v();
+        log.trace("");
         int nextPositiion = retainDataFragment.getArticleCollectionOrderPosition(retainDataFragment.getCurrentKey()) + 1;
 
         if (retainDataFragment.isFilterBookmarks()) {
@@ -432,7 +436,7 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
 
 
     public void setBackgroundColor(int color) {
-        Log.d(color);
+        log.debug("{}",color);
         this.findViewById(android.R.id.content)
             .setBackgroundColor(color);
     }
@@ -454,7 +458,7 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
 
     @Override
     public void onBookmarkClick(IIndexItem item) {
-        Log.d(item.getKey());
+        log.debug(item.getKey());
         item.setBookmark(!item.isBookmarked());
         if (mIndexFragment != null) mIndexFragment.onBookmarkChange(item.getKey());
         if (item.getKey()
@@ -504,14 +508,14 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
 
     @Override
     public void onConfigurationChange(String name, String value) {
-        Log.d(name, value);
+        log.debug("{} {}",name, value);
         if (TazSettings.PREFKEY.THEME.equals(name)) setBackgroundColor(onGetBackgroundColor(value));
         callConfigListeners(name, value);
     }
 
     @Override
     public void onConfigurationChange(String name, boolean value) {
-        Log.d(name, value);
+        log.debug("{} {}",name, value);
         String boolValue = "off";
         if (value) boolValue = "on";
         callConfigListeners(name, boolValue);
@@ -537,14 +541,14 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
 
     @Override
     public void updateIndexes(String key, String position) {
-        Log.d(key, System.currentTimeMillis());
+        log.debug("{} {}",key, System.currentTimeMillis());
         retainDataFragment.setCurrentKey(this, key, position);
         if (mIndexFragment != null) mIndexFragment.updateCurrentPosition(key);
         if (mPageIndexFragment != null) mPageIndexFragment.updateCurrentPosition(key);
         if (mContentFragment instanceof PagesFragment) ((PagesFragment) mContentFragment).setShareButtonCallback(retainDataFragment.getPaper()
                                                                                                                                    .getPlist()
                                                                                                                                    .getIndexItem(key));
-        Log.d(key, System.currentTimeMillis());
+        log.debug("{} {}",key, System.currentTimeMillis());
     }
 
 
@@ -556,7 +560,7 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
     @Override
     public String getStoreValue(String path, String value) {
         String result = Store.getValueForKey(this, "/" + getPaper().getBookId() + "/" + path);
-        Log.d(path, result);
+        log.debug("{} {}",path, result);
         return result;
     }
 
@@ -600,7 +604,7 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        Log.d();
+        log.debug("");
         switch (keyCode) {
             case KeyEvent.KEYCODE_MENU:
                 togglePageIndexDrawer();
@@ -614,7 +618,7 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
 
         boolean onOff = TazSettings.getPrefBoolean(this, TazSettings.PREFKEY.FULLSCREEN, false);
 
-        Log.v("immersive:" + onOff);
+        log.trace("immersive: {}" , onOff);
 
 
         mContentFrame.setFitsSystemWindows(!onOff);
@@ -664,7 +668,7 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
 
     @Override
     public ReaderDataFragment.TTS getTtsState() {
-        Log.d(retainDataFragment.getTtsState());
+        log.debug("{}",retainDataFragment.getTtsState());
         return retainDataFragment.getTtsState();
     }
 

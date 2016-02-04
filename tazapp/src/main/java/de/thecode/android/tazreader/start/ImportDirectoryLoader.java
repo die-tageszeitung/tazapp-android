@@ -3,6 +3,9 @@ package de.thecode.android.tazreader.start;
 import android.content.AsyncTaskLoader;
 import android.content.Context;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -15,12 +18,13 @@ import java.util.Locale;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.importer.ImportMetadata;
-import de.thecode.android.tazreader.utils.Log;
 
 /**
  * Created by mate on 07.04.2015.
  */
 public class ImportDirectoryLoader extends AsyncTaskLoader<List<ImportDirectoryLoader.ImportFileWrapper>> {
+
+    private static final Logger log = LoggerFactory.getLogger(ImportDirectoryLoader.class);
 
     File root;
     File currentDir;
@@ -36,7 +40,7 @@ public class ImportDirectoryLoader extends AsyncTaskLoader<List<ImportDirectoryL
     @Override
     public List<ImportFileWrapper> loadInBackground() {
         //EventBus.getDefault().postSticky(new LoadingEvent(true));
-        Log.d();
+        log.debug("");
 
 
         List<ImportFileWrapper> result = new ArrayList<>();
@@ -77,7 +81,7 @@ public class ImportDirectoryLoader extends AsyncTaskLoader<List<ImportDirectoryL
 
             }
         } catch (IOException e) {
-            Log.e(e);
+           log.error("",e);
         }
 
         for (File dir : dirs) {
@@ -125,7 +129,7 @@ public class ImportDirectoryLoader extends AsyncTaskLoader<List<ImportDirectoryL
 
     @Override
     public void deliverResult(List<ImportFileWrapper> data) {
-           Log.d();
+           log.debug("data: {}",data);
         if (isReset()) {
             // The Loader has been reset; ignore the result and invalidate the data.
             releaseResources(data);
@@ -150,7 +154,7 @@ public class ImportDirectoryLoader extends AsyncTaskLoader<List<ImportDirectoryL
 
     @Override
     protected void onStartLoading() {
-        Log.d();
+        log.debug("");
         if (mData != null) {
             // Deliver any previously loaded data immediately.
             deliverResult(mData);
@@ -167,7 +171,7 @@ public class ImportDirectoryLoader extends AsyncTaskLoader<List<ImportDirectoryL
 
     @Override
     protected void onStopLoading() {
-        Log.d();
+        log.debug("");
         // The Loader is in a stopped state, so we should attempt to cancel the
         // current load (if there is one).
         cancelLoad();
@@ -175,7 +179,7 @@ public class ImportDirectoryLoader extends AsyncTaskLoader<List<ImportDirectoryL
 
     @Override
     protected void onReset() {
-        Log.d();
+        log.debug("");
         // Ensure the loader has been stopped.
         onStopLoading();
 
@@ -188,7 +192,7 @@ public class ImportDirectoryLoader extends AsyncTaskLoader<List<ImportDirectoryL
 
     @Override
     public void onCanceled(List<ImportFileWrapper> data) {
-        Log.d();
+        log.debug("data: {}",data);
         // Attempt to cancel the current asynchronous load.
         super.onCanceled(data);
 
@@ -198,7 +202,7 @@ public class ImportDirectoryLoader extends AsyncTaskLoader<List<ImportDirectoryL
     }
 
     private void releaseResources(List<ImportFileWrapper> data) {
-        Log.d();
+        log.debug("data: {}",data);
         // All resources associated with the Loader
         // should be released here.
     }

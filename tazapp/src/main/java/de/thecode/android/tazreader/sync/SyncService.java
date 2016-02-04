@@ -4,12 +4,15 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 
-import de.thecode.android.tazreader.utils.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Define a Service that returns an IBinder for the sync adapter class, allowing the sync adapter framework to call onPerformSync().
  */
 public class SyncService extends Service {
+
+    private static final Logger log = LoggerFactory.getLogger(SyncService.class);
 
     // Storage for an instance of the sync adapter
     private static SyncAdapter sSyncAdapter = null;
@@ -24,7 +27,7 @@ public class SyncService extends Service {
         /*
          * Create the sync adapter as a singleton. Set the sync adapter as syncable Disallow parallel syncs
          */
-        Log.v();
+        log.trace("");
         synchronized (sSyncAdapterLock) {
             if (sSyncAdapter == null) {
                 sSyncAdapter = new SyncAdapter(getApplicationContext(), true);
@@ -41,7 +44,7 @@ public class SyncService extends Service {
          * Get the object that allows external processes to call onPerformSync(). The object is created in the base class code when the
          * SyncAdapter constructors call super()
          */
-        Log.v();
+        log.trace("");
         return sSyncAdapter.getSyncAdapterBinder();
     }
 }

@@ -22,6 +22,8 @@ import com.google.common.base.Strings;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.json.JSONArray;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 import java.io.File;
@@ -48,11 +50,12 @@ import de.thecode.android.tazreader.data.Paper.Plist.Page.Article;
 import de.thecode.android.tazreader.download.PaperDeletedEvent;
 import de.thecode.android.tazreader.provider.TazProvider;
 import de.thecode.android.tazreader.reader.index.IIndexItem;
-import de.thecode.android.tazreader.utils.Log;
 import de.thecode.android.tazreader.utils.PlistHelper;
 import de.thecode.android.tazreader.utils.StorageManager;
 
 public class Paper {
+
+    private static final Logger log = LoggerFactory.getLogger(Paper.class);
 
     public static String TABLE_NAME = "PAPER";
     public static final Uri CONTENT_URI = Uri.parse("content://" + TazProvider.AUTHORITY + "/" + TABLE_NAME);
@@ -555,9 +558,9 @@ public class Paper {
     }
 
     public void parsePlist(InputStream is, boolean parseIndex) throws ZipException, IOException, PropertyListFormatException, ParseException, ParserConfigurationException, SAXException {
-        Log.t("Start parsing Plist - parse Index:", parseIndex);
+        log.trace("Start parsing Plist - parse Index: {}", parseIndex);
         plist = new Plist(is, parseIndex);
-        Log.t("Finished parsing Plist", this);
+        log.trace("Finished parsing Plist {}", this);
     }
 
 
@@ -1009,7 +1012,6 @@ public class Paper {
             }
 
             public void parseGeometries() {
-                Log.v(this.getKey());
                 geometries = new ArrayList<>();
                 NSObject[] sourceBookCategoryPageGeometries = geometryArray.getArray();
                 if (sourceBookCategoryPageGeometries != null) {

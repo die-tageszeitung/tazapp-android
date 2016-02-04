@@ -9,10 +9,14 @@ import com.android.volley.Response.Listener;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.HttpHeaderParser;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.thecode.android.tazreader.data.Paper;
-import de.thecode.android.tazreader.utils.Log;
 
 public class TazKioskRequest extends Request<Paper> {
+
+    private static final Logger log = LoggerFactory.getLogger(TazKioskRequest.class);
     
     private final Listener<Paper> mListener;
     private final String mUrl;
@@ -29,7 +33,7 @@ public class TazKioskRequest extends Request<Paper> {
         String contenttype =  response.headers.get("Content-Type");
         if ("application/taz+android+app".equals(contenttype)) {
             String disposition = response.headers.get("Content-Disposition");
-            Log.i( "Content-disposition: " + disposition);
+            log.info( "Content-disposition: {}",disposition);
             String filename = disposition.substring(disposition.lastIndexOf('=') + 1);
             
             Paper kioskPaper = new Paper();

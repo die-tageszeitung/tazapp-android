@@ -4,12 +4,16 @@ import android.app.Activity;
 import android.content.DialogInterface;
 import android.os.Bundle;
 
-import de.thecode.android.tazreader.utils.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by Mate on 18.03.2015.
  */
 public class TcDialogList extends TcDialog {
+
+    private static final Logger log = LoggerFactory.getLogger(TcDialogList.class);
+
     static final String ARG_ARRAY_STRING_ITEMS = "list_items";
 
     TcDialogListListener listListener;
@@ -21,9 +25,9 @@ public class TcDialogList extends TcDialog {
             String[] items = getItems();
             String value = items[which];
 
-            Log.d("Button", which,value);
+            log.debug("Button {} {}", which,value);
             if (listListener != null) listListener.onDialogListClick(getTag(), TcDialogList.this.getArguments(), which,value,getItems());
-            else Log.i(TcDialogListListener.class.getSimpleName() + " not set in Activity " + getActivity().getClass()
+            else log.info(TcDialogListListener.class.getSimpleName() + " not set in Activity " + getActivity().getClass()
                                                                                                              .getSimpleName());
         }
     };
@@ -43,12 +47,12 @@ public class TcDialogList extends TcDialog {
 
     @Override
     public void onAttach(Activity activity) {
-        Log.d(this.getTag());
+        log.debug(this.getTag());
         super.onAttach(activity);
         try {
             listListener = (TcDialogListListener) activity;
         } catch (ClassCastException e) {
-            Log.w(e.getMessage());
+            log.warn(e.getMessage());
         }
     }
 

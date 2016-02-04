@@ -10,6 +10,8 @@ import android.net.Uri;
 import com.google.common.base.Strings;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -25,9 +27,10 @@ import de.thecode.android.tazreader.secure.Base64;
 import de.thecode.android.tazreader.sync.AccountHelper;
 import de.thecode.android.tazreader.sync.AccountHelper.CreateAccountException;
 import de.thecode.android.tazreader.utils.StorageManager;
-import de.thecode.android.tazreader.utils.Log;
 
 public class DownloadManager {
+
+    private static final Logger log = LoggerFactory.getLogger(DownloadManager.class);
 
     android.app.DownloadManager mDownloadManager;
     Context mContext;
@@ -56,7 +59,7 @@ public class DownloadManager {
         if (!accountHelper.isAuthenticated() && !paper.isDemo())
             throw new DownloadNotAllowedException();
 
-        Log.t("requesting paper download:", paper);
+        log.trace("requesting paper download: {}", paper);
 
         Uri downloadUri = Uri.parse(paper.getLink());
 
@@ -84,7 +87,7 @@ public class DownloadManager {
 
         final long downloadId = mDownloadManager.enqueue(request);
 
-        Log.t("... download requested at android download manager, id:", downloadId);
+        log.trace("... download requested at android download manager, id: {}", downloadId);
 
         //paper.setDownloadprogress(0);
         paper.setDownloadId(downloadId);
@@ -106,7 +109,7 @@ public class DownloadManager {
         //Uri downloadUri = Uri.parse(paper.getResourceUrl());
 
         Resource resource = new Resource(mContext, paper.getResource());
-        Log.t("requesting resource download:", resource);
+        log.trace("requesting resource download: {}", resource);
 
         if (resource.getKey() == null) {
             resource.setKey(paper.getResource());
@@ -145,7 +148,7 @@ public class DownloadManager {
 
             long downloadId = mDownloadManager.enqueue(request);
 
-            Log.t("... download requested at android download manager, id:", downloadId);
+            log.trace("... download requested at android download manager, id: {}", downloadId);
 
             resource.setDownloadId(downloadId);
 
@@ -358,7 +361,7 @@ public class DownloadManager {
 
         @Override
         public void run() {
-            Log.v("starting");
+            log.trace("starting");
             boolean downloading = true;
             while (downloading && !isInterrupted()) {
                 DownloadState downloadState = new DownloadState(downloadId);
@@ -377,10 +380,10 @@ public class DownloadManager {
                 try {
                     sleep(500);
                 } catch (InterruptedException e) {
-                    Log.w(e.getMessage());
+                    log.warn(e.getMessage());
                 }
             }
-            Log.v("finished");
+            log.trace("finished");
         }
     }
 

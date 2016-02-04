@@ -7,13 +7,17 @@ import android.graphics.Typeface;
 import android.util.AttributeSet;
 import android.widget.TextView;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.HashMap;
 import java.util.Map;
 
 import de.thecode.android.tazreader.R;
-import de.thecode.android.tazreader.utils.Log;
 
 public class TypefacedTextView extends TextView {
+
+    private static final Logger log = LoggerFactory.getLogger(TypefacedTextView.class);
 
     private static Map<String,Typeface> typefacemap = new HashMap<>();
 
@@ -41,7 +45,7 @@ public class TypefacedTextView extends TextView {
         }
         else
         {
-            Log.v("Did not find typeface, create ", name);
+            log.debug("Did not find typeface, create {}", name);
             Typeface typeface = Typeface.createFromAsset(context.getAssets(), name);
             typefacemap.put(name, typeface);
             return typeface;

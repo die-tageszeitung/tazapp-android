@@ -3,6 +3,8 @@ package de.thecode.android.tazreader.utils;
 import android.content.Context;
 
 import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
@@ -16,6 +18,8 @@ import de.thecode.android.tazreader.secure.HashHelper;
 
 
 public class StorageManager {
+
+    private static final Logger log = LoggerFactory.getLogger(StorageManager.class);
     
     public static final String TEMP = "temp";
     public static final String PAPER = "paper";
@@ -68,7 +72,7 @@ public class StorageManager {
             try {
                 return getDownloadFile(HashHelper.getHash(paper.getBookId(),HashHelper.UTF_8,HashHelper.SHA_1));
             } catch (UnsupportedEncodingException | NoSuchAlgorithmException e) {
-                Log.e(e);
+                log.error("Error",e);
             }
         return null;
     }

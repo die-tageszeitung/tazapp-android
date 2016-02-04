@@ -7,15 +7,17 @@ import android.os.Parcelable;
 import android.widget.ListAdapter;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-
-import de.thecode.android.tazreader.utils.Log;
 
 /**
  * Created by Mate on 18.03.2015.
  */
 public abstract class TcDialogAdapterList extends TcDialog {
+
+    private static final Logger log = LoggerFactory.getLogger(TcDialogAdapterList.class);
 
     public static final String ARG_ARRAY_PARCABLE_ARCHIVEENTRIES = "archiveEntries";
 
@@ -27,9 +29,9 @@ public abstract class TcDialogAdapterList extends TcDialog {
         public void onClick(DialogInterface dialog, int which) {
             TcDialogAdapterListEntry entry = getEntries().get(which);
 
-            Log.d("Button", which,entry);
+            log.debug("Button {} {}", which,entry);
             if (listListener != null) listListener.onDialogAdapterListClick(getTag(), entry, TcDialogAdapterList.this.getArguments());
-            else Log.i(TcDialogAdapterListListener.class.getSimpleName() + " not set in Activity " + getActivity().getClass()
+            else log.info(TcDialogAdapterListListener.class.getSimpleName() + " not set in Activity " + getActivity().getClass()
                                                                                                            .getSimpleName());
         }
     };
@@ -57,12 +59,12 @@ public abstract class TcDialogAdapterList extends TcDialog {
 
     @Override
     public void onAttach(Activity activity) {
-        Log.d(this.getTag());
+        log.debug(this.getTag());
         super.onAttach(activity);
         try {
             listListener = (TcDialogAdapterListListener) activity;
         } catch (ClassCastException e) {
-            Log.w(e.getMessage());
+            log.warn(e.getMessage());
         }
     }
 

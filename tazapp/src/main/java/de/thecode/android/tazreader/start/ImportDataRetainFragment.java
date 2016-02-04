@@ -6,6 +6,9 @@ import android.content.Loader;
 import android.os.Bundle;
 import android.os.Environment;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -15,13 +18,13 @@ import de.greenrobot.event.EventBus;
 import de.thecode.android.tazreader.download.PaperDeletedEvent;
 import de.thecode.android.tazreader.download.PaperDownloadFinishedEvent;
 import de.thecode.android.tazreader.utils.BaseFragment;
-import de.thecode.android.tazreader.utils.Log;
 
 /**
  * Created by mate on 13.04.2015.
  */
 public class ImportDataRetainFragment extends BaseFragment implements LoaderManager.LoaderCallbacks<List<ImportDirectoryLoader.ImportFileWrapper>> {
 
+    private static final Logger log = LoggerFactory.getLogger(ImportDataRetainFragment.class);
 
     private static final String TAG = "RetainFragmentImport";
     private static final int DIRECTORY_LOADER = 3;
@@ -36,10 +39,10 @@ public class ImportDataRetainFragment extends BaseFragment implements LoaderMana
     }
 
     public static ImportDataRetainFragment findOrCreateRetainFragment(FragmentManager fm, ImportDataCallback callback) {
-        Log.d();
+        log.debug("");
         ImportDataRetainFragment fragment = (ImportDataRetainFragment) fm.findFragmentByTag(TAG);
         if (fragment == null) {
-            Log.d("new");
+            log.debug("new");
             fragment = new ImportDataRetainFragment();
             fragment.setCurrentDir(Environment.getExternalStorageDirectory());
             fragment.setCallback(callback);
@@ -48,7 +51,7 @@ public class ImportDataRetainFragment extends BaseFragment implements LoaderMana
               .commit();
         } else {
             fragment.setCallback(callback);
-            Log.d("retained");
+            log.debug("retained");
         }
         return fragment;
     }
@@ -66,19 +69,19 @@ public class ImportDataRetainFragment extends BaseFragment implements LoaderMana
     }
 
     public void setCurrentDir(File currentDir) {
-        Log.d();
+       log.debug("");
         if (rootDir == null) this.rootDir = currentDir;
 
         this.currentDir = currentDir;
     }
 
     public File getCurrentDir() {
-        Log.d();
+       log.debug("");
         return currentDir;
     }
 
     public File getRootDir() {
-        Log.d();
+        log.debug("");
         return rootDir;
     }
 
@@ -87,7 +90,7 @@ public class ImportDataRetainFragment extends BaseFragment implements LoaderMana
     }
 
     public void setData(List<ImportDirectoryLoader.ImportFileWrapper> data) {
-        Log.d();
+        log.debug("");
         this.data = data;
 
         if (hasCallback()) getCallback().dataChanged();
@@ -102,7 +105,7 @@ public class ImportDataRetainFragment extends BaseFragment implements LoaderMana
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.d();
+        log.debug("");
         setRetainInstance(true);
         EventBus.getDefault().register(this);
     }
@@ -110,20 +113,20 @@ public class ImportDataRetainFragment extends BaseFragment implements LoaderMana
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        Log.d();
+        log.debug("");
         getLoaderManager().initLoader(DIRECTORY_LOADER,null, this);
     }
 
     @Override
     public void onStop() {
-        Log.d();
+        log.debug("");
         EventBus.getDefault().unregister(this);
         super.onStop();
     }
 
     @Override
     public void onDetach() {
-        Log.d();
+        log.debug("");
         super.onDetach();
     }
 
@@ -142,7 +145,7 @@ public class ImportDataRetainFragment extends BaseFragment implements LoaderMana
 
     @Override
     public Loader<List<ImportDirectoryLoader.ImportFileWrapper>> onCreateLoader(int id, Bundle args) {
-        Log.d();
+       log.debug("");
 
 
         if (data==null)
@@ -159,14 +162,14 @@ public class ImportDataRetainFragment extends BaseFragment implements LoaderMana
 
     @Override
     public void onLoadFinished(Loader<List<ImportDirectoryLoader.ImportFileWrapper>> loader, List<ImportDirectoryLoader.ImportFileWrapper> data) {
-        Log.d();
+        log.debug("");
         setData(data);
 
     }
 
     @Override
     public void onLoaderReset(Loader<List<ImportDirectoryLoader.ImportFileWrapper>> loader) {
-        Log.d();
+        log.debug("loader: {}",loader);
     }
 
     public interface ImportDataCallback {

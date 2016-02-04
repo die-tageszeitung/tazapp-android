@@ -7,6 +7,11 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 
+import com.crashlytics.android.Crashlytics;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
@@ -17,13 +22,14 @@ import de.thecode.android.tazreader.data.Resource;
 import de.thecode.android.tazreader.secure.HashHelper;
 import de.thecode.android.tazreader.start.StartActivity;
 import de.thecode.android.tazreader.utils.StorageManager;
-import de.thecode.android.tazreader.utils.Log;
 
 public class DownloadReceiver extends BroadcastReceiver {
 
+    private static final Logger log = LoggerFactory.getLogger(DownloadReceiver.class);
 
-//    Context mContext;
-//    ExternalStorage mStorage;
+
+    //    Context mContext;
+    //    ExternalStorage mStorage;
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -33,7 +39,7 @@ public class DownloadReceiver extends BroadcastReceiver {
 
         String action = intent.getAction();
 
-        Log.t("DownloadReceiver received intent:",intent);
+        log.trace("DownloadReceiver received intent: {}", intent);
 
         if (android.app.DownloadManager.ACTION_DOWNLOAD_COMPLETE.equals(action)) {
             long downloadId = intent.getLongExtra(android.app.DownloadManager.EXTRA_DOWNLOAD_ID, 0);
@@ -41,7 +47,7 @@ public class DownloadReceiver extends BroadcastReceiver {
             DownloadManager.DownloadState state = downloadHelper.getDownloadState(downloadId);
             boolean firstOccurrenceOfState = downloadHelper.isFirstOccurrenceOfState(state);
             if (!firstOccurrenceOfState) {
-                Log.e("DownloadState already received:",state);
+                log.error("DownloadState already received: {}", state);
                 return;
             }
 
@@ -51,8 +57,8 @@ public class DownloadReceiver extends BroadcastReceiver {
                 while (cursor.moveToNext()) {
                     Paper paper = new Paper(cursor);
                     //DownloadHelper.DownloadState downloadDownloadState = downloadHelper.getDownloadState(downloadId);
-                    Log.t("Download complete for paper:", paper);
-                    Log.t(state);
+                    log.trace("Download complete for paper: {}", paper);
+                    log.trace("{}", state);
                     boolean failed = false;
                     if (state.getStatus() == DownloadManager.DownloadState.STATUS_SUCCESSFUL) {
                         File downloadFile = externalStorage.getDownloadFile(paper);
@@ -60,21 +66,21 @@ public class DownloadReceiver extends BroadcastReceiver {
                             failed = true;
                         } else {
                             if (paper.getLen() != 0 && downloadFile.length() != paper.getLen()) {
-                                Log.e("Wrong size of paper download");
+                                log.error("Wrong size of paper download");
                                 failed = true;
-                            } else Log.t("... checked correct size of paper download");
+                            } else log.trace("... checked correct size of paper download");
                             try {
                                 String fileHash = HashHelper.getHash(downloadFile, HashHelper.SHA_1);
                                 if (paper.getFileHash() != null && !paper.getFileHash()
                                                                          .equals(fileHash)) {
-                                    Log.e("Wrong paper filehash");
+                                    log.error("Wrong paper filehash");
                                     failed = true;
-                                } else Log.t("... checked correct hash of paper download");
+                                } else log.trace("... checked correct hash of paper download");
                             } catch (NoSuchAlgorithmException e) {
-                                Log.w(e);
-                                Log.sendExceptionWithCrashlytics(e);
+                                log.warn("",e);
+                                Crashlytics.logException(e);
                             } catch (IOException e) {
-                                Log.e(e);
+                                log.error("",e);
                                 failed = true;
                             }
                             if (!failed) {
@@ -87,16 +93,16 @@ public class DownloadReceiver extends BroadcastReceiver {
                         failed = true;
                     }
                     if (failed) {
-                        Log.e("Download failed");
+                        log.error("Download failed");
                         DownloadException exception = new DownloadException(state.getStatusText() + ": " + state.getReasonText());
-                        Log.sendExceptionWithCrashlytics(exception);
+                        Crashlytics.logException(exception);
                         paper.setDownloadId(0);
                         context.getContentResolver()
                                .update(ContentUris.withAppendedId(Paper.CONTENT_URI, paper.getId()), paper.getContentValues(), null, null);
                         if (externalStorage.getDownloadFile(paper)
-                                    .exists()) //noinspection ResultOfMethodCallIgnored
+                                           .exists()) //noinspection ResultOfMethodCallIgnored
                             externalStorage.getDownloadFile(paper)
-                                    .delete();
+                                           .delete();
                         NotificationHelper.showDownloadErrorNotification(context, paper.getId());
                         EventBus.getDefault()
                                 .post(new PaperDownloadFailedEvent(paper.getId(), exception));
@@ -113,8 +119,8 @@ public class DownloadReceiver extends BroadcastReceiver {
 
                     Resource resource = new Resource(cursor);
                     //DownloadHelper.DownloadState downloadDownloadState = downloadHelper.getDownloadState(downloadId);
-                    Log.t("Download complete for resource:", resource);
-                    Log.t(state);
+                    log.trace("Download complete for resource: {}", resource);
+                    log.trace("{}", state);
 
                     boolean failed = false;
                     if (state.getStatus() == DownloadManager.DownloadState.STATUS_SUCCESSFUL) {
@@ -125,21 +131,21 @@ public class DownloadReceiver extends BroadcastReceiver {
                             failed = true;
                         } else {
                             if (resource.getLen() != 0 && downloadFile.length() != resource.getLen()) {
-                                Log.e("Wrong size of resource download");
+                                log.error("Wrong size of resource download");
                                 failed = true;
-                            } else Log.t("... checked correct size of resource download");
+                            } else log.trace("... checked correct size of resource download");
                             try {
                                 String fileHash = HashHelper.getHash(downloadFile, HashHelper.SHA_1);
                                 if (resource.getFileHash() != null && !resource.getFileHash()
                                                                                .equals(fileHash)) {
-                                    Log.e("Wrong resource filehash");
+                                    log.error("Wrong resource filehash");
                                     failed = true;
-                                } else Log.t("... checked correct hash of resource download");
+                                } else log.trace("... checked correct hash of resource download");
                             } catch (NoSuchAlgorithmException e) {
-                                Log.w(e);
-                                Log.sendExceptionWithCrashlytics(e);
+                                log.warn("", e);
+                                Crashlytics.logException(e);
                             } catch (IOException e) {
-                                Log.e(e);
+                                log.error("",e);
                                 failed = true;
                             }
                             if (!failed) {
@@ -152,9 +158,9 @@ public class DownloadReceiver extends BroadcastReceiver {
                         failed = true;
                     }
                     if (failed) {
-                        Log.e("Download failed");
+                        log.error("Download failed");
                         DownloadException exception = new DownloadException(state.getStatusText() + ": " + state.getReasonText());
-                        Log.sendExceptionWithCrashlytics(exception);
+                        Crashlytics.logException(exception);
                         resource.setDownloadId(0);
                         context.getContentResolver()
                                .update(Uri.withAppendedPath(Resource.CONTENT_URI, resource.getKey()), resource.getContentValues(), null, null);

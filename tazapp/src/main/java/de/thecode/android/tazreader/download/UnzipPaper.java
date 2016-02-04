@@ -2,6 +2,8 @@ package de.thecode.android.tazreader.download;
 
 import com.dd.plist.PropertyListFormatException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 import java.io.File;
@@ -15,12 +17,13 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.secure.HashHelper;
-import de.thecode.android.tazreader.utils.Log;
 
 /**
  * Created by mate on 07.08.2015.
  */
 public class UnzipPaper {
+
+    private static final Logger log = LoggerFactory.getLogger(UnzipPaper.class);
 
     private Paper paper;
     private File destinationDir;
@@ -39,7 +42,7 @@ public class UnzipPaper {
         unzipFile.getProgress()
                  .setOffset(50);
         checkCanceled();
-        Log.t("... start parsing plist to check hashvals.");
+        log.trace("... start parsing plist to check hashvals.");
         if (!destinationDir.exists() || !destinationDir.isDirectory()) throw new FileNotFoundException("Directory not found");
         File plistFile = new File(destinationDir, Paper.CONTENT_PLIST_FILENAME);
         if (!plistFile.exists()) throw new FileNotFoundException("Plist not found");
@@ -61,13 +64,13 @@ public class UnzipPaper {
                         if (!HashHelper.verifyHash(checkFile, entry.getValue(), HashHelper.SHA_1))
                             throw new FileNotFoundException("Wrong hash for file " + checkFile.getName());
                     } catch (NoSuchAlgorithmException e) {
-                        Log.w(e);
+                        log.warn("",e);
                     }
                 }
             }
-        } else Log.w("No hash values found in Plist");
+        } else log.warn("No hash values found in Plist");
         checkCanceled();
-        Log.t("... finished");
+        log.trace("... finished");
         return result;
     }
 

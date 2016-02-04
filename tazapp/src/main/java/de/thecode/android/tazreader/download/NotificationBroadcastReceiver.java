@@ -4,13 +4,17 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.thecode.android.tazreader.start.StartActivity;
-import de.thecode.android.tazreader.utils.Log;
 
 /**
  * Created by mate on 09.03.2015.
  */
 public class NotificationBroadcastReceiver extends BroadcastReceiver {
+
+    private static final Logger log = LoggerFactory.getLogger(NotificationBroadcastReceiver.class);
 
     public static final String NOTIFICATION_CLICKED_ACTION = "de.thecode.tazreader.notificationclicked";
     public static final String NOTIFICATION_DELETED_ACTION = "de.thecode.tazreader.notificationdeleted";
@@ -18,7 +22,7 @@ public class NotificationBroadcastReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
 
-        Log.d(intent.getAction());
+        log.debug(intent.getAction());
 
         NotificationHelper.clearNotifiedPaperIds(context);
 

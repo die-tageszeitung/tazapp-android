@@ -3,15 +3,19 @@ package de.thecode.android.tazreader.data;
 import android.content.Context;
 import android.content.Intent;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.thecode.android.tazreader.download.DownloadFinishedPaperService;
 import de.thecode.android.tazreader.download.DownloadManager;
 import de.thecode.android.tazreader.utils.AsyncTaskWithExecption;
-import de.thecode.android.tazreader.utils.Log;
 
 /**
  * Created by mate on 11.08.2015.
  */
 public abstract class DeleteTask extends AsyncTaskWithExecption<Long, Void, Void> {
+
+    private static final Logger log = LoggerFactory.getLogger(DeleteTask.class);
 
     private Context context;
 
@@ -40,7 +44,7 @@ public abstract class DeleteTask extends AsyncTaskWithExecption<Long, Void, Void
                         deletePaper.delete(context);
                     }
                 } catch (Paper.PaperNotFoundException e) {
-                    Log.w("Cannot delete Paper:",e);
+                    log.warn("Cannot delete Paper:",e);
                 }
             }
         }

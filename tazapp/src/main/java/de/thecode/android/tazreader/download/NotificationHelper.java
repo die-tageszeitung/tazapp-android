@@ -10,17 +10,20 @@ import android.support.v4.app.NotificationCompat;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.start.StartActivity;
-import de.thecode.android.tazreader.utils.Log;
 
 /**
  * Created by mate on 09.03.2015.
  */
 public class NotificationHelper {
+
+    private static final Logger log = LoggerFactory.getLogger(NotificationHelper.class);
 
     private static final int notificationSuccessId = 1;
     private static final int notificationErrorId = 10;
@@ -57,7 +60,7 @@ public class NotificationHelper {
                     newNotifiedPaperIds.put(notifiedPaperIds.getLong(i));
                 }
             } catch (JSONException e) {
-                Log.w(e);
+                log.warn("",e);
             }
         }
 
@@ -84,7 +87,7 @@ public class NotificationHelper {
                 if (i >= 1) bigTextBuilder.append("\n");
                 bigTextBuilder.append(paper.getTitelWithDate(context));
             } catch (JSONException | Paper.PaperNotFoundException e) {
-                Log.w(e);
+                log.warn("",e);
             }
         }
 
@@ -96,7 +99,7 @@ public class NotificationHelper {
             try {
                 contentText = new Paper(context, notifiedPaperIds.getLong(0)).getTitelWithDate(context);
             } catch (JSONException | Paper.PaperNotFoundException e) {
-                Log.w(e);
+                log.warn("",e);
             }
         }
 
@@ -159,7 +162,7 @@ public class NotificationHelper {
             notificationManager.cancel(notificationId);
             notificationManager.notify(notificationId, notification);
         } catch (Paper.PaperNotFoundException e) {
-            Log.w(e);
+            log.warn("",e);
         }
 
 

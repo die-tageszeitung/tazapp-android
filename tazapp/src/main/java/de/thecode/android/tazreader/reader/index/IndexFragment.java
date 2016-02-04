@@ -19,6 +19,9 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,9 +38,10 @@ import de.thecode.android.tazreader.reader.IReaderCallback;
 import de.thecode.android.tazreader.reader.ReaderActivity;
 import de.thecode.android.tazreader.reader.SettingsDialog;
 import de.thecode.android.tazreader.utils.BaseFragment;
-import de.thecode.android.tazreader.utils.Log;
 
 public class IndexFragment extends BaseFragment {
+
+    private static final Logger log = LoggerFactory.getLogger(IndexFragment.class);
 
     private static final String ARGUMENT_BOOKMARKFILTER = "bookmarkfilter";
 
@@ -59,14 +63,14 @@ public class IndexFragment extends BaseFragment {
     IReaderCallback mReaderCallback;
 
     public IndexFragment() {
-        Log.v();
+       log.trace("");
     }
 
 
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        Log.v();
+log.trace("");
         mReaderCallback = (IReaderCallback) activity;
         tazFontRegular = Typeface.createFromAsset(activity.getAssets(), "fonts/TazWt05-Regular.otf");
         tazFontBold = Typeface.createFromAsset(activity.getAssets(), "fonts/TazWt07-Bold.otf");
@@ -85,7 +89,7 @@ public class IndexFragment extends BaseFragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        Log.v();
+        log.debug("");
         View view = inflater.inflate(R.layout.reader_index, container, false);
         toolbar = (Toolbar) view.findViewById(R.id.toolbar_article);
         toolbar.inflateMenu(R.menu.reader_index);
@@ -179,7 +183,7 @@ public class IndexFragment extends BaseFragment {
     }
 
     public void init(Paper paper) {
-        Log.d("Initialising  IndexFragment");
+        log.debug("paper: {}",paper);
         index.clear();
 
         for (Source source : paper.getPlist()
@@ -341,7 +345,7 @@ public class IndexFragment extends BaseFragment {
                     break;
                 }
             }
-            Log.d(key, result);
+           log.debug("key: {} {}",key,result);
             return result;
         }
 
@@ -542,7 +546,7 @@ public class IndexFragment extends BaseFragment {
     String mCurrentKey = null;
 
     public void updateCurrentPosition(String key) {
-        Log.d(key);
+        log.debug("key: {}",key);
 
         if (mCurrentKey != null) {
             IIndexItem lastitem = mReaderCallback.getPaper()

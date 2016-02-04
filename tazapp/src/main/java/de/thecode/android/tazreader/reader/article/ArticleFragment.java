@@ -33,6 +33,9 @@ import com.google.common.base.Charsets;
 import com.google.common.base.Strings;
 import com.google.common.io.Files;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Locale;
@@ -50,12 +53,13 @@ import de.thecode.android.tazreader.reader.ReaderActivity.DIRECTIONS;
 import de.thecode.android.tazreader.reader.ReaderDataFragment;
 import de.thecode.android.tazreader.reader.article.ArticleWebView.ArticleWebViewCallback;
 import de.thecode.android.tazreader.reader.index.IIndexItem;
-import de.thecode.android.tazreader.utils.Log;
 import de.thecode.android.tazreader.utils.StorageManager;
 import de.thecode.android.tazreader.widget.PageIndexButton;
 import de.thecode.android.tazreader.widget.ShareButton;
 
 public class ArticleFragment extends AbstractContentFragment implements ArticleWebViewCallback {
+
+    private static final Logger log = LoggerFactory.getLogger(ArticleFragment.class);
 
     private static final String JAVASCRIPT_API_NAME = "ANDROIDAPI";
     public static final String ARGUMENT_KEY = "key";
@@ -91,7 +95,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
     @Override
     public void onAttach(Activity activity) {
-        Log.v();
+        log.trace("");
         super.onAttach(activity);
         //mStorage = new StorageManager(mContext);
     }
@@ -99,7 +103,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.v();
+        log.trace("");
     }
 
 
@@ -107,7 +111,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-        Log.v();
+        log.trace("");
 
         View result = inflater.inflate(R.layout.reader_article, container, false);
 
@@ -167,73 +171,73 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        Log.v();
+        log.trace("");
         super.onViewCreated(view, savedInstanceState);
     }
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        Log.v();
+        log.trace("");
         super.onActivityCreated(savedInstanceState);
     }
 
     @Override
     public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
-        Log.v();
+        log.trace("");
         super.onViewStateRestored(savedInstanceState);
     }
 
     @Override
     public void onStart() {
-        Log.v();
+        log.trace("");
         super.onStart();
     }
 
     @Override
     public void onResume() {
-        Log.v();
+        log.trace("");
         super.onResume();
     }
 
     @Override
     public void onPause() {
-        Log.v();
+        log.trace("");
         super.onPause();
     }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        Log.v();
+        log.trace("");
         super.onSaveInstanceState(outState);
     }
 
     @Override
     public void onStop() {
-        Log.v();
+        log.trace("");
         super.onStop();
     }
 
     @Override
     public void onDestroyView() {
-        Log.v();
+        log.trace("");
         super.onDestroyView();
     }
 
     @Override
     public void onDestroy() {
-        Log.v();
+        log.trace("");
         super.onDestroy();
     }
 
     @Override
     public void onDetach() {
-        Log.v();
+        log.trace("");
         super.onDetach();
     }
 
     @Override
     public void init(Paper paper, String key, String position) {
-        Log.d("initialising ArticleFragment", key);
+        log.debug("initialising ArticleFragment {}", key);
         mArticle = paper.getPlist()
                         .getIndexItem(key);
         mStartPosition = position;
@@ -263,34 +267,34 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
     private void onGestureToTazapi(GESTURES gesture, MotionEvent e1) {
         //mOpenGesureResult = true;
-        Log.d(mArticle.getKey(), gesture);
+        log.debug("{} {}",mArticle.getKey(), gesture);
         callTazapi("onGesture", "'" + gesture.name() + "'," + e1.getX() + "," + e1.getY());
     }
 
     @Override
     public void onSwipeLeft(ArticleWebView view, MotionEvent e1, MotionEvent e2) {
-        Log.v();
+        log.trace("");
         mLastGesture = GESTURES.swipeLeft;
         onGestureToTazapi(mLastGesture, e1);
     }
 
     @Override
     public void onSwipeRight(ArticleWebView view, MotionEvent e1, MotionEvent e2) {
-        Log.v();
+        log.trace("");
         mLastGesture = GESTURES.swipeRight;
         onGestureToTazapi(mLastGesture, e1);
     }
 
     @Override
     public void onSwipeTop(ArticleWebView view, MotionEvent e1, MotionEvent e2) {
-        Log.v();
+        log.trace("");
         mLastGesture = GESTURES.swipeUp;
         onGestureToTazapi(mLastGesture, e1);
     }
 
     @Override
     public void onSwipeBottom(ArticleWebView view, MotionEvent e1, MotionEvent e2) {
-        Log.v();
+        log.trace("");
         mLastGesture = GESTURES.swipeDown;
         onGestureToTazapi(mLastGesture, e1);
     }
@@ -305,18 +309,18 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
     @Override
     public void onConfigurationChange(String key, String value) {
-        Log.d(key, value);
+        log.debug("{} {}",key, value);
         callTazapi("onConfigurationChanged", "'" + key + "','" + value + "'");
     }
 
     @Override
     public void onScrollStarted(ArticleWebView view) {
-        Log.v(view.getScrollX(), view.getScrollY());
+        log.debug("{} {}",view.getScrollX(), view.getScrollY());
     }
 
     @Override
     public void onScrollFinished(ArticleWebView view) {
-        Log.v(view.getScrollX(), view.getScrollY());
+        log.debug("{} {}",view.getScrollX(), view.getScrollY());
     }
 
 
@@ -388,19 +392,19 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
             switch (consoleMessage.messageLevel()) {
                 case TIP:
-                    Log.i(mArticle.getKey(), messagBuilder.toString());
+                    log.info("{} {}",mArticle.getKey(), messagBuilder.toString());
                     break;
                 case WARNING:
-                    Log.w(mArticle.getKey(), messagBuilder.toString());
+                    log.warn("{} {}",mArticle.getKey(), messagBuilder.toString());
                     break;
                 case DEBUG:
-                    Log.d(mArticle.getKey(), messagBuilder.toString());
+                    log.debug("{} {}",mArticle.getKey(), messagBuilder.toString());
                     break;
                 case ERROR:
-                    Log.e(mArticle.getKey(), messagBuilder.toString());
+                    log.error("{} {}",mArticle.getKey(), messagBuilder.toString());
                     break;
                 case LOG:
-                    Log.v(mArticle.getKey(), messagBuilder.toString());
+                    log.trace("{} {}",mArticle.getKey(), messagBuilder.toString());
                     break;
             }
             return true;
@@ -408,7 +412,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
         @Override
         public boolean onJsConfirm(WebView view, String url, String message, final JsResult result) {
-            Log.d(message, url, result.toString());
+            log.debug("{} {} {}",message, url, result.toString());
 
             return true;
         }
@@ -419,7 +423,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
         @JavascriptInterface
         public void openUrl(final String url) {
-            Log.d(mArticle.getKey(), url);
+            log.debug("{} {}",mArticle.getKey(), url);
             if (url.startsWith("http")) {
                 Intent i = new Intent(Intent.ACTION_VIEW);
                 i.setData(Uri.parse(url));
@@ -447,7 +451,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
         @JavascriptInterface
         public String getValue(String path) {
             String result = Store.getValueForKey(mContext, path);
-            Log.d(mArticle.getKey(), path, result);
+            log.debug("{} {} {}",mArticle.getKey(), path, result);
             return result;
         }
 
@@ -466,27 +470,27 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
                                        .update(Store.getUriForKey(path), store.getContentValues(), null, null);
                 if (affected > 0) result = true;
             }
-            Log.d(mArticle.getKey(), path, value, result);
+            log.debug("{} {} {}",mArticle.getKey(), path, value, result);
             return result;
         }
 
         @JavascriptInterface
         public String getConfiguration(String name) {
             String result = getConfig(name);
-            Log.d(mArticle.getKey(), name, result);
+            log.debug("{} {} {}",mArticle.getKey(), name, result);
             return result;
         }
 
         @JavascriptInterface
         public boolean setConfiguration(String name, String value) {
             boolean result = setConfig(name, value);
-            Log.d(mArticle.getKey(), name, value, result);
+            log.debug("{} {} {}",mArticle.getKey(), name, value, result);
             return result;
         }
 
         @JavascriptInterface
         public void pageReady(String percentSeen, final String position, String numberOfPages) {
-            Log.d(mArticle.getKey(), percentSeen, position, numberOfPages);
+            log.debug("{} {} {}",mArticle.getKey(), percentSeen, position, numberOfPages);
 
             //fade(1F, 800);
 
@@ -508,17 +512,17 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
         @JavascriptInterface
         public void enableRegionScroll(boolean isOn) {
-            Log.d(mArticle.getKey(), isOn);
+            log.debug("{} {}",mArticle.getKey(), isOn);
         }
 
         @JavascriptInterface
         public void beginRendering() {
-            Log.d(mArticle.getKey());
+            log.debug(mArticle.getKey());
         }
 
         @JavascriptInterface
         public void nextArticle(final int position) {
-            Log.d(mArticle.getKey(), position);
+            log.debug("{} {}",mArticle.getKey(), position);
             //mAnimationLock = true;
             runOnUiThread(new Runnable() {
 
@@ -548,7 +552,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
         @JavascriptInterface
         public void previousArticle(final int position) {
-            Log.d(mArticle.getKey(), position);
+            log.debug("{} {}",mArticle.getKey(), position);
 
             runOnUiThread(new Runnable() {
 
@@ -589,7 +593,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
         @JavascriptInterface
         public void clearWebCache() {
-            Log.d();
+            log.debug("");
 
         }
     }
@@ -598,12 +602,12 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
         @Override
         public void onLoadResource(WebView view, String url) {
-            Log.v(url);
+            log.trace(url);
         }
 
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
-            Log.t(url);
+            log.trace(url);
             if (url != null) {
                 if (url.toLowerCase(Locale.getDefault())
                        .startsWith("http")) {
@@ -623,9 +627,9 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
         @Override
         public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
-            Log.e(mArticle.getKey(), "errorCode:" + errorCode);
-            Log.e(mArticle.getKey(), "description:" + description);
-            Log.e(mArticle.getKey(), "failingUrl:" + failingUrl);
+            log.error("{} errorCode: {}", mArticle.getKey(), errorCode);
+            log.error("{} description: {}",mArticle.getKey(), description);
+            log.error("{} failingUrl: {}", mArticle.getKey(), failingUrl);
             super.onReceivedError(view, errorCode, description, failingUrl);
         }
 
@@ -676,7 +680,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
     @Override
     public void onTtsStateChanged(ReaderDataFragment.TTS state) {
-        Log.d(state);
+        log.debug("{}",state);
     }
 
     private CharSequence getTextToSpeech() {

@@ -17,6 +17,9 @@ import com.artifex.mupdfdemo.MuPDFCore;
 import com.artifex.mupdfdemo.PageView;
 import com.artifex.mupdfdemo.TextWord;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.util.Locale;
 
@@ -24,9 +27,10 @@ import de.thecode.android.tazreader.data.Paper.Plist.Page;
 import de.thecode.android.tazreader.reader.IReaderCallback;
 import de.thecode.android.tazreader.reader.index.IIndexItem;
 import de.thecode.android.tazreader.utils.StorageManager;
-import de.thecode.android.tazreader.utils.Log;
 
 public class TAZPageView extends PageView {
+
+    private static final Logger log = LoggerFactory.getLogger(TAZPageView.class);
 
 
     TAZMuPDFCore mCore;
@@ -35,21 +39,21 @@ public class TAZPageView extends PageView {
 
     public TAZPageView(Context c, Point parentSize, Bitmap sharedHqBm) {
         super(c, parentSize, sharedHqBm);
-        Log.v();
+        log.trace("");
         _context = c;
         mSize = parentSize;
     }
 
     public void init(Page page) {
-        Log.d(page.getKey());
-        if (_page != null) Log.d(_page.getKey());
+
+        if (_page != null) log.debug("page: {}",page.getKey());
         if (_page != null) {
             if (!_page.getKey()
                       .equals(page.getKey())) {
                 try {
                     if (mCore != null) mCore.onDestroy();
                 } catch (Exception e) {
-                    Log.w(e);
+                    log.warn("",e);
                 }
                 mCore = null;
             }
@@ -76,12 +80,12 @@ public class TAZPageView extends PageView {
 
     @Override
     protected CancellableTaskDefinition<Void, Void> getDrawPageTask(final Bitmap bm, final int sizeX, final int sizeY, final int patchX, final int patchY, final int patchWidth, final int patchHeight) {
-        Log.v();
+        log.trace("");
         return new MuPDFCancellableTaskDefinition<Void, Void>(mCore) {
 
             @Override
             public Void doInBackground(MuPDFCore.Cookie cookie, Void... params) {
-                Log.v();
+                log.debug("cookie: {}, params: {}",cookie, params);
                 // Workaround bug in Android Honeycomb 3.x, where the bitmap generation count
                 // is not incremented when drawing.
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB && Build.VERSION.SDK_INT < Build.VERSION_CODES.ICE_CREAM_SANDWICH) bm.eraseColor(0);
@@ -93,12 +97,12 @@ public class TAZPageView extends PageView {
     }
 
     protected CancellableTaskDefinition<Void, Void> getUpdatePageTask(final Bitmap bm, final int sizeX, final int sizeY, final int patchX, final int patchY, final int patchWidth, final int patchHeight) {
-        Log.v();
+        log.debug("bm: {}, sizeX: {}, sizeY: {}, patchX: {}, patchY: {}, patchWidth: {}, patchHeight: {}",bm, sizeX, sizeY, patchX, patchY, patchWidth, patchHeight);
         return new MuPDFCancellableTaskDefinition<Void, Void>(mCore) {
 
             @Override
             public Void doInBackground(MuPDFCore.Cookie cookie, Void... params) {
-                Log.v();
+                log.debug("cookie: {}, params: {}",cookie, params);
                 // Workaround bug in Android Honeycomb 3.x, where the bitmap generation count
                 // is not incremented when drawing.
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB && Build.VERSION.SDK_INT < Build.VERSION_CODES.ICE_CREAM_SANDWICH) bm.eraseColor(0);
@@ -110,21 +114,21 @@ public class TAZPageView extends PageView {
 
     @Override
     protected LinkInfo[] getLinkInfo() {
-        Log.v();
+        log.debug("");
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     protected TextWord[][] getText() {
-        Log.v();
+        log.debug("");
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     protected void addMarkup(PointF[] quadPoints, Type type) {
-        Log.v();
+        log.debug("quadPoints: {}, type: {}",quadPoints, type);
         // TODO Auto-generated method stub
     }
 
@@ -148,7 +152,7 @@ public class TAZPageView extends PageView {
                     if (!isCancelled()) result.setPageSize(result.getPageSize(0));
                     if (!isCancelled()) return result;
                 } catch (Exception e) {
-                    Log.w(e);
+                    log.warn("",e);
                 }
             }
             return null;
@@ -162,7 +166,7 @@ public class TAZPageView extends PageView {
     }
 
     public void setScale(float scale) {
-        Log.v(scale);
+        log.debug("scale: {}",scale);
         // This type of view scales automatically to fit the size
         // determined by the parent view groups during layout
     }
@@ -176,7 +180,7 @@ public class TAZPageView extends PageView {
         float relativeX = docRelX / mCore.getPageSize().x;
         float relativeY = docRelY / mCore.getPageSize().y;
 
-        Log.v(relativeX, relativeY);
+        log.debug("relativeX: {}, relativeY: {}",relativeX, relativeY);
 
         IReaderCallback readerCallback = ((TAZReaderView) getParent()).getReaderCallback();
 

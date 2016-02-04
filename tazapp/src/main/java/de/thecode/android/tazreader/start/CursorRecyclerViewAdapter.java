@@ -6,12 +6,15 @@ import android.database.DataSetObserver;
 import android.provider.BaseColumns;
 import android.support.v7.widget.RecyclerView;
 
-import de.thecode.android.tazreader.utils.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by mate on 06.02.2015.
  */
 public abstract class CursorRecyclerViewAdapter<VH extends RecyclerView.ViewHolder> extends RecyclerView.Adapter<VH> {
+
+    private static final Logger log = LoggerFactory.getLogger(CursorRecyclerViewAdapter.class);
 
     private Context mContext;
 
@@ -99,9 +102,9 @@ public abstract class CursorRecyclerViewAdapter<VH extends RecyclerView.ViewHold
      * closed.
      */
     public Cursor swapCursor(Cursor newCursor) {
-        Log.v(mCursor, newCursor);
+       log.debug("newCursor: {}",newCursor);
         if (newCursor == mCursor) {
-            Log.v("Cursor ist the same ...");
+            log.debug("Cursor is the same");
             return null;
         }
         final Cursor oldCursor = mCursor;

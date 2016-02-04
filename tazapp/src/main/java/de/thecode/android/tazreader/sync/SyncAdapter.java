@@ -27,6 +27,8 @@ import com.google.common.base.Strings;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 import java.io.ByteArrayInputStream;
@@ -55,15 +57,15 @@ import de.thecode.android.tazreader.download.CoverDownloadedEvent;
 import de.thecode.android.tazreader.download.DownloadManager;
 import de.thecode.android.tazreader.reader.ReaderActivity;
 import de.thecode.android.tazreader.start.ScrollToPaperEvent;
-import de.thecode.android.tazreader.utils.Log;
+import de.thecode.android.tazreader.utils.Connection;
 import de.thecode.android.tazreader.utils.StorageManager;
-import de.thecode.android.tazreader.utils.Utils;
 import de.thecode.android.tazreader.volley.RequestManager;
 
 /**
  * The type Sync adapter.
  */
 public class SyncAdapter extends AbstractThreadedSyncAdapter {
+    private static final Logger log = LoggerFactory.getLogger(SyncAdapter.class);
 
     private static final String PLIST_KEY_ISSUES = "issues";
 
@@ -116,7 +118,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     private void init(Context context) {
         //Log.init(context, TAZReader.LOGTAG);
-        Log.v();
+        log.trace("");
 
         mContentResolver = context.getContentResolver();
         mCoverHelper = new FileCacheCoverHelper(StorageManager.getInstance(context));
@@ -125,7 +127,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult) {
         //Crashlytics.start(mContext);
-        Log.d(extras);
+        log.debug("account: {}, extras: {}, authority: {}, provider: {}, syncResult: {}",account, extras, authority, provider, syncResult);
         EventBus.getDefault()
                 .postSticky(new SyncStateChangedEvent(true));
 
@@ -145,7 +147,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
 
         Long currentOpenPaperId = TazSettings.getPrefLong(getContext(), TazSettings.PREFKEY.LASTOPENPAPER, -1L);
-        Log.d("+++++++ TazSettings: Current Paper SyncAdapter View:", currentOpenPaperId);
+        log.debug("+++++++ TazSettings: Current Paper SyncAdapter View: {}", currentOpenPaperId);
 
         // If ForceSync it's now done
         TazSettings.setPref(getContext(), TazSettings.PREFKEY.FORCESYNC, false);
@@ -172,7 +174,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 try {
                     while (deletePapersCursor.moveToNext()) {
                         Paper deletePaper = new Paper(deletePapersCursor);
-                        Log.d("PaperId:", deletePaper.getId(), "(currentOpen:", currentOpenPaperId, ")");
+                        log.debug("PaperId: {} (currentOpen:{})", deletePaper.getId(), currentOpenPaperId);
                         if (!deletePaper.getId()
                                         .equals(currentOpenPaperId)) {
 
@@ -201,7 +203,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                                 }
 
                             } catch (ParseException e) {
-                                Log.e("error parsing date of paper");
+                                log.error("error parsing date of paper", e);
                             }
                         }
 
@@ -261,7 +263,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             } catch (IOException | PropertyListFormatException | ParseException | SAXException | ParserConfigurationException | InterruptedException | TimeoutException | ExecutionException e) {
                 syncExeption = e;
                 errorCounter++;
-                Log.e(e);
+                log.error("",e);
             }
         }
 
@@ -295,7 +297,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                         NSDictionary root = (NSDictionary) PropertyListParser.parse(new ByteArrayInputStream(imageResponse.getBytes("UTF-8")));
                         handlePlist(root);
                     } catch (IOException | PropertyListFormatException | ParseException | SAXException | ParserConfigurationException | InterruptedException | TimeoutException | ExecutionException e) {
-                        Log.e(e);
+                        log.error("",e);
                     }
 
                 }
@@ -320,15 +322,15 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         try {
             if (tomorrowCursor.moveToNext()) {
                 // Ausgabe von morgen ist da
-                Log.d("Ausgabe von morgen veröffentlicht");
+                log.debug("Ausgabe von morgen veröffentlicht");
                 Paper tomorrowPaper = new Paper(tomorrowCursor);
                 if (TazSettings.getPrefBoolean(getContext(), TazSettings.PREFKEY.AUTOLOAD, false)) {
                     if (!tomorrowPaper.isDownloaded()) {
                         boolean connectionCheck = false;
                         if (TazSettings.getPrefBoolean(getContext(), TazSettings.PREFKEY.AUTOLOAD_WIFI, true)) {
-                            if (Utils.getConnectionType(getContext()) >= Utils.CONNECTION_FAST) connectionCheck = true;
+                            if (Connection.getConnectionType(getContext()) >= Connection.CONNECTION_FAST) connectionCheck = true;
                         } else {
-                            if (Utils.getConnectionType(getContext()) >= Utils.CONNECTION_MOBILE_ROAMING) connectionCheck = true;
+                            if (Connection.getConnectionType(getContext()) >= Connection.CONNECTION_MOBILE_ROAMING) connectionCheck = true;
                         }
                         if (connectionCheck) {
 
@@ -347,7 +349,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 }
             } else {
                 // Ausgabe von morgen ist noch nicht da
-                Log.d("Ausgabe von morgen noch nicht veröffentlicht");
+                log.debug("Ausgabe von morgen noch nicht veröffentlicht");
             }
         } finally {
             tomorrowCursor.close();
@@ -451,7 +453,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 if (cursor.moveToNext()) {
                     Paper oldPaper = new Paper(cursor);
                     if (!comparePaper(newPaper, oldPaper)) {
-                        Log.d("found difference in paper");
+                        log.debug("found difference in paper");
                         //Uri idUri = ContentUris.withAppendedId(Paper.CONTENT_URI, oldPaper.getId());
                         oldPaper.setImage(newPaper.getImage());
                         if (!equalsHelper(newPaper.getImageHash(), oldPaper.getImageHash())) {
@@ -487,7 +489,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                     }
                     //if (!mCoverHelper.exists(oldPaper.getImageHash())) downloadImage(oldPaper);
                 } else {
-                    Log.d("notfound");
+                    log.debug("notfound");
 
                     //                Uri newPaperUri = getContext().getContentResolver()
                     //                                          .insert(Paper.CONTENT_URI, newPaper.getContentValues());
@@ -530,7 +532,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 moveToPaperAtEnd = paper;
             }
         } catch (ParseException e) {
-            Log.e(e);
+            log.error("",e);
             moveToPaperAtEnd = paper;
         }
     }

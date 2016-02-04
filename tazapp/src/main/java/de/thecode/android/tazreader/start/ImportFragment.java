@@ -15,18 +15,22 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.lang.ref.WeakReference;
 
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.importer.ImportActivity;
 import de.thecode.android.tazreader.utils.BaseFragment;
-import de.thecode.android.tazreader.utils.Log;
 
 /**
  * A simple {@link Fragment} subclass.
  */
 public class ImportFragment extends BaseFragment implements ImportDataRetainFragment.ImportDataCallback {
+
+    private static final Logger log = LoggerFactory.getLogger(ImportFragment.class);
 
     ImportRecyclerAdapter adapter;
 
@@ -39,7 +43,7 @@ public class ImportFragment extends BaseFragment implements ImportDataRetainFrag
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        Log.d();
+        log.debug("");
         callback = new WeakReference<>((IStartCallback) getActivity());
         if (hasCallback()) getCallback().onUpdateDrawer(this);
         dataFragment = ImportDataRetainFragment.findOrCreateRetainFragment(getFragmentManager(), this);
@@ -71,7 +75,7 @@ public class ImportFragment extends BaseFragment implements ImportDataRetainFrag
 
 
     private void loadDirectory(File dir) {
-        Log.d();
+        log.debug("dir: {}",dir);
         dataFragment.setCurrentDir(dir);
         dataFragment.restart();
     }
@@ -92,7 +96,7 @@ public class ImportFragment extends BaseFragment implements ImportDataRetainFrag
     //    }
 
     public void onListClick(ImportDirectoryLoader.ImportFileWrapper ifw) {
-        Log.d(ifw);
+        log.debug("ifw: {}",ifw);
         switch (ifw.getType()) {
             case FILE:
                 if (!(ifw.getFile()== null || !ifw.getFile().exists())) {
@@ -113,7 +117,7 @@ public class ImportFragment extends BaseFragment implements ImportDataRetainFrag
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.d(requestCode,resultCode,data);
+        log.debug("requestCode: {}, resultCode: {}, data: {}",requestCode, resultCode, data);
         if (requestCode == ImportActivity.REQUEST_CODE_IMPORT_ACTIVITY) {
             dataFragment.restart();
             if (resultCode == Activity.RESULT_OK) {

@@ -1,6 +1,8 @@
 package de.thecode.android.tazreader.download;
 
 import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -13,12 +15,12 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import de.thecode.android.tazreader.utils.Log;
-
 /**
  * Created by mate on 07.08.2015.
  */
 public class UnzipStream {
+
+    private static final Logger log = LoggerFactory.getLogger(UnzipStream.class);
 
     private InputStream inputStream;
     private File destinationDir;
@@ -40,14 +42,14 @@ public class UnzipStream {
     public File start() throws IOException, UnzipCanceledException {
         try {
             ZipInputStream zis = new ZipInputStream(new BufferedInputStream(inputStream));
-            Log.t("... start working with inputstream");
+            log.trace("... start working with inputstream");
             try {
                 ZipEntry ze;
 
                 while ((ze = zis.getNextEntry()) != null) {
                     if (canceled)
                         throw new UnzipCanceledException();
-                    Log.d("... zipentry:", ze, ze.getSize());
+                    log.debug("... zipentry: {} {}", ze, ze.getSize());
                     if (ze.isDirectory()) {
                         File zipDir = new File(destinationDir, ze.getName());
                         if (dirHelper(zipDir)) {
@@ -64,7 +66,7 @@ public class UnzipStream {
                             notifyListeners(progress);
 
                             FileOutputStream fout = new FileOutputStream(destinationFile);
-                            Log.d("open fileoutputstream for",destinationFile);
+                            log.debug("open fileoutputstream for {}",destinationFile);
                             try {
                                 byte[] buffer = new byte[32 * 1024]; // play with sizes..
                                 int readCount;
@@ -74,7 +76,7 @@ public class UnzipStream {
                                     publishProgress(destinationFile, readCount);
                                 }
                             } finally {
-                                Log.d("closing fileoutputstream");
+                                log.debug("closing fileoutputstream");
                                 fout.close();
                             }
                         }
@@ -84,9 +86,9 @@ public class UnzipStream {
                 notifyListeners(progress);
 
             } finally {
-                Log.t("... all uncompressed bytes:", progress.getBytesSoFar());
+                log.trace("... all uncompressed bytes: {}", progress.getBytesSoFar());
                 try {
-                    Log.d("closing inputstream");
+                    log.debug("closing inputstream");
                     zis.close();
                 } catch (IOException ignored) {
 
@@ -109,7 +111,7 @@ public class UnzipStream {
     }
 
     public void onError(Exception e) throws IOException {
-        Log.e(e);
+        log.error("",e);
         if (deleteDestinationOnFailure) {
             if (destinationDir.exists()) FileUtils.deleteDirectory(destinationDir);
                 //Utils.deleteDir(destinationDir);
@@ -118,7 +120,7 @@ public class UnzipStream {
     }
 
     public void onSuccess() {
-        Log.t("... finished unzipping stream");
+        log.trace("... finished unzipping stream");
     }
 
     File lastFilePublished;

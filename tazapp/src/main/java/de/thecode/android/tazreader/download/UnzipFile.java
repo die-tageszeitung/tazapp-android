@@ -1,5 +1,8 @@
 package de.thecode.android.tazreader.download;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -8,12 +11,12 @@ import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import de.thecode.android.tazreader.utils.Log;
-
 /**
  * Created by mate on 07.08.2015.
  */
 public class UnzipFile extends UnzipStream {
+
+    private static final Logger log = LoggerFactory.getLogger(UnzipFile.class);
 
     private File zipFile;
     private boolean deleteSourceOnSuccess;
@@ -26,7 +29,7 @@ public class UnzipFile extends UnzipStream {
 
     @Override
     public File start() throws IOException, UnzipCanceledException {
-        Log.t("... start extracting file", zipFile);
+        log.trace("... start extracting file", zipFile);
         ZipFile zf = new ZipFile(zipFile);
         Enumeration<? extends ZipEntry> e = zf.entries();
         long totalUncompressedSize = 0;
@@ -36,32 +39,32 @@ public class UnzipFile extends UnzipStream {
         }
         zf.close();
         if (totalUncompressedSize > 0) setTotalUncompressedSize(totalUncompressedSize);
-        Log.t("... size uncompressed: " + totalUncompressedSize);
+        log.trace("... size uncompressed: " + totalUncompressedSize);
         return super.start();
     }
 
     @Override
     public void onSuccess() {
         super.onSuccess();
-        Log.t("... finished unzipping file");
-        StringBuilder log = new StringBuilder("... should delete source:" + deleteSourceOnSuccess);
+        log.trace("... finished unzipping file");
+        StringBuilder logBuilder = new StringBuilder("... should delete source:" + deleteSourceOnSuccess);
         if (deleteSourceOnSuccess) {
             if (zipFile != null) {
                 if (zipFile.exists()) {
                     if (zipFile.delete()) {
-                        log.append(" - success");
+                        logBuilder.append(" - success");
                     }
                 } else {
-                    log.append(" - ")
+                    logBuilder.append(" - ")
                        .append(zipFile)
                        .append(" does not exist");
                 }
 
             } else {
-                log.append(" - zipfile null");
+                logBuilder.append(" - zipfile null");
             }
         }
-        Log.t(log);
+        log.trace(logBuilder.toString());
     }
 
     public File getZipFile() {

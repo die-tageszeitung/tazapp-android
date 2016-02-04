@@ -10,7 +10,11 @@ import android.speech.tts.UtteranceProgressListener;
 import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
 import android.text.TextUtils;
+
 import android.widget.Toast;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -21,12 +25,13 @@ import java.util.Locale;
 
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
-import de.thecode.android.tazreader.utils.Log;
 
 /**
  * Created by mate on 13.11.2015.
  */
 public class ReaderDataFragment extends Fragment implements TextToSpeech.OnInitListener{
+
+    private static final Logger log = LoggerFactory.getLogger(ReaderDataFragment.class);
 
     private static final String TAG = "RetainDataFragment";
 
@@ -89,7 +94,6 @@ public class ReaderDataFragment extends Fragment implements TextToSpeech.OnInitL
 
     @Override
     public void onInit(int status) {
-        Log.d(status);
         if (status == TextToSpeech.SUCCESS) {
             int result = tts.setLanguage(Locale.GERMAN);
             if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
@@ -187,14 +191,15 @@ public class ReaderDataFragment extends Fragment implements TextToSpeech.OnInitL
     }
 
     public void setCurrentKey(Context context, String currentKey, String position) {
-        Log.d(currentKey, position);
+        log.debug("{} {} {}", context, currentKey, position);
+
         mCurrentKey = currentKey;
         mPosition = position;
         try {
             _paper.saveStoreValue(context, ReaderActivity.STORE_KEY_CURRENTPOSITION, mCurrentKey);
             _paper.saveStoreValue(context, ReaderActivity.STORE_KEY_POSITION_IN_ARTICLE, position);
         } catch (Exception e) {
-            Log.w(e);
+            log.warn("",e);
         }
 
         boolean addtobackstack = true;
@@ -204,7 +209,8 @@ public class ReaderDataFragment extends Fragment implements TextToSpeech.OnInitL
             if (lastBackstack.equals(newBackStack)) addtobackstack = false;
         }
         if (addtobackstack) {
-            Log.d("Adding to backstack", currentKey, position);
+            log.debug("{} {}", currentKey, position);
+            //Log.d("Adding to backstack", currentKey, position);
             backstack.add(newBackStack);
         }
     }
@@ -224,7 +230,7 @@ public class ReaderDataFragment extends Fragment implements TextToSpeech.OnInitL
         String position;
 
         public BackStack(String key, String position) {
-            Log.d(key, position);
+            log.debug("key: {}, position: {}",key, position);
             this.key = key;
             this.position = position;
         }

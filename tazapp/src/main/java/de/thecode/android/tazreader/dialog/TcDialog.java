@@ -12,10 +12,13 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.view.ContextThemeWrapper;
 
-import de.thecode.android.tazreader.utils.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class TcDialog extends DialogFragment {
+
+    private static final Logger log = LoggerFactory.getLogger(TcDialog.class);
 
     static final String ARG_INT_TITLE = "title_resid";
     static final String ARG_STRING_TITLE = "title_text";
@@ -141,9 +144,9 @@ public class TcDialog extends DialogFragment {
 
         @Override
         public void onClick(DialogInterface dialog, int which) {
-            Log.d("Button", which);
+            log.debug("Button {}", which);
             if (buttonListener != null) buttonListener.onDialogClick(getTag(), TcDialog.this.getArguments(), which);
-            else Log.i(TcDialogButtonListener.class.getSimpleName() + " not set in Activity " + getActivity().getClass()
+            else log.info(TcDialogButtonListener.class.getSimpleName() + " not set in Activity " + getActivity().getClass()
                                                                                                              .getSimpleName());
         }
     };
@@ -152,7 +155,7 @@ public class TcDialog extends DialogFragment {
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        Log.d(this.getTag());
+        log.debug("{}",this.getTag());
         builder = new AlertDialog.Builder(hasStyle() ? new ContextThemeWrapper(getActivity(), getStyle()) : getActivity());
 
         if (hasIcon()) builder.setIcon(getIcon());
@@ -245,17 +248,17 @@ public class TcDialog extends DialogFragment {
 
     @Override
     public void onAttach(Activity activity) {
-        Log.d(this.getTag());
+        log.debug("{}",this.getTag());
         super.onAttach(activity);
         try {
             buttonListener = (TcDialogButtonListener) activity;
         } catch (ClassCastException e) {
-            Log.w(e.getMessage());
+            log.warn("{}",e.getMessage());
         }
         try {
             dismissListener = (TcDialogDismissListener) activity;
         } catch (ClassCastException e) {
-            Log.w(e.getMessage());
+            log.warn("{}",e.getMessage());
         }
 
     }
@@ -263,9 +266,9 @@ public class TcDialog extends DialogFragment {
     @Override
     public void onDismiss(DialogInterface dialog) {
         if (getTag() != null) {
-            Log.v(getTag());
+            log.trace(getTag());
             if (dismissListener != null) dismissListener.onDialogDismiss(getTag(), TcDialog.this.getArguments());
-            else Log.i(TcDialogDismissListener.class.getSimpleName() + " not set in Activity " + getActivity().getClass()
+            else log.info(TcDialogDismissListener.class.getSimpleName() + " not set in Activity " + getActivity().getClass()
                                                                                                               .getSimpleName());
         }
         super.onDismiss(dialog);
@@ -274,9 +277,9 @@ public class TcDialog extends DialogFragment {
     @Override
     public void onCancel(DialogInterface dialog) {
         if (getTag() != null) {
-            Log.v(getTag());
+            log.trace(getTag());
             if (cancelListener != null) cancelListener.onDialogCancel(getTag(), TcDialog.this.getArguments());
-            else Log.i(TcDialogCancelListener.class.getSimpleName() + " not set in Activity " + getActivity().getClass()
+            else log.info(TcDialogCancelListener.class.getSimpleName() + " not set in Activity " + getActivity().getClass()
                                                                                                              .getSimpleName());
         }
         super.onCancel(dialog);
@@ -296,7 +299,7 @@ public class TcDialog extends DialogFragment {
     }
 
     public static void dismissDialog(FragmentManager fm, String dialogTag) {
-        Log.d(dialogTag);
+        log.debug("{}",dialogTag);
         DialogFragment dialog = (DialogFragment) fm.findFragmentByTag(dialogTag);
         if (dialog != null) dialog.dismiss();
     }

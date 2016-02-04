@@ -9,35 +9,31 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 
-import de.thecode.android.tazreader.utils.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Authenticator extends AbstractAccountAuthenticator {
 
+    private static final Logger log = LoggerFactory.getLogger(Authenticator.class);
     AccountManager mAccountManager;
 
     // Simple constructor
     public Authenticator(Context context) {
         super(context);
-        Log.v();
+        log.trace("");
         mAccountManager = (AccountManager) context.getSystemService(Context.ACCOUNT_SERVICE);
     }
 
     // Editing properties is not supported
     @Override
-    public Bundle editProperties(
-            AccountAuthenticatorResponse r, String s) {
+    public Bundle editProperties(AccountAuthenticatorResponse r, String s) {
         throw new UnsupportedOperationException();
     }
 
     // Don't add additional accounts
     @Override
-    public Bundle addAccount(
-            AccountAuthenticatorResponse r,
-            String s,
-            String s2,
-            String[] strings,
-            Bundle bundle) throws NetworkErrorException {
-        Log.v();
+    public Bundle addAccount(AccountAuthenticatorResponse r, String s, String s2, String[] strings, Bundle bundle) throws NetworkErrorException {
+        log.trace("");
 
         Bundle responseBundle = new Bundle();
         responseBundle.putBoolean(AccountManager.KEY_BOOLEAN_RESULT, false);
@@ -48,48 +44,36 @@ public class Authenticator extends AbstractAccountAuthenticator {
 
     // Ignore attempts to confirm credentials
     @Override
-    public Bundle confirmCredentials(
-            AccountAuthenticatorResponse r,
-            Account account,
-            Bundle bundle) throws NetworkErrorException {
-        Log.v();
+    public Bundle confirmCredentials(AccountAuthenticatorResponse r, Account account, Bundle bundle) throws NetworkErrorException {
+        log.trace("");
         return null;
     }
 
     // Getting an authentication token is not supported
     @Override
-    public Bundle getAuthToken(
-            AccountAuthenticatorResponse r,
-            Account account,
-            String s,
-            Bundle bundle) throws NetworkErrorException {
-        Log.v();
+    public Bundle getAuthToken(AccountAuthenticatorResponse r, Account account, String s, Bundle bundle) throws NetworkErrorException {
+        log.trace("");
         throw new UnsupportedOperationException();
     }
 
     // Getting a label for the auth token is not supported
     @Override
     public String getAuthTokenLabel(String s) {
-        Log.v();
+        log.trace("");
         throw new UnsupportedOperationException();
     }
 
     // Updating user credentials is not supported
     @Override
-    public Bundle updateCredentials(
-            AccountAuthenticatorResponse r,
-            Account account,
-            String s, Bundle bundle) throws NetworkErrorException {
-        Log.v();
+    public Bundle updateCredentials(AccountAuthenticatorResponse r, Account account, String s, Bundle bundle) throws NetworkErrorException {
+        log.trace("");
         throw new UnsupportedOperationException();
     }
 
     // Checking features for the account is not supported
     @Override
-    public Bundle hasFeatures(
-            AccountAuthenticatorResponse r,
-            Account account, String[] strings) throws NetworkErrorException {
-        Log.v();
+    public Bundle hasFeatures(AccountAuthenticatorResponse r, Account account, String[] strings) throws NetworkErrorException {
+        log.trace("");
         throw new UnsupportedOperationException();
     }
 
@@ -105,7 +89,7 @@ public class Authenticator extends AbstractAccountAuthenticator {
         // }
         // else
         // {
-        Log.d(account.name + "not removable");
+        log.debug("{} not removable",account.name);
         Bundle responseBundle = new Bundle();
         responseBundle.putBoolean(AccountManager.KEY_BOOLEAN_RESULT, false);
         return responseBundle;

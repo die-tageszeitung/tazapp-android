@@ -6,6 +6,11 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
 
+import com.crashlytics.android.Crashlytics;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,12 +23,13 @@ import de.thecode.android.tazreader.dialog.TcDialog;
 import de.thecode.android.tazreader.download.DownloadManager;
 import de.thecode.android.tazreader.sync.AccountHelper;
 import de.thecode.android.tazreader.utils.BaseActivity;
-import de.thecode.android.tazreader.utils.Log;
 
 /**
  * Created by mate on 16.04.2015.
  */
 public class ImportActivity extends BaseActivity implements TcDialog.TcDialogButtonListener, ImportWorkerFragment.ImportRetainFragmentCallback {
+
+    private static final Logger log = LoggerFactory.getLogger(ImportActivity.class);
 
     public static final int REQUEST_CODE_IMPORT_ACTIVITY = 29452;
 
@@ -106,7 +112,8 @@ public class ImportActivity extends BaseActivity implements TcDialog.TcDialogBut
                             try {
                                 DownloadManager.getInstance(this).enquePaper(ContentUris.parseId(downloadUri));
                             } catch (Paper.PaperNotFoundException | AccountHelper.CreateAccountException | DownloadManager.DownloadNotAllowedException e) {
-                                Log.sendExceptionWithCrashlytics(e);
+                                log.error("",e);
+                                Crashlytics.logException(e);
                             }
                         }
                     }
@@ -124,7 +131,7 @@ public class ImportActivity extends BaseActivity implements TcDialog.TcDialogBut
 
     @Override
     public void onImportRetainFragmentCreate(ImportWorkerFragment importRetainWorkerFragment) {
-        Log.d();
+        log.debug("");
         //        new TcDialogIndeterminateProgress().withCancelable(false)
         //                                           .withMessage("Import")
         //                                           .show(getFragmentManager(), DIALOG_WAIT_IMPORT);
@@ -142,7 +149,7 @@ public class ImportActivity extends BaseActivity implements TcDialog.TcDialogBut
 
     @Override
     public void onFinishedImporting(List<Paper> importedPapers) {
-        Log.d();
+        log.debug("");
         Uri[] importedPaperUris = new Uri[importedPapers.size()];
         Uri[] downloadPaperUris = new Uri[0];
         int i = 0;
@@ -187,13 +194,13 @@ public class ImportActivity extends BaseActivity implements TcDialog.TcDialogBut
 
     @Override
     public void onErrorWhileImport(Uri dataUri, Exception e) {
-        Log.e(dataUri, e);
+        log.debug("{} {}",dataUri, e);
         showErrorDialog(String.format(getString(R.string.import_error), dataUri, e.getLocalizedMessage()));
     }
 
     @Override
     public void onImportAlreadyExists(Uri dataUri, ImportMetadata metadata, File cacheFile, boolean deleteFile) {
-        Log.d();
+        log.debug("");
         Bundle bundle = new Bundle();
         bundle.putParcelable(BUNDLE_KEY_METADATA, metadata);
         bundle.putSerializable(BUNDLE_KEY_FILE, cacheFile);

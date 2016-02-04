@@ -8,12 +8,16 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Map;
 
 import de.thecode.android.tazreader.secure.SimpleCrypto;
-import de.thecode.android.tazreader.utils.Log;
 
 public final class TazSettings {
+
+    private static final Logger log = LoggerFactory.getLogger(TazSettings.class);
 
     public static final class PREFKEY {
 
@@ -72,7 +76,7 @@ public final class TazSettings {
         }
        
         boolean result = prefEdit.commit();
-        Log.d(key,v,result);
+        log.debug("{} {} {}",key,v,result);
         return result;
     }
 
@@ -125,7 +129,7 @@ public final class TazSettings {
         Editor prefEdit = prefs.edit();
         prefEdit.remove(key);
         boolean result = prefEdit.commit();
-        Log.d(key,result);
+        log.debug("{} {}",key,result);
         return result;
     }
 

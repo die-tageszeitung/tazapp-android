@@ -6,12 +6,15 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 
-import de.thecode.android.tazreader.utils.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by mate on 09.02.2015.
  */
 public class AutofitRecyclerView extends RecyclerView {
+
+    private static final Logger log = LoggerFactory.getLogger(AutofitRecyclerView.class);
     private AutoFitGridLayoutManager manager;
     private int columnWidth = -1;
 
@@ -95,7 +98,7 @@ public class AutofitRecyclerView extends RecyclerView {
                 newPosition = position + (int) (completeVisibleRows * spanCount - (spanCount - 1));
                 if (newPosition > getItemCount()) newPosition = getItemCount();
 
-                Log.d(position, first, last, dif, spanCount, completeVisibleRows, newPosition, getItemCount());
+               log.debug("{} {} {} {} {} {} {} {}",position, first, last, dif, spanCount, completeVisibleRows, newPosition, getItemCount());
             }
 
             super.smoothScrollToPosition(recyclerView,state,newPosition);
