@@ -13,6 +13,7 @@ import android.text.TextUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Publication;
 import de.thecode.android.tazreader.data.Resource;
@@ -34,7 +35,7 @@ public class TazProvider extends ContentProvider {
     private static final int RESOURCE_DIR = 8;
     private static final int RESOURCE_ID = 9;
         
-    public static final String AUTHORITY = "de.thecode.android.tazreader.provider";
+    public static final String AUTHORITY = BuildConfig.CONTENT_AUTHORITY;
     private static UriMatcher sUriMatcher;
     
     private DatabaseHelper mDatabaseHelper;

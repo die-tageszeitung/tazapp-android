@@ -21,7 +21,7 @@
         android:icon="@mipmap/ic_launcher"
         android:largeHeap="true"
         android:label="@string/app_name"
-        android:restrictedAccountType="de.thecode.android.tazreader"
+        android:restrictedAccountType="@string/account_type"
         android:theme="@style/AppTheme">
 
 
@@ -128,7 +128,7 @@
 
         <provider
             android:name="de.thecode.android.tazreader.provider.TazProvider"
-            android:authorities="de.thecode.android.tazreader.provider"
+            android:authorities="@string/content_authority"
             android:exported="false"
             android:syncable="true"/>
 
@@ -155,7 +155,7 @@
 
         <provider
             android:name="com.commonsware.cwac.provider.StreamProvider"
-            android:authorities="de.thecode.android.tazreader.streamprovider"
+            android:authorities="@string/stream_content_authority"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data

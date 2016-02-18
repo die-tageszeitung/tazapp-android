@@ -13,7 +13,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'io.fabric.tools:gradle:1.18.0'
+        classpath 'io.fabric.tools:gradle:1.+'
     }
 }
 apply plugin: 'android-sdk-manager'
@@ -54,7 +54,6 @@ android {
     compileSdkVersion 22
     buildToolsVersion '23.0.1'
     defaultConfig {
-        applicationId "de.thecode.android.tazreader"
         minSdkVersion 15
         targetSdkVersion 22
         versionCode 52
@@ -72,6 +71,7 @@ android {
             ext.enableCrashlytics = false
             debuggable true
             versionNameSuffix "_debug"
+            applicationIdSuffix ".debug"
         }
         release {
             zipAlignEnabled true
@@ -85,15 +85,19 @@ android {
     // x86 version number > ARMv7 version number > ARMv5 version number
     // http://ph0b.com/improving-x86-support-of-android-apps-libs-engines/#ArchDependentAPKs
 
-    flavorDimensions /*"owner",*/"abi"
+    flavorDimensions "owner","abi"
 
     productFlavors {
-//        taz {
-//            dimension "owner"
-//        }
-//        lmd {
-//            dimension "owner"
-//        }
+        taz {
+            applicationId "de.thecode.android.tazreader"
+            dimension "owner"
+            resValue 'string', 'app_name', 'taz.app'
+        }
+        lmd {
+            applicationId "de.thecode.lmd"
+            dimension "owner"
+            resValue 'string', 'app_name', 'LE MONDE diplomatique'
+        }
         x86 {
             dimension "abi"
             versionCode Integer.parseInt("6" + defaultConfig.versionCode)
@@ -132,6 +136,30 @@ android {
             versionCode Integer.parseInt("9" + defaultConfig.versionCode)
             versionName defaultConfig.versionName + "_fat"
         }
+    }
+
+    applicationVariants.all { variant ->
+        def appName = variant.mergedFlavor.resValues.get('app_name').getValue()
+        appName = "${appName}"
+        if(variant.buildType.name == "debug") {
+            appName += " DEBUG"
+        }
+        variant.resValue 'string', 'app_name', appName
+    }
+}
+
+def buildConfigAndResStringField(variant, name, value) {
+    logger.quiet('Name: ' + name + ' Wert:' + value)
+    variant.resValue 'string', name.toLowerCase(), value
+    variant.buildConfigField 'String', name, "\"$value\""
+}
+
+afterEvaluate {
+    android.applicationVariants.all { variant ->
+        variant.resValue 'string', 'application_id', variant.applicationId
+        buildConfigAndResStringField variant, "ACCOUNT_TYPE", variant.applicationId
+        buildConfigAndResStringField variant, "CONTENT_AUTHORITY", variant.applicationId + ".provider"
+        buildConfigAndResStringField variant, "STREAM_CONTENT_AUTHORITY", variant.applicationId + ".streamprovider"
     }
 }
 

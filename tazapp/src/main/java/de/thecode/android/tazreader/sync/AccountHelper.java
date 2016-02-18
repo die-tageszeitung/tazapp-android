@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 
+import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.provider.TazProvider;
 import de.thecode.android.tazreader.secure.HashHelper;
@@ -22,7 +23,7 @@ public class AccountHelper {
 
     private static final Logger log = LoggerFactory.getLogger(AccountHelper.class);
 
-    public static final String ACCOUNT_TYPE = "de.thecode.android.tazreader";
+    public static final String ACCOUNT_TYPE = BuildConfig.ACCOUNT_TYPE;
 
     public static final String ACCOUNT_NAME = "Sync";
 

@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
-    <string name="app_name" translatable="false">taz.app</string>
     <string name="string_pref_text_user">Nutzername</string>
     <string name="string_pref_text_pass">Passwort</string>
     <string name="string_nopapernopref_button_abo">ePaper-Abo bestellen</string>

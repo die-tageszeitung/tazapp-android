@@ -45,6 +45,7 @@ import java.util.zip.ZipException;
 import javax.xml.parsers.ParserConfigurationException;
 
 import de.greenrobot.event.EventBus;
+import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper.Plist.Page.Article;
 import de.thecode.android.tazreader.download.PaperDeletedEvent;
@@ -1109,7 +1110,8 @@ public class Paper {
                 try {
                     String pagePath = pdfFile.getCanonicalPath()
                                              .replace(papersDir.getCanonicalPath(), "papers");
-                    Uri contentUri = Uri.parse("content://de.thecode.android.tazreader.streamprovider")
+
+                    Uri contentUri = Uri.parse("content://"+ BuildConfig.STREAM_CONTENT_AUTHORITY)
                                         .buildUpon()
                                         .appendEncodedPath(pagePath)
                                         .build();
