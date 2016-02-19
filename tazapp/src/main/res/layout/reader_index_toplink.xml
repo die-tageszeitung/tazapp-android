@@ -11,7 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <de.thecode.android.tazreader.widget.TypefacedTextView
+        <TextView
             android:id="@+id/title"
             style="@style/TextIndexToplink"
             android:layout_width="match_parent"
@@ -19,7 +19,7 @@
             android:layout_weight="1"
             android:paddingLeft="@dimen/index_image"
             android:text="@string/dummy"
-            app:typeface="@string/TypefaceTazBold"/>
+            fontPath="@string/fontBold"/>
 
         <View
             android:id="@+id/currentMarker"

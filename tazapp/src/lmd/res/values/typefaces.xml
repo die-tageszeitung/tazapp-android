@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fontBold" translatable="false"></string>
+    <string name="fontRegular" translatable="false"></string>
+</resources>

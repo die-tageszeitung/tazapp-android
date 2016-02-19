@@ -17,45 +17,42 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <de.thecode.android.tazreader.widget.TypefacedTextView
+            <TextView
                 style="@style/SettingsHeadline"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/header_abo"
-                app:typeface="@string/TypefaceTazBold"/>
+                fontPath="@string/fontBold"/>
 
-            <de.thecode.android.tazreader.widget.TypefacedCheckBox
+            <CheckBox
                 android:id="@+id/autoLoadCheckBox"
                 style="@style/SettingsCheckbox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/autoload"
-                app:typeface="@string/TypefaceTazRegular"/>
+                />
 
-            <de.thecode.android.tazreader.widget.TypefacedCheckBox
+            <CheckBox
                 android:id="@+id/autoLoadWifiCheckBox"
                 style="@style/SettingsCheckbox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/autoload_wifi"
-                app:typeface="@string/TypefaceTazRegular"/>
+                android:text="@string/autoload_wifi"/>
 
-            <de.thecode.android.tazreader.widget.TypefacedCheckBox
+            <CheckBox
                 android:id="@+id/autoDeleteCheckBox"
                 style="@style/SettingsCheckbox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/autodelete"
-                app:typeface="@string/TypefaceTazRegular"/>
+                android:text="@string/autodelete"/>
 
 
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
-                <de.thecode.android.tazreader.widget.TypefacedTextView
+                <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    app:typeface="@string/TypefaceTazRegular"
                     android:text="@string/autodelete_exp"
                     style="@style/SettingsNote"
                     android:layout_marginRight="4dp"
@@ -78,13 +75,12 @@
                     android:layout_toLeftOf="@+id/autodeletDaysUnitText"
                     android:layout_toStartOf="@+id/autodeletDaysUnitText"/>
 
-                <de.thecode.android.tazreader.widget.TypefacedTextView
+                <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/autodelete_days"
                     android:textAppearance="?android:attr/textAppearanceSmall"
                     android:textColor="@drawable/settings_textcolor"
-                    app:typeface="@string/TypefaceTazRegular"
                     android:gravity="center_vertical"
                     android:layout_alignParentTop="true"
                     android:layout_alignParentRight="true"
@@ -99,20 +95,19 @@
             <View style="@style/SettingsDivider"/>
 
 
-            <de.thecode.android.tazreader.widget.TypefacedTextView
+            <TextView
                 style="@style/SettingsHeadline"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/header_screen"
-                app:typeface="@string/TypefaceTazBold"/>
+                fontPath="@string/fontBold"/>
 
-            <de.thecode.android.tazreader.widget.TypefacedCheckBox
+            <CheckBox
                 android:id="@+id/screenActiveCheckBox"
                 style="@style/SettingsCheckbox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/screen_active"
-                app:typeface="@string/TypefaceTazRegular"
                 android:checked="false"/>
 
             <FrameLayout
@@ -120,13 +115,12 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
-                <de.thecode.android.tazreader.widget.TypefacedTextView
+                <TextView
                     style="@style/SettingsRadioButtonFrame.Title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="start"
-                    android:text="@string/screen_orientation"
-                    app:typeface="@string/TypefaceTazRegular"/>
+                    android:text="@string/screen_orientation"/>
 
                 <RadioGroup
                     android:id="@+id/orientationGroup"
@@ -161,46 +155,43 @@
             <View style="@style/SettingsDivider"/>
 
 
-            <de.thecode.android.tazreader.widget.TypefacedTextView
+            <TextView
                 style="@style/SettingsHeadline"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/header_read"
-                app:typeface="@string/TypefaceTazBold"/>
+                fontPath="@string/fontBold"/>
 
-            <de.thecode.android.tazreader.widget.TypefacedCheckBox
+            <CheckBox
                 android:id="@+id/ttsCheckBox"
                 style="@style/SettingsCheckbox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/texttospeach"
-                app:typeface="@string/TypefaceTazRegular"
                 android:checked="false"/>
 
 
-            <de.thecode.android.tazreader.widget.TypefacedCheckBox
+            <CheckBox
                 android:id="@+id/showPageIndexButtonCheckBox"
                 style="@style/SettingsCheckbox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/pageindex_button"
-                app:typeface="@string/TypefaceTazRegular"
                 android:checked="false"/>
-            <de.thecode.android.tazreader.widget.TypefacedTextView
+            <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                app:typeface="@string/TypefaceTazRegular"
                 android:text="@string/pageindex_button_exp"
                 style="@style/SettingsNote"/>
 
             <View style="@style/SettingsDivider"/>
 
-            <de.thecode.android.tazreader.widget.TypefacedTextView
+            <TextView
                 style="@style/SettingsHeadline"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/header_notification"
-                app:typeface="@string/TypefaceTazBold"/>
+                fontPath="@string/fontBold"/>
 
             <FrameLayout
                 style="@style/SettingsClickFrame"
@@ -208,32 +199,28 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
-                <de.thecode.android.tazreader.widget.TypefacedTextView
+                <TextView
                     style="@style/SettingsClickFrame.Title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/notification_sound"
-                    app:typeface="@string/TypefaceTazRegular"/>
+                    android:text="@string/notification_sound"/>
 
-                <de.thecode.android.tazreader.widget.TypefacedTextView
+                <TextView
                     style="@style/SettingsClickFrame.Value"
                     android:id="@+id/notificationSound"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/notification_sound_button"
-                    app:typeface="@string/TypefaceTazRegular"/>
+                    android:text="@string/notification_sound_button"/>
 
 
             </FrameLayout>
 
-            <de.thecode.android.tazreader.widget.TypefacedCheckBox
+            <CheckBox
                 android:id="@+id/notificationVibrateCheckBox"
                 style="@style/SettingsCheckbox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/notification_vibrate"
-
-                app:typeface="@string/TypefaceTazRegular"/>
+                android:text="@string/notification_vibrate"/>
 
         </LinearLayout>
     </ScrollView>

@@ -15,8 +15,7 @@
         android:layout_margin="12dp"
         android:indeterminate="true"/>
 
-    <de.thecode.android.tazreader.widget.TypefacedTextView
-        app:typeface="@string/TypefaceTazRegular"
+    <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"

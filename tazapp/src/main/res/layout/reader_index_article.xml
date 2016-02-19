@@ -45,21 +45,21 @@
                 android:paddingRight="20dp"
                 android:paddingTop="4dp">
 
-                <de.thecode.android.tazreader.widget.TypefacedTextView
+                <TextView
                     android:id="@+id/title"
                     style="@style/TextIndexArticle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/dummy"
-                    app:typeface="@string/TypefaceTazBold"/>
+                    fontPath="@string/fontBold"/>
 
-                <de.thecode.android.tazreader.widget.TypefacedTextView
+                <TextView
                     android:id="@+id/subtitle"
                     style="@style/TextIndexArticleSub"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/dummy"
-                    app:typeface="@string/TypefaceTazRegular"/>
+                    fontPath="@string/fontRegular"/>
             </LinearLayout>
         </RelativeLayout>
 

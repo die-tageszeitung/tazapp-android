@@ -2,11 +2,15 @@ package de.thecode.android.tazreader.data;
 
 import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
+import android.os.Build;
 
 import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Locale;
@@ -14,43 +18,37 @@ import java.util.Locale;
 import de.thecode.android.tazreader.utils.StorageManager;
 
 public abstract class FileCacheImageHelper {
-    
-    private static final Bitmap.CompressFormat format = Bitmap.CompressFormat.JPEG;
+    private static final Logger log = LoggerFactory.getLogger(FileCacheImageHelper.class);
+
     private static final int quality = 80;
 
-    private File mCacheDir ;
-    
-    
-    public FileCacheImageHelper(StorageManager storage,String subDir) {
+    private File mCacheDir;
+
+
+    public FileCacheImageHelper(StorageManager storage, String subDir) {
         //mContext = context;
         //ExternalStorage storage = new ExternalStorage(context);
         mCacheDir = storage.getCache(subDir);
     }
 
-    public boolean save(Bitmap bitmap, String hash) throws IOException
-    {
+    public boolean save(Bitmap bitmap, String hash) throws IOException {
         return save(bitmap, hash, 0, 0);
     }
 
-    public boolean save(Bitmap bitmap, String hash, int width, int height) throws IOException
-    {
-        if (mCacheDir.exists())
-        {
+    public boolean save(Bitmap bitmap, String hash, int width, int height) throws IOException {
+        log.debug("bitmap: {}, hash: {}, width: {}, height: {}", bitmap, hash, width, height);
+        if (mCacheDir.exists()) {
             File imageFile = new File(mCacheDir, hash + "." + getFileEndingForBitmapCompressFormat());
             if (imageFile.exists())
                 //noinspection ResultOfMethodCallIgnored
                 imageFile.delete();
-            if (imageFile.createNewFile())
-            {
+            if (imageFile.createNewFile()) {
                 OutputStream fOut = null;
                 fOut = new FileOutputStream(imageFile);
 
-                if (height != 0 || width != 0)
-                {
-                    if (width != 0 && height == 0)
-                        height = bitmap.getHeight() * width / bitmap.getWidth();
-                    if (height != 0 && width == 0)
-                        width = bitmap.getWidth() * height / bitmap.getHeight();
+                if (height != 0 || width != 0) {
+                    if (width != 0 && height == 0) height = bitmap.getHeight() * width / bitmap.getWidth();
+                    if (height != 0 && width == 0) width = bitmap.getWidth() * height / bitmap.getHeight();
                     bitmap = Bitmap.createScaledBitmap(bitmap, width, height, true);
                 }
                 bitmap.compress(getBitmapCompressFormat(), quality, fOut);
@@ -61,52 +59,67 @@ public abstract class FileCacheImageHelper {
         }
         return false;
     }
-    
+
     public Bitmap.CompressFormat getBitmapCompressFormat() {
-        return format;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) return Bitmap.CompressFormat.WEBP;
+        else return Bitmap.CompressFormat.JPEG;
     }
-    
+
     @SuppressLint("NewApi")
     public String getFileEndingForBitmapCompressFormat() {
-        switch (getBitmapCompressFormat()) {
-            case JPEG:
-                return Bitmap.CompressFormat.JPEG.name().toLowerCase(Locale.getDefault());
-            case PNG:
-                return Bitmap.CompressFormat.PNG.name().toLowerCase(Locale.getDefault());
-            case WEBP:
-                return Bitmap.CompressFormat.WEBP.name().toLowerCase(Locale.getDefault());
-        }
-        return null;
+        return getBitmapCompressFormat().name().toLowerCase(Locale.getDefault());
     }
-    
+
     public int getBitmapCompressQuality() {
         return quality;
     }
 
-    public boolean delete(String hash)
-    {
-        File image = new File(mCacheDir, hash + "." + getFileEndingForBitmapCompressFormat());
-        if (image.exists())
-            return image.delete();
+    public boolean delete(String hash) {
+        File image = getFile(hash);
+        if (image != null && image.exists()) return image.delete();
         return false;
     }
-    
+
     public void deleteDir() {
-        if (mCacheDir != null)
-        {
-            if (mCacheDir.exists())
-                FileUtils.deleteQuietly(mCacheDir);
+        if (mCacheDir != null) {
+            if (mCacheDir.exists()) FileUtils.deleteQuietly(mCacheDir);
         }
     }
 
-    public boolean exists(String hash)
-    {
+    public boolean exists(String hash) {
         return getFile(hash).exists();
     }
 
-    public File getFile(String hash)
-    {
+    public File getFile(String hash) {
+        File[] files = mCacheDir.listFiles(new ImageNameFileFilter(hash));
+        if (files != null && files.length > 0 && files[0] != null) {
+            if (files.length > 1) {
+                for (int i = 1; i < files.length; i++) {
+                    files[i].delete();
+                }
+            }
+            return files[0];
+        }
         return new File(mCacheDir, hash + "." + getFileEndingForBitmapCompressFormat());
+    }
+
+
+    private class ImageNameFileFilter implements FilenameFilter {
+
+        private String hash;
+
+        public ImageNameFileFilter(String hash) {
+            this.hash = hash;
+        }
+
+        @Override
+        public boolean accept(File dir, String filename) {
+            String[] split = filename.split("\\.");
+            if (split.length > 0 && split[0].equals(hash)) {
+                return true;
+            }
+            return false;
+        }
     }
 
 }

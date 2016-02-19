@@ -218,8 +218,7 @@ public class PageIndexFragment extends BaseFragment {
             Paint paint = new Paint();
             int padding = getResources().getDimensionPixelSize(R.dimen.pageindex_thumbnail_current_borderwidth);
             float halfPadding = ((float) padding) / 2;
-            paint.setColor(getResources().getColor(R.color.TazRot));
-            paint.setAlpha(128);
+            paint.setColor(getResources().getColor(R.color.pageindex_overlay_color));
             paint.setStrokeWidth(padding);
             paint.setStyle(Paint.Style.STROKE);
 

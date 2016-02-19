@@ -74,7 +74,7 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
                                    .getDimensionPixelSize(R.dimen.cover_image_height);
         mCoverImageWidth = context.getResources()
                                   .getDimensionPixelSize(R.dimen.cover_image_width);
-        mPlaceHolderBitmap = bitmapFromResource(context, R.drawable.taz_dummy, mCoverImageWidth, mCoverImageHeight);
+        mPlaceHolderBitmap = bitmapFromResource(context, R.drawable.dummy, mCoverImageWidth, mCoverImageHeight);
     }
 
     private boolean hasCallback() {
@@ -206,7 +206,7 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
                 viewHolder.image.setTag(hash);
             }
         } else {
-            viewHolder.image.setImageResource(R.drawable.taz_dummy);
+            viewHolder.image.setImageResource(R.drawable.dummy);
         }
 
         //        viewHolder.progress.setProgress(100 - progressMap.get(paper.getId()));

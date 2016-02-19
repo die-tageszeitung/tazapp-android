@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.ColorFilter;
 import android.graphics.LightingColorFilter;
-import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
@@ -49,8 +48,8 @@ public class IndexFragment extends BaseFragment {
     List<IIndexItem> index = new ArrayList<>();
     IndexRecyclerViewAdapter adapter;
 
-    Typeface tazFontRegular;
-    Typeface tazFontBold;
+//    Typeface tazFontRegular;
+//    Typeface tazFontBold;
 
     ColorFilter bookmarkOnFilter;
     ColorFilter bookmarkOffFilter;
@@ -72,8 +71,8 @@ public class IndexFragment extends BaseFragment {
         super.onAttach(activity);
 log.trace("");
         mReaderCallback = (IReaderCallback) activity;
-        tazFontRegular = Typeface.createFromAsset(activity.getAssets(), "fonts/TazWt05-Regular.otf");
-        tazFontBold = Typeface.createFromAsset(activity.getAssets(), "fonts/TazWt07-Bold.otf");
+//        tazFontRegular = Typeface.createFromAsset(activity.getAssets(), "fonts/TazWt05-Regular.otf");
+//        tazFontBold = Typeface.createFromAsset(activity.getAssets(), "fonts/TazWt07-Bold.otf");
         bookmarkOffFilter = new LightingColorFilter(activity.getResources()
                                                             .getColor(R.color.index_bookmark_off), 1);
         bookmarkOnFilter = new LightingColorFilter(activity.getResources()

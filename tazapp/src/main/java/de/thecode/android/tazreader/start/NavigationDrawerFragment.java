@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import de.greenrobot.event.EventBus;
-import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.utils.BaseFragment;
@@ -362,38 +361,25 @@ public class NavigationDrawerFragment extends BaseFragment {
         public void setActive() {
             image.setColorFilter(itemView.getContext()
                                          .getResources()
-                                         .getColor(R.color.index_bookmark_on));
+                                         .getColor(R.color.start_navigation_item_icon_active));
         }
 
         @Override
         public void setInactive() {
             image.setColorFilter(itemView.getContext()
                                          .getResources()
-                                         .getColor(R.color.index_bookmark_off));
+                                         .getColor(R.color.start_navigation_item_icon));
         }
 
     }
 
     private static class HeaderViewHolder extends ViewHolder {
         RelativeLayout layout;
-        TextView text;
 
         public HeaderViewHolder(View itemView) {
             super(itemView, null);
             layout = (RelativeLayout) itemView.findViewById(R.id.layout);
             ViewCompat.setImportantForAccessibility(layout, ViewCompat.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS);
-            text = (TextView) itemView.findViewById(R.id.text);
-            text.setVisibility(View.VISIBLE);
-            if (BuildConfig.VERSION_NAME
-                   .toLowerCase()
-                   .contains("alpha")) text.setText(R.string.drawer_header_alpha);
-            else if (BuildConfig.VERSION_NAME
-                        .toLowerCase()
-                        .contains("beta")) text.setText(R.string.drawer_header_beta);
-            else if (BuildConfig.VERSION_NAME
-                        .toLowerCase()
-                        .contains("debug")) text.setText(R.string.drawer_header_debug);
-            else text.setVisibility(View.GONE);
         }
     }
 

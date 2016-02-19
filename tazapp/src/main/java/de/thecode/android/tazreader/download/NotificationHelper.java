@@ -114,7 +114,7 @@ public class NotificationHelper {
                 .setDeleteIntent(deleteIntent)
                 .setDefaults(Notification.DEFAULT_LIGHTS)
                 .setColor(context.getResources()
-                                 .getColor(R.color.TazRot))
+                                 .getColor(R.color.notification))
                 .setSmallIcon(R.drawable.ic_stat_taz_pfote);
 
         if (withSound) {
@@ -150,7 +150,7 @@ public class NotificationHelper {
                     .setGroup("taznot")
                     .setDefaults(Notification.DEFAULT_LIGHTS)
                     .setColor(context.getResources()
-                                     .getColor(R.color.TazRot))
+                                     .getColor(R.color.notification))
                     .setSmallIcon(android.R.drawable.stat_notify_error);
             Uri ringtoneUri = TazSettings.getRingtone(context);
             if (ringtoneUri != null) nBuilder.setSound(ringtoneUri);

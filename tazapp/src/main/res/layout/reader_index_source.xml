@@ -17,13 +17,13 @@
             android:layout_height="@dimen/index_image"
             android:scaleType="center"/>
 
-        <de.thecode.android.tazreader.widget.TypefacedTextView
+        <TextView
             android:id="@+id/title"
             style="@style/TextIndexSource"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:text="@string/dummy"
-            app:typeface="@string/TypefaceTazBold"/>
+            fontPath="@string/fontBold"/>
 
     </LinearLayout>
 </FrameLayout>

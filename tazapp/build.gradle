@@ -149,7 +149,6 @@ android {
 }
 
 def buildConfigAndResStringField(variant, name, value) {
-    logger.quiet('Name: ' + name + ' Wert:' + value)
     variant.resValue 'string', name.toLowerCase(), value
     variant.buildConfigField 'String', name, "\"$value\""
 }
@@ -189,4 +188,5 @@ dependencies {
     compile 'org.slf4j:slf4j-api:1.7.12'
     compile 'com.github.tony19:logback-android-core:1.1.1-4'
     compile 'com.github.tony19:logback-android-classic:1.1.1-4'
+    compile 'uk.co.chrisjenx:calligraphy:2.1.0'
 }

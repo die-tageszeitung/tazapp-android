@@ -13,8 +13,8 @@
         android:src="@drawable/ic_file_folder"
         android:id="@+id/image"/>
 
-    <de.thecode.android.tazreader.widget.TypefacedTextView
-        app:typeface="@string/TypefaceTazBold"
+    <TextView
+        fontPath="@string/fontBold"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"

@@ -26,6 +26,7 @@ import de.thecode.android.tazreader.service.TazRequestSyncReceiver;
 import de.thecode.android.tazreader.utils.Display;
 import de.thecode.android.tazreader.volley.RequestManager;
 import io.fabric.sdk.android.Fabric;
+import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 
 public class TazReaderApplication extends Application {
 
@@ -48,6 +49,10 @@ public class TazReaderApplication extends Application {
                                                    .build());
 
         RequestManager.init(this);
+
+        CalligraphyConfig.initDefault(new CalligraphyConfig.Builder().setDefaultFontPath(getString(R.string.fontRegular))
+                                                                     .setFontAttrId(R.attr.fontPath)
+                                                                     .build());
 
         log.info("");
 
