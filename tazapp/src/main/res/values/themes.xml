@@ -24,4 +24,9 @@
     </style>
 
 
+    <style name="Toolbar" parent="AppTheme">
+        <item name="colorControlNormal">@color/toolbar_foreground_color</item>
+    </style>
+
+
 </resources>

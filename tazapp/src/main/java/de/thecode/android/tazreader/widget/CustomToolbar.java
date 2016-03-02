@@ -1,11 +1,8 @@
 package de.thecode.android.tazreader.widget;
 
-import android.animation.LayoutTransition;
-import android.app.Activity;
 import android.content.Context;
-import android.graphics.ColorFilter;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffColorFilter;
+import android.graphics.drawable.Drawable;
+import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.view.menu.ActionMenuItemView;
 import android.support.v7.widget.ActionMenuView;
 import android.support.v7.widget.Toolbar;
@@ -27,36 +24,32 @@ public class CustomToolbar extends Toolbar {
 
     public CustomToolbar(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        init(context);
+
     }
 
     public CustomToolbar(Context context, AttributeSet attrs) {
         super(context, attrs);
-        init(context);
+
     }
 
     public CustomToolbar(Context context) {
         super(context);
-        init(context);
+
     }
 
-    private void init(Context context) {
-        ctxt = context;
-        this.setLayoutTransition(new LayoutTransition());
-    }
 
     int itemColor;
-    Context ctxt;
+
 
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
-        colorizeToolbar(this, itemColor, (Activity) ctxt);
+        colorizeToolbar(this, itemColor);
         super.onLayout(changed, l, t, r, b);
     }
 
     public void setItemColor(final int color) {
-        colorizeToolbar(CustomToolbar.this, color, (Activity) ctxt);
         itemColor = color;
+        colorizeToolbar(CustomToolbar.this, color);
     }
 
 
@@ -66,15 +59,15 @@ public class CustomToolbar extends Toolbar {
      *
      * @param toolbarView       toolbar view being colored
      * @param toolbarIconsColor the target color of toolbar icons
-     * @param activity          reference to activity needed to register observers
+
      */
-    public static void colorizeToolbar(Toolbar toolbarView, int toolbarIconsColor, Activity activity) {
-        final PorterDuffColorFilter colorFilter = new PorterDuffColorFilter(toolbarIconsColor, PorterDuff.Mode.SRC_IN);
+    public static void colorizeToolbar(Toolbar toolbarView, int toolbarIconsColor) {
+
 
         for (int i = 0; i < toolbarView.getChildCount(); i++) {
             final View v = toolbarView.getChildAt(i);
 
-            doColorizing(v, colorFilter, toolbarIconsColor);
+            doColorizing(v, toolbarIconsColor);
         }
 
         //Step 3: Changing the color of title and subtitle.
@@ -82,20 +75,13 @@ public class CustomToolbar extends Toolbar {
         toolbarView.setSubtitleTextColor(toolbarIconsColor);
     }
 
-    public static void doColorizing(View v, final ColorFilter colorFilter, int toolbarIconsColor) {
+    public static void doColorizing(View v, int toolbarIconsColor) {
         if (v instanceof ImageButton) {
-            ((ImageButton) v).getDrawable()
-                             .setAlpha(255);
-            ((ImageButton) v).getDrawable()
-                             .setColorFilter(colorFilter);
+            tintDrawable(((ImageButton)v).getDrawable(),toolbarIconsColor);
         }
 
         if (v instanceof ImageView) {
-            log.debug("VIEW: {}",v.getId());
-            ((ImageView) v).getDrawable()
-                           .setAlpha(255);
-            ((ImageView) v).getDrawable()
-                           .setColorFilter(colorFilter);
+            tintDrawable(((ImageView) v).getDrawable(), toolbarIconsColor);
         }
 
         if (v instanceof AutoCompleteTextView) {
@@ -112,7 +98,7 @@ public class CustomToolbar extends Toolbar {
 
         if (v instanceof ViewGroup) {
             for (int lli = 0; lli < ((ViewGroup) v).getChildCount(); lli++) {
-                doColorizing(((ViewGroup) v).getChildAt(lli), colorFilter, toolbarIconsColor);
+                doColorizing(((ViewGroup) v).getChildAt(lli), toolbarIconsColor);
             }
         }
 
@@ -127,26 +113,18 @@ public class CustomToolbar extends Toolbar {
                     int drawablesCount = ((ActionMenuItemView) innerView).getCompoundDrawables().length;
                     for (int k = 0; k < drawablesCount; k++) {
                         if (((ActionMenuItemView) innerView).getCompoundDrawables()[k] != null) {
-                            final int finalK = k;
-
-                            //Important to set the color filter in seperate thread,
-                            //by adding it to the message queue
-                            //Won't work otherwise.
-                            //Works fine for my case but needs more testing
-
-                            ((ActionMenuItemView) innerView).getCompoundDrawables()[finalK].setColorFilter(colorFilter);
-
-                            //	                            innerView.post(new Runnable() {
-                            //	                                @Override
-                            //	                                public void run() {
-                            //	                                    ((ActionMenuItemView) innerView).getCompoundDrawables()[finalK].setColorFilter(colorFilter);
-                            //	                                }
-                            //	                            });
+                            tintDrawable(((ActionMenuItemView) innerView).getCompoundDrawables()[k],toolbarIconsColor);
                         }
                     }
                 }
             }
         }
+    }
+
+    private static void tintDrawable(Drawable drawable, int color) {
+        Drawable wrappedDrawable = DrawableCompat.wrap(drawable);
+        wrappedDrawable = wrappedDrawable.mutate();
+        DrawableCompat.setTint(wrappedDrawable, color);
     }
 
 

@@ -148,7 +148,7 @@ public class StartActivity extends BaseActivity implements IStartCallback, TcDia
 
         toolbar = (CustomToolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        toolbar.setItemColor(ContextCompat.getColor(this,R.color.toolbar_foreground_color));
+        toolbar.setItemColor(ContextCompat.getColor(this, R.color.toolbar_foreground_color));
 
         if (getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         updateTitle();

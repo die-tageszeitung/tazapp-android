@@ -4,25 +4,25 @@
     <item
         android:id="@+id/toolbar_expand"
         app:showAsAction="always" 
-        android:icon="@drawable/ic_index_plus"
+        android:icon="@drawable/ic_add_24dp"
         android:title="@string/reader_index_menu_openall">
     </item>
     <item
         android:id="@+id/toolbar_collapse"
         app:showAsAction="always"
-        android:icon="@drawable/ic_index_minus"
+        android:icon="@drawable/ic_remove_24dp"
         android:title="@string/reader_index_menu_closeall">
     </item>
     <item
         android:id="@+id/toolbar_bookmark_on"
         app:showAsAction="always"
-        android:icon="@drawable/ic_index_bookmark_off"
+        android:icon="@drawable/ic_bookmark_outline_24dp"
         android:title="@string/reader_index_menu_bookmarkfilter_on">
     </item>              
     <item
         android:id="@+id/toolbar_bookmark_off"
         app:showAsAction="always"
-        android:icon="@drawable/ic_index_bookmark_on"
+        android:icon="@drawable/ic_bookmark_24dp"
         android:title="@string/reader_index_menu_bookmarkfilter_off">
     </item>              
     <item

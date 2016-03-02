@@ -370,14 +370,14 @@ log.trace("");
                 case SOURCE:
                     ((SourceViewholder) viewholder).title.setText(item.getTitle());
                     if (item.areIndexChildsVisible())
-                        ((SourceViewholder) viewholder).image.setImageResource(R.drawable.ic_index_minus);
-                    else ((SourceViewholder) viewholder).image.setImageResource(R.drawable.ic_index_plus);
+                        ((SourceViewholder) viewholder).image.setImageDrawable(ContextCompat.getDrawable(getActivity(), R.drawable.ic_remove_24dp));
+                    else ((SourceViewholder) viewholder).image.setImageDrawable(ContextCompat.getDrawable(getActivity(), R.drawable.ic_add_24dp));
                     break;
                 case CATEGORY:
                     ((CategoryViewholder) viewholder).title.setText(item.getTitle());
                     if (item.areIndexChildsVisible())
-                        ((CategoryViewholder) viewholder).image.setImageDrawable(getResources().getDrawable(R.drawable.ic_index_minus));
-                    else ((CategoryViewholder) viewholder).image.setImageDrawable(getResources().getDrawable(R.drawable.ic_index_plus));
+                        ((CategoryViewholder) viewholder).image.setImageDrawable(ContextCompat.getDrawable(getActivity(),R.drawable.ic_remove_24dp));
+                    else ((CategoryViewholder) viewholder).image.setImageDrawable(ContextCompat.getDrawable(getActivity(), R.drawable.ic_add_24dp));
                     break;
                 case PAGE:
                     ((PageViewholder) viewholder).title.setText(item.getTitle());
