@@ -2,7 +2,8 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
              xmlns:fab="http://schemas.android.com/apk/res-auto"
              android:layout_width="match_parent"
-             android:layout_height="match_parent">
+             android:layout_height="match_parent"
+             xmlns:app="http://schemas.android.com/tools">
 
     <android.support.v4.widget.SwipeRefreshLayout
         android:id="@+id/swipeRefreshLayout"
@@ -29,4 +30,10 @@
         fab:fab_colorNormal="@color/library_fab_normal"
         fab:fab_colorPressed="@color/library_fab_pressed"
         fab:fab_colorRipple="@color/library_fab_ripple"/>
+
+    <android.support.design.widget.FloatingActionButton
+        android:src="@drawable/ic_library_fab"
+        app:fabSize="normal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
 </FrameLayout>

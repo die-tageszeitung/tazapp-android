@@ -48,7 +48,7 @@ public class ShareButton extends ImageView implements View.OnClickListener, View
 
     private void init(Context context) {
         mContext = context;
-        setImageDrawable(getResources().getDrawable(R.drawable.abc_ic_menu_share_mtrl_alpha));
+        setImageDrawable(getResources().getDrawable(R.drawable.ic_share_24dp));
         setScaleType(ScaleType.CENTER);
         cfPressed = new LightingColorFilter(context.getResources()
                                                    .getColor(R.color.index_bookmark_on), 1);

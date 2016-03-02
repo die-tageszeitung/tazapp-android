@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.graphics.ColorFilter;
 import android.graphics.LightingColorFilter;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -37,6 +38,7 @@ import de.thecode.android.tazreader.reader.IReaderCallback;
 import de.thecode.android.tazreader.reader.ReaderActivity;
 import de.thecode.android.tazreader.reader.SettingsDialog;
 import de.thecode.android.tazreader.utils.BaseFragment;
+import de.thecode.android.tazreader.widget.CustomToolbar;
 
 public class IndexFragment extends BaseFragment {
 
@@ -44,7 +46,7 @@ public class IndexFragment extends BaseFragment {
 
     private static final String ARGUMENT_BOOKMARKFILTER = "bookmarkfilter";
 
-    Toolbar toolbar;
+    CustomToolbar toolbar;
     List<IIndexItem> index = new ArrayList<>();
     IndexRecyclerViewAdapter adapter;
 
@@ -90,7 +92,8 @@ log.trace("");
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         log.debug("");
         View view = inflater.inflate(R.layout.reader_index, container, false);
-        toolbar = (Toolbar) view.findViewById(R.id.toolbar_article);
+        toolbar = (CustomToolbar) view.findViewById(R.id.toolbar_article);
+        toolbar.setItemColor(ContextCompat.getColor(inflater.getContext(),R.color.toolbar_foreground_color));
         toolbar.inflateMenu(R.menu.reader_index);
         // Set an OnMenuItemClickListener to handle menu item clicks
         toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
@@ -127,8 +130,9 @@ log.trace("");
             }
         });
 
-        Toolbar toolbar2 = (Toolbar) view.findViewById(R.id.toolbar2);
-        toolbar2.setNavigationIcon(R.drawable.abc_ic_ab_back_mtrl_am_alpha);
+        CustomToolbar toolbar2 = (CustomToolbar) view.findViewById(R.id.toolbar2);
+        toolbar2.setItemColor(ContextCompat.getColor(inflater.getContext(), R.color.toolbar_foreground_color));
+        toolbar2.setNavigationIcon(R.drawable.ic_arrow_back_24dp);
         toolbar2.setNavigationOnClickListener(new View.OnClickListener() {
 
             @Override
@@ -366,8 +370,8 @@ log.trace("");
                 case SOURCE:
                     ((SourceViewholder) viewholder).title.setText(item.getTitle());
                     if (item.areIndexChildsVisible())
-                        ((SourceViewholder) viewholder).image.setImageDrawable(getResources().getDrawable(R.drawable.ic_index_minus));
-                    else ((SourceViewholder) viewholder).image.setImageDrawable(getResources().getDrawable(R.drawable.ic_index_plus));
+                        ((SourceViewholder) viewholder).image.setImageResource(R.drawable.ic_index_minus);
+                    else ((SourceViewholder) viewholder).image.setImageResource(R.drawable.ic_index_plus);
                     break;
                 case CATEGORY:
                     ((CategoryViewholder) viewholder).title.setText(item.getTitle());

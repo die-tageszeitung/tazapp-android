@@ -9,6 +9,7 @@ import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.widget.Toolbar;
 import android.util.LruCache;
@@ -49,6 +50,7 @@ import de.thecode.android.tazreader.utils.BaseActivity;
 import de.thecode.android.tazreader.utils.BaseFragment;
 import de.thecode.android.tazreader.utils.Connection;
 import de.thecode.android.tazreader.utils.Orientation;
+import de.thecode.android.tazreader.widget.CustomToolbar;
 
 /**
  * Created by mate on 27.01.2015.
@@ -74,7 +76,7 @@ public class StartActivity extends BaseActivity implements IStartCallback, TcDia
     private static final String ARGUMENT_MIGRATED_IDS_JSONARRAY = "migratedIds";
     private static final String ARGUMENT_ARCHIVE_YEAR = "archiveYear";
 
-    private Toolbar toolbar;
+    private CustomToolbar toolbar;
     private NavigationDrawerFragment mDrawerFragment;
 
     RetainDataFragment retainDataFragment;
@@ -144,8 +146,9 @@ public class StartActivity extends BaseActivity implements IStartCallback, TcDia
 
         setContentView(R.layout.activity_start);
 
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar = (CustomToolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        toolbar.setItemColor(ContextCompat.getColor(this,R.color.toolbar_foreground_color));
 
         if (getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         updateTitle();

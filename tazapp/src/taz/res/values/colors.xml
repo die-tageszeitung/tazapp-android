@@ -22,6 +22,9 @@
     <item name="color_accent" type="color">@color/TazRotAccent</item>
 
 
+    <color name="toolbar_background_color" type="color">@color/color_primary_dark</color>
+    <color name="toolbar_foreground_color" type="color">@android:color/holo_green_light</color>
+
     <item name="index_background_source" type="color">@color/color_primary</item>
     <item name="index_background_category" type="color">@color/TAZocker</item>
     <item name="index_background_page" type="color">@color/TAZockerLight</item>
@@ -55,6 +58,7 @@
     <item name="settings_edit_text_disabled" type="color">@android:color/darker_gray</item>
     <item name="settings_divider" type="color">@color/color_primary_dark</item>
 
+    <item name="library_fab_icon" type="color">@color/color_primary</item>
     <item name="library_fab_normal" type="color">@android:color/white</item>
     <item name="library_fab_pressed" type="color">@android:color/darker_gray</item>
     <item name="library_fab_ripple" type="color">@color/color_accent</item>
