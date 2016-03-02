@@ -18,6 +18,7 @@
     <color name="TazRotTransparent">#99A80A19</color>
 
     <color name="lmdBlau">#6991AA</color>
+    <color name="lmdBlauDunkel">#405f72</color>
     <color name="lmdWebseiteGrau">#F0F0ED</color>
     <color name="grau">#BBB</color>
 
@@ -64,6 +65,7 @@
     <item name="library_fab_normal" type="color">@android:color/white</item>
     <item name="library_fab_pressed" type="color">@android:color/darker_gray</item>
     <item name="library_fab_ripple" type="color">@color/color_accent</item>
+    <item name="library_fab_icon" type="color">@color/lmdBlauDunkel</item>
 
     <item name="library_card_background" type="color">@color/color_primary_dark</item>
     <item name="library_item_text" type="color">@android:color/white</item>

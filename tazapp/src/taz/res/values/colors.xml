@@ -58,10 +58,10 @@
     <item name="settings_edit_text_disabled" type="color">@android:color/darker_gray</item>
     <item name="settings_divider" type="color">@color/color_primary_dark</item>
 
-    <item name="library_fab_icon" type="color">@color/color_primary</item>
     <item name="library_fab_normal" type="color">@android:color/white</item>
     <item name="library_fab_pressed" type="color">@android:color/darker_gray</item>
     <item name="library_fab_ripple" type="color">@color/color_accent</item>
+    <item name="library_fab_icon" type="color">@color/TazRotDunkel</item>
 
     <item name="library_card_background" type="color">@color/color_primary_dark</item>
     <item name="library_item_text" type="color">@android:color/white</item>

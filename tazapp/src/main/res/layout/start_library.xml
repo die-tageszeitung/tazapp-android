@@ -26,14 +26,14 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|right"
         android:layout_margin="16dp"
-        android:src="@drawable/ic_library_fab"
+        android:src="@drawable/ic_today_24dp"
         fab:fab_colorNormal="@color/library_fab_normal"
         fab:fab_colorPressed="@color/library_fab_pressed"
         fab:fab_colorRipple="@color/library_fab_ripple"/>
 
-    <android.support.design.widget.FloatingActionButton
-        android:src="@drawable/ic_library_fab"
-        app:fabSize="normal"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+    <!--<android.support.design.widget.FloatingActionButton-->
+        <!--android:src="@drawable/ic_today_24dp"-->
+        <!--app:fabSize="normal"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content" />-->
 </FrameLayout>

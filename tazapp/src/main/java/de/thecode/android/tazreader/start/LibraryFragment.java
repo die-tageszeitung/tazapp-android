@@ -8,6 +8,8 @@ import android.content.Loader;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.RecyclerView;
@@ -87,6 +89,8 @@ public class LibraryFragment extends BaseFragment implements LoaderManager.Loade
 
 
         fab = (FloatingActionButton) view.findViewById(R.id.fab);
+        DrawableCompat.setTint(DrawableCompat.wrap(fab.getDrawable())
+                                             .mutate(), ContextCompat.getColor(getActivity(), R.color.library_fab_icon));
 
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -186,7 +190,7 @@ public class LibraryFragment extends BaseFragment implements LoaderManager.Loade
     @Override
     public void onResume() {
         super.onResume();
-        log.debug("{}",TazSettings.getPrefBoolean(getActivity(), TazSettings.PREFKEY.FORCESYNC, false));
+        log.debug("{}", TazSettings.getPrefBoolean(getActivity(), TazSettings.PREFKEY.FORCESYNC, false));
         if (TazSettings.getPrefBoolean(getActivity(), TazSettings.PREFKEY.FORCESYNC, false)) {
 
             if (hasCallback()) getCallback().requestSync(null, null);
@@ -285,13 +289,13 @@ public class LibraryFragment extends BaseFragment implements LoaderManager.Loade
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        log.trace("loader: {}, data: {}",loader, data);
+        log.trace("loader: {}, data: {}", loader, data);
         adapter.swapCursor(data);
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-        log.debug("loader: {}",loader);
+        log.debug("loader: {}", loader);
     }
 
 
@@ -311,19 +315,19 @@ public class LibraryFragment extends BaseFragment implements LoaderManager.Loade
             if (viewHolder != null) viewHolder.image.setTag(null);
             adapter.notifyItemChanged(adapter.getItemPosition(event.getPaperId()));
         } catch (IllegalStateException e) {
-            log.warn("",e);
+            log.warn("", e);
         }
     }
 
     public void onEventMainThread(ScrollToPaperEvent event) {
-        log.debug("event: {}",event);
+        log.debug("event: {}", event);
         if (recyclerView != null && adapter != null) {
             recyclerView.smoothScrollToPosition(adapter.getItemPosition(event.getPaperId()));
         }
     }
 
     public void onEventMainThread(DrawerStateChangedEvent event) {
-        log.debug("event: {}",event.getNewState());
+        log.debug("event: {}", event.getNewState());
         if (event.getNewState() == DrawerLayout.STATE_IDLE) swipeRefresh.setEnabled(true);
         else swipeRefresh.setEnabled(false);
     }
@@ -349,7 +353,7 @@ public class LibraryFragment extends BaseFragment implements LoaderManager.Loade
                     try {
                         if (hasCallback()) getCallback().startDownload(paper.getId());
                     } catch (Paper.PaperNotFoundException e) {
-                        log.error("",e);
+                        log.error("", e);
                     }
                     break;
 
@@ -362,7 +366,8 @@ public class LibraryFragment extends BaseFragment implements LoaderManager.Loade
     @Override
     public boolean onItemLongClick(View v, int position, Paper paper) {
         setActionMode();
-        log.debug("v: {}, position: {}, paper: {}",v, position, paper);;
+        log.debug("v: {}, position: {}, paper: {}", v, position, paper);
+        ;
         if (!adapter.isSelected(paper.getId())) selectPaper(paper.getId());
         else deselectPaper(paper.getId());
         return true;
@@ -386,7 +391,7 @@ public class LibraryFragment extends BaseFragment implements LoaderManager.Loade
                 Paper paper = new Paper(getActivity(), paperId);
                 if (hasCallback()) getCallback().startDownload(paper.getId());
             } catch (Paper.PaperNotFoundException e) {
-                log.error("",e);
+                log.error("", e);
             }
         }
         adapter.deselectAll();
@@ -430,7 +435,7 @@ public class LibraryFragment extends BaseFragment implements LoaderManager.Loade
 
         @Override
         public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-            log.debug("mode: {}, menu: {}",mode, menu);
+            log.debug("mode: {}, menu: {}", mode, menu);
             if (hasCallback()) getCallback().getRetainData()
                                             .setActionMode(true);
             if (hasCallback()) getCallback().enableDrawer(false);
@@ -441,7 +446,7 @@ public class LibraryFragment extends BaseFragment implements LoaderManager.Loade
 
         @Override
         public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-            log.debug("mode: {}, menu: {}",mode, menu);
+            log.debug("mode: {}, menu: {}", mode, menu);
             menu.clear();
             int countSelected = adapter.getSelected()
                                        .size();
@@ -459,7 +464,7 @@ public class LibraryFragment extends BaseFragment implements LoaderManager.Loade
 
         @Override
         public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-            log.debug("mode: {}, item: {}",mode, item);
+            log.debug("mode: {}, item: {}", mode, item);
             switch (item.getItemId()) {
                 case R.id.ic_action_download:
                     downloadSelected();
@@ -492,7 +497,7 @@ public class LibraryFragment extends BaseFragment implements LoaderManager.Loade
 
         @Override
         public void onDestroyActionMode(ActionMode mode) {
-            log.debug("mode: {}",mode);
+            log.debug("mode: {}", mode);
             adapter.deselectAll();
             if (hasCallback()) getCallback().getRetainData()
                                             .setActionMode(false);
