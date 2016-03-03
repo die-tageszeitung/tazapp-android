@@ -2,9 +2,10 @@ package de.thecode.android.tazreader.widget;
 
 import android.annotation.TargetApi;
 import android.content.Context;
-import android.graphics.ColorFilter;
-import android.graphics.LightingColorFilter;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.graphics.drawable.DrawableCompat;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.ImageView;
@@ -18,9 +19,8 @@ import de.thecode.android.tazreader.reader.ReaderActivity;
  */
 public class PageIndexButton extends ImageView {
 
-    ColorFilter cfPressed;
-    ColorFilter cfNormal;
-
+    int colorNormal;
+    int colorPressed;
 
 
     public PageIndexButton(Context context) {
@@ -45,11 +45,11 @@ public class PageIndexButton extends ImageView {
     }
 
     private void init(Context context) {
-        setImageDrawable(getResources().getDrawable(R.drawable.ic_apps_white_24dp));
+        setImageDrawable(getResources().getDrawable(R.drawable.ic_apps_24dp));
         setScaleType(ScaleType.CENTER);
-        cfPressed = new LightingColorFilter(context.getResources().getColor(R.color.index_bookmark_on), 1);
-        cfNormal = new LightingColorFilter(context.getResources().getColor(R.color.index_bookmark_off), 1);
-        setColorFilter(cfNormal);
+        colorPressed = ContextCompat.getColor(context, R.color.index_bookmark_on);
+        colorNormal = ContextCompat.getColor(context,R.color.index_bookmark_off);
+        tintDrawable(colorNormal);
         setClickable(true);
         setOnClickListener(new OnClickListener() {
             @Override
@@ -62,7 +62,8 @@ public class PageIndexButton extends ImageView {
         setOnLongClickListener(new OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                Toast.makeText(v.getContext(),R.string.reader_action_pageindex,Toast.LENGTH_LONG).show();
+                Toast.makeText(v.getContext(), R.string.reader_action_pageindex, Toast.LENGTH_LONG)
+                     .show();
                 return true;
             }
         });
@@ -72,9 +73,15 @@ public class PageIndexButton extends ImageView {
     public void setPressed(boolean pressed) {
         super.setPressed(pressed);
         if (pressed) {
-            setColorFilter(cfPressed);
+            tintDrawable(colorPressed);
         } else {
-            setColorFilter(cfNormal);
+            tintDrawable(colorNormal);
         }
+    }
+
+    private void tintDrawable(int color) {
+        Drawable wrappedDrawable = DrawableCompat.wrap(getDrawable());
+        wrappedDrawable = wrappedDrawable.mutate();
+        DrawableCompat.setTint(wrappedDrawable, color);
     }
 }

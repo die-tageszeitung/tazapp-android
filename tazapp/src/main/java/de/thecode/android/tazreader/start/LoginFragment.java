@@ -32,8 +32,6 @@ import de.thecode.android.tazreader.utils.BaseFragment;
 import de.thecode.android.tazreader.volley.RequestManager;
 import de.thecode.android.tazreader.volley.TazStringRequest;
 
-import static android.graphics.PorterDuff.Mode.SRC_ATOP;
-
 /**
  * A simple {@link Fragment} subclass.
  */
@@ -76,8 +74,6 @@ public class LoginFragment extends BaseFragment {
             }
         });
 
-        orderButton.getBackground()
-                   .setColorFilter(getResources().getColor(R.color.start_login_calltoaction_button_background), SRC_ATOP);
         editUser = (EditText) view.findViewById(R.id.editUser);
         editPass = (EditText) view.findViewById(R.id.editPass);
         editPass.setOnKeyListener(new View.OnKeyListener() {

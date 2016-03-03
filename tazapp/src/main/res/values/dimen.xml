@@ -14,10 +14,11 @@
     <dimen name="pageindex_thumbnail_image_height">270dp</dimen>
     <dimen name="pageindex_padding">5dp</dimen>
     <dimen name="pageindex_thumbnail_current_borderwidth">10dp</dimen>
-    
-    
-    
-    <dimen name="reader_bookmark_offset">-12dp</dimen>
+
+
+
+    <dimen name="reader_bookmark_offset_active">-4dp</dimen>
+    <dimen name="reader_bookmark_offset_normal">-16dp</dimen>
     
     <dimen name="index_min_height">48dp</dimen>
     <item name="index_image" type="dimen">@dimen/index_min_height</item>

@@ -6,13 +6,7 @@
         <item name="colorPrimaryDark">@color/color_primary_dark</item>
         <item name="colorAccent">@color/color_accent</item>
         <item name="android:windowBackground">?attr/colorPrimary</item>
-<!--        <item name="android:windowNoTitle">true</item>
-        <item name="windowActionBar">false</item>     -->
         <item name="windowActionModeOverlay">true</item>-->
-
-        <!--<item name="android:actionModeBackground">@color/background_material_dark</item>-->
-        <!--<item name="actionBarPopupTheme">@style/ThemeOverlay.AppCompat.Dark</item>-->
-
     </style>
 
     <style name="AppTheme" parent="BaseTheme">
@@ -23,9 +17,13 @@
         <item name="windowNoTitle">true</item>
     </style>
 
-
-    <style name="Toolbar" parent="AppTheme">
+    <style name="AppTheme.Toolbar">
         <item name="colorControlNormal">@color/toolbar_foreground_color</item>
+    </style>
+
+    <style name="AppTheme.Button" parent="@android:style/Widget.Button">
+        <item name="android:textColor">@color/button_text</item>
+        <item name="colorButtonNormal">@color/button_normal</item>
     </style>
 
 

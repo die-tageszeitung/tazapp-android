@@ -5,6 +5,6 @@
     android:layout_height="?attr/actionBarSize"
     android:layout_width="match_parent"
     android:background="@color/toolbar_background_color"
-    app:theme="@style/Toolbar"
+    app:theme="@style/AppTheme.Toolbar"
     >
 </de.thecode.android.tazreader.widget.CustomToolbar>

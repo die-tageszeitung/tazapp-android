@@ -1,50 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <!-- StyleGuide Farben Layout -->
-    <!--<color name="TazRot">#A80A19</color>-->
-    <color name="HighlightAufTazRot">#910000</color>
-    <color name="StandardHintergrund">#222</color>
-    <color name="HintergrundAbgeschwaecht">#333</color>
-    <color name="LinienStandard">#DDD</color>
-    <color name="LinienInnerhalbVonModulen">#EEE</color>
-    <color name="ElementeAufDunklemGrund">#FFF</color>
-    <color name="CommunityFarbe">#779BAB</color>
-
-    <color name="TazRotDunkel">#900915</color>
-    <color name="TazRotAccent">#c00b1d</color>
-    <color name="TAZocker">#C3BCA3</color>
-    <color name="TAZockerLight">#dcd8c4</color>
-    <color name="TazRotTransparent">#99A80A19</color>
-
     <color name="lmdBlau">#6991AA</color>
     <color name="lmdBlauDunkel">#405f72</color>
     <color name="lmdWebseiteGrau">#F0F0ED</color>
     <color name="grau">#BBB</color>
+    <color name="lmdBlauTransparent">#996991AA</color>
+    <color name="lmdBlauHeller">#9db7c8</color>
+    <color name="lmdBlauNochHeller">#cedbe3</color>
+    <color name="lmdBlau95">#eff3f6</color>
 
     <item name="color_primary" type="color">@android:color/white</item>
     <item name="color_primary_dark" type="color">@color/lmdBlau</item>
     <item name="color_accent" type="color">@color/lmdBlau</item>
 
-    <color name="toolbar_background_color" type="color">@color/color_primary_dark</color>
-    <color name="toolbar_foreground_color" type="color">@android:color/white</color>
+    <item name="toolbar_background_color" type="color">@color/color_primary_dark</item>
+    <item name="toolbar_foreground_color" type="color">@android:color/white</item>
 
-    <item name="index_background_source" type="color">@color/color_primary</item>
-    <item name="index_background_category" type="color">@color/TAZocker</item>
-    <item name="index_background_page" type="color">@color/TAZockerLight</item>
-    <item name="index_background_article" type="color">@color/TAZockerLight</item>
-    <item name="index_background_toplink" type="color">@color/TAZockerLight</item>
+    <item name="button_normal" type="color">@color/color_accent</item>
+    <item name="button_text_normal" type="color">@android:color/white</item>
+
+    <item name="index_background_source" type="color">@color/lmdBlauDunkel</item>
+    <item name="index_background_category" type="color">@color/lmdBlauHeller</item>
+    <item name="index_background_page" type="color">@color/lmdBlauNochHeller</item>
+    <item name="index_background_article" type="color">@color/lmdBlau95</item>
+    <item name="index_background_toplink" type="color">@color/lmdBlau95</item>
     <item name="index_text_source" type="color">@android:color/white</item>
     <item name="index_text_category" type="color">@android:color/black</item>
     <item name="index_text_page" type="color">@android:color/black</item>
     <item name="index_text_article" type="color">@android:color/black</item>
     <item name="index_text_toplink" type="color">@android:color/black</item>
-    <item name="index_bookmark_off" type="color">@color/TAZocker</item>
-    <item name="index_bookmark_on" type="color">@color/color_primary</item>
-    <item name="index_currentmarker" type="color">@color/color_primary</item>
-    <item name="pageindex_loadingpage_bitmapbackground" type="color">@color/ElementeAufDunklemGrund</item>
-    <item name="pageindex_overlay_color" type="color">@color/TazRotTransparent</item>
-    <item name="library_item_selected_overlay" type="color">@color/TazRotTransparent</item>
+    <item name="index_bookmark_off" type="color">@color/lmdBlauHeller</item>
+    <item name="index_bookmark_on" type="color">@color/lmdBlauDunkel</item>
+    <item name="index_currentmarker" type="color">@color/lmdBlauDunkel</item>
+    <item name="pageindex_loadingpage_bitmapbackground" type="color">@color/color_primary_dark</item>
+    <item name="pageindex_overlay_color" type="color">@color/lmdBlauTransparent</item>
+    <item name="library_item_selected_overlay" type="color">@color/lmdBlauTransparent</item>
 
     <item name="start_navigation_background" type="color">@android:color/white</item>
     <item name="start_navigation_header_background" type="color">@color/color_primary</item>
@@ -78,8 +69,8 @@
     <item name="help_indicator_page" type="color">@android:color/white</item>
     <item name="help_indicator_stroke" type="color">@color/color_accent</item>
 
-    <item name="reader_settings_button_text_activated" type="color">@color/color_accent</item>
-    <item name="reader_settings_button_text" type="color">@android:color/primary_text_light</item>
+    <item name="reader_settings_button_text_activated" type="color">@color/button_text_normal</item>
+    <item name="reader_settings_button_text" type="color">@android:color/darker_gray</item>
 
     <item name="login_order_button_text" type="color">@android:color/white</item>
 

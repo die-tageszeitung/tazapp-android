@@ -3,8 +3,6 @@ package de.thecode.android.tazreader.reader.article;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
-import android.graphics.ColorFilter;
-import android.graphics.LightingColorFilter;
 import android.net.MailTo;
 import android.net.ParseException;
 import android.net.Uri;
@@ -13,6 +11,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.content.ContextCompat;
 import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -54,6 +53,7 @@ import de.thecode.android.tazreader.reader.ReaderDataFragment;
 import de.thecode.android.tazreader.reader.article.ArticleWebView.ArticleWebViewCallback;
 import de.thecode.android.tazreader.reader.index.IIndexItem;
 import de.thecode.android.tazreader.utils.StorageManager;
+import de.thecode.android.tazreader.utils.TintHelper;
 import de.thecode.android.tazreader.widget.PageIndexButton;
 import de.thecode.android.tazreader.widget.ShareButton;
 
@@ -360,18 +360,15 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
             ImageView bookmark = (ImageView) mBookmarkClickLayout.findViewById(R.id.bookmark);
             FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) bookmark.getLayoutParams();
-            ColorFilter colorFilter;
             if (mArticle.isBookmarked()) {
-                colorFilter = new LightingColorFilter(mContext.getResources()
-                                                              .getColor(R.color.index_bookmark_on), 1);
-                layoutParams.topMargin = 0;
-            } else {
-                colorFilter = new LightingColorFilter(mContext.getResources()
-                                                              .getColor(R.color.index_bookmark_off), 1);
+                TintHelper.tintDrawable(bookmark.getDrawable(), ContextCompat.getColor(getActivity(),R.color.index_bookmark_on));
                 layoutParams.topMargin = mContext.getResources()
-                                                 .getDimensionPixelOffset(R.dimen.reader_bookmark_offset);
+                                                 .getDimensionPixelOffset(R.dimen.reader_bookmark_offset_active);
+            } else {
+                TintHelper.tintDrawable(bookmark.getDrawable(), ContextCompat.getColor(getActivity(),R.color.index_bookmark_off));
+                layoutParams.topMargin = mContext.getResources()
+                                                 .getDimensionPixelOffset(R.dimen.reader_bookmark_offset_normal);
             }
-            bookmark.setColorFilter(colorFilter);
             bookmark.setLayoutParams(layoutParams);
         }
     }

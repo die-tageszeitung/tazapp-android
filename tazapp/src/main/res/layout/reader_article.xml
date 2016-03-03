@@ -31,13 +31,13 @@
             android:layout_height="48dp">
             <ImageView
                 android:id="@+id/bookmark"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
                 android:layout_gravity="center_horizontal"
+                android:scaleType="fitCenter"
+                android:layout_marginTop="@dimen/reader_bookmark_offset_normal"
 
-                android:layout_marginTop="-12dp"
-
-                android:src="@drawable/ic_bookmark"/>
+                android:src="@drawable/ic_bookmark_24dp"/>
         </FrameLayout>
         <de.thecode.android.tazreader.widget.ShareButton
             android:id="@+id/share"

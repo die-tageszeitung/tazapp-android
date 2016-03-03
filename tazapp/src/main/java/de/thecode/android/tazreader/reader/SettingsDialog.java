@@ -3,6 +3,7 @@ package de.thecode.android.tazreader.reader;
 import android.app.Activity;
 import android.app.Dialog;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.SwitchCompat;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -177,18 +178,18 @@ public class SettingsDialog extends TcDialogCustomView {
 
     private void colorThemeButtonText(THEMES theme) {
         if (theme == null) return;
-        btnNight.setTextColor(getResources().getColor(R.color.reader_settings_button_text));
-        btnNormal.setTextColor(getResources().getColor(R.color.reader_settings_button_text));
-        btnSepia.setTextColor(getResources().getColor(R.color.reader_settings_button_text));
+        btnNight.setTextColor(ContextCompat.getColor(getActivity(),R.color.reader_settings_button_text));
+        btnNormal.setTextColor(ContextCompat.getColor(getActivity(), R.color.reader_settings_button_text));
+        btnSepia.setTextColor(ContextCompat.getColor(getActivity(), R.color.reader_settings_button_text));
         switch (theme) {
             case night:
-                btnNight.setTextColor(getResources().getColor(R.color.reader_settings_button_text_activated));
+                btnNight.setTextColor(ContextCompat.getColor(getActivity(), R.color.reader_settings_button_text_activated));
                 break;
             case sepia:
-                btnSepia.setTextColor(getResources().getColor(R.color.reader_settings_button_text_activated));
+                btnSepia.setTextColor(ContextCompat.getColor(getActivity(), R.color.reader_settings_button_text_activated));
                 break;
             case normal:
-                btnNormal.setTextColor(getResources().getColor(R.color.reader_settings_button_text_activated));
+                btnNormal.setTextColor(ContextCompat.getColor(getActivity(), R.color.reader_settings_button_text_activated));
                 break;
         }
     }

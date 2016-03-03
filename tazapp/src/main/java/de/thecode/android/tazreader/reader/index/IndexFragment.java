@@ -2,8 +2,6 @@ package de.thecode.android.tazreader.reader.index;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.graphics.ColorFilter;
-import android.graphics.LightingColorFilter;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -38,6 +36,7 @@ import de.thecode.android.tazreader.reader.IReaderCallback;
 import de.thecode.android.tazreader.reader.ReaderActivity;
 import de.thecode.android.tazreader.reader.SettingsDialog;
 import de.thecode.android.tazreader.utils.BaseFragment;
+import de.thecode.android.tazreader.utils.TintHelper;
 import de.thecode.android.tazreader.widget.CustomToolbar;
 
 public class IndexFragment extends BaseFragment {
@@ -50,11 +49,8 @@ public class IndexFragment extends BaseFragment {
     List<IIndexItem> index = new ArrayList<>();
     IndexRecyclerViewAdapter adapter;
 
-//    Typeface tazFontRegular;
-//    Typeface tazFontBold;
-
-    ColorFilter bookmarkOnFilter;
-    ColorFilter bookmarkOffFilter;
+    int bookmarkColorActive;
+    int bookmarkColorNormal;
 
     boolean mShowSubtitles;
 
@@ -73,12 +69,9 @@ public class IndexFragment extends BaseFragment {
         super.onAttach(activity);
 log.trace("");
         mReaderCallback = (IReaderCallback) activity;
-//        tazFontRegular = Typeface.createFromAsset(activity.getAssets(), "fonts/TazWt05-Regular.otf");
-//        tazFontBold = Typeface.createFromAsset(activity.getAssets(), "fonts/TazWt07-Bold.otf");
-        bookmarkOffFilter = new LightingColorFilter(activity.getResources()
-                                                            .getColor(R.color.index_bookmark_off), 1);
-        bookmarkOnFilter = new LightingColorFilter(activity.getResources()
-                                                           .getColor(R.color.index_bookmark_on), 1);
+
+        bookmarkColorNormal = ContextCompat.getColor(activity,R.color.index_bookmark_off);
+        bookmarkColorActive = ContextCompat.getColor(activity,R.color.index_bookmark_on);
 
     }
 
@@ -393,12 +386,13 @@ log.trace("");
                     }
                     FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) ((ArticleViewholder) viewholder).bookmark.getLayoutParams();
                     if (item.isBookmarked()) {
-                        ((ArticleViewholder) viewholder).bookmark.setColorFilter(bookmarkOnFilter);
-                        layoutParams.topMargin = 0;
-                    } else {
-                        ((ArticleViewholder) viewholder).bookmark.setColorFilter(bookmarkOffFilter);
+                        TintHelper.tintDrawable(((ArticleViewholder) viewholder).bookmark.getDrawable(),bookmarkColorActive);
                         layoutParams.topMargin = getActivity().getResources()
-                                                              .getDimensionPixelOffset(R.dimen.reader_bookmark_offset);
+                                                              .getDimensionPixelOffset(R.dimen.reader_bookmark_offset_active);
+                    } else {
+                        TintHelper.tintDrawable(((ArticleViewholder) viewholder).bookmark.getDrawable(), bookmarkColorNormal);
+                        layoutParams.topMargin = getActivity().getResources()
+                                                              .getDimensionPixelOffset(R.dimen.reader_bookmark_offset_normal);
                     }
                     ((ArticleViewholder) viewholder).bookmark.setLayoutParams(layoutParams);
                     break;

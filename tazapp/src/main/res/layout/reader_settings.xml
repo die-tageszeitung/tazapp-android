@@ -24,6 +24,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/theme_normal"
+                android:theme="@style/AppTheme.Button"
                 android:textAppearance="@style/SettingsTextAppearance" />
 
             <Button
@@ -32,6 +33,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/theme_sepia"
+                android:theme="@style/AppTheme.Button"
                 android:textAppearance="@style/SettingsTextAppearance" />
 
             <Button
@@ -39,6 +41,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:theme="@style/AppTheme.Button"
                 android:text="@string/theme_night"
                 android:textAppearance="@style/SettingsTextAppearance" />
         </LinearLayout>

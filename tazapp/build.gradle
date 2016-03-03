@@ -100,7 +100,7 @@ android {
         lmd {
             applicationId "de.thecode.lmd"
             dimension "owner"
-            resValue 'string', 'app_name', 'LE MONDE diplomatique'
+            resValue 'string', 'app_name', 'LMd'
         }
         x86 {
             dimension "abi"

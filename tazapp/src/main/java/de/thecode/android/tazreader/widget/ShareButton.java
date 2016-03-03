@@ -3,9 +3,10 @@ package de.thecode.android.tazreader.widget;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.ColorFilter;
-import android.graphics.LightingColorFilter;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.graphics.drawable.DrawableCompat;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.ImageView;
@@ -18,8 +19,8 @@ import de.thecode.android.tazreader.R;
  */
 public class ShareButton extends ImageView implements View.OnClickListener, View.OnLongClickListener {
 
-    ColorFilter cfPressed;
-    ColorFilter cfNormal;
+    int colorNormal;
+    int colorPressed;
 
     Context mContext;
     ShareButtonCallback mCallback;
@@ -48,13 +49,12 @@ public class ShareButton extends ImageView implements View.OnClickListener, View
 
     private void init(Context context) {
         mContext = context;
-        setImageDrawable(getResources().getDrawable(R.drawable.ic_share_24dp));
+        setImageResource(R.drawable.ic_share_24dp);
         setScaleType(ScaleType.CENTER);
-        cfPressed = new LightingColorFilter(context.getResources()
-                                                   .getColor(R.color.index_bookmark_on), 1);
-        cfNormal = new LightingColorFilter(context.getResources()
-                                                  .getColor(R.color.index_bookmark_off), 1);
-        setColorFilter(cfNormal);
+        colorPressed = ContextCompat.getColor(context,R.color.index_bookmark_on);
+        colorNormal = ContextCompat.getColor(context,R.color.index_bookmark_off);
+
+        tintDrawable(colorNormal);
         setClickable(true);
         setOnClickListener(this);
         setOnLongClickListener(this);
@@ -65,9 +65,9 @@ public class ShareButton extends ImageView implements View.OnClickListener, View
     public void setPressed(boolean pressed) {
         super.setPressed(pressed);
         if (pressed) {
-            setColorFilter(cfPressed);
+            tintDrawable(colorPressed);
         } else {
-            setColorFilter(cfNormal);
+            tintDrawable(colorNormal);
         }
     }
 
@@ -101,5 +101,11 @@ public class ShareButton extends ImageView implements View.OnClickListener, View
         public Intent getShareIntent(Context context);
 
         public boolean isShareable();
+    }
+
+    private void tintDrawable(int color) {
+        Drawable wrappedDrawable = DrawableCompat.wrap(getDrawable());
+        wrappedDrawable = wrappedDrawable.mutate();
+        DrawableCompat.setTint(wrappedDrawable, color);
     }
 }
