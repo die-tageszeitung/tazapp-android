@@ -8,8 +8,7 @@ import android.content.Loader;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.graphics.drawable.DrawableCompat;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.RecyclerView;
@@ -20,8 +19,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-
-import com.melnykov.fab.FloatingActionButton;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,13 +42,13 @@ public class LibraryFragment extends BaseFragment implements LoaderManager.Loade
     WeakReference<IStartCallback> callback;
     LibraryAdapter adapter;
     SwipeRefreshLayout swipeRefresh;
-    FloatingActionButton fab;
 
     ActionMode actionMode;
 
     boolean isSyncing;
 
     private AutofitRecyclerView recyclerView;
+    private FloatingActionButton fabArchive;
 
     public LibraryFragment() {
         // Required empty public constructor
@@ -74,6 +71,7 @@ public class LibraryFragment extends BaseFragment implements LoaderManager.Loade
             @Override
             public void onRefresh() {
                 log.debug("");
+                hideFab();
                 if (hasCallback()) getCallback().requestSync(null, null);
             }
         });
@@ -81,24 +79,17 @@ public class LibraryFragment extends BaseFragment implements LoaderManager.Loade
 
         recyclerView = (AutofitRecyclerView) view.findViewById(R.id.recycler);
         recyclerView.setHasFixedSize(true);
-        //recyclerView.setItemAnimator(new DefaultItemAnimator());
-        //recyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 5));
 
         adapter = new LibraryAdapter(getActivity(), null, getCallback());
         adapter.setHasStableIds(true);
 
-
-        fab = (FloatingActionButton) view.findViewById(R.id.fab);
-        DrawableCompat.setTint(DrawableCompat.wrap(fab.getDrawable())
-                                             .mutate(), ContextCompat.getColor(getActivity(), R.color.library_fab_icon));
-
-        fab.setOnClickListener(new View.OnClickListener() {
+        fabArchive = (FloatingActionButton) view.findViewById(R.id.fabArchive);
+        fabArchive.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (hasCallback()) getCallback().callArchive();
             }
         });
-        //fab.attachToRecyclerView(recyclerView);
 
         showFab();
 
@@ -106,7 +97,7 @@ public class LibraryFragment extends BaseFragment implements LoaderManager.Loade
         adapter.setOnItemLongClickListener(this);
         recyclerView.setAdapter(adapter);
 
-        recyclerView.setOnScrollListener(new RecyclerView.OnScrollListener() {
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
                 if (newState == RecyclerView.SCROLL_STATE_IDLE) {
@@ -118,18 +109,6 @@ public class LibraryFragment extends BaseFragment implements LoaderManager.Loade
                     }
                 }
 
-            }
-
-            @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                boolean isSignificantDelta = Math.abs(dy) > getResources().getDimensionPixelOffset(com.melnykov.fab.R.dimen.fab_scroll_threshold);
-                if (isSignificantDelta) {
-                    if (dy > 0) {
-                        hideFab();
-                    } else {
-                        showFab();
-                    }
-                }
             }
         });
 
@@ -401,19 +380,16 @@ public class LibraryFragment extends BaseFragment implements LoaderManager.Loade
     private void showFab() {
         if (hasCallback() && getCallback().getAccountHelper()
                                           .isAuthenticated()) {
-            if (fab.getVisibility() == View.GONE) {
-                fab.setVisibility(View.VISIBLE);
+            if (!isSyncing) {
+                fabArchive.show();
             }
-            if (!fab.isVisible() && !isSyncing) fab.show(true);
         } else {
-            fab.setVisibility(View.GONE);
+            hideFab();
         }
     }
 
     private void hideFab() {
-        if (fab.isVisible()) {
-            fab.hide(true);
-        }
+        fabArchive.hide();
     }
 
 
