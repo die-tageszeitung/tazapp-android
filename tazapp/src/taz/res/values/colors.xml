@@ -17,6 +17,9 @@
     <color name="TAZockerLight">#dcd8c4</color>
     <color name="TazRotTransparent">#99A80A19</color>
 
+    <color name="TAZockerA07">#B3C3BCA3</color>
+    <color name="TazRotA07">#B3A80A19</color>
+
     <item name="color_primary" type="color">@color/TazRot</item>
     <item name="color_primary_dark" type="color">@color/TazRotDunkel</item>
     <item name="color_accent" type="color">@color/TazRotAccent</item>
@@ -38,8 +41,8 @@
     <item name="index_text_page" type="color">@android:color/black</item>
     <item name="index_text_article" type="color">@android:color/black</item>
     <item name="index_text_toplink" type="color">@android:color/black</item>
-    <item name="index_bookmark_off" type="color">@color/TAZocker</item>
-    <item name="index_bookmark_on" type="color">@color/color_primary</item>
+    <item name="index_bookmark_off" type="color">@color/TAZockerA07</item>
+    <item name="index_bookmark_on" type="color">@color/TazRotA07</item>
     <item name="index_currentmarker" type="color">@color/color_primary</item>
     <item name="pageindex_loadingpage_bitmapbackground" type="color">@color/ElementeAufDunklemGrund</item>
     <item name="pageindex_overlay_color" type="color">@color/TazRotTransparent</item>
