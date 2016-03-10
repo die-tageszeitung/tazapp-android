@@ -3,7 +3,7 @@
 
     <string name="plist" translatable="false">http://dl.monde-diplomatique.de/tpaperIssue.plist</string>
     <string name="plistArchiv" translatable="false">http://dl.monde-diplomatique.de/tpaperIssue.plist?start=%1$s&amp;end=%2$s</string>
-    <string name="abo_url" translatable="false">https://www.taz.de/zeitung/abo/digitales-abo/apaper</string>
+    <string name="abo_url" translatable="false">https://monde-diplomatique.de/shop_content.php?coID=100043</string>
     <string name="checkLogin" translatable="false">https://dl.monde-diplomatique.de/digiAboCheckLogin</string>
     <string name="resourceUrl" translatable="false">https://dl.monde-diplomatique.de/ressourcen</string>
     <string name="archiveUrl" translatable="false">https://dl.monde-diplomatique.de/tpaperArchiv</string>
