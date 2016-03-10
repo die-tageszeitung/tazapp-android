@@ -1,0 +1,23 @@
+<configuration>
+    <!-- Create a logcat appender -->
+    <appender name="logcat" class="ch.qos.logback.classic.android.LogcatAppender">
+        <encoder>
+            <pattern>%method [%thread] %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="Crashlytics" class="de.thecode.android.tazreader.utils.CrashlyticsAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <root level="TRACE">
+        <appender-ref ref="Crashlytics" />
+    </root>
+
+    <!-- Write TRACE (and higher-level) messages to logcat -->
+    <root level="INFO">
+        <appender-ref ref="logcat" />
+    </root>
+</configuration>

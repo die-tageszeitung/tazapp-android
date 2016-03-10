@@ -46,5 +46,8 @@ Weitere Infos unter [http://www.taz.de/android](http://www.taz.de/android)
     * muPdf
 * MIT License
     * dd-plist
+    * SLF4J
 * BSD License
     * Stetho
+* Eclipse Public License - v 1.0
+    * Logback Android

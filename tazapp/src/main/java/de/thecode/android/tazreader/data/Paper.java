@@ -1,0 +1,1579 @@
+package de.thecode.android.tazreader.data;
+
+import android.content.ComponentName;
+import android.content.ContentUris;
+import android.content.ContentValues;
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.LabeledIntent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
+import android.database.Cursor;
+import android.net.Uri;
+import android.provider.BaseColumns;
+
+import com.dd.plist.NSArray;
+import com.dd.plist.NSDictionary;
+import com.dd.plist.NSObject;
+import com.dd.plist.NSString;
+import com.dd.plist.PropertyListFormatException;
+import com.dd.plist.PropertyListParser;
+import com.google.common.base.Strings;
+
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.json.JSONArray;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.xml.sax.SAXException;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.zip.ZipException;
+
+import javax.xml.parsers.ParserConfigurationException;
+
+import de.greenrobot.event.EventBus;
+import de.thecode.android.tazreader.R;
+import de.thecode.android.tazreader.data.Paper.Plist.Page.Article;
+import de.thecode.android.tazreader.download.PaperDeletedEvent;
+import de.thecode.android.tazreader.provider.TazProvider;
+import de.thecode.android.tazreader.reader.index.IIndexItem;
+import de.thecode.android.tazreader.utils.PlistHelper;
+import de.thecode.android.tazreader.utils.StorageManager;
+
+public class Paper {
+
+    private static final Logger log = LoggerFactory.getLogger(Paper.class);
+
+    public static String TABLE_NAME = "PAPER";
+    public static final Uri CONTENT_URI = Uri.parse("content://" + TazProvider.AUTHORITY + "/" + TABLE_NAME);
+    public static final String CONTENT_TYPE = "vnd.android.cursor.dir/vnd.taz." + TABLE_NAME;
+    public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/vnd.taz." + TABLE_NAME;
+
+    public static final String CONTENT_PLIST_FILENAME = "content.plist";
+
+    public static final class Columns implements BaseColumns {
+
+        public static final String DATE = "date";
+        public static final String IMAGE = "image";
+        public static final String IMAGEHASH = "imageHash";
+        public static final String LINK = "link";
+        public static final String FILEHASH = "fileHash";
+        public static final String LEN = "len";
+        public static final String LASTMODIFIED = "lastModified";
+        public static final String BOOKID = "bookId";
+        public static final String ISDEMO = "isDemo";
+        // public static final String FILENAME = "filename";
+        // public static final String TEMPFILEPATH = "tempfilepath";
+        // public static final String TEMPFILENAME = "tempfilename";
+        public static final String HASUPDATE = "hasUpdate";
+        public static final String DOWNLOADID = "downloadId";
+        //public static final String DOWNLOADPROGRESS = "downloadProgress";
+        public static final String ISDOWNLOADED = "isDownloaded";
+        public static final String KIOSK = "kiosk";
+        public static final String IMPORTED = "imported";
+        public static final String TITLE = "title";
+        public static final String PUBLICATIONID = "publicationId";
+        public static final String RESOURCE = "resource";
+        public static final String RESOURCEFILEHASH = "resourceFileHash";
+        public static final String RESOURCEURL = "resourceUrl";
+        public static final String RESOURCELEN = "resourceLen";
+        public static final String VALIDUNTIL = "validUntil";
+
+        public static final String FULL_ID = TABLE_NAME + "." + _ID;
+        public static final String FULL_VALIDUNTIL = TABLE_NAME + "." + VALIDUNTIL;
+
+    }
+
+    public final static int NOT_DOWNLOADED = 1;
+    public final static int DOWNLOADED_READABLE = 2;
+    public final static int DOWNLOADED_BUT_UPDATE = 3;
+    public final static int IS_DOWNLOADING = 4;
+    public final static int NOT_DOWNLOADED_IMPORT = 5;
+
+    private Long id;
+    private String date;
+    private String image;
+    private String imageHash;
+    private String link;
+    private String fileHash;
+    private long len;
+    private long lastModified;
+    private String bookId;
+    private boolean isDemo;
+    // private String filename;
+    // private String tempfilepath;
+    // private String tempfilename;
+    private boolean hasupdate;
+    // private boolean isdownloading;
+    private long downloadId;
+    //private int downloadprogress;
+    private boolean isdownloaded;
+    private boolean kiosk;
+    private boolean imported;
+    private String title;
+    private Long publicationId;
+    private String resource;
+    private String resourceFileHash;
+    private String resourceUrl;
+    private long resourceLen;
+
+    private long validUntil;
+    //    private File zipFile;
+
+    int progress = 0;
+
+    public Paper() {
+    }
+
+    public Paper(Context context, long id) throws PaperNotFoundException {
+        Cursor cursor = context.getApplicationContext()
+                               .getContentResolver()
+                               .query(ContentUris.withAppendedId(CONTENT_URI, id), null, null, null, null);
+        try {
+            if (cursor.moveToNext()) {
+                setData(cursor);
+            } else {
+                throw new PaperNotFoundException("Found no Paper with Id " + id);
+            }
+        } finally {
+            cursor.close();
+        }
+    }
+
+    public Paper(Context context, String bookId) throws PaperNotFoundException {
+        Uri bookIdUri = CONTENT_URI.buildUpon()
+                                   .appendPath(bookId)
+                                   .build();
+        Cursor cursor = context.getApplicationContext()
+                               .getContentResolver()
+                               .query(bookIdUri, null, null, null, null);
+        try {
+            if (cursor.moveToNext()) {
+                setData(cursor);
+
+            } else {
+                throw new PaperNotFoundException("Found no Paper with BookId " + bookId);
+            }
+        } finally {
+            cursor.close();
+        }
+    }
+
+    public Paper(Cursor cursor) {
+        setData(cursor);
+    }
+
+    private void setData(Cursor cursor) {
+        this.id = cursor.getLong(cursor.getColumnIndex(Columns._ID));
+        this.date = cursor.getString(cursor.getColumnIndex(Columns.DATE));
+        this.image = cursor.getString(cursor.getColumnIndex(Columns.IMAGE));
+        this.imageHash = cursor.getString(cursor.getColumnIndex(Columns.IMAGEHASH));
+        this.link = cursor.getString(cursor.getColumnIndex(Columns.LINK));
+        this.fileHash = cursor.getString(cursor.getColumnIndex(Columns.FILEHASH));
+        this.len = cursor.getLong(cursor.getColumnIndex(Columns.LEN));
+        this.lastModified = cursor.getLong(cursor.getColumnIndex(Columns.LASTMODIFIED));
+        this.bookId = cursor.getString(cursor.getColumnIndex(Columns.BOOKID));
+        this.isDemo = getBoolean(cursor, cursor.getColumnIndex(Columns.ISDEMO));
+        // this.filename = cursor.getString(cursor.getColumnIndex(Columns.FILENAME));
+        // this.tempfilepath = cursor.getString(cursor.getColumnIndex(Columns.TEMPFILEPATH));
+        // this.tempfilename = cursor.getString(cursor.getColumnIndex(Columns.TEMPFILENAME));
+        this.hasupdate = getBoolean(cursor, cursor.getColumnIndex(Columns.HASUPDATE));
+        this.downloadId = cursor.getLong(cursor.getColumnIndex(Columns.DOWNLOADID));
+        //this.downloadprogress = cursor.getInt(cursor.getColumnIndex(Columns.DOWNLOADPROGRESS));
+        this.isdownloaded = getBoolean(cursor, cursor.getColumnIndex(Columns.ISDOWNLOADED));
+        this.kiosk = getBoolean(cursor, cursor.getColumnIndex(Columns.KIOSK));
+        this.imported = getBoolean(cursor, cursor.getColumnIndex(Columns.IMPORTED));
+        this.title = cursor.getString(cursor.getColumnIndex(Columns.TITLE));
+        this.publicationId = cursor.getLong(cursor.getColumnIndex(Columns.PUBLICATIONID));
+        //if (cursor.getColumnIndex(Publication.Columns.VALIDUNTIL) != -1)
+        this.validUntil = cursor.getLong(cursor.getColumnIndex(Columns.VALIDUNTIL));
+        this.resource = cursor.getString(cursor.getColumnIndex(Columns.RESOURCE));
+        this.resourceFileHash = cursor.getString(cursor.getColumnIndex(Columns.RESOURCEFILEHASH));
+        this.resourceUrl = cursor.getString(cursor.getColumnIndex(Columns.RESOURCEURL));
+        this.resourceLen = cursor.getLong(cursor.getColumnIndex(Columns.RESOURCELEN));
+    }
+
+    private boolean getBoolean(Cursor cursor, int columnIndex) {
+        return !(cursor.isNull(columnIndex) || cursor.getShort(columnIndex) == 0);
+    }
+
+    public Paper(NSDictionary nsDictionary) {
+        this.date = PlistHelper.getString(nsDictionary, Columns.DATE);
+        this.image = PlistHelper.getString(nsDictionary, Columns.IMAGE);
+        this.imageHash = PlistHelper.getString(nsDictionary, Columns.IMAGEHASH);
+        this.link = PlistHelper.getString(nsDictionary, Columns.LINK);
+        this.fileHash = PlistHelper.getString(nsDictionary, Columns.FILEHASH);
+        this.len = PlistHelper.getInt(nsDictionary, Columns.LEN);
+        this.lastModified = PlistHelper.getInt(nsDictionary, Columns.LASTMODIFIED);
+        this.bookId = PlistHelper.getString(nsDictionary, Columns.BOOKID);
+        this.isDemo = PlistHelper.getBoolean(nsDictionary, Columns.ISDEMO);
+        this.resource = PlistHelper.getString(nsDictionary, Columns.RESOURCE);
+        this.resourceFileHash = PlistHelper.getString(nsDictionary, Columns.RESOURCEFILEHASH);
+        this.resourceUrl = PlistHelper.getString(nsDictionary, Columns.RESOURCEURL);
+        this.resourceLen = PlistHelper.getInt(nsDictionary, Columns.RESOURCELEN);
+    }
+
+    public ContentValues getContentValues() {
+        ContentValues cv = new ContentValues();
+        cv.put(Columns.BOOKID, bookId);
+        cv.put(Columns.DATE, date);
+        //cv.put(Columns.DOWNLOADPROGRESS, downloadprogress);
+        cv.put(Columns.FILEHASH, fileHash);
+        // cv.put(Columns.FILENAME, filename);
+        cv.put(Columns.HASUPDATE, hasupdate);
+        cv.put(Columns.IMAGE, image);
+        cv.put(Columns.IMAGEHASH, imageHash);
+        cv.put(Columns.IMPORTED, imported);
+        cv.put(Columns.ISDEMO, isDemo);
+        cv.put(Columns.ISDOWNLOADED, isdownloaded);
+        cv.put(Columns.DOWNLOADID, downloadId);
+        cv.put(Columns.KIOSK, kiosk);
+        cv.put(Columns.LASTMODIFIED, lastModified);
+        cv.put(Columns.LEN, len);
+        cv.put(Columns.LINK, link);
+        // cv.put(Columns.TEMPFILENAME, tempfilename);
+        // cv.put(Columns.TEMPFILEPATH, tempfilepath);
+        cv.put(Columns.TITLE, title);
+        cv.put(Columns.PUBLICATIONID, publicationId);
+        cv.put(Columns.RESOURCE, resource);
+        cv.put(Columns.RESOURCEFILEHASH, resourceFileHash);
+        cv.put(Columns.RESOURCEURL, resourceUrl);
+        cv.put(Columns.RESOURCELEN, resourceLen);
+        cv.put(Columns.VALIDUNTIL, validUntil);
+        cv.put(Columns._ID, id);
+        return cv;
+    }
+
+    public Uri getContentUri() {
+        return ContentUris.withAppendedId(Paper.CONTENT_URI, getId());
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getBookId() {
+        return bookId;
+    }
+
+    public String getDate(int style) throws ParseException {
+        SimpleDateFormat outformat = (SimpleDateFormat) DateFormat.getDateInstance(style);
+        return outformat.format(parseDate());
+    }
+
+    private Date parseDate() throws ParseException {
+        SimpleDateFormat informat = new SimpleDateFormat("yyyy-MM-dd");
+        return informat.parse(this.date);
+    }
+
+
+    public String getTitelWithDate(String seperator) {
+        try {
+            return getTitle() + " " + seperator + " " + getDate(DateFormat.MEDIUM);
+        } catch (ParseException e) {
+            return getTitle();
+        }
+    }
+
+    public String getTitelWithDate(Context context) {
+        return getTitelWithDate(context.getString(R.string.string_titel_seperator));
+    }
+
+    public int getProgress() {
+        return progress;
+    }
+
+    public void setProgress(int progress) {
+        this.progress = progress;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public boolean isDemo() {
+        return isDemo;
+    }
+
+    public boolean isDownloaded() {
+        return isdownloaded;
+    }
+
+    public boolean isDownloading() {
+        return downloadId != 0;
+    }
+
+    public boolean hasUpdate() {
+        return hasupdate;
+    }
+
+    public boolean isImported() {
+        return imported;
+    }
+
+    public boolean isKiosk() {
+        return kiosk;
+    }
+
+    public int getState() {
+
+        if (this.isDownloaded() && !this.isDownloading() && !this.hasUpdate()) {
+            return DOWNLOADED_READABLE;
+        } else if (this.isDownloading()) {
+            return IS_DOWNLOADING;
+        } else if (this.isDownloaded() && this.hasUpdate() && !this.isDownloading()) {
+            return DOWNLOADED_BUT_UPDATE;
+        } else if (!this.isDownloaded() && (this.isKiosk() || this.isImported())) {
+            return NOT_DOWNLOADED_IMPORT;
+        }
+
+        return NOT_DOWNLOADED;
+    }
+
+    public String getDate() {
+        return date;
+    }
+
+    public long getDateInMillis() throws ParseException {
+        SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy", Locale.GERMANY);
+        return sdf.parse(getDate())
+                  .getTime();
+    }
+
+    public void setDate(String date) {
+        this.date = date;
+    }
+
+    public String getImageHash() {
+        return imageHash;
+    }
+
+    public void setImageHash(String imageHash) {
+        this.imageHash = imageHash;
+    }
+
+    public String getFileHash() {
+        return fileHash;
+    }
+
+    public void setFileHash(String fileHash) {
+        this.fileHash = fileHash;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
+    }
+
+    public void setLastModified(long lastModified) {
+        this.lastModified = lastModified;
+    }
+
+    public void setDemo(boolean isDemo) {
+        this.isDemo = isDemo;
+    }
+
+    public void setLink(String link) {
+        this.link = link;
+    }
+
+    public String getLink() {
+        return link;
+    }
+
+    public void setLen(long len) {
+        this.len = len;
+    }
+
+    public long getLen() {
+        return len;
+    }
+
+    public long getLastModified() {
+        return lastModified;
+    }
+
+    public void setDownloaded(boolean isdownloaded) {
+        this.isdownloaded = isdownloaded;
+    }
+
+    public void setHasupdate(boolean hasupdate) {
+        this.hasupdate = hasupdate;
+    }
+
+    //    public void setDownloadprogress(int downloadprogress) {
+    //        this.downloadprogress = downloadprogress;
+    //    }
+
+    // public void setIsdownloading(boolean isdownloading) {
+    // this.isdownloading = isdownloading;
+    // }
+
+    public void setIsdownloaded(boolean isdownloaded) {
+        this.isdownloaded = isdownloaded;
+    }
+
+    // public File getFile() {
+    // if (filename == null) {
+    // setFilename(System.currentTimeMillis() + ".tazandroid");
+    // return getFile();
+    // } else
+    // return new File(Utils.PAPER_DIR, filename);
+    // }
+
+    // public File getTempFile() {
+    // if (tempfilename == null) {
+    // setTempfilename(System.currentTimeMillis() + ".temp");
+    // return getTempFile();
+    // } else {
+    // if (tempfilepath == null)
+    // return new File(Utils.TEMP_DIR, tempfilename);
+    // else
+    // return new File(tempfilepath + "/" + tempfilename);
+    // }
+    // }
+
+    public void setBookId(String bookId) {
+        this.bookId = bookId;
+    }
+
+    //    public void setFilename(String filename) {
+    //        this.filename = filename;
+    //    }
+
+    // public void setTempfilename(String tempfilename) {
+    // this.tempfilename = tempfilename;
+    // }
+    //
+    // public void setTempfilepath(String tempfilepath) {
+    // this.tempfilepath = tempfilepath;
+    // }
+
+    public void setImported(boolean imported) {
+        this.imported = imported;
+    }
+
+    public void setKiosk(boolean kiosk) {
+        this.kiosk = kiosk;
+    }
+
+    //    public int getDownloadprogress() {
+    //        return downloadprogress;
+    //    }
+
+    public String getTitle() {
+        if (title == null) return "";
+        return title;
+    }
+
+    public Long getPublicationId() {
+        return publicationId;
+    }
+
+    public void setPublicationId(Long publicationId) {
+        this.publicationId = publicationId;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public long getValidUntil() {
+        return validUntil;
+    }
+
+    public void setValidUntil(long validUntil) {
+        this.validUntil = validUntil;
+    }
+
+    public void setDownloadId(long downloadId) {
+        this.downloadId = downloadId;
+    }
+
+    public long getDownloadId() {
+        return downloadId;
+    }
+
+    public void setResource(String resource) {
+        this.resource = resource;
+    }
+
+    public void setResourceFileHash(String resourceFileHash) {
+        this.resourceFileHash = resourceFileHash;
+    }
+
+    public void setResourceUrl(String resourceUrl) {
+        this.resourceUrl = resourceUrl;
+    }
+
+    public void setResourceLen(long resourceLen) {
+        this.resourceLen = resourceLen;
+    }
+
+    public String getResource() {
+        return resource;
+    }
+
+    public String getResourceFileHash() {
+        return resourceFileHash;
+    }
+
+    public String getResourceUrl() {
+        return resourceUrl;
+    }
+
+    public long getResourceLen() {
+        return resourceLen;
+    }
+
+    private Plist plist;
+
+    public void parsePlist(File file) throws IOException, PropertyListFormatException, ParseException, ParserConfigurationException, SAXException {
+        parsePlist(file, true);
+    }
+
+    public void parsePlist(File file, boolean parseIndex) throws ParserConfigurationException, ParseException, SAXException, PropertyListFormatException, IOException {
+        FileInputStream fis = new FileInputStream(file);
+        parsePlist(fis, parseIndex);
+    }
+
+    public void parsePlist(InputStream is) throws ZipException, IOException, PropertyListFormatException, ParseException, ParserConfigurationException, SAXException {
+        parsePlist(is, true);
+    }
+
+    public void parsePlist(InputStream is, boolean parseIndex) throws ZipException, IOException, PropertyListFormatException, ParseException, ParserConfigurationException, SAXException {
+        log.trace("Start parsing Plist - parse Index: {}", parseIndex);
+        plist = new Plist(is, parseIndex);
+        log.trace("Finished parsing Plist {}", this);
+    }
+
+
+    public Plist getPlist() {
+        if (plist == null) throw new IllegalStateException("No Plist parsed. Call parsePlist() before!");
+        return plist;
+    }
+
+    //    public void parseSources()
+    //    {
+    //        if (plist == null)
+    //            throw new IllegalStateException("No Plist parsed. Call parsePlist() before!");
+    //        plist.parseSources();
+    //    }
+
+
+    //    public void loadPdfCores(Context context) throws Exception {
+    //        ZipFile file = new ZipFile(zipFile);
+    //        if (sources != null)
+    //        {
+    //            for (Source source : sources) {
+    //                if (source.books != null)
+    //                {
+    //                    for (Book book : source.books) {
+    //                        if (book.categories != null) {
+    //                            for (Category category : book.categories) {
+    //                                if (category.pages != null) {
+    //                                    for (Page page : category.pages) {
+    //                                        page.loadPdfCore(context, file);
+    //                                    }
+    //                                }
+    //                            }
+    //                        }
+    //                    }
+    //                }
+    //            }
+    //        }
+    //        file.close();
+    //    }
+
+
+    public boolean parseMissingAttributes(boolean overwrite) {
+        boolean result = false; //Did you write somthing new?
+        if (Strings.isNullOrEmpty(getResource()) || overwrite) {
+            setResource(getPlist().getResource());
+            result = true;
+        }
+        return result;
+    }
+
+    public class Plist {
+
+        private static final String KEY_ARCHIVEURL = "ArchivUrl";
+        private static final String KEY_BOOKID = "BookId";
+        private static final String KEY_RESOURCE = "ressource";
+        private static final String KEY_MINVERSION = "MinVersion";
+        private static final String KEY_VERSION = "Version";
+        private static final String KEY_HASHVALS = "HashVals";
+        private static final String KEY_SOURCES = "Quellen";
+        private static final String KEY_TOPLINKS = "TopLinks";
+
+        private String archiveUrl;
+        private String bookId;
+        private String resource;
+        private String minVersion;
+        private String version;
+        private Map<String, String> hashVals;
+
+        private NSDictionary root;
+
+        private List<Source> sources;
+        private List<TopLink> toplinks;
+        private Map<String, IIndexItem> indexMap = new HashMap<>();
+
+        public Plist(InputStream is, boolean parseIndex) throws IOException, PropertyListFormatException, ParseException, ParserConfigurationException, SAXException {
+
+/*            ZipFile zip = new ZipFile(file);
+            ZipEntry zipEntry = new ZipEntry("content.plist");
+
+            root = (NSDictionary) PropertyListParser.parse(zip.getInputStream(zipEntry));
+
+            zip.close();*/
+
+            root = (NSDictionary) PropertyListParser.parse(is);
+
+            is.close();
+
+            archiveUrl = PlistHelper.getString(root, KEY_ARCHIVEURL);
+            bookId = PlistHelper.getString(root, KEY_BOOKID);
+            resource = PlistHelper.getString(root, KEY_RESOURCE);
+            if (!Strings.isNullOrEmpty(resource)) {
+                resource = resource.replace(".res", "");
+            }
+            minVersion = PlistHelper.getString(root, KEY_MINVERSION);
+            version = PlistHelper.getString(root, KEY_VERSION);
+
+            parseHashVals();
+
+            if (parseIndex) {
+                parseSources();
+                parseToplinks();
+            }
+
+        }
+
+        private void parseHashVals() {
+            hashVals = new HashMap<>();
+            if (root.containsKey(KEY_HASHVALS)) {
+                NSDictionary hashValsDict = (NSDictionary) root.objectForKey(KEY_HASHVALS);
+                Set<Map.Entry<String, NSObject>> set = hashValsDict.entrySet();
+                for (Map.Entry<String, NSObject> stringNSObjectEntry : set) {
+                    hashVals.put(stringNSObjectEntry.getKey(), ((NSString) stringNSObjectEntry.getValue()).getContent());
+                }
+            }
+        }
+
+        public void parseSources() {
+            sources = new ArrayList<>();
+            if (root.containsKey(KEY_SOURCES)) {
+                NSObject[] sourcesArray = ((NSArray) root.objectForKey(KEY_SOURCES)).getArray();
+                if (sourcesArray != null) {
+                    // result = new Source[sources.length];
+                    for (NSObject sourceObject : sourcesArray) {
+                        NSDictionary sourceDict = (NSDictionary) sourceObject;
+                        String key = sourceDict.allKeys()[0];
+                        Source source = new Source(key, (NSArray) sourceDict.objectForKey(key));
+                        source.parseBooks();
+                        indexMap.put(source.getKey(), source);
+                        sources.add(source);
+                    }
+                }
+            }
+        }
+
+        public void parseToplinks() {
+            toplinks = new ArrayList<>();
+            if (root.containsKey(KEY_TOPLINKS)) {
+
+                NSObject[] toplinksArray = ((NSArray) root.objectForKey(KEY_TOPLINKS)).getArray();
+                if (toplinksArray != null) {
+                    for (NSObject toplinkeObject : toplinksArray) {
+                        NSDictionary toplinkDict = (NSDictionary) toplinkeObject;
+                        String key = toplinkDict.allKeys()[0];
+                        TopLink toplink = new TopLink(key, PlistHelper.getString(toplinkDict, key));
+                        boolean foundDefaultPageLink = false;
+                        for (Source source : getSources()) {
+                            for (Book book : source.getBooks()) {
+                                for (Category category : book.getCategories()) {
+                                    for (Page page : category.getPages()) {
+                                        if (toplink.getKey()
+                                                   .equals(page.getDefaultLink())) {
+                                            toplink.page = page;
+                                            foundDefaultPageLink = true;
+                                        }
+                                        if (foundDefaultPageLink) break;
+                                    }
+                                    if (foundDefaultPageLink) break;
+                                }
+                                if (foundDefaultPageLink) break;
+                            }
+                            if (foundDefaultPageLink) break;
+                        }
+                        if (indexMap.containsKey(toplink.getKey())) {
+                            toplink.setLink(indexMap.get(toplink.getKey()));
+                        } else {
+                            indexMap.put(toplink.getKey(), toplink);
+                        }
+                        toplinks.add(toplink);
+                    }
+                }
+            }
+        }
+
+        public String getArchiveUrl() {
+            return archiveUrl;
+        }
+
+        public String getBookId() {
+            return bookId;
+        }
+
+        public String getResource() {
+            return resource;
+        }
+
+        public String getMinVersion() {
+            return minVersion;
+        }
+
+        public String getVersion() {
+            return version;
+        }
+
+        public Map<String, String> getHashVals() {
+            return hashVals;
+        }
+
+        public List<Source> getSources() {
+            return sources;
+        }
+
+        public List<TopLink> getToplinks() {
+            return toplinks;
+        }
+
+        public IIndexItem getIndexItem(String key) {
+            return indexMap.get(key);
+        }
+
+        public class Source extends IndexItemTemplate {
+
+            String key;
+            NSArray array;
+            List<Book> books;
+
+            public Source(String key, NSArray array) {
+                this.key = key;
+                this.array = array;
+            }
+
+            public String getKey() {
+                return key;
+            }
+
+            public void parseBooks() {
+                books = new ArrayList<>();
+                NSObject[] sourceBooks = array.getArray();
+                if (sourceBooks != null) {
+                    for (NSObject sourceBook : sourceBooks) {
+                        NSDictionary sourceBookDict = (NSDictionary) sourceBook;
+                        String key = sourceBookDict.allKeys()[0];
+                        Book book = new Book(this, key, (NSArray) sourceBookDict.objectForKey(key));
+
+                        book.parseCategories();
+                        books.add(book);
+                    }
+                }
+            }
+
+            @Override
+            public String getTitle() {
+                return getKey();
+            }
+
+            public List<Book> getBooks() {
+                if (books == null) throw new IllegalStateException("Books not parsed yet, call parseBooks() before");
+                return books;
+            }
+
+            @Override
+            public IIndexItem getIndexParent() {
+                return null;
+            }
+
+            @Override
+            public boolean hasIndexParent() {
+                return false;
+            }
+
+            @Override
+            public boolean hasIndexChilds() {
+                if (books != null) {
+                    for (Book book : getBooks()) {
+                        if (book.categories != null) {
+                            if (book.categories.size() > 0) return true;
+                        }
+                    }
+                }
+                return false;
+            }
+
+            @Override
+            public List<IIndexItem> getIndexChilds() {
+                List<IIndexItem> resultList = new ArrayList<>();
+                if (hasIndexChilds()) {
+                    for (Book book : getBooks()) {
+                        resultList.addAll(book.getCategories());
+                    }
+                    return resultList;
+                }
+                return null;
+            }
+
+        }
+
+        public class Book {
+
+            Source source;
+            String key;
+            NSArray array;
+            List<Category> categories;
+
+            public Book(Source source, String key, NSArray array) {
+                this.source = source;
+                this.key = source.getKey() + "_" + key;
+                this.array = array;
+            }
+
+            public void parseCategories() {
+                categories = new ArrayList<>();
+
+                NSObject[] sourceBookCategories = array.getArray();
+                if (sourceBookCategories != null) {
+                    for (NSObject sourceBookCategory : sourceBookCategories) {
+                        NSDictionary sourceBookCategoryDict = (NSDictionary) sourceBookCategory;
+                        String key = sourceBookCategoryDict.allKeys()[0];
+                        Category category = new Category(this, key, (NSArray) sourceBookCategoryDict.objectForKey(key));
+                        category.parsePages();
+                        indexMap.put(category.getKey(), category);
+                        categories.add(category);
+                    }
+                }
+            }
+
+            public String getKey() {
+                return key;
+            }
+
+            public Source getSource() {
+                return source;
+            }
+
+            public List<Category> getCategories() {
+                if (categories == null) throw new IllegalStateException("Categories not parsed yet, call parseCategeories() before");
+                return categories;
+            }
+
+        }
+
+        public class Category extends IndexItemTemplate {
+
+            Book book;
+            String key;
+            String title;
+            NSArray array;
+            List<Page> pages;
+
+            public Category(Book book, String key, NSArray array) {
+                this.book = book;
+
+                //Da Key nicht einzigartig in PList
+                this.key = book.getKey() + "_" + key;
+                this.title = key;
+
+                this.array = array;
+            }
+
+            public Book getBook() {
+                return book;
+            }
+
+            public void parsePages() {
+                pages = new ArrayList<>();
+                NSObject[] sourceBookCategoryPages = array.getArray();
+                if (sourceBookCategoryPages != null) {
+                    for (NSObject sourceBookCategoryPage : sourceBookCategoryPages) {
+                        NSDictionary sourceBookCategoryPageDict = (NSDictionary) sourceBookCategoryPage;
+                        String key = sourceBookCategoryPageDict.allKeys()[0];
+                        Page page = new Page(this, key, (NSDictionary) sourceBookCategoryPageDict.objectForKey(key));
+                        indexMap.put(page.getKey(), page);
+                        pages.add(page);
+                    }
+                }
+            }
+
+            @Override
+            public String getTitle() {
+                return title;
+            }
+
+            public List<Page> getPages() {
+                if (pages == null) throw new IllegalStateException("Pages not parsed yet, call parsePages() before");
+                return pages;
+            }
+
+            public String getKey() {
+                return key;
+            }
+
+            @Override
+            public IIndexItem getIndexParent() {
+                return getBook().getSource();
+            }
+
+            @Override
+            public boolean hasIndexParent() {
+                return true;
+            }
+
+            @Override
+            public boolean hasIndexChilds() {
+                if (pages != null) {
+                    if (pages.size() > 0) return true;
+                }
+                return false;
+            }
+
+            @Override
+            public List<IIndexItem> getIndexChilds() {
+                List<IIndexItem> resultList = new ArrayList<>();
+                if (hasIndexChilds()) {
+                    for (Page page : getPages()) {
+                        resultList.add(page);
+                        resultList.addAll(page.getArticles());
+                    }
+                    return resultList;
+                }
+                return null;
+            }
+
+        }
+
+        public class Page extends IndexItemTemplate {
+
+            private static final String KEY_GEOMETRY = "geometry";
+            private static final String KEY_PAGINA = "SeitenNummer";
+            private static final String KEY_DEFAULTLINK = "defaultLink";
+            private static final String KEY_ARTICLE = "Artikel";
+            private static final String KEY_RIGHT = "right";
+            private static final String KEY_LEFT = "left";
+
+            Category category;
+            String key;
+            String pagina;
+            String defaultLink;
+            String left;
+            String right;
+
+            NSArray geometryArray;
+            NSArray articleArray;
+
+            List<Geometry> geometries;
+            List<Article> articles;
+
+            public Page(Category category, String key, NSDictionary dict) {
+                this.category = category;
+                this.key = key;
+                if (dict != null) {
+                    pagina = PlistHelper.getString(dict, KEY_PAGINA);
+                    left = PlistHelper.getString(dict, KEY_LEFT);
+                    right = PlistHelper.getString(dict, KEY_RIGHT);
+                    defaultLink = PlistHelper.getString(dict, KEY_DEFAULTLINK);
+                    geometryArray = (NSArray) dict.get(KEY_GEOMETRY);
+                    articleArray = (NSArray) dict.get(KEY_ARTICLE);
+                    parseGeometries();
+                    parseArticles();
+                }
+
+            }
+
+            public void parseGeometries() {
+                geometries = new ArrayList<>();
+                NSObject[] sourceBookCategoryPageGeometries = geometryArray.getArray();
+                if (sourceBookCategoryPageGeometries != null) {
+                    for (NSObject sourceBookCategoryPageGeometry : sourceBookCategoryPageGeometries) {
+                        NSDictionary sourceBookCategoryPageGeometryDict = (NSDictionary) sourceBookCategoryPageGeometry;
+                        geometries.add(new Geometry(sourceBookCategoryPageGeometryDict));
+                    }
+                }
+            }
+
+            public void parseArticles() {
+                articles = new ArrayList<>();
+                NSObject[] sourceBookCategoryPageArticles = articleArray.getArray();
+                if (sourceBookCategoryPageArticles != null) {
+                    for (NSObject sourceBookCategoryPageArticle : sourceBookCategoryPageArticles) {
+                        NSDictionary sourceBookCategoryPageArticleDict = (NSDictionary) sourceBookCategoryPageArticle;
+                        String key = sourceBookCategoryPageArticleDict.allKeys()[0];
+                        Article article = new Article(key, (NSDictionary) sourceBookCategoryPageArticleDict.get(key));
+                        for (Geometry geometry : getGeometries()) {
+                            if (article.getKey()
+                                       .equals(geometry.getLink())) {
+                                //geometry.article = article;
+                                article.geometries.add(geometry);
+                            }
+                        }
+                        indexMap.put(article.getKey(), article);
+                        articles.add(article);
+                    }
+                }
+            }
+
+
+            public List<Article> getArticles() {
+                if (articles == null) throw new IllegalStateException("Articles not parsed yet, call parseArticles() before");
+                return articles;
+            }
+
+            public List<Geometry> getGeometries() {
+                if (geometries == null) throw new IllegalStateException("Geometries not parsed yet, call parseGeometries() before");
+                return geometries;
+            }
+
+            @Override
+            public String getTitle() {
+                return new StringBuilder(category.getTitle()).append(" ")
+                                                             .append(pagina)
+                                                             .toString();
+            }
+
+
+            public String getDefaultLink() {
+                return defaultLink;
+            }
+
+            public Category getCategory() {
+                return category;
+            }
+
+            public String getKey() {
+                return key;
+            }
+
+            @Override
+            public IIndexItem getIndexParent() {
+                return getCategory();
+            }
+
+            @Override
+            public boolean hasIndexParent() {
+                return true;
+            }
+
+            @Override
+            public boolean hasIndexChilds() {
+                return false;
+            }
+
+            @Override
+            public List<IIndexItem> getIndexChilds() {
+                return null;
+            }
+
+            @Override
+            public boolean isShareable() {
+                return true;
+            }
+
+            @Override
+            public Intent getShareIntent(Context context) {
+                StorageManager storage = StorageManager.getInstance(context);
+
+                File pdfFile = new File(storage.getPaperDirectory(getPaper()), getKey());
+                File papersDir = storage.get(StorageManager.PAPER);
+
+                try {
+                    String pagePath = pdfFile.getCanonicalPath()
+                                             .replace(papersDir.getCanonicalPath(), "papers");
+                    Uri contentUri = Uri.parse("content://de.thecode.android.tazreader.streamprovider")
+                                        .buildUpon()
+                                        .appendEncodedPath(pagePath)
+                                        .build();
+
+                    //share Intent
+                    Intent intent = new Intent(Intent.ACTION_SEND);
+                    intent.setType("application/pdf");
+                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    intent.putExtra(Intent.EXTRA_STREAM, contentUri);
+                    intent.putExtra(Intent.EXTRA_SUBJECT, getPaper().getTitelWithDate(context) + ": " + getTitle());
+                    intent.putExtra(Intent.EXTRA_TEXT, getPaper().getTitelWithDate(context) + "\n" + getTitle());
+
+                    //get extra intents to view pdf
+                    Intent viewIntent = new Intent(Intent.ACTION_VIEW);
+                    viewIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    viewIntent.setData(contentUri);
+                    PackageManager packageManager = context.getPackageManager();
+                    List<ResolveInfo> resInfo = packageManager.queryIntentActivities(viewIntent, 0);
+                    Intent[] extraIntents = new Intent[resInfo.size()];
+                    for (int i = 0; i < resInfo.size(); i++) {
+                        // Extract the label, append it, and repackage it in a LabeledIntent
+                        ResolveInfo ri = resInfo.get(i);
+                        String packageName = ri.activityInfo.packageName;
+                        Intent extraViewIntent = new Intent();
+                        extraViewIntent.setComponent(new ComponentName(packageName, ri.activityInfo.name));
+                        extraViewIntent.setAction(Intent.ACTION_VIEW);
+                        extraViewIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                        extraViewIntent.setData(contentUri);
+                        CharSequence label = ri.loadLabel(packageManager);
+                        extraIntents[i] = new LabeledIntent(extraViewIntent, packageName, label, ri.icon);
+                    }
+                    Intent chooserIntent = Intent.createChooser(intent, context.getString(R.string.reader_action_share_open));
+                    if (extraIntents.length > 0) chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, extraIntents);
+                    return chooserIntent;
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                return null;
+            }
+
+            public class Geometry {
+
+                private static final String KEY_X1 = "x1";
+                private static final String KEY_Y1 = "y1";
+                private static final String KEY_X2 = "x2";
+                private static final String KEY_Y2 = "y2";
+                private static final String KEY_LINK = "link";
+
+                private float x1;
+                private float y1;
+                private float x2;
+                private float y2;
+                private String link;
+
+                //private Article article;
+
+                public Geometry(NSDictionary dict) {
+                    this.x1 = PlistHelper.getFloat(dict, KEY_X1);
+                    this.y1 = PlistHelper.getFloat(dict, KEY_Y1);
+                    this.x2 = PlistHelper.getFloat(dict, KEY_X2);
+                    this.y2 = PlistHelper.getFloat(dict, KEY_Y2);
+                    this.link = PlistHelper.getString(dict, KEY_LINK);
+                }
+
+                public float getX1() {
+                    return x1;
+                }
+
+                public float getY1() {
+                    return y1;
+                }
+
+                public float getX2() {
+                    return x2;
+                }
+
+                public float getY2() {
+                    return y2;
+                }
+
+                public String getLink() {
+                    return link;
+                }
+
+                public Page getPage() {
+                    return Page.this;
+                }
+
+                public boolean checkCoordinates(float x, float y) {
+                    return x >= x1 && x <= x2 && y >= y1 && y <= y2;
+                }
+
+                //                public Article getArticle() {
+                //                    return article;
+                //                }
+            }
+
+            public class Article extends IndexItemTemplate //implements ArticleReaderItem
+            {
+
+                private static final String KEY_TITLE = "Titel";
+                private static final String KEY_SUBTITLE = "Untertitel";
+                private static final String KEY_ONLINELINK = "OnlineLink";
+
+                private String key;
+                private String title;
+                private String subtitle;
+                private String onlinelink;
+
+                private List<Geometry> geometries = new ArrayList<>();
+
+                public Article(String key, NSDictionary dict) {
+                    this.key = key;
+                    this.title = PlistHelper.getString(dict, KEY_TITLE);
+                    this.subtitle = PlistHelper.getString(dict, KEY_SUBTITLE);
+                    this.onlinelink = PlistHelper.getString(dict, KEY_ONLINELINK);
+                }
+
+                public String getKey() {
+                    return key;
+                }
+
+                public String getTitle() {
+                    if (title == null || "".equals(title)) return getPage().getTitle();
+                    return title;
+                }
+
+                public String getSubtitle() {
+                    return subtitle;
+                }
+
+                public String getOnlinelink() {
+                    return onlinelink;
+                }
+
+                public Page getPage() {
+                    return Page.this;
+                }
+
+                //                public void setBookmarked(boolean bookmarked) {
+                //                    this.bookmarked = bookmarked;
+                //                }
+                //
+                //                public boolean isBookmarked() {
+                //                    return bookmarked;
+                //                }
+
+
+                @Override
+                public boolean isBookmarkable() {
+                    return true;
+                }
+
+                @Override
+                public IIndexItem getIndexParent() {
+                    return getPage().getCategory();
+                }
+
+                @Override
+                public boolean hasIndexParent() {
+                    return true;
+                }
+
+                @Override
+                public boolean hasIndexChilds() {
+                    return false;
+                }
+
+                @Override
+                public List<IIndexItem> getIndexChilds() {
+                    return null;
+                }
+
+                public List<Geometry> getGeometries() {
+                    return geometries;
+                }
+
+                @Override
+                public boolean isShareable() {
+                    return !Strings.isNullOrEmpty(onlinelink);
+                }
+
+                @Override
+                public Intent getShareIntent(Context context) {
+                    StringBuilder text = new StringBuilder(getPaper().getTitelWithDate(context)).append("\n")
+                                                                                                .append(getTitle())
+                                                                                                .append("\n\n");
+                    if (!Strings.isNullOrEmpty(getSubtitle())) {
+                        text.append(getSubtitle())
+                            .append("\n\n");
+                    }
+                    text.append(getOnlinelink());
+
+
+                    Intent intent = new Intent(Intent.ACTION_SEND);
+                    intent.setType("text/plain");
+                    intent.putExtra(Intent.EXTRA_SUBJECT, getPaper().getTitelWithDate(context) + ": " + getTitle());
+                    intent.putExtra(Intent.EXTRA_TEXT, text.toString());
+
+                    return Intent.createChooser(intent, context.getString(R.string.reader_action_share));
+                }
+            }
+
+        }
+
+        public class TopLink extends IndexItemTemplate //implements ArticleReaderItem
+        {
+
+            private String title;
+            private String key;
+
+            private Page page;
+
+            public TopLink(String key, String title) {
+                this.key = key;
+                this.title = title;
+            }
+
+            public String getKey() {
+                return key;
+            }
+
+            @Override
+            public String getTitle() {
+                return title;
+            }
+
+            public Page getPage() {
+                return page;
+            }
+
+            @Override
+            public IIndexItem getIndexParent() {
+                return null;
+            }
+
+            @Override
+            public boolean hasIndexParent() {
+                return false;
+            }
+
+            @Override
+            public boolean hasIndexChilds() {
+                return false;
+            }
+
+            @Override
+            public List<IIndexItem> getIndexChilds() {
+                return null;
+            }
+
+        }
+
+        public abstract class IndexItemTemplate implements de.thecode.android.tazreader.reader.index.IIndexItem {
+
+            boolean childsVisible = true;
+
+            Type type;
+
+            private boolean bookmarked;
+            private IIndexItem link;
+
+            public abstract String getTitle();
+
+            public void setIndexChildsVisible(boolean childsVisible) {
+
+                this.childsVisible = childsVisible;
+
+                if (!childsVisible && hasIndexChilds()) {
+                    for (IIndexItem childItem : getIndexChilds()) {
+                        childItem.setIndexChildsVisible(false);
+                    }
+                }
+            }
+
+            public boolean areIndexChildsVisible() {
+                return childsVisible;
+            }
+
+            public boolean isVisible() {
+                IIndexItem indexParent = getIndexParent();
+                return indexParent == null || indexParent.areIndexChildsVisible();
+            }
+
+            public boolean hasBookmarkedChilds() {
+                if (getIndexChilds() != null) {
+                    for (IIndexItem child : getIndexChilds()) {
+
+                        if (child.isBookmarked()) {
+                            return true;
+                        } else {
+                            if (child.hasBookmarkedChilds()) return true;
+                        }
+                    }
+                }
+                return false;
+            }
+
+            public IIndexItem getIndexAncestorWithKey(String key) {
+                if (hasIndexParent()) {
+                    if (getIndexParent().getKey()
+                                        .equals(key)) return getIndexParent();
+                    else return getIndexParent().getIndexAncestorWithKey(key);
+
+                }
+                return null;
+            }
+
+
+            public Type getType() {
+                if (type == null) {
+                    if (this instanceof Source) type = Type.SOURCE;
+                    else if (this instanceof Category) type = Type.CATEGORY;
+                    else if (this instanceof Page) type = Type.PAGE;
+                    else if (this instanceof Article) type = Type.ARTICLE;
+                    else if (this instanceof TopLink) type = Type.TOPLINK;
+                    else type = Type.UNKNOWN;
+                }
+                return type;
+            }
+
+            public Paper getPaper() {
+                return Paper.this;
+            }
+
+            @Override
+            public boolean isBookmarkable() {
+                return false;
+            }
+
+            @Override
+            public void setBookmark(boolean bookmarked) {
+                if (isBookmarkable()) this.bookmarked = bookmarked;
+            }
+
+            @Override
+            public boolean isBookmarked() {
+                return bookmarked;
+            }
+
+            @Override
+            public boolean isShareable() {
+                return false;
+            }
+
+            @Override
+            public Intent getShareIntent(Context context) {
+                return null;
+            }
+
+            public IIndexItem getLink() {
+                return link;
+            }
+
+            public boolean isLink() {
+                if (link != null) return true;
+                return false;
+            }
+
+            @Override
+            public void setLink(IIndexItem link) {
+                this.link = link;
+            }
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder builder = new StringBuilder();
+            builder.append(getClass().getSimpleName())
+                   .append("@")
+                   .append(Integer.toHexString(hashCode()));
+            builder.append("|")
+                   .append(bookId);
+            if (getSources() != null) {
+                builder.append("|")
+                       .append("sources:")
+                       .append(getSources().size());
+            }
+            if (getToplinks() != null) {
+                builder.append("|")
+                       .append("toplinks:")
+                       .append(getToplinks().size());
+            }
+            return builder.toString();
+        }
+    }
+
+    public JSONArray getBookmarkJson() {
+        JSONArray array = new JSONArray();
+        try {
+
+
+            for (Map.Entry<String, IIndexItem> entry : getPlist().indexMap.entrySet()) {
+                switch (entry.getValue()
+                             .getType()) {
+                    case ARTICLE:
+                        if (((Article) entry.getValue()).isBookmarked()) {
+                            array.put(entry.getValue()
+                                           .getKey());
+                        }
+                        break;
+                }
+            }
+        } catch (Exception e) {
+
+        }
+        return array;
+    }
+
+    public String getStoreValue(Context context, String key) {
+        String path = getBookId() + "/" + key;
+        return Store.getValueForKey(context, path);
+    }
+
+    public void deleteStoreKey(Context context, String key) {
+        String path = getBookId() + "/" + key;
+        Store.deleteKey(context, path);
+    }
+
+    public boolean saveStoreValue(Context context, String key, String value) {
+        String path = getBookId() + "/" + key;
+        return Store.saveValueForKey(context, path, value);
+    }
+
+    public void delete(Context context) {
+        StorageManager storage = StorageManager.getInstance(context);
+        storage.deletePaperDir(this);
+        if (isImported() || isKiosk()) {
+            context.getContentResolver()
+                   .delete(ContentUris.withAppendedId(Paper.CONTENT_URI, getId()), null, null);
+        } else {
+            setDownloadId(0);
+            setDownloaded(false);
+            setHasupdate(false);
+            setValidUntil(0);
+            int affected = context.getContentResolver()
+                                  .update(ContentUris.withAppendedId(Paper.CONTENT_URI, getId()), getContentValues(), null, null);
+            if (affected >= 1) EventBus.getDefault()
+                                       .post(new PaperDeletedEvent(getId()));
+        }
+
+    }
+
+    @Override
+    public String toString() {
+        //return Log.toString(this, ":", "; ");
+        return ToStringBuilder.reflectionToString(this);
+    }
+
+    public static class PaperNotFoundException extends Exception {
+        public PaperNotFoundException() {
+        }
+
+        public PaperNotFoundException(String detailMessage) {
+            super(detailMessage);
+        }
+
+        public PaperNotFoundException(String detailMessage, Throwable throwable) {
+            super(detailMessage, throwable);
+        }
+
+        public PaperNotFoundException(Throwable throwable) {
+            super(throwable);
+        }
+    }
+}
