@@ -81,6 +81,8 @@
     <string name="reader_action_share_open">Öffnen / Teilen</string>
     <string name="reader_action_pageindex">Seitenübersicht</string>
 
-    <string name="toast_tts_started">Sprachausgabe gestartet, zum vorzeitigen Beenden doppelt auf Text tippen.</string>
-    <string name="toast_tts_stopped">Sprachausgabe gestoppt, zum erneuten Abspielen doppelt auf Text tippen.</string>
+    <string name="toast_tts_started">Sprachausgabe gestartet, zum Pausieren doppelt auf Text tippen.</string>
+    <string name="toast_tts_continued">Sprachausgabe fortgesetzt, zum Pausieren doppelt auf Text tippen.</string>
+    <string name="toast_tts_paused">Sprachausgabe pausiert, doppelt auf Text tippen um Fortzusetzen.</string>
+    <string name="toast_tts_action_restart">Neu Starten</string>
 </resources>

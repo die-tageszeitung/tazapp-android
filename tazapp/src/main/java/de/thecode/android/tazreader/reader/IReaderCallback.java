@@ -38,8 +38,8 @@ public interface IReaderCallback {
 
     public void setImmersiveMode();
 
-    public ReaderDataFragment.TTS getTtsState();
+    public ReaderTtsFragment.TTS getTtsState();
 
-    public void speak(CharSequence text);
+    public void speak(String id, CharSequence text);
     
 }

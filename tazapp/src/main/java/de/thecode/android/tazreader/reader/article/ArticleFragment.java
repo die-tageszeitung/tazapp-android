@@ -49,7 +49,7 @@ import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.reader.AbstractContentFragment;
 import de.thecode.android.tazreader.reader.ReaderActivity;
 import de.thecode.android.tazreader.reader.ReaderActivity.DIRECTIONS;
-import de.thecode.android.tazreader.reader.ReaderDataFragment;
+import de.thecode.android.tazreader.reader.ReaderTtsFragment;
 import de.thecode.android.tazreader.reader.article.ArticleWebView.ArticleWebViewCallback;
 import de.thecode.android.tazreader.reader.index.IIndexItem;
 import de.thecode.android.tazreader.utils.StorageManager;
@@ -64,7 +64,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
     private static final String JAVASCRIPT_API_NAME = "ANDROIDAPI";
     public static final String ARGUMENT_KEY = "key";
     private boolean debugArticles = false;
-    private boolean ttsActive = false;
+//    private boolean ttsActive = false;
 
 
     private static enum GESTURES {
@@ -163,7 +163,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
             });
         } else mPageIndexButton.setVisibility(View.GONE);
 
-        ttsActive = TazSettings.getPrefBoolean(mContext, TazSettings.PREFKEY.TEXTTOSPEACH, false);
+        //ttsActive = TazSettings.getPrefBoolean(mContext, TazSettings.PREFKEY.TEXTTOSPEACH, false);
 
         return (result);
     }
@@ -301,8 +301,8 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
     @Override
     public boolean onDoubleTap(MotionEvent e) {
-        if (hasCallback() && ttsActive) {
-            getCallback().speak(getTextToSpeech());
+        if (hasCallback()) {
+            getCallback().speak(mArticle.getKey(), getTextToSpeech());
         }
         return true;
     }
@@ -676,7 +676,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
     }
 
     @Override
-    public void onTtsStateChanged(ReaderDataFragment.TTS state) {
+    public void onTtsStateChanged(ReaderTtsFragment.TTS state) {
         log.debug("{}",state);
     }
 

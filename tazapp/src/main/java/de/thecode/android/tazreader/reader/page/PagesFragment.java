@@ -26,7 +26,7 @@ import de.thecode.android.tazreader.data.Paper.Plist.Source;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.reader.AbstractContentFragment;
 import de.thecode.android.tazreader.reader.ReaderActivity;
-import de.thecode.android.tazreader.reader.ReaderDataFragment;
+import de.thecode.android.tazreader.reader.ReaderTtsFragment;
 import de.thecode.android.tazreader.reader.index.IIndexItem;
 import de.thecode.android.tazreader.widget.PageIndexButton;
 import de.thecode.android.tazreader.widget.ShareButton;
@@ -189,7 +189,7 @@ public class PagesFragment extends AbstractContentFragment {
     }
 
     @Override
-    public void onTtsStateChanged(ReaderDataFragment.TTS state) {
+    public void onTtsStateChanged(ReaderTtsFragment.TTS state) {
         log.debug("state: {}",state);
     }
 }

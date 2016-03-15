@@ -9,8 +9,8 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.ref.WeakReference;
 
-import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.data.Paper;
+import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.utils.BaseFragment;
 
 /**
@@ -69,5 +69,5 @@ public abstract class AbstractContentFragment extends BaseFragment implements Re
         return result.toString();
     }
 
-    public abstract void onTtsStateChanged(ReaderDataFragment.TTS state);
+    public abstract void onTtsStateChanged(ReaderTtsFragment.TTS state);
 }

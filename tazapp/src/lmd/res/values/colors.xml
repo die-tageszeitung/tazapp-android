@@ -23,6 +23,8 @@
     <item name="button_normal" type="color">@color/color_accent</item>
     <item name="button_text_normal" type="color">@android:color/white</item>
 
+    <item name="snackbar_action" type="color">@color/color_accent</item>
+
     <item name="index_background_source" type="color">@color/lmdBlauDunkel</item>
     <item name="index_background_category" type="color">@color/lmdBlauHeller</item>
     <item name="index_background_page" type="color">@color/lmdBlauNochHeller</item>
