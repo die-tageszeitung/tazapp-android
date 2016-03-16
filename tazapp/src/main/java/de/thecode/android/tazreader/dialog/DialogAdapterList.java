@@ -39,7 +39,7 @@ public abstract class DialogAdapterList extends Dialog {
 
     @Override
     void setDialogContent() {
-        builder.setAdapter(getAdapter(getActivity()), onClickListener);
+        builder.setAdapter(getAdapter(), onClickListener);
     }
 
     public DialogAdapterList withEntries(ArrayList<? extends TcDialogAdapterListEntry> entries) {
@@ -47,7 +47,7 @@ public abstract class DialogAdapterList extends Dialog {
         return this;
     }
 
-    public abstract ListAdapter getAdapter(Activity activity);
+    public abstract ListAdapter getAdapter();
 
     public abstract ArrayList<? extends TcDialogAdapterListEntry> getEntries();
 

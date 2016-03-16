@@ -169,7 +169,7 @@ public class Dialog extends DialogFragment {
     @Override
     public AppCompatDialog onCreateDialog(Bundle savedInstanceState) {
         log.trace(this.getTag());
-        builder = new AlertDialog.Builder(getContext());
+        builder = new AlertDialog.Builder(getContext(), R.style.Dialog);
 
         if (hasIcon()) builder.setIcon(getIcon());
 

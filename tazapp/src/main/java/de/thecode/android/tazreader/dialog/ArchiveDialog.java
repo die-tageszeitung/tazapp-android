@@ -1,6 +1,5 @@
 package de.thecode.android.tazreader.dialog;
 
-import android.app.Activity;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.view.Gravity;
@@ -25,7 +24,8 @@ public class ArchiveDialog extends DialogAdapterList {
     }
 
     @Override
-    public ListAdapter getAdapter(final Activity activity) {
+    public ListAdapter getAdapter() {
+
         final ArrayList<ArchiveEntry> entries = getEntries();
         return new BaseAdapter() {
             @Override
@@ -50,14 +50,15 @@ public class ArchiveDialog extends DialogAdapterList {
             public View getView(int position, View convertView, ViewGroup parent) {
                 ViewHolder viewHolder;
                 if (convertView == null) {
-                    convertView = activity.getLayoutInflater()
-                                          .inflate(android.R.layout.simple_list_item_1, parent, false);
+                    convertView = getActivity().getLayoutInflater()
+                                               .inflate(android.R.layout.simple_list_item_1, parent, false);
                     viewHolder = new ViewHolder();
                     viewHolder.text = (TextView) convertView.findViewById(android.R.id.text1);
                     viewHolder.text.setGravity(Gravity.CENTER);
                     convertView.setTag(viewHolder);
                 } else viewHolder = (ViewHolder) convertView.getTag();
-                viewHolder.text.setText(entries.get(position).getName());
+                viewHolder.text.setText(entries.get(position)
+                                               .getName());
                 return convertView;
             }
 
@@ -117,7 +118,6 @@ public class ArchiveDialog extends DialogAdapterList {
         };
 
     }
-
 
 
 }
