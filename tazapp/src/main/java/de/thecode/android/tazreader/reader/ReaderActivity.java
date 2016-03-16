@@ -2,6 +2,7 @@ package de.thecode.android.tazreader.reader;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.media.AudioManager;
 import android.os.Build;
@@ -80,6 +81,7 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
     private static final String TAG_FRAGMENT_PAGEINDEX = "PageIndexFragment";
 
     public static final String TAG_FRAGMENT_DIALOG_SETTING = "settingsDialog";
+    public static final String TAG_DIALOG_TTS_ERROR = "ttsError";
 
     public static final String KEY_EXTRA_PAPER_ID = "paperId";
 
@@ -168,8 +170,8 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
             lm.initLoader(LOADER_ID_PAPER, paperLoaderBundle, this);
         }
         audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        retainTtsFragment = ReaderTtsFragment.createOrRetainFragment(getSupportFragmentManager(),this);
-        retainTtsFragment.initTts(this);
+        retainTtsFragment = ReaderTtsFragment.createOrRetainFragment(getSupportFragmentManager(), this);
+        //retainTtsFragment.initTts(this);
 
         if (retainTtsFragment.getTtsState() == ReaderTtsFragment.TTS.PLAYING) ttsPreparePlayingInActivty();
         //int currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
@@ -491,7 +493,14 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
 
     @Override
     public void onDialogClick(String tag, Bundle arguments, int which) {
-        // TODO Auto-generated method stub
+        if (TAG_DIALOG_TTS_ERROR.equals(tag)) {
+            if (which == Dialog.BUTTON_NEUTRAL) {
+                Intent intent = new Intent();
+                intent.setAction("com.android.settings.TTS_SETTINGS");
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                this.startActivity(intent);
+            }
+        }
     }
 
     @Override
@@ -681,8 +690,23 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
     }
 
     @Override
-    public void onTtsInitError(int error) {
+    public void onTtsInitError(ReaderTtsFragment.TTSERROR error) {
         log.debug("error: {}", error);
+        StringBuilder message = new StringBuilder(getString(R.string.dialog_tts_error));
+        switch (error) {
+            case LANG_MISSING_DATA:
+                message.append(" ")
+                       .append(getString(R.string.dialog_tts_error_lang_missing_data));
+                break;
+            case LANG_NOT_SUPPORTED:
+                message.append(" ")
+                       .append(getString(R.string.dialog_tts_error_lang_not_supported));
+                break;
+        }
+        new Dialog().withMessage(message.toString())
+                    .withNeutralButton(R.string.dialog_tts_error_settings)
+                    .withPositiveButton()
+                    .show(getSupportFragmentManager(), TAG_DIALOG_TTS_ERROR);
     }
 
 
@@ -693,8 +717,9 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
             case AudioManager.AUDIOFOCUS_REQUEST_GRANTED:
 
                 switch (retainTtsFragment.getTtsState()) {
+                    case DISABLED:
                     case IDLE:
-                        showSackbar(makeTtsPlayingSpan(getString(R.string.toast_tts_started)),5000);
+                        showSackbar(makeTtsPlayingSpan(getString(R.string.toast_tts_started)), 5000);
                         break;
                     case PAUSED:
                         showSackbar(makeTtsPlayingSpan(getString(R.string.toast_tts_continued)), 5000, getString(R.string.toast_tts_action_restart), new View.OnClickListener() {
@@ -723,7 +748,7 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
         int percent = volume * 100 / maxVolume;
         if (percent <= 20) {
             int boldStart = snackbarText.length();
-            snackbarText.append(getString(R.string.toast_tts_volume_warning,percent));
+            snackbarText.append(getString(R.string.toast_tts_volume_warning, percent));
             snackbarText.setSpan(new ForegroundColorSpan(Color.RED), boldStart, snackbarText.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             snackbarText.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), boldStart, snackbarText.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
@@ -731,13 +756,11 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
     }
 
 
-
-
     @Override
     public void onTtsStopped() {
         audioManager.abandonAudioFocus(retainTtsFragment.getAudioFocusChangeListener());
-        if (retainTtsFragment.getTtsState()== ReaderTtsFragment.TTS.PAUSED){
-            showSackbar(getString(R.string.toast_tts_paused),5000, getString(R.string.toast_tts_action_restart), new View.OnClickListener() {
+        if (retainTtsFragment.getTtsState() == ReaderTtsFragment.TTS.PAUSED) {
+            showSackbar(getString(R.string.toast_tts_paused), 5000, getString(R.string.toast_tts_action_restart), new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     retainTtsFragment.stopTts();
@@ -758,33 +781,39 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
 
     @Override
     public void speak(@NonNull String id, CharSequence text) {
-        switch (getTtsState()) {
-            case DISABLED:
-                break;
-            case PLAYING:
-                retainTtsFragment.pauseTts();
-                break;
-            case IDLE:
-                if (ttsPreparePlayingInActivty()) {
-                    retainTtsFragment.prepareTts(id,text);
-                    retainTtsFragment.startTts();
-                }
-                break;
-            case PAUSED:
-                if (ttsPreparePlayingInActivty()) {
-                    if (id.equals(retainTtsFragment.getUtteranceBaseId())) {
-                        retainTtsFragment.startTts();
-                    } else {
-                        retainTtsFragment.flushTts();
-                        speak(id,text);
+        if (TazSettings.getPrefBoolean(this, TazSettings.PREFKEY.TEXTTOSPEACH, false)) {
+            switch (getTtsState()) {
+                case DISABLED:
+                    if (ttsPreparePlayingInActivty()) {
+                        retainTtsFragment.initTts(this, id, text);
                     }
-                }
-                break;
+                    break;
+                case PLAYING:
+                    retainTtsFragment.pauseTts();
+                    break;
+                case IDLE:
+                    if (ttsPreparePlayingInActivty()) {
+                        retainTtsFragment.flushTts();
+                        retainTtsFragment.prepareTts(id, text);
+                        retainTtsFragment.startTts();
+                    }
+                    break;
+                case PAUSED:
+                    if (ttsPreparePlayingInActivty()) {
+                        if (id.equals(retainTtsFragment.getUtteranceBaseId())) {
+                            retainTtsFragment.startTts();
+                        } else {
+                            retainTtsFragment.flushTts();
+                            speak(id, text);
+                        }
+                    }
+                    break;
+            }
         }
     }
 
     public void showSackbar(CharSequence message, int length) {
-        showSackbar(message,length,null,null);
+        showSackbar(message, length, null, null);
     }
 
     public void showSackbar(CharSequence message, int length, String action, View.OnClickListener actionListener) {
@@ -795,7 +824,7 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
         View view = snackbar.getView();
         TextView textView = (TextView) view.findViewById(android.support.design.R.id.snackbar_text);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            textView.setLineSpacing(textView.getLineSpacingExtra(),textView.getLineSpacingMultiplier()+0.3F);
+            textView.setLineSpacing(textView.getLineSpacingExtra(), textView.getLineSpacingMultiplier() + 0.3F);
         }
         textView.setMaxLines(25);  // show multiple line
         snackbar.show();

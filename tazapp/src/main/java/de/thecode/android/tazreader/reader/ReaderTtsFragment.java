@@ -20,8 +20,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
 
-import de.thecode.android.tazreader.data.TazSettings;
-
 /**
  * Created by mate on 15.03.2016.
  */
@@ -31,7 +29,8 @@ public class ReaderTtsFragment extends Fragment implements TextToSpeech.OnInitLi
 
     private static final String TAG = "RetainTtsFragment";
 
-    public enum TTS {DISABLED, IDLE, PLAYING, PAUSED}
+    public enum TTS {DISABLED, INIT, IDLE, PLAYING, PAUSED}
+    public enum TTSERROR {UNKNOWN, LANG_MISSING_DATA, LANG_NOT_SUPPORTED}
 
     private TextToSpeech tts;
     private TTS ttsState = TTS.DISABLED;
@@ -92,24 +91,34 @@ public class ReaderTtsFragment extends Fragment implements TextToSpeech.OnInitLi
             if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
                 setTtsState(TTS.DISABLED);
                 if (hasCallback()) {
-                    getCallback().onTtsInitError(result);
+                    if (result == TextToSpeech.LANG_MISSING_DATA)
+                        getCallback().onTtsInitError(TTSERROR.LANG_MISSING_DATA);
+                    else if (result == TextToSpeech.LANG_NOT_SUPPORTED)
+                        getCallback().onTtsInitError(TTSERROR.LANG_NOT_SUPPORTED);
                 }
                 tts.shutdown();
             } else {
                 tts.setOnUtteranceProgressListener(ttsListener);
-                setTtsState(TTS.IDLE);
+                if (getTtsState() == TTS.INIT) {
+                    startTts();
+                } else {
+                    setTtsState(TTS.IDLE);
+                }
             }
         } else {
             setTtsState(TTS.DISABLED);
             if (hasCallback()) {
-                getCallback().onTtsInitError(0);
+                getCallback().onTtsInitError(TTSERROR.UNKNOWN);
             }
         }
     }
 
-    public void initTts(Context context) {
-        if (getTtsState() == TTS.DISABLED && TazSettings.getPrefBoolean(context, TazSettings.PREFKEY.TEXTTOSPEACH, false))
+    public void initTts(Context context,String utteranceBaseId, CharSequence text) {
+        if (getTtsState() == TTS.DISABLED) {
+            setTtsState(TTS.INIT);
+            prepareTts(utteranceBaseId,text);
             tts = new TextToSpeech(context.getApplicationContext(), this);
+        }
     }
 
     private void setTtsState(@NonNull TTS newState) {
@@ -130,7 +139,6 @@ public class ReaderTtsFragment extends Fragment implements TextToSpeech.OnInitLi
 
 
     public void prepareTts(String utteranceBaseId, CharSequence text) {
-        flushTts();
 
         this.utteranceBaseId = utteranceBaseId;
 
@@ -204,7 +212,7 @@ public class ReaderTtsFragment extends Fragment implements TextToSpeech.OnInitLi
     }
 
     public void stopTts() {
-        if (tts.isSpeaking()) tts.stop();
+        if (tts!= null && tts.isSpeaking()) tts.stop();
         setTtsState(TTS.IDLE);
     }
 
@@ -273,7 +281,9 @@ public class ReaderTtsFragment extends Fragment implements TextToSpeech.OnInitLi
     public interface ReaderTtsFragmentCallback {
         void onTtsStateChanged(TTS newState);
 
-        void onTtsInitError(int error);
+        void onTtsInitError(TTSERROR error);
+
+
 
         //boolean ttsPreparePlayingInActivty();
 
