@@ -15,13 +15,14 @@ import java.util.ArrayList;
 /**
  * Created by Mate on 18.03.2015.
  */
-public abstract class TcDialogAdapterList extends TcDialog {
 
-    private static final Logger log = LoggerFactory.getLogger(TcDialogAdapterList.class);
+public abstract class DialogAdapterList extends Dialog {
+
+    private static final Logger log = LoggerFactory.getLogger(DialogAdapterList.class);
 
     public static final String ARG_ARRAY_PARCABLE_ARCHIVEENTRIES = "archiveEntries";
 
-    TcDialogAdapterListListener listListener;
+    DialogAdapterListListener listListener;
 
     DialogInterface.OnClickListener onClickListener = new DialogInterface.OnClickListener() {
 
@@ -30,8 +31,8 @@ public abstract class TcDialogAdapterList extends TcDialog {
             TcDialogAdapterListEntry entry = getEntries().get(which);
 
             log.debug("Button {} {}", which,entry);
-            if (listListener != null) listListener.onDialogAdapterListClick(getTag(), entry, TcDialogAdapterList.this.getArguments());
-            else log.info(TcDialogAdapterListListener.class.getSimpleName() + " not set in Activity " + getActivity().getClass()
+            if (listListener != null) listListener.onDialogAdapterListClick(getTag(), entry, DialogAdapterList.this.getArguments());
+            else log.info(DialogAdapterListListener.class.getSimpleName() + " not set in Activity " + getActivity().getClass()
                                                                                                            .getSimpleName());
         }
     };
@@ -41,7 +42,7 @@ public abstract class TcDialogAdapterList extends TcDialog {
         builder.setAdapter(getAdapter(getActivity()), onClickListener);
     }
 
-    public TcDialogAdapterList withEntries(ArrayList<? extends TcDialogAdapterListEntry> entries) {
+    public DialogAdapterList withEntries(ArrayList<? extends TcDialogAdapterListEntry> entries) {
         args.putParcelableArrayList(ARG_ARRAY_PARCABLE_ARCHIVEENTRIES, entries);
         return this;
     }
@@ -62,13 +63,13 @@ public abstract class TcDialogAdapterList extends TcDialog {
         log.debug(this.getTag());
         super.onAttach(activity);
         try {
-            listListener = (TcDialogAdapterListListener) activity;
+            listListener = (DialogAdapterListListener) activity;
         } catch (ClassCastException e) {
             log.warn(e.getMessage());
         }
     }
 
-    public interface TcDialogAdapterListListener {
+    public interface DialogAdapterListListener {
         public void onDialogAdapterListClick(String tag,TcDialogAdapterListEntry entry, Bundle arguments);
     }
 

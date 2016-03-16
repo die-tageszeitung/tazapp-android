@@ -1,8 +1,9 @@
 package de.thecode.android.tazreader.utils;
 
-import android.app.FragmentManager;
+
 import android.content.Context;
 import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 
 import de.thecode.android.tazreader.BuildConfig;

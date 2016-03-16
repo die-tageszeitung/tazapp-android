@@ -17,7 +17,7 @@ import java.util.ArrayList;
 /**
  * Created by mate on 19.03.2015.
  */
-public class ArchiveDialog extends TcDialogAdapterList {
+public class ArchiveDialog extends DialogAdapterList {
 
     @Override
     public ArrayList<ArchiveEntry> getEntries() {

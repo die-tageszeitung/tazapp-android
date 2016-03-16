@@ -1,7 +1,8 @@
 package de.thecode.android.tazreader.start;
 
-import android.content.AsyncTaskLoader;
+
 import android.content.Context;
+import android.support.v4.content.AsyncTaskLoader;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

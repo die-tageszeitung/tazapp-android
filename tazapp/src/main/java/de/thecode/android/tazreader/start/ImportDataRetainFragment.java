@@ -1,10 +1,11 @@
 package de.thecode.android.tazreader.start;
 
-import android.app.FragmentManager;
-import android.app.LoaderManager;
-import android.content.Loader;
+
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.Loader;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

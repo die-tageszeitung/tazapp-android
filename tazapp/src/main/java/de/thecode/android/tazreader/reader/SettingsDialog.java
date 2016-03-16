@@ -1,12 +1,12 @@
 package de.thecode.android.tazreader.reader;
 
 import android.app.Activity;
-import android.app.Dialog;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.SwitchCompat;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
@@ -18,10 +18,10 @@ import org.slf4j.LoggerFactory;
 
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.TazSettings;
-import de.thecode.android.tazreader.dialog.TcDialogCustomView;
+import de.thecode.android.tazreader.dialog.DialogCustomView;
 import de.thecode.android.tazreader.reader.ReaderActivity.THEMES;
 
-public class SettingsDialog extends TcDialogCustomView {
+public class SettingsDialog extends DialogCustomView {
 
     private static final Logger log = LoggerFactory.getLogger(SettingsDialog.class);
 
@@ -54,8 +54,8 @@ public class SettingsDialog extends TcDialogCustomView {
     }
 
     @Override
-    public View getView(LayoutInflater inflater) {
-        View view = inflater.inflate(R.layout.reader_settings, null);
+    public View getView(LayoutInflater inflater, ViewGroup parent) {
+        View view = inflater.inflate(R.layout.reader_settings, parent);
 
 
 
@@ -169,12 +169,12 @@ public class SettingsDialog extends TcDialogCustomView {
         return view;
     }
 
-    @Override
-    public Dialog onCreateDialog(Bundle savedInstanceState) {
-        Dialog dialog = super.onCreateDialog(savedInstanceState);
-        // dialog.getWindow().requestFeature(Window.FEATURE_NO_TITLE);
-        return dialog;
-    }
+//    @Override
+//    public Dialog onCreateDialog(Bundle savedInstanceState) {
+//        Dialog dialog = super.onCreateDialog(savedInstanceState);
+//        // dialog.getWindow().requestFeature(Window.FEATURE_NO_TITLE);
+//        return dialog;
+//    }
 
     private void colorThemeButtonText(THEMES theme) {
         if (theme == null) return;

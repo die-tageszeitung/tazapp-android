@@ -31,7 +31,7 @@ public class MigrationActivity extends BaseActivity implements MigrationWorkerFr
         super.onCreate(savedInstanceState);
         log.debug("");
         setContentView(R.layout.activity_migrate);
-        workerFragment = MigrationWorkerFragment.findOrCreateWorkerFragment(getFragmentManager(), WORKER_FRAGMENT_TAG, this);
+        workerFragment = MigrationWorkerFragment.findOrCreateWorkerFragment(getSupportFragmentManager(), WORKER_FRAGMENT_TAG, this);
     }
 
 

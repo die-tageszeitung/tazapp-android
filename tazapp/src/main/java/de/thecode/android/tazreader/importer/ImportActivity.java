@@ -19,7 +19,7 @@ import java.util.List;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.TazSettings;
-import de.thecode.android.tazreader.dialog.TcDialog;
+import de.thecode.android.tazreader.dialog.Dialog;
 import de.thecode.android.tazreader.download.DownloadManager;
 import de.thecode.android.tazreader.sync.AccountHelper;
 import de.thecode.android.tazreader.utils.BaseActivity;
@@ -27,7 +27,7 @@ import de.thecode.android.tazreader.utils.BaseActivity;
 /**
  * Created by mate on 16.04.2015.
  */
-public class ImportActivity extends BaseActivity implements TcDialog.TcDialogButtonListener, ImportWorkerFragment.ImportRetainFragmentCallback {
+public class ImportActivity extends BaseActivity implements Dialog.DialogButtonListener, ImportWorkerFragment.ImportRetainFragmentCallback {
 
     private static final Logger log = LoggerFactory.getLogger(ImportActivity.class);
 
@@ -71,20 +71,20 @@ public class ImportActivity extends BaseActivity implements TcDialog.TcDialogBut
         }
         if (getIntent().getData() != null) data.add(getIntent().getData());
 
-        workerFragment = ImportWorkerFragment.findOrCreateRetainFragment(getFragmentManager(), WORKER_FRAGMENT_TAG, this, data);
+        workerFragment = ImportWorkerFragment.findOrCreateRetainFragment(getSupportFragmentManager(), WORKER_FRAGMENT_TAG, this, data);
     }
 
     public void showErrorDialog(String message) {
-        new TcDialog().withMessage(message)
+        new Dialog().withMessage(message)
                       .withPositiveButton()
                       .withCancelable(false)
-                      .show(getFragmentManager(), DIALOG_ERROR_IMPORT);
+                      .show(getSupportFragmentManager(), DIALOG_ERROR_IMPORT);
     }
 
 
     @Override
     public void onDialogClick(String tag, Bundle arguments, int which) {
-        if (DIALOG_ERROR_IMPORT.equals(tag) && which == TcDialog.BUTTON_POSITIVE) {
+        if (DIALOG_ERROR_IMPORT.equals(tag) && which == Dialog.BUTTON_POSITIVE) {
             workerFragment.handleNextDataUri();
         } else if (DIALOG_EXISTS_IMPORT.equals(tag)) {
             File cacheFile = (File) arguments.getSerializable(BUNDLE_KEY_FILE);
@@ -92,10 +92,10 @@ public class ImportActivity extends BaseActivity implements TcDialog.TcDialogBut
             Uri dataUri = arguments.getParcelable(BUNDLE_KEY_DATAURI);
             boolean deleteFile = arguments.getBoolean(BUNDLE_KEY_DELETEFILE);
             switch (which) {
-                case TcDialog.BUTTON_POSITIVE:
+                case Dialog.BUTTON_POSITIVE:
                     workerFragment.stepFourStartImport(dataUri, metadata, cacheFile, deleteFile);
                     break;
-                case TcDialog.BUTTON_NEGATIVE:
+                case Dialog.BUTTON_NEGATIVE:
                     workerFragment.onFinished(dataUri, cacheFile, deleteFile);
                     break;
             }
@@ -106,7 +106,7 @@ public class ImportActivity extends BaseActivity implements TcDialog.TcDialogBut
                 downloadUris = Arrays.copyOf(pDownloadUris, pDownloadUris.length, Uri[].class);
             }
             switch (which) {
-                case TcDialog.BUTTON_POSITIVE:
+                case Dialog.BUTTON_POSITIVE:
                     if (downloadUris != null) {
                         for (Uri downloadUri : downloadUris) {
                             try {
@@ -117,7 +117,7 @@ public class ImportActivity extends BaseActivity implements TcDialog.TcDialogBut
                             }
                         }
                     }
-                case TcDialog.BUTTON_NEGATIVE:
+                case Dialog.BUTTON_NEGATIVE:
                     finishActivity(downloadUris);
                     break;
             }
@@ -132,7 +132,7 @@ public class ImportActivity extends BaseActivity implements TcDialog.TcDialogBut
     @Override
     public void onImportRetainFragmentCreate(ImportWorkerFragment importRetainWorkerFragment) {
         log.debug("");
-        //        new TcDialogIndeterminateProgress().withCancelable(false)
+        //        new DialogIndeterminateProgress().withCancelable(false)
         //                                           .withMessage("Import")
         //                                           .show(getFragmentManager(), DIALOG_WAIT_IMPORT);
         if (getIntent().getExtras() != null) {
@@ -169,12 +169,12 @@ public class ImportActivity extends BaseActivity implements TcDialog.TcDialogBut
             Bundle bundle = new Bundle();
             bundle.putParcelableArray(BUNDLE_KEY_DOWNLOAD_URIS, downloadPaperUris);
             bundle.putParcelableArray(BUNDLE_KEY_RESULT_URIS, importedPaperUris);
-            new TcDialog().withBundle(bundle)
+            new Dialog().withBundle(bundle)
                           .withMessage(getResources().getQuantityString(R.plurals.import_download, downloadPaperUris.length, downloadPaperUris.length))
                           .withCancelable(false)
                           .withPositiveButton(R.string.import_download_positive)
                           .withNegativeButton(R.string.import_download_negative)
-                          .show(getFragmentManager(), DIALOG_DOWNLOAD);
+                          .show(getSupportFragmentManager(), DIALOG_DOWNLOAD);
         } else {
             finishActivity(importedPaperUris);
         }
@@ -206,11 +206,11 @@ public class ImportActivity extends BaseActivity implements TcDialog.TcDialogBut
         bundle.putSerializable(BUNDLE_KEY_FILE, cacheFile);
         bundle.putParcelable(BUNDLE_KEY_DATAURI, dataUri);
         bundle.putBoolean(BUNDLE_KEY_DELETEFILE, deleteFile);
-        new TcDialog().withCancelable(false)
+        new Dialog().withCancelable(false)
                       .withPositiveButton()
                       .withBundle(bundle)
                       .withNegativeButton()
                       .withMessage(String.format(getString(R.string.import_already_exists), metadata.getBookId()))
-                      .show(getFragmentManager(), DIALOG_EXISTS_IMPORT);
+                      .show(getSupportFragmentManager(), DIALOG_EXISTS_IMPORT);
     }
 }

@@ -1,24 +1,30 @@
 package de.thecode.android.tazreader.dialog;
 
+
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.app.DialogFragment;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.content.DialogInterface;
-import android.content.DialogInterface.OnClickListener;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.support.annotation.NonNull;
-import android.view.ContextThemeWrapper;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatDialog;
+import android.util.TypedValue;
+import android.view.Gravity;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.thecode.android.tazreader.R;
 
-public class TcDialog extends DialogFragment {
 
-    private static final Logger log = LoggerFactory.getLogger(TcDialog.class);
+public class Dialog extends DialogFragment {
 
     static final String ARG_INT_TITLE = "title_resid";
     static final String ARG_STRING_TITLE = "title_text";
@@ -27,7 +33,8 @@ public class TcDialog extends DialogFragment {
     static final String ARG_STRING_MESSAGE = "message";
 
     static final String ARG_INT_ICONID = "icon_id";
-    static final String ARG_INT_STYLEID = "style";
+
+    static final String ARG_INT_TIMER = "timer";
 
     static final String ARG_INT_BUTTONTEXTPOSITIVE = "positive_button_resid";
     static final String ARG_INT_BUTTONTEXTNEGATIVE = "negative_button_resid";
@@ -41,9 +48,12 @@ public class TcDialog extends DialogFragment {
     public final static int BUTTON_NEGATIVE = DialogInterface.BUTTON_NEGATIVE;
 
     public Bundle args = new Bundle();
-    TcDialogButtonListener buttonListener;
-    TcDialogDismissListener dismissListener;
-    TcDialogCancelListener cancelListener;
+    DialogButtonListener buttonListener;
+    DialogDismissListener dismissListener;
+    DialogCancelListener cancelListener;
+    CountDownTimer timer;
+
+    public static Logger log = LoggerFactory.getLogger(Dialog.class);
 
 
     @Override
@@ -58,105 +68,108 @@ public class TcDialog extends DialogFragment {
         return super.show(transaction, tag);
     }
 
-    public TcDialog withTitle(String title) {
+    public Dialog withTimer(int seconds) {
+        args.putInt(ARG_INT_TIMER, seconds);
+        return this;
+    }
+
+    public Dialog withTitle(String title) {
         args.putString(ARG_STRING_TITLE, title);
         return this;
     }
 
-    public TcDialog withTitle(int resId) {
+    public Dialog withTitle(int resId) {
         args.putInt(ARG_INT_TITLE, resId);
         return this;
     }
 
-    public TcDialog withMessage(String message) {
+    public Dialog withMessage(String message) {
         args.putString(ARG_STRING_MESSAGE, message);
         return this;
     }
 
-    public TcDialog withMessage(int resId) {
+    public Dialog withMessage(int resId) {
         args.putInt(ARG_INT_MESSAGE, resId);
         return this;
     }
 
-    public TcDialog withPositiveButton(String text) {
+    public Dialog withPositiveButton(String text) {
         args.putString(ARG_STRING_BUTTONTEXTPOSITIVE, text);
         return this;
     }
 
-    public TcDialog withPositiveButton(int resId) {
+    public Dialog withPositiveButton(int resId) {
         args.putInt(ARG_INT_BUTTONTEXTPOSITIVE, resId);
         return this;
     }
 
-    public TcDialog withPositiveButton() {
+    public Dialog withPositiveButton() {
         return withPositiveButton(android.R.string.ok);
     }
 
-    public TcDialog withNeutralButton(String text) {
+    public Dialog withNeutralButton(String text) {
         args.putString(ARG_STRING_BUTTONTEXTNEUTRAL, text);
         return this;
     }
 
-    public TcDialog withNeutralButton(int resId) {
+    public Dialog withNeutralButton(int resId) {
         args.putInt(ARG_INT_BUTTONTEXTNEUTRAL, resId);
         return this;
     }
 
-    public TcDialog withNeutralButton() {
+    public Dialog withNeutralButton() {
         return withNeutralButton(android.R.string.untitled);
     }
 
-    public TcDialog withNegativeButton(String text) {
+    public Dialog withNegativeButton(String text) {
         args.putString(ARG_STRING_BUTTONTEXTNEGATIVE, text);
         return this;
     }
 
-    public TcDialog withNegativeButton(int resId) {
+    public Dialog withNegativeButton(int resId) {
         args.putInt(ARG_INT_BUTTONTEXTNEGATIVE, resId);
         return this;
     }
 
-    public TcDialog withNegativeButton() {
+    public Dialog withNegativeButton() {
         return withNegativeButton(android.R.string.cancel);
     }
 
-    public TcDialog withIcon(int resId) {
+    public Dialog withIcon(int resId) {
         args.putInt(ARG_INT_ICONID, resId);
         return this;
     }
 
-    public TcDialog withStyle(int resId) {
-        args.putInt(ARG_INT_STYLEID, resId);
-        return this;
-    }
-
-    public TcDialog withCancelable(boolean cancelable) {
+    public Dialog withCancelable(boolean cancelable) {
         this.setCancelable(cancelable);
         return this;
     }
 
-    public TcDialog withBundle(Bundle bundle) {
+    public Dialog withBundle(Bundle bundle) {
         args.putAll(bundle);
         return this;
     }
 
-    OnClickListener onClickListener = new DialogInterface.OnClickListener() {
+    DialogInterface.OnClickListener onClickListener = new DialogInterface.OnClickListener() {
 
         @Override
         public void onClick(DialogInterface dialog, int which) {
-            log.debug("Button {}", which);
-            if (buttonListener != null) buttonListener.onDialogClick(getTag(), TcDialog.this.getArguments(), which);
-            else log.info(TcDialogButtonListener.class.getSimpleName() + " not set in Activity " + getActivity().getClass()
-                                                                                                             .getSimpleName());
+            log.trace("Button", which);
+            Bundle additionalArguments = new Bundle();
+            args.putAll(additionalArgumentsOnClick(additionalArguments, which));
+            if (buttonListener != null) buttonListener.onDialogClick(getTag(), Dialog.this.getArguments(), which);
+            else log.info(DialogButtonListener.class.getSimpleName() + " not set in Activity " + getActivity().getClass()
+                                                                                                              .getSimpleName());
         }
     };
 
     AlertDialog.Builder builder;
 
+
     @Override
-    public Dialog onCreateDialog(Bundle savedInstanceState) {
-        log.debug("{}",this.getTag());
-        builder = new AlertDialog.Builder(hasStyle() ? new ContextThemeWrapper(getActivity(), getStyle()) : getActivity());
+    public AppCompatDialog onCreateDialog(Bundle savedInstanceState) {
+        log.trace(this.getTag());
+        builder = new AlertDialog.Builder(getContext());
 
         if (hasIcon()) builder.setIcon(getIcon());
 
@@ -170,17 +183,96 @@ public class TcDialog extends DialogFragment {
 
         if (hasNegativeButton()) builder.setNegativeButton(getNegativeButton(), onClickListener);
 
-        return createDialogToReturn();
+        AppCompatDialog dialog = createDialogToReturn();
+
+
+
+        if (hasTimer()) {
+
+        }
+
+        return dialog;
+    }
+
+
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (hasTimer()) {
+            timer = new CountDownTimer(getTimer()*1000,1000) {
+
+                TextView timerText;
+
+                @Override
+                public void onTick(long millisUntilFinished) {
+                    if (timerText == null) {
+                        timerText = new TextView(getContext());
+                        FrameLayout.LayoutParams lp = getTimerTextViewLayoutParams(timerText);
+                        getDialog().addContentView(timerText, lp);
+                    }
+                    timerText.setText(getTimerText(millisUntilFinished));
+                }
+
+                @Override
+                public void onFinish() {
+                    onTimerFinished();
+                }
+            };
+            timer.start();
+        }
+    }
+
+    public String getTimerText(long millisUntilFinished) {
+        return String.valueOf(millisUntilFinished/1000);
+    }
+
+    public void onTimerFinished(){
+        dismiss();
+    }
+
+    public FrameLayout.LayoutParams getTimerTextViewLayoutParams(TextView timerTextView) {
+        int margin = getContext().getResources().getDimensionPixelSize(R.dimen.custom_dialog_padding);
+        int topMargin = getContext().getResources().getDimensionPixelSize(R.dimen.custom_dialog_padding_top);
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        params.setMargins(margin,topMargin,margin,0);
+        params.gravity = Gravity.END | Gravity.TOP;
+
+        timerTextView.setTextSize(TypedValue.COMPLEX_UNIT_PX,
+                getResources().getDimension(android.support.v7.appcompat.R.dimen.abc_text_size_title_material));
+        timerTextView.setTextColor(ContextCompat.getColor(getContext(),R.color.color_primary_dark));
+
+        return params;
+    }
+
+    @Override
+    public void onPause() {
+        if (timer != null) {
+            timer.cancel();
+            timer = null;
+        }
+        super.onPause();
     }
 
     void setDialogContent() {
         if (hasMessage()) builder.setMessage(getMessage());
     }
 
-    Dialog createDialogToReturn() {
+    AppCompatDialog createDialogToReturn() {
         return builder.create();
     }
 
+    public Bundle additionalArgumentsOnClick(Bundle additionalArgs, int which) {
+        return additionalArgs;
+    }
+
+    protected boolean hasTimer() {
+        return getArguments().containsKey(ARG_INT_TIMER) && getArguments().getInt(ARG_INT_TIMER,0) > 0;
+    }
+
+    protected int getTimer() {
+        return getArguments().getInt(ARG_INT_TIMER,0);
+    }
 
     protected boolean hasTitle() {
         return (getArguments().containsKey(ARG_STRING_TITLE) || getArguments().containsKey(ARG_INT_TITLE));
@@ -204,14 +296,6 @@ public class TcDialog extends DialogFragment {
 
     protected int getIcon() {
         return getArguments().getInt(ARG_INT_ICONID);
-    }
-
-    protected boolean hasStyle() {
-        return (getArguments().containsKey(ARG_INT_STYLEID));
-    }
-
-    protected int getStyle() {
-        return getArguments().getInt(ARG_INT_STYLEID);
     }
 
     protected boolean hasPositiveButton() {
@@ -248,28 +332,32 @@ public class TcDialog extends DialogFragment {
 
     @Override
     public void onAttach(Activity activity) {
-        log.debug("{}",this.getTag());
+        log.trace(this.getTag());
         super.onAttach(activity);
         try {
-            buttonListener = (TcDialogButtonListener) activity;
+            buttonListener = (DialogButtonListener) activity;
         } catch (ClassCastException e) {
-            log.warn("{}",e.getMessage());
+            log.warn(e.getMessage());
         }
         try {
-            dismissListener = (TcDialogDismissListener) activity;
+            dismissListener = (DialogDismissListener) activity;
         } catch (ClassCastException e) {
-            log.warn("{}",e.getMessage());
+            log.warn(e.getMessage());
         }
-
+        try {
+            cancelListener = (DialogCancelListener) activity;
+        } catch (ClassCastException e) {
+            log.warn(e.getMessage());
+        }
     }
 
     @Override
     public void onDismiss(DialogInterface dialog) {
         if (getTag() != null) {
             log.trace(getTag());
-            if (dismissListener != null) dismissListener.onDialogDismiss(getTag(), TcDialog.this.getArguments());
-            else log.info(TcDialogDismissListener.class.getSimpleName() + " not set in Activity " + getActivity().getClass()
-                                                                                                              .getSimpleName());
+            if (dismissListener != null) dismissListener.onDialogDismiss(getTag(), Dialog.this.getArguments());
+            else log.info(DialogDismissListener.class.getSimpleName() + " not set in Activity " + getActivity().getClass()
+                                                                                                               .getSimpleName());
         }
         super.onDismiss(dialog);
     }
@@ -278,28 +366,28 @@ public class TcDialog extends DialogFragment {
     public void onCancel(DialogInterface dialog) {
         if (getTag() != null) {
             log.trace(getTag());
-            if (cancelListener != null) cancelListener.onDialogCancel(getTag(), TcDialog.this.getArguments());
-            else log.info(TcDialogCancelListener.class.getSimpleName() + " not set in Activity " + getActivity().getClass()
-                                                                                                             .getSimpleName());
+            if (cancelListener != null) cancelListener.onDialogCancel(getTag(), Dialog.this.getArguments());
+            else log.info(DialogCancelListener.class.getSimpleName() + " not set in Activity " + getActivity().getClass()
+                                                                                                              .getSimpleName());
         }
         super.onCancel(dialog);
     }
 
-    public interface TcDialogButtonListener {
+    public interface DialogButtonListener {
 
         public void onDialogClick(String tag, Bundle arguments, int which);
     }
 
-    public interface TcDialogDismissListener {
+    public interface DialogDismissListener {
         public void onDialogDismiss(String tag, Bundle arguments);
     }
 
-    public interface TcDialogCancelListener {
+    public interface DialogCancelListener {
         public void onDialogCancel(String tag, Bundle arguments);
     }
 
     public static void dismissDialog(FragmentManager fm, String dialogTag) {
-        log.debug("{}",dialogTag);
+        log.trace(dialogTag);
         DialogFragment dialog = (DialogFragment) fm.findFragmentByTag(dialogTag);
         if (dialog != null) dialog.dismiss();
     }

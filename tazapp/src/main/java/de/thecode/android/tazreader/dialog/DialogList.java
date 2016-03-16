@@ -10,13 +10,14 @@ import org.slf4j.LoggerFactory;
 /**
  * Created by Mate on 18.03.2015.
  */
-public class TcDialogList extends TcDialog {
 
-    private static final Logger log = LoggerFactory.getLogger(TcDialogList.class);
+public class DialogList extends Dialog {
+
+    private static final Logger log = LoggerFactory.getLogger(DialogList.class);
 
     static final String ARG_ARRAY_STRING_ITEMS = "list_items";
 
-    TcDialogListListener listListener;
+    DialogListListener listListener;
 
     DialogInterface.OnClickListener onClickListener = new DialogInterface.OnClickListener() {
 
@@ -26,14 +27,14 @@ public class TcDialogList extends TcDialog {
             String value = items[which];
 
             log.debug("Button {} {}", which,value);
-            if (listListener != null) listListener.onDialogListClick(getTag(), TcDialogList.this.getArguments(), which,value,getItems());
-            else log.info(TcDialogListListener.class.getSimpleName() + " not set in Activity " + getActivity().getClass()
+            if (listListener != null) listListener.onDialogListClick(getTag(), DialogList.this.getArguments(), which,value,getItems());
+            else log.info(DialogListListener.class.getSimpleName() + " not set in Activity " + getActivity().getClass()
                                                                                                              .getSimpleName());
         }
     };
 
 
-    public TcDialogList withList(String... items)
+    public DialogList withList(String... items)
     {
         args.putStringArray(ARG_ARRAY_STRING_ITEMS, items);
         return this;
@@ -50,7 +51,7 @@ public class TcDialogList extends TcDialog {
         log.debug(this.getTag());
         super.onAttach(activity);
         try {
-            listListener = (TcDialogListListener) activity;
+            listListener = (DialogListListener) activity;
         } catch (ClassCastException e) {
             log.warn(e.getMessage());
         }
@@ -66,7 +67,7 @@ public class TcDialogList extends TcDialog {
         return getArguments().getStringArray(ARG_ARRAY_STRING_ITEMS);
     }
 
-    public interface TcDialogListListener {
+    public interface DialogListListener {
         public void onDialogListClick(String tag, Bundle arguments, int which, String value, String[] items);
     }
 

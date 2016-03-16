@@ -1,12 +1,7 @@
 package de.thecode.android.tazreader.reader;
 
 import android.annotation.SuppressLint;
-import android.app.Fragment;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
-import android.app.LoaderManager;
 import android.content.Context;
-import android.content.Loader;
 import android.graphics.Color;
 import android.media.AudioManager;
 import android.os.Build;
@@ -14,6 +9,11 @@ import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.Loader;
 import android.support.v4.widget.DrawerLayout;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
@@ -39,8 +39,7 @@ import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Store;
 import de.thecode.android.tazreader.data.TazSettings;
-import de.thecode.android.tazreader.dialog.TcDialog;
-import de.thecode.android.tazreader.dialog.TcDialog.TcDialogButtonListener;
+import de.thecode.android.tazreader.dialog.Dialog;
 import de.thecode.android.tazreader.download.NotificationHelper;
 import de.thecode.android.tazreader.reader.article.ArticleFragment;
 import de.thecode.android.tazreader.reader.article.TopLinkFragment;
@@ -53,7 +52,7 @@ import de.thecode.android.tazreader.utils.Orientation;
 import de.thecode.android.tazreader.utils.StorageManager;
 
 @SuppressLint("RtlHardcoded")
-public class ReaderActivity extends BaseActivity implements LoaderManager.LoaderCallbacks<PaperLoader.PaperLoaderResult>, IReaderCallback, TcDialogButtonListener, TcDialog.TcDialogDismissListener, ReaderDataFragment.ReaderDataFramentCallback, ReaderTtsFragment.ReaderTtsFragmentCallback {
+public class ReaderActivity extends BaseActivity implements LoaderManager.LoaderCallbacks<PaperLoader.PaperLoaderResult>, IReaderCallback, Dialog.DialogButtonListener, Dialog.DialogDismissListener, ReaderDataFragment.ReaderDataFramentCallback, ReaderTtsFragment.ReaderTtsFragmentCallback {
 
     private static final Logger log = LoggerFactory.getLogger(ReaderActivity.class);
     private AudioManager audioManager;
@@ -150,26 +149,26 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
         mContentFrame = (FrameLayout) findViewById(R.id.content_frame);
 
 
-        mFragmentManager = getFragmentManager();
+        mFragmentManager = getSupportFragmentManager();
 
 
-        retainDataFragment = ReaderDataFragment.findRetainFragment(getFragmentManager());
+        retainDataFragment = ReaderDataFragment.findRetainFragment(getSupportFragmentManager());
         if (retainDataFragment != null && retainDataFragment.getPaper() != null) {
             retainDataFragment.setCallback(this);
             log.debug("Found data fragment");
             initializeFragments();
         } else {
-            retainDataFragment = ReaderDataFragment.createRetainFragment(getFragmentManager());
+            retainDataFragment = ReaderDataFragment.createRetainFragment(getSupportFragmentManager());
             retainDataFragment.setCallback(this);
 
             log.debug("Did not find data fragment, initialising loader");
-            LoaderManager lm = getLoaderManager();
+            LoaderManager lm = getSupportLoaderManager();
             Bundle paperLoaderBundle = new Bundle();
             paperLoaderBundle.putLong(KEY_EXTRA_PAPER_ID, paperId);
             lm.initLoader(LOADER_ID_PAPER, paperLoaderBundle, this);
         }
         audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        retainTtsFragment = ReaderTtsFragment.createOrRetainFragment(getFragmentManager(),this);
+        retainTtsFragment = ReaderTtsFragment.createOrRetainFragment(getSupportFragmentManager(),this);
         retainTtsFragment.initTts(this);
 
         if (retainTtsFragment.getTtsState() == ReaderTtsFragment.TTS.PLAYING) ttsPreparePlayingInActivty();
@@ -296,20 +295,20 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
         // important: Animation before replace!
         switch (direction) {
             case TOP:
-                //fragmentTransaction.setCustomAnimations(R.anim.fragment_in_from_top, R.anim.fragment_out_to_down);
-                fragmentTransaction.setCustomAnimations(R.animator.top_in, R.animator.bottom_out);
+                fragmentTransaction.setCustomAnimations(R.anim.in_from_top, R.anim.out_to_bottom);
+                //fragmentTransaction.setCustomAnimations(R.animator.top_in, R.animator.bottom_out);
                 break;
             case BOTTOM:
-                //fragmentTransaction.setCustomAnimations(R.anim.fragment_in_from_down, R.anim.fragment_out_to_top);
-                fragmentTransaction.setCustomAnimations(R.animator.bottom_in, R.animator.top_out);
+                fragmentTransaction.setCustomAnimations(R.anim.in_from_bottom, R.anim.out_to_top);
+                //fragmentTransaction.setCustomAnimations(R.animator.bottom_in, R.animator.top_out);
                 break;
             case LEFT:
-                //fragmentTransaction.setCustomAnimations(R.anim.fragment_in_from_left, R.anim.fragment_out_to_right);
-                fragmentTransaction.setCustomAnimations(R.animator.left_in, R.animator.right_out);
+                fragmentTransaction.setCustomAnimations(R.anim.in_from_left, R.anim.out_to_right);
+                //fragmentTransaction.setCustomAnimations(R.animator.left_in, R.animator.right_out);
                 break;
             case RIGHT:
-                //fragmentTransaction.setCustomAnimations(R.anim.fragment_in_from_right, R.anim.fragment_out_to_left);
-                fragmentTransaction.setCustomAnimations(R.animator.right_in, R.animator.left_out);
+                fragmentTransaction.setCustomAnimations(R.anim.in_from_right, R.anim.out_to_left);
+                //fragmentTransaction.setCustomAnimations(R.animator.right_in, R.animator.left_out);
                 break;
             default:
                 break;

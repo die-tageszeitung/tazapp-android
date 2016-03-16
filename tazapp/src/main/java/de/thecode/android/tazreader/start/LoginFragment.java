@@ -1,11 +1,11 @@
 package de.thecode.android.tazreader.start;
 
 
-import android.app.Fragment;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,8 +24,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import de.thecode.android.tazreader.R;
-import de.thecode.android.tazreader.dialog.TcDialog;
-import de.thecode.android.tazreader.dialog.TcDialogIndeterminateProgress;
+import de.thecode.android.tazreader.dialog.Dialog;
+import de.thecode.android.tazreader.dialog.DialogIndeterminateProgress;
 import de.thecode.android.tazreader.secure.Base64;
 import de.thecode.android.tazreader.sync.AccountHelper;
 import de.thecode.android.tazreader.utils.BaseFragment;
@@ -108,7 +108,7 @@ public class LoginFragment extends BaseFragment {
     }
 
     private void blockUi() {
-        new TcDialogIndeterminateProgress().withCancelable(false)
+        new DialogIndeterminateProgress().withCancelable(false)
                                            .withMessage(R.string.dialog_check_credentials)
                                            .show(getFragmentManager(), DIALOG_CHECK_CREDENTIALS);
         editUser.setEnabled(false);
@@ -118,7 +118,7 @@ public class LoginFragment extends BaseFragment {
     private void unblockUi() {
         editUser.setEnabled(true);
         editPass.setEnabled(true);
-        TcDialogIndeterminateProgress.dismissDialog(getFragmentManager(), DIALOG_CHECK_CREDENTIALS);
+        DialogIndeterminateProgress.dismissDialog(getFragmentManager(), DIALOG_CHECK_CREDENTIALS);
     }
 
     private void setUiForLoggedIn() {
@@ -158,7 +158,7 @@ public class LoginFragment extends BaseFragment {
         if (Strings.isNullOrEmpty(editUser.getText()
                                           .toString()) || Strings.isNullOrEmpty(editPass.getText()
                                                                                         .toString())) {
-            new TcDialog().withIcon(R.drawable.ic_alerts_and_states_warning)
+            new Dialog().withIcon(R.drawable.ic_alerts_and_states_warning)
                           .withTitle(R.string.dialog_error_title)
                           .withMessage(R.string.dialog_error_no_credentials)
                           .withPositiveButton()
@@ -167,7 +167,7 @@ public class LoginFragment extends BaseFragment {
         }
         if (AccountHelper.ACCOUNT_DEMO_USER.equalsIgnoreCase(editUser.getText()
                                                                      .toString())) {
-            new TcDialog().withIcon(R.drawable.ic_alerts_and_states_warning)
+            new Dialog().withIcon(R.drawable.ic_alerts_and_states_warning)
                           .withTitle(R.string.dialog_error_title)
                           .withMessage(R.string.dialog_error_credentials_not_allowed)
                           .withPositiveButton()
@@ -201,7 +201,7 @@ public class LoginFragment extends BaseFragment {
             @Override
             public void onErrorResponse(VolleyError error, final String string) {
 
-                new TcDialog().withIcon(R.drawable.ic_alerts_and_states_warning)
+                new Dialog().withIcon(R.drawable.ic_alerts_and_states_warning)
                               .withTitle(R.string.dialog_error_title)
                               .withMessage(string)
                               .withPositiveButton()

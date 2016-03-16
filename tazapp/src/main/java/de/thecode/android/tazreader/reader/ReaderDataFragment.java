@@ -1,9 +1,10 @@
 package de.thecode.android.tazreader.reader;
 
-import android.app.Fragment;
-import android.app.FragmentManager;
+
 import android.content.Context;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

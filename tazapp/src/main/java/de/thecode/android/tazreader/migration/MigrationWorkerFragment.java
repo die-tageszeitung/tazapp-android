@@ -1,10 +1,11 @@
 package de.thecode.android.tazreader.migration;
 
-import android.app.FragmentManager;
+
 import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
 
 import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;

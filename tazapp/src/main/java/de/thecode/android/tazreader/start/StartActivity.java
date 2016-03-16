@@ -2,13 +2,13 @@ package de.thecode.android.tazreader.start;
 
 
 import android.annotation.SuppressLint;
-import android.app.DialogFragment;
-import android.app.Fragment;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.widget.Toolbar;
@@ -33,9 +33,9 @@ import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Resource;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.dialog.ArchiveDialog;
-import de.thecode.android.tazreader.dialog.TcDialog;
-import de.thecode.android.tazreader.dialog.TcDialogAdapterList;
-import de.thecode.android.tazreader.dialog.TcDialogIndeterminateProgress;
+import de.thecode.android.tazreader.dialog.Dialog;
+import de.thecode.android.tazreader.dialog.DialogAdapterList;
+import de.thecode.android.tazreader.dialog.DialogIndeterminateProgress;
 import de.thecode.android.tazreader.download.DownloadManager;
 import de.thecode.android.tazreader.download.NotificationHelper;
 import de.thecode.android.tazreader.download.PaperDownloadFailedEvent;
@@ -55,7 +55,7 @@ import de.thecode.android.tazreader.widget.CustomToolbar;
 /**
  * Created by mate on 27.01.2015.
  */
-public class StartActivity extends BaseActivity implements IStartCallback, TcDialog.TcDialogButtonListener, TcDialog.TcDialogDismissListener, TcDialog.TcDialogCancelListener, TcDialogAdapterList.TcDialogAdapterListListener {
+public class StartActivity extends BaseActivity implements IStartCallback, Dialog.DialogButtonListener, Dialog.DialogDismissListener, Dialog.DialogCancelListener, DialogAdapterList.DialogAdapterListListener {
 
     private static final Logger log = LoggerFactory.getLogger(StartActivity.class);
 
@@ -119,7 +119,7 @@ public class StartActivity extends BaseActivity implements IStartCallback, TcDia
         Orientation.setActivityOrientationFromPrefs(this);
 
 
-        retainDataFragment = RetainDataFragment.findOrCreateRetainFragment(getFragmentManager(), this);
+        retainDataFragment = RetainDataFragment.findOrCreateRetainFragment(getSupportFragmentManager(), this);
 
 
         if (retainDataFragment.getCache() == null) {
@@ -153,7 +153,7 @@ public class StartActivity extends BaseActivity implements IStartCallback, TcDia
         if (getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         updateTitle();
 
-        mDrawerFragment = (NavigationDrawerFragment) getFragmentManager().findFragmentById(R.id.fragment_navigation_drawer);
+        mDrawerFragment = (NavigationDrawerFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_navigation_drawer);
         mDrawerFragment.setUp(R.id.fragment_navigation_drawer, (DrawerLayout) findViewById(R.id.drawer_layout), toolbar);
 
         userItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_account), R.drawable.ic_account, LoginFragment.class);
@@ -219,7 +219,7 @@ public class StartActivity extends BaseActivity implements IStartCallback, TcDia
             try {
                 Fragment fragment = item.getTarget()
                                         .newInstance();
-                FragmentTransaction ft = getFragmentManager().beginTransaction();
+                FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
                 ft.replace(R.id.content_frame, fragment);
                 //                if (firstFragmentLoaded) ft.addToBackStack(null);
                 //                else firstFragmentLoaded = true;
@@ -346,40 +346,40 @@ public class StartActivity extends BaseActivity implements IStartCallback, TcDia
 
 
     private void firstStartDialog() {
-        new TcDialog().withMessage(R.string.dialog_first)
+        new Dialog().withMessage(R.string.dialog_first)
                       .withPositiveButton()
                       .withNeutralButton(R.string.drawer_account)
-                      .show(getFragmentManager(), DIALOG_FIRST);
+                      .show(getSupportFragmentManager(), DIALOG_FIRST);
     }
 
     public void showNoConnectionDialog() {
-        new TcDialog().withMessage(R.string.dialog_noconnection)
+        new Dialog().withMessage(R.string.dialog_noconnection)
                       .withPositiveButton()
-                      .show(getFragmentManager(), DIALOG_NO_CONNECTION);
+                      .show(getSupportFragmentManager(), DIALOG_NO_CONNECTION);
     }
 
     private void showMobileConnectionDialog() {
         if (!retainDataFragment.downloadMobileDialog) {
             retainDataFragment.downloadMobileDialog = true;
-            new TcDialog().withMessage(R.string.dialog_mobile_download)
+            new Dialog().withMessage(R.string.dialog_mobile_download)
                           .withPositiveButton(R.string.yes)
                           .withNegativeButton()
                           .withNeutralButton(R.string.dialog_wifi)
-                          .show(getFragmentManager(), DIALOG_DOWNLOAD_MOBILE);
+                          .show(getSupportFragmentManager(), DIALOG_DOWNLOAD_MOBILE);
         }
     }
 
     private void showAccountErrorDialog() {
-        new TcDialog().withMessage(R.string.dialog_account_error)
+        new Dialog().withMessage(R.string.dialog_account_error)
                       .withPositiveButton()
                       .withCancelable(false)
-                      .show(getFragmentManager(), DIALOG_ACCOUNT_ERROR);
+                      .show(getSupportFragmentManager(), DIALOG_ACCOUNT_ERROR);
     }
 
     private void showDownloadManagerErrorDialog() {
-        new TcDialog().withMessage(R.string.dialog_downloadmanager_error)
+        new Dialog().withMessage(R.string.dialog_downloadmanager_error)
                       .withPositiveButton()
-                      .show(getFragmentManager(), DIALOG_DOWNLOADMANAGER_ERROR);
+                      .show(getSupportFragmentManager(), DIALOG_DOWNLOADMANAGER_ERROR);
     }
 
 
@@ -394,7 +394,7 @@ public class StartActivity extends BaseActivity implements IStartCallback, TcDia
         new ArchiveDialog().withEntries(years)
                            .withTitle(R.string.dialog_archive_year_title)
                            .withCancelable(true)
-                           .show(getFragmentManager(), DIALOG_ARCHIVE_YEAR);
+                           .show(getSupportFragmentManager(), DIALOG_ARCHIVE_YEAR);
     }
 
     private void showArchiveMonthPicker(int year) {
@@ -417,7 +417,7 @@ public class StartActivity extends BaseActivity implements IStartCallback, TcDia
                            .withTitle(R.string.dialog_archive_month_title)
                            .withCancelable(true)
                            .withBundle(bundle)
-                           .show(getFragmentManager(), DIALOG_ARCHIVE_MONTH);
+                           .show(getSupportFragmentManager(), DIALOG_ARCHIVE_MONTH);
     }
 
     private void showDownloadErrorDialog(long paperId, Exception exception) {
@@ -427,9 +427,9 @@ public class StartActivity extends BaseActivity implements IStartCallback, TcDia
             if (exception != null && BuildConfig.DEBUG) message.append("\n\n")
                                                                .append(exception);
 
-            new TcDialog().withMessage(message.toString())
+            new Dialog().withMessage(message.toString())
                           .withPositiveButton()
-                          .show(getFragmentManager(), DIALOG_DOWNLOADMANAGER_ERROR);
+                          .show(getSupportFragmentManager(), DIALOG_DOWNLOADMANAGER_ERROR);
         } catch (Paper.PaperNotFoundException e) {
             log.error("",e);
         }
@@ -438,10 +438,10 @@ public class StartActivity extends BaseActivity implements IStartCallback, TcDia
 
     @Override
     public void toggleWaitDialog(String tag) {
-        DialogFragment dialog = (DialogFragment) getFragmentManager().findFragmentByTag(tag);
-        if (dialog == null) new TcDialogIndeterminateProgress().withCancelable(false)
+        DialogFragment dialog = (DialogFragment) getSupportFragmentManager().findFragmentByTag(tag);
+        if (dialog == null) new DialogIndeterminateProgress().withCancelable(false)
                                                                .withMessage("Bitte warten...")
-                                                               .show(getFragmentManager(), tag);
+                                                               .show(getSupportFragmentManager(), tag);
         else dialog.dismiss();
     }
 
@@ -538,9 +538,9 @@ public class StartActivity extends BaseActivity implements IStartCallback, TcDia
     @Override
     public void onDialogClick(String tag, Bundle arguments, int which) {
         if (DIALOG_FIRST.equals(tag)) {
-            if (which == TcDialog.BUTTON_NEUTRAL) mDrawerFragment.simulateClick(userItem, true);
+            if (which == Dialog.BUTTON_NEUTRAL) mDrawerFragment.simulateClick(userItem, true);
         } else if (DIALOG_MIGRATION_FINISHED.equals(tag)) {
-            if (which == TcDialog.BUTTON_POSITIVE) {
+            if (which == Dialog.BUTTON_POSITIVE) {
                 try {
                     JSONArray json = new JSONArray(arguments.getString(ARGUMENT_MIGRATED_IDS_JSONARRAY));
                     for (int i = 0; i < json.length(); i++) {
@@ -554,13 +554,13 @@ public class StartActivity extends BaseActivity implements IStartCallback, TcDia
             }
         } else if (DIALOG_DOWNLOAD_MOBILE.equals(tag)) {
             switch (which) {
-                case TcDialog.BUTTON_POSITIVE:
+                case Dialog.BUTTON_POSITIVE:
                     startDownloadQueue();
                     break;
-                case TcDialog.BUTTON_NEGATIVE:
+                case Dialog.BUTTON_NEGATIVE:
                     retainDataFragment.downloadQueue.clear();
                     break;
-                case TcDialog.BUTTON_NEUTRAL:
+                case Dialog.BUTTON_NEUTRAL:
                     retainDataFragment.downloadQueue.clear();
                     startActivity(new Intent(android.provider.Settings.ACTION_WIFI_SETTINGS));
                     break;
@@ -572,7 +572,7 @@ public class StartActivity extends BaseActivity implements IStartCallback, TcDia
 
 
     @Override
-    public void onDialogAdapterListClick(String tag, TcDialogAdapterList.TcDialogAdapterListEntry entry, Bundle arguments) {
+    public void onDialogAdapterListClick(String tag, DialogAdapterList.TcDialogAdapterListEntry entry, Bundle arguments) {
         if (DIALOG_ARCHIVE_YEAR.equals(tag)) {
             showArchiveMonthPicker(((ArchiveDialog.ArchiveEntry) entry).getNumber());
         } else if (DIALOG_ARCHIVE_MONTH.equals(tag)) {

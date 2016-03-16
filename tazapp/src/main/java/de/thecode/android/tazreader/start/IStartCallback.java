@@ -1,7 +1,7 @@
 package de.thecode.android.tazreader.start;
 
 
-import android.app.Fragment;
+import android.support.v4.app.Fragment;
 import android.support.v7.widget.Toolbar;
 
 import java.util.Calendar;

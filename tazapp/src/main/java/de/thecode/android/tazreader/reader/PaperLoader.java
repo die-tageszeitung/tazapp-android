@@ -1,7 +1,7 @@
 package de.thecode.android.tazreader.reader;
 
-import android.content.AsyncTaskLoader;
 import android.content.Context;
+import android.support.v4.content.AsyncTaskLoader;
 
 import com.dd.plist.PropertyListFormatException;
 import com.google.common.base.Strings;
