@@ -85,4 +85,5 @@
     <string name="toast_tts_continued">Sprachausgabe fortgesetzt, zum Pausieren doppelt auf Text tippen.</string>
     <string name="toast_tts_paused">Sprachausgabe pausiert, doppelt auf Text tippen um Fortzusetzen.</string>
     <string name="toast_tts_action_restart">Neu Starten</string>
+    <string name="toast_tts_volume_warning">\nHinweis: Die Lautstärke ist niedrig!</string>
 </resources>

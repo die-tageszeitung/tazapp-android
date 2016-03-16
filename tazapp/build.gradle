@@ -19,6 +19,7 @@ buildscript {
 apply plugin: 'android-sdk-manager'
 apply plugin: 'com.android.application'
 apply plugin: 'io.fabric'
+apply plugin: 'com.github.gfx.ribbonizer'
 
 def overheadPath
 
@@ -186,7 +187,7 @@ dependencies {
         transitive = true;
     }
     debugCompile 'com.facebook.stetho:stetho:1.0.0'
-    compile 'fr.avianey.com.viewpagerindicator:library:2.4.1@aar'
+    compile 'com.github.jrejaud:ViewPagerIndicator2:0.0.1'
     compile 'org.apache.commons:commons-lang3:3.4'
     compile 'commons-io:commons-io:2.4'
     compile 'org.slf4j:slf4j-api:1.7.12'

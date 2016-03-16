@@ -10,7 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
-import com.viewpagerindicator.CirclePageIndicator;
+import com.github.jrejaud.viewpagerindicator2.CirclePageIndicator;
 
 import java.lang.ref.WeakReference;
 

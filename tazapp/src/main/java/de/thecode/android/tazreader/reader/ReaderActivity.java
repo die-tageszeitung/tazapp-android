@@ -15,11 +15,16 @@ import android.speech.tts.TextToSpeech;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.widget.DrawerLayout;
+import android.text.Spannable;
+import android.text.SpannableStringBuilder;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.StyleSpan;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.crashlytics.android.Crashlytics;
 import com.google.common.base.Strings;
@@ -687,12 +692,13 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
         int request = audioManager.requestAudioFocus(retainTtsFragment.getAudioFocusChangeListener(), TextToSpeech.Engine.DEFAULT_STREAM, AudioManager.AUDIOFOCUS_GAIN);
         switch (request) {
             case AudioManager.AUDIOFOCUS_REQUEST_GRANTED:
+
                 switch (retainTtsFragment.getTtsState()) {
                     case IDLE:
-                        showSackbar(getString(R.string.toast_tts_started),5000);
+                        showSackbar(makeTtsPlayingSpan(getString(R.string.toast_tts_started)),5000);
                         break;
                     case PAUSED:
-                        showSackbar(getString(R.string.toast_tts_continued), 5000, getString(R.string.toast_tts_action_restart), new View.OnClickListener() {
+                        showSackbar(makeTtsPlayingSpan(getString(R.string.toast_tts_continued)), 5000, getString(R.string.toast_tts_action_restart), new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
                                 retainTtsFragment.stopTts();
@@ -708,6 +714,21 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
 
         }
         return false;
+    }
+
+    private CharSequence makeTtsPlayingSpan(String text) {
+        SpannableStringBuilder snackbarText = new SpannableStringBuilder();
+        snackbarText.append(text);
+        int volume = audioManager.getStreamVolume(TextToSpeech.Engine.DEFAULT_STREAM);
+        int maxVolume = audioManager.getStreamMaxVolume(TextToSpeech.Engine.DEFAULT_STREAM);
+        int percent = volume * 100 / maxVolume;
+        if (percent <= 20) {
+            int boldStart = snackbarText.length();
+            snackbarText.append(getString(R.string.toast_tts_volume_warning,percent));
+            snackbarText.setSpan(new ForegroundColorSpan(Color.RED), boldStart, snackbarText.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            snackbarText.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), boldStart, snackbarText.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        }
+        return snackbarText;
     }
 
 
@@ -763,15 +784,21 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
         }
     }
 
-    public void showSackbar(String message, int length) {
+    public void showSackbar(CharSequence message, int length) {
         showSackbar(message,length,null,null);
     }
 
-    public void showSackbar(String message, int length, String action, View.OnClickListener actionListener) {
+    public void showSackbar(CharSequence message, int length, String action, View.OnClickListener actionListener) {
         Snackbar snackbar = Snackbar.make(mContentFrame, message, length);
         if (actionListener != null) {
             snackbar.setAction(action, actionListener);
         }
+        View view = snackbar.getView();
+        TextView textView = (TextView) view.findViewById(android.support.design.R.id.snackbar_text);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            textView.setLineSpacing(textView.getLineSpacingExtra(),textView.getLineSpacingMultiplier()+0.3F);
+        }
+        textView.setMaxLines(25);  // show multiple line
         snackbar.show();
     }
 }

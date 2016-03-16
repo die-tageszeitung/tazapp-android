@@ -70,7 +70,7 @@
     <item name="library_item_badge_text" type="color">@android:color/white</item>
     <item name="library_item_progress_overlay" type="color">#99BBBBBB</item>
 
-    <item name="help_indicator_fill" type="color">@color/color_primary</item>
+    <item name="help_indicator_fill" type="color">@color/color_accent</item>
     <item name="help_indicator_page" type="color">@android:color/white</item>
     <item name="help_indicator_stroke" type="color">@color/color_accent</item>
 
