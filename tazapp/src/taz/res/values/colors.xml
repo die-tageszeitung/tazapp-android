@@ -36,6 +36,7 @@
     <item name="refresh_color_1" type="color">@color/TazRotAccent</item>
     <item name="refresh_color_2" type="color">@color/TazRot</item>
 
+    <item name="index_background" type="color">@color/color_primary_dark</item>
     <item name="index_background_source" type="color">@color/color_primary</item>
     <item name="index_background_category" type="color">@color/TAZocker</item>
     <item name="index_background_page" type="color">@color/TAZockerLight</item>
