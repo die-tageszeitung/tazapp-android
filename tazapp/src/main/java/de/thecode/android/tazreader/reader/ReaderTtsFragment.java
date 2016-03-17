@@ -19,6 +19,8 @@ import java.text.BreakIterator;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by mate on 15.03.2016.
@@ -30,7 +32,10 @@ public class ReaderTtsFragment extends Fragment implements TextToSpeech.OnInitLi
     private static final String TAG = "RetainTtsFragment";
 
     public enum TTS {DISABLED, INIT, IDLE, PLAYING, PAUSED}
+
     public enum TTSERROR {UNKNOWN, LANG_MISSING_DATA, LANG_NOT_SUPPORTED}
+
+    private static final String TTSBREAK = "##TTSBREAK";
 
     private TextToSpeech tts;
     private TTS ttsState = TTS.DISABLED;
@@ -91,10 +96,8 @@ public class ReaderTtsFragment extends Fragment implements TextToSpeech.OnInitLi
             if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
                 setTtsState(TTS.DISABLED);
                 if (hasCallback()) {
-                    if (result == TextToSpeech.LANG_MISSING_DATA)
-                        getCallback().onTtsInitError(TTSERROR.LANG_MISSING_DATA);
-                    else if (result == TextToSpeech.LANG_NOT_SUPPORTED)
-                        getCallback().onTtsInitError(TTSERROR.LANG_NOT_SUPPORTED);
+                    if (result == TextToSpeech.LANG_MISSING_DATA) getCallback().onTtsInitError(TTSERROR.LANG_MISSING_DATA);
+                    else if (result == TextToSpeech.LANG_NOT_SUPPORTED) getCallback().onTtsInitError(TTSERROR.LANG_NOT_SUPPORTED);
                 }
                 tts.shutdown();
             } else {
@@ -113,10 +116,10 @@ public class ReaderTtsFragment extends Fragment implements TextToSpeech.OnInitLi
         }
     }
 
-    public void initTts(Context context,String utteranceBaseId, CharSequence text) {
+    public void initTts(Context context, String utteranceBaseId, CharSequence text) {
         if (getTtsState() == TTS.DISABLED) {
             setTtsState(TTS.INIT);
-            prepareTts(utteranceBaseId,text);
+            prepareTts(utteranceBaseId, text);
             tts = new TextToSpeech(context.getApplicationContext(), this);
         }
     }
@@ -163,11 +166,15 @@ public class ReaderTtsFragment extends Fragment implements TextToSpeech.OnInitLi
                         sentencesOrder.add(utteranceId);
                         sentences.put(utteranceId, paragraphArray[i].substring(start, end));
                         counter++;
+                        utteranceId = utteranceBaseId + counter;
+                        sentencesOrder.add(utteranceId);
+                        sentences.put(utteranceId, makeSilenceTag(200));
+                        counter++;
                     }
                 } else {
                     String utteranceId = utteranceBaseId + counter;
                     sentencesOrder.add(utteranceId);
-                    sentences.put(utteranceId, "");
+                    sentences.put(utteranceId, makeSilenceTag(700));
                     counter++;
                 }
             }
@@ -176,29 +183,36 @@ public class ReaderTtsFragment extends Fragment implements TextToSpeech.OnInitLi
         sentencesOrderOriginal = new ArrayList<>(sentencesOrder);
     }
 
+    private String makeSilenceTag(long millis) {
+        return TTSBREAK + millis;
+    }
+
     public void startTts() {
+        Pattern p = Pattern.compile("^" + TTSBREAK + "(\\d+)$");
         for (String utteranceId : sentencesOrder) {
             String sentence = sentences.get(utteranceId);
             if (sentence.length() > 0) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    tts.speak(sentence, TextToSpeech.QUEUE_ADD, null, utteranceId);
-
+                Matcher m = p.matcher(sentence);
+                if (m.find()) {
+                    long value = Long.valueOf(m.group(1));
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        tts.playSilentUtterance(value, TextToSpeech.QUEUE_ADD, utteranceId);
+                    } else {
+                        HashMap<String, String> map = new HashMap<>();
+                        map.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, utteranceId);
+                        tts.playSilence(value, TextToSpeech.QUEUE_ADD, map);
+                    }
                 } else {
-                    HashMap<String, String> map = new HashMap<>();
-                    map.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, utteranceId);
-                    tts.speak(sentence, TextToSpeech.QUEUE_ADD, map);
-                }
-            } else {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    tts.playSilentUtterance(700, TextToSpeech.QUEUE_ADD, utteranceId);
-                } else {
-                    HashMap<String, String> map = new HashMap<>();
-                    map.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, utteranceId);
-                    tts.playSilence(700, TextToSpeech.QUEUE_ADD, map);
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        tts.speak(sentence, TextToSpeech.QUEUE_ADD, null, utteranceId);
+                    } else {
+                        HashMap<String, String> map = new HashMap<>();
+                        map.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, utteranceId);
+                        tts.speak(sentence, TextToSpeech.QUEUE_ADD, map);
+                    }
                 }
             }
         }
-
     }
 
     public void pauseTts() {
@@ -212,7 +226,7 @@ public class ReaderTtsFragment extends Fragment implements TextToSpeech.OnInitLi
     }
 
     public void stopTts() {
-        if (tts!= null && tts.isSpeaking()) tts.stop();
+        if (tts != null && tts.isSpeaking()) tts.stop();
         setTtsState(TTS.IDLE);
     }
 
@@ -282,7 +296,6 @@ public class ReaderTtsFragment extends Fragment implements TextToSpeech.OnInitLi
         void onTtsStateChanged(TTS newState);
 
         void onTtsInitError(TTSERROR error);
-
 
 
         //boolean ttsPreparePlayingInActivty();
