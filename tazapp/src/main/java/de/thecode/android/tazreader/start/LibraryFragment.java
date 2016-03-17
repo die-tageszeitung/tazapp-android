@@ -66,7 +66,7 @@ public class LibraryFragment extends BaseFragment implements LoaderManager.Loade
         View view = inflater.inflate(R.layout.start_library, container, false);
 
         swipeRefresh = (SwipeRefreshLayout) view.findViewById(R.id.swipeRefreshLayout);
-        swipeRefresh.setColorSchemeResources(R.color.color_primary, R.color.color_primary, R.color.color_primary);
+        swipeRefresh.setColorSchemeResources(R.color.refresh_color_1, R.color.refresh_color_2);
         swipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
