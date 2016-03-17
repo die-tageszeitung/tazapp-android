@@ -250,24 +250,17 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
     @Override
     public void onViewAttachedToWindow(ViewHolder holder) {
         super.onViewAttachedToWindow(holder);
-        log.debug("holder: {}",holder);
         EventBus.getDefault()
                 .register(holder);
     }
 
     @Override
     public void onViewDetachedFromWindow(ViewHolder holder) {
-        log.debug("holder: {}",holder);
         EventBus.getDefault()
                 .unregister(holder);
         super.onViewDetachedFromWindow(holder);
     }
 
-    @Override
-    public void onViewRecycled(ViewHolder holder) {
-        log.debug("holder: {}",holder);
-        super.onViewRecycled(holder);
-    }
 
     private void loadBitmap(String hash, ImageView imageView) {
         if (cancelPotentialWork(hash, imageView)) {

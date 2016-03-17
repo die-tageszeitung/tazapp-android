@@ -574,7 +574,17 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
     @Override
     public void onDialogAdapterListClick(String tag, DialogAdapterList.TcDialogAdapterListEntry entry, Bundle arguments) {
         if (DIALOG_ARCHIVE_YEAR.equals(tag)) {
-            showArchiveMonthPicker(((ArchiveDialog.ArchiveEntry) entry).getNumber());
+            if (getResources().getBoolean(R.bool.archive_monthly)) {
+                showArchiveMonthPicker(((ArchiveDialog.ArchiveEntry) entry).getNumber());
+            }
+            else {
+                int year = ((ArchiveDialog.ArchiveEntry) entry).getNumber();
+                Calendar startCal = Calendar.getInstance();
+                Calendar endCal = Calendar.getInstance();
+                startCal.set(year,Calendar.JANUARY,1);
+                endCal.set(year, Calendar.DECEMBER, 31);
+                requestSync(startCal,endCal);
+            }
         } else if (DIALOG_ARCHIVE_MONTH.equals(tag)) {
             int year = arguments.getInt(ARGUMENT_ARCHIVE_YEAR);
             int month = ((ArchiveDialog.ArchiveEntry) entry).getNumber();
@@ -586,6 +596,8 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
             requestSync(startCal, endCal);
         }
     }
+
+
 
     @Override
     public void onDialogDismiss(String tag, Bundle arguments) {
