@@ -155,7 +155,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         // AutoDelete
         if (TazSettings.getPrefBoolean(getContext(), TazSettings.PREFKEY.AUTODELETE, false)) {
 
-            int daysToKeep = TazSettings.getPrefInt(getContext(), TazSettings.PREFKEY.AUTODELETE_DAYS, 0);
+            int daysToKeep = TazSettings.getPrefInt(getContext(), TazSettings.PREFKEY.AUTODELETE_VALUE, 0);
             if (daysToKeep > 0) {
                 Calendar cal = Calendar.getInstance();
                 cal.setTime(new Date());

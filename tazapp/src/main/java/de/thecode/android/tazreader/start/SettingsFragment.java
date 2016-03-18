@@ -36,12 +36,12 @@ public class SettingsFragment extends BaseFragment {
     private CheckBox screenActiveCheckBox;
     private CheckBox fullscreenCheckBox;
     private CheckBox autodeleteCheckBox;
-    private EditText autoDeletDaysEditText;
+    private EditText autoDeleteEditText;
     private FrameLayout notificationSoundLayout;
     private TextView notificationSound;
     private CheckBox notificationVibrateCheckBox;
     private RadioGroup orientationGroup;
-    private TextView autodeleteDaysUnitText;
+    private TextView autodeleteUnitText;
     private CheckBox pageIndexButtonCheckBox;
     private CheckBox ttsCheckBox;
 
@@ -68,9 +68,9 @@ public class SettingsFragment extends BaseFragment {
         screenActiveCheckBox = (CheckBox) view.findViewById(R.id.screenActiveCheckBox);
         //fullscreenCheckBox = (CheckBox) view.findViewById(R.id.fullscreenCheckBox);
         orientationGroup = (RadioGroup) view.findViewById(R.id.orientationGroup);
-        autoDeletDaysEditText = (EditText) view.findViewById(R.id.autodeleteDaysEditText);
+        autoDeleteEditText = (EditText) view.findViewById(R.id.autodeleteEditText);
         autodeleteCheckBox = (CheckBox) view.findViewById(R.id.autoDeleteCheckBox);
-        autodeleteDaysUnitText = (TextView) view.findViewById(R.id.autodeletDaysUnitText);
+        autodeleteUnitText = (TextView) view.findViewById(R.id.autodeleteUnitText);
         notificationSoundLayout = (FrameLayout) view.findViewById(R.id.notificationSoundLayout);
         notificationSound = (TextView) view.findViewById(R.id.notificationSound);
         notificationVibrateCheckBox = (CheckBox) view.findViewById(R.id.notificationVibrateCheckBox);
@@ -103,16 +103,16 @@ public class SettingsFragment extends BaseFragment {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 TazSettings.setPref(getActivity(), TazSettings.PREFKEY.AUTODELETE, isChecked);
-                autoDeletDaysEditText.setEnabled(isChecked);
-                autodeleteDaysUnitText.setEnabled(isChecked);
+                autoDeleteEditText.setEnabled(isChecked);
+                autodeleteUnitText.setEnabled(isChecked);
                 TazSettings.setPref(getActivity(), TazSettings.PREFKEY.FORCESYNC, true);
             }
         });
-        autoDeletDaysEditText.setEnabled(TazSettings.getPrefBoolean(getActivity(), TazSettings.PREFKEY.AUTODELETE, false));
-        autodeleteDaysUnitText.setEnabled(TazSettings.getPrefBoolean(getActivity(), TazSettings.PREFKEY.AUTODELETE, false));
+        autoDeleteEditText.setEnabled(TazSettings.getPrefBoolean(getActivity(), TazSettings.PREFKEY.AUTODELETE, false));
+        autodeleteUnitText.setEnabled(TazSettings.getPrefBoolean(getActivity(), TazSettings.PREFKEY.AUTODELETE, false));
 
-        autoDeletDaysEditText.setText(String.valueOf(TazSettings.getPrefInt(getActivity(), TazSettings.PREFKEY.AUTODELETE_DAYS, 0)));
-        autoDeletDaysEditText.addTextChangedListener(new TextWatcher() {
+        autoDeleteEditText.setText(String.valueOf(TazSettings.getPrefInt(getActivity(), TazSettings.PREFKEY.AUTODELETE_VALUE, 0)));
+        autoDeleteEditText.addTextChangedListener(new TextWatcher() {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
@@ -127,7 +127,7 @@ public class SettingsFragment extends BaseFragment {
 
                 try {
                     int days = Integer.valueOf(s.toString());
-                    TazSettings.setPref(getActivity(), TazSettings.PREFKEY.AUTODELETE_DAYS, days);
+                    TazSettings.setPref(getActivity(), TazSettings.PREFKEY.AUTODELETE_VALUE, days);
                     TazSettings.setPref(getActivity(), TazSettings.PREFKEY.FORCESYNC, true);
                 } catch (NumberFormatException e) {
 

@@ -29,7 +29,7 @@ public final class TazSettings {
         public static final String AUTOLOAD = "autoload";
         public static final String AUTOLOAD_WIFI = "autoload_wifi";
         public static final String AUTODELETE = "autodelete";
-        public static final String AUTODELETE_DAYS = "autodeleteDays";
+        public static final String AUTODELETE_VALUE = "autodeleteDays";
         public static final String LASTAUTOLOAD = "lastautoload";
         public static final String CONTENTVERBOSE = "ContentVerbose";
         public static final String KEEPSCREEN = "KeepScreen";

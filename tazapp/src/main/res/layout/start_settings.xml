@@ -56,12 +56,12 @@
                     android:text="@string/autodelete_exp"
                     style="@style/SettingsNote"
                     android:layout_marginRight="4dp"
-                    android:layout_toLeftOf="@+id/autodeleteDaysEditText"
-                    android:layout_toStartOf="@+id/autodeleteDaysEditText"
+                    android:layout_toLeftOf="@+id/autodeleteEditText"
+                    android:layout_toStartOf="@+id/autodeleteEditText"
                     android:id="@+id/autodeleteDaysNote"/>
 
                 <EditText
-                    android:id="@+id/autodeleteDaysEditText"
+                    android:id="@+id/autodeleteEditText"
                     android:layout_width="50dp"
                     android:layout_height="wrap_content"
                     style="@style/SettingsEdit"
@@ -72,8 +72,8 @@
                     android:maxLength="3"
                     android:singleLine="true"
                     android:layout_alignParentTop="true"
-                    android:layout_toLeftOf="@+id/autodeletDaysUnitText"
-                    android:layout_toStartOf="@+id/autodeletDaysUnitText"/>
+                    android:layout_toLeftOf="@+id/autodeleteUnitText"
+                    android:layout_toStartOf="@+id/autodeleteUnitText"/>
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -85,8 +85,8 @@
                     android:layout_alignParentTop="true"
                     android:layout_alignParentRight="true"
                     android:layout_alignParentEnd="true"
-                    android:id="@+id/autodeletDaysUnitText"
-                    android:layout_alignBottom="@+id/autodeleteDaysEditText"/>
+                    android:id="@+id/autodeleteUnitText"
+                    android:layout_alignBottom="@+id/autodeleteEditText"/>
 
 
 

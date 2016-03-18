@@ -85,7 +85,7 @@ public class TazReaderApplication extends Application {
         TazSettings.setDefaultPref(this, TazSettings.PREFKEY.KEEPSCREEN, false);
         TazSettings.setDefaultPref(this, TazSettings.PREFKEY.ORIENTATION, "auto");
         TazSettings.setDefaultPref(this, TazSettings.PREFKEY.AUTODELETE, false);
-        TazSettings.setDefaultPref(this, TazSettings.PREFKEY.AUTODELETE_DAYS, 14);
+        TazSettings.setDefaultPref(this, TazSettings.PREFKEY.AUTODELETE_VALUE, 14);
         TazSettings.setDefaultPref(this, TazSettings.PREFKEY.RINGTONE, RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
         TazSettings.setDefaultPref(this, TazSettings.PREFKEY.VIBRATE, true);
         TazSettings.setDefaultPref(this, TazSettings.PREFKEY.ISSOCIAL, false);
