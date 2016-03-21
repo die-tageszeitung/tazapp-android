@@ -79,7 +79,7 @@
     <item name="help_indicator_stroke" type="color">@color/color_accent</item>
 
     <item name="reader_settings_button_text_activated" type="color">@color/button_text_normal</item>
-    <item name="reader_settings_button_text" type="color">@android:color/darker_gray</item>
+    <item name="reader_settings_button_text" type="color">@color/lmdBlauDunkel</item>
 
     <item name="login_order_button_text" type="color">@android:color/white</item>
 

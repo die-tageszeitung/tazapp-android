@@ -127,7 +127,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult) {
         //Crashlytics.start(mContext);
-        log.debug("account: {}, extras: {}, authority: {}, provider: {}, syncResult: {}",account, extras, authority, provider, syncResult);
+        log.debug("account: {}, extras: {}, authority: {}, provider: {}, syncResult: {}", account, extras, authority, provider, syncResult);
         EventBus.getDefault()
                 .postSticky(new SyncStateChangedEvent(true));
 
@@ -155,58 +155,35 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         // AutoDelete
         if (TazSettings.getPrefBoolean(getContext(), TazSettings.PREFKEY.AUTODELETE, false)) {
 
-            int daysToKeep = TazSettings.getPrefInt(getContext(), TazSettings.PREFKEY.AUTODELETE_VALUE, 0);
-            if (daysToKeep > 0) {
-                Calendar cal = Calendar.getInstance();
-                cal.setTime(new Date());
-                cal.set(Calendar.HOUR, 0);
-                cal.set(Calendar.MINUTE, 0);
-                cal.set(Calendar.SECOND, 0);
-                cal.set(Calendar.MILLISECOND, 0);
-
-                cal.add(Calendar.DAY_OF_YEAR, -(daysToKeep));
-
-                long keepTimestamp = cal.getTimeInMillis();
-                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-
+            int papersToKeep = TazSettings.getPrefInt(getContext(), TazSettings.PREFKEY.AUTODELETE_VALUE, 0);
+            if (papersToKeep > 0) {
                 Cursor deletePapersCursor = getContext().getContentResolver()
-                                                    .query(Paper.CONTENT_URI, null, Paper.Columns.ISDOWNLOADED + "=1 AND " + Paper.Columns.HASUPDATE + "!=1 AND " + Paper.Columns.IMPORTED + "!=1 AND " + Paper.Columns.KIOSK + "!=1", null, null);
+                                                        .query(Paper.CONTENT_URI, null, Paper.Columns.ISDOWNLOADED + "=1 AND " + Paper.Columns.IMPORTED + "!=1 AND " + Paper.Columns.KIOSK + "!=1", null, Paper.Columns.DATE + " DESC");
                 try {
+                    int counter = 0;
                     while (deletePapersCursor.moveToNext()) {
-                        Paper deletePaper = new Paper(deletePapersCursor);
-                        log.debug("PaperId: {} (currentOpen:{})", deletePaper.getId(), currentOpenPaperId);
-                        if (!deletePaper.getId()
-                                        .equals(currentOpenPaperId)) {
-
-                            Date date;
-                            try {
-                                date = format.parse(deletePaper.getDate());
-                                long paperTimestamp = date.getTime();
-                                if (paperTimestamp < keepTimestamp) {
-
-                                    boolean safeToDelete = true;
-
-                                    String bookmarksJsonString = deletePaper.getStoreValue(getContext(), ReaderActivity.STORE_KEY_BOOKMARKS);
-                                    if (!Strings.isNullOrEmpty(bookmarksJsonString)) {
-                                        try {
-                                            JSONArray bookmarks = new JSONArray(bookmarksJsonString);
-                                            if (bookmarks.length() > 0) safeToDelete = false;
-                                        } catch (JSONException e) {
-                                            // JSON Error, better don't delete
-                                            safeToDelete = false;
-                                        }
-                                    }
-
-                                    if (safeToDelete) {
-                                        deletePaper.delete(getContext());
+                        if (counter >= papersToKeep) {
+                            Paper deletePaper = new Paper(deletePapersCursor);
+                            log.debug("PaperId: {} (currentOpen:{})", deletePaper.getId(), currentOpenPaperId);
+                            if (!deletePaper.getId()
+                                            .equals(currentOpenPaperId)) {
+                                boolean safeToDelete = true;
+                                String bookmarksJsonString = deletePaper.getStoreValue(getContext(), ReaderActivity.STORE_KEY_BOOKMARKS);
+                                if (!Strings.isNullOrEmpty(bookmarksJsonString)) {
+                                    try {
+                                        JSONArray bookmarks = new JSONArray(bookmarksJsonString);
+                                        if (bookmarks.length() > 0) safeToDelete = false;
+                                    } catch (JSONException e) {
+                                        // JSON Error, better don't delete
+                                        safeToDelete = false;
                                     }
                                 }
-
-                            } catch (ParseException e) {
-                                log.error("error parsing date of paper", e);
+                                if (safeToDelete) {
+                                    deletePaper.delete(getContext());
+                                }
                             }
                         }
-
+                        counter++;
                     }
                 } finally {
                     deletePapersCursor.close();
@@ -214,27 +191,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             }
         }
 
-        // Aufräumen
-        //        Cursor cleanCursor = getContext().getContentResolver()
-        //                                     .query(Publication.CONTENT_URI, null, null, null, null);
-        //        while (cleanCursor.moveToNext()) {
-        //            Publication cleanPub = new Publication(cleanCursor);
-        //            Log.d(cleanPub.getName(), cleanPub.getValidUntilInMillis());
-        //            Log.d(System.currentTimeMillis());
-        //            if (cleanPub.getValidUntilInMillis() < System.currentTimeMillis()) {
-        //                Cursor cleanCursorIssue = getContext().getContentResolver()
-        //                                                  .query(Paper.CONTENT_URI, null, Paper.Columns.PUBLICATIONID + "=" + cleanPub.getId() + " AND " + Paper.Columns.ISDOWNLOADED + "!=1", null, null);
-        //                while (cleanCursorIssue.moveToNext()) {
-        //                    Paper cleanPaper = new Paper(cleanCursorIssue);
-        //                    mCoverHelper.delete(cleanPaper.getImageHash());
-        //                    getContext().getContentResolver()
-        //                            .delete(ContentUris.withAppendedId(Paper.CONTENT_URI, cleanPaper.getId()), null, null);
-        //                }
-        //                cleanCursorIssue.close();
-        //
-        //            }
-        //        }
-        //        cleanCursor.close();
 
         int errorCounter = 0;
         int retry = 5;
@@ -246,9 +202,11 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 RequestFuture<String> future = RequestFuture.newFuture();
                 StringRequest request = new StringRequest(Request.Method.GET, url, future, future);
                 request.setShouldCache(false);
-                RequestManager.getInstance().doRequest().add(request);
-//                Volley.newRequestQueue(getContext())
-//                      .add(request);
+                RequestManager.getInstance()
+                              .doRequest()
+                              .add(request);
+                //                Volley.newRequestQueue(getContext())
+                //                      .add(request);
                 //VolleySingleton.getInstance(getContext()).addToRequestQueue(request);
                 response = future.get(30, TimeUnit.SECONDS);
 
@@ -263,7 +221,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             } catch (IOException | PropertyListFormatException | ParseException | SAXException | ParserConfigurationException | InterruptedException | TimeoutException | ExecutionException e) {
                 syncExeption = e;
                 errorCounter++;
-                log.error("",e);
+                log.error("", e);
             }
         }
 
@@ -274,7 +232,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
         // Missing cover images for imported
         Cursor importedPaperCursor = getContext().getContentResolver()
-                                             .query(Paper.CONTENT_URI, null, Paper.TABLE_NAME + "." + Paper.Columns.IMAGE + " IS NULL", null, null);
+                                                 .query(Paper.CONTENT_URI, null, Paper.TABLE_NAME + "." + Paper.Columns.IMAGE + " IS NULL", null, null);
         try {
             while (importedPaperCursor.moveToNext()) {
                 Paper importedPaper = new Paper(importedPaperCursor);
@@ -290,14 +248,16 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                         RequestFuture<String> future = RequestFuture.newFuture();
                         StringRequest request = new StringRequest(Request.Method.GET, importedPaperPlistUrl, future, future);
                         request.setShouldCache(false);
-//                        Volley.newRequestQueue(getContext())
-//                              .add(request);
-                        RequestManager.getInstance().doRequest().add(request);
+                        //                        Volley.newRequestQueue(getContext())
+                        //                              .add(request);
+                        RequestManager.getInstance()
+                                      .doRequest()
+                                      .add(request);
                         String imageResponse = future.get(30, TimeUnit.SECONDS);
                         NSDictionary root = (NSDictionary) PropertyListParser.parse(new ByteArrayInputStream(imageResponse.getBytes("UTF-8")));
                         handlePlist(root);
                     } catch (IOException | PropertyListFormatException | ParseException | SAXException | ParserConfigurationException | InterruptedException | TimeoutException | ExecutionException e) {
-                        log.error("",e);
+                        log.error("", e);
                     }
 
                 }
@@ -318,7 +278,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
 
         Cursor tomorrowCursor = getContext().getContentResolver()
-                                        .query(Paper.CONTENT_URI, null, Paper.Columns.DATE + " LIKE '" + sdf.format(tomorrow) + "'", null, null);
+                                            .query(Paper.CONTENT_URI, null, Paper.Columns.DATE + " LIKE '" + sdf.format(tomorrow) + "'", null, null);
         try {
             if (tomorrowCursor.moveToNext()) {
                 // Ausgabe von morgen ist da
@@ -334,11 +294,12 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                         }
                         if (connectionCheck) {
 
-                            AccountHelper accountHelper = new AccountHelper(getContext(),account);
+                            AccountHelper accountHelper = new AccountHelper(getContext(), account);
                             if (accountHelper.isAuthenticated()) {
                                 //DownloadHelper downloadHelper = new DownloadHelper(getContext());
                                 try {
-                                    DownloadManager.getInstance(getContext()).enquePaper(tomorrowPaper.getId());
+                                    DownloadManager.getInstance(getContext())
+                                                   .enquePaper(tomorrowPaper.getId());
                                     autoloadSuccess = true;
                                 } catch (IllegalArgumentException | DownloadManager.DownloadNotAllowedException | Paper.PaperNotFoundException | AccountHelper.CreateAccountException ignored) {
                                 }
@@ -375,9 +336,11 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         //Download Image
         RequestFuture<Bitmap> imageFuture = RequestFuture.newFuture();
         ImageRequest imageRequest = new ImageRequest(paper.getImage(), imageFuture, 0, 0, null, imageFuture);
-        RequestManager.getInstance().doRequest().add(imageRequest);
-//        VolleySingleton.getInstance(getContext())
-//                       .addToRequestQueue(imageRequest);
+        RequestManager.getInstance()
+                      .doRequest()
+                      .add(imageRequest);
+        //        VolleySingleton.getInstance(getContext())
+        //                       .addToRequestQueue(imageRequest);
         Bitmap bitmap = imageFuture.get(30, TimeUnit.SECONDS);
         if (mCoverHelper.save(bitmap, paper.getImageHash())) {
             if (paper.getId() != null) {
@@ -402,7 +365,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         Publication publication = new Publication(root);
 
         Cursor pubCursor = getContext().getContentResolver()
-                                   .query(Publication.CONTENT_URI, null, Publication.Columns.ISSUENAME + " LIKE '" + publication.getIssueName() + "'", null, null);
+                                       .query(Publication.CONTENT_URI, null, Publication.Columns.ISSUENAME + " LIKE '" + publication.getIssueName() + "'", null, null);
 
         long publicationId;
         String publicationTitle = publication.getName();
@@ -423,10 +386,10 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
                 Uri updateUri = ContentUris.withAppendedId(Publication.CONTENT_URI, publicationId);
                 getContext().getContentResolver()
-                        .update(updateUri, oldPupdata.getContentValues(), null, null);
+                            .update(updateUri, oldPupdata.getContentValues(), null, null);
             } else {
                 Uri newPublicationUri = getContext().getContentResolver()
-                                                .insert(Publication.CONTENT_URI, publication.getContentValues());
+                                                    .insert(Publication.CONTENT_URI, publication.getContentValues());
                 publicationId = ContentUris.parseId(newPublicationUri);
             }
         } finally {
@@ -448,7 +411,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                                              .appendPath(newPaper.getBookId())
                                              .build();
             Cursor cursor = getContext().getContentResolver()
-                                    .query(bookIdUri, null, /*Paper.Columns.IMPORTED + "=0 AND " + Paper.Columns.KIOSK + "=0"*/ null, null, null);
+                                        .query(bookIdUri, null, /*Paper.Columns.IMPORTED + "=0 AND " + Paper.Columns.KIOSK + "=0"*/ null, null, null);
             try {
                 if (cursor.moveToNext()) {
                     Paper oldPaper = new Paper(cursor);
@@ -506,14 +469,14 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         }
         for (Paper insertPaper : insertPapers) {
             long newPaperId = ContentUris.parseId(getContext().getContentResolver()
-                                                          .insert(Paper.CONTENT_URI, insertPaper.getContentValues()));
+                                                              .insert(Paper.CONTENT_URI, insertPaper.getContentValues()));
             insertPaper.setId(newPaperId);
             setMoveToPaperAtEnd(insertPaper);
         }
 
         for (Paper updatedPaper : updatedPapers) {
             getContext().getContentResolver()
-                    .update(updatedPaper.getContentUri(), updatedPaper.getContentValues(), null, null);
+                        .update(updatedPaper.getContentUri(), updatedPaper.getContentValues(), null, null);
             setMoveToPaperAtEnd(updatedPaper);
         }
 
@@ -532,7 +495,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 moveToPaperAtEnd = paper;
             }
         } catch (ParseException e) {
-            log.error("",e);
+            log.error("", e);
             moveToPaperAtEnd = paper;
         }
     }

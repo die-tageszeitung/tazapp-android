@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.ContextCompat;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -109,13 +110,12 @@ public class NotificationHelper {
                 .setStyle(new NotificationCompat.BigTextStyle().bigText(bigTextBuilder.toString()))
                 .setAutoCancel(true)
                 .setNumber(notifiedPaperIds.length())
-                .setGroup("taznot")
+                .setGroup(context.getString(R.string.notification_group_name))
                 .setContentIntent(contentIntent)
                 .setDeleteIntent(deleteIntent)
                 .setDefaults(Notification.DEFAULT_LIGHTS)
-                .setColor(context.getResources()
-                                 .getColor(R.color.notification))
-                .setSmallIcon(R.drawable.ic_stat_taz_pfote);
+                .setColor(ContextCompat.getColor(context,R.color.notification))
+                .setSmallIcon(R.drawable.notification_icon);
 
         if (withSound) {
             Uri ringtoneUri = TazSettings.getRingtone(context);

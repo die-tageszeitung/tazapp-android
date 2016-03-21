@@ -4,4 +4,6 @@
     <string name="dialog_archive_year_title">LMd-Archiv - Jahr wählen</string>
     <string name="dialog_archive_month_title">LMd-Archiv - Monat wählen</string>
 
+    <string name="notification_group_name">lmdnotifications</string>
+
 </resources>
