@@ -16,9 +16,9 @@ import android.widget.SeekBar.OnSeekBarChangeListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.mateware.dialog.DialogCustomView;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.TazSettings;
-import de.thecode.android.tazreader.dialog.DialogCustomView;
 import de.thecode.android.tazreader.reader.ReaderActivity.THEMES;
 
 public class SettingsDialog extends DialogCustomView {

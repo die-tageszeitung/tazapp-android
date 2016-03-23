@@ -36,11 +36,11 @@ import org.slf4j.LoggerFactory;
 
 import java.util.WeakHashMap;
 
+import de.mateware.dialog.Dialog;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Store;
 import de.thecode.android.tazreader.data.TazSettings;
-import de.thecode.android.tazreader.dialog.Dialog;
 import de.thecode.android.tazreader.download.NotificationHelper;
 import de.thecode.android.tazreader.reader.article.ArticleFragment;
 import de.thecode.android.tazreader.reader.article.TopLinkFragment;

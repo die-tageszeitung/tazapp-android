@@ -13,6 +13,8 @@ import com.google.common.base.Strings;
 
 import java.util.ArrayList;
 
+import de.mateware.dialog.DialogAdapterList;
+
 /**
  * Created by mate on 19.03.2015.
  */
@@ -69,7 +71,7 @@ public class ArchiveDialog extends DialogAdapterList {
     }
 
 
-    public static class ArchiveEntry extends TcDialogAdapterListEntry {
+    public static class ArchiveEntry extends DialogAdapterListEntry {
         int number;
         String name;
 

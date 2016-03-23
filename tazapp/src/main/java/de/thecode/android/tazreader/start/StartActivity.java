@@ -26,6 +26,9 @@ import java.util.Calendar;
 import java.util.List;
 
 import de.greenrobot.event.EventBus;
+import de.mateware.dialog.Dialog;
+import de.mateware.dialog.DialogAdapterList;
+import de.mateware.dialog.DialogIndeterminateProgress;
 import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.DeleteTask;
@@ -33,9 +36,6 @@ import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Resource;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.dialog.ArchiveDialog;
-import de.thecode.android.tazreader.dialog.Dialog;
-import de.thecode.android.tazreader.dialog.DialogAdapterList;
-import de.thecode.android.tazreader.dialog.DialogIndeterminateProgress;
 import de.thecode.android.tazreader.download.DownloadManager;
 import de.thecode.android.tazreader.download.NotificationHelper;
 import de.thecode.android.tazreader.download.PaperDownloadFailedEvent;
@@ -572,7 +572,7 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
 
 
     @Override
-    public void onDialogAdapterListClick(String tag, DialogAdapterList.TcDialogAdapterListEntry entry, Bundle arguments) {
+    public void onDialogAdapterListClick(String tag, DialogAdapterList.DialogAdapterListEntry entry, Bundle arguments) {
         if (DIALOG_ARCHIVE_YEAR.equals(tag)) {
             if (getResources().getBoolean(R.bool.archive_monthly)) {
                 showArchiveMonthPicker(((ArchiveDialog.ArchiveEntry) entry).getNumber());

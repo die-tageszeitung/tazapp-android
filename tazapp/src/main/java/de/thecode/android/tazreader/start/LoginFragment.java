@@ -23,9 +23,9 @@ import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
 
+import de.mateware.dialog.Dialog;
+import de.mateware.dialog.DialogIndeterminateProgress;
 import de.thecode.android.tazreader.R;
-import de.thecode.android.tazreader.dialog.Dialog;
-import de.thecode.android.tazreader.dialog.DialogIndeterminateProgress;
 import de.thecode.android.tazreader.secure.Base64;
 import de.thecode.android.tazreader.sync.AccountHelper;
 import de.thecode.android.tazreader.utils.BaseFragment;

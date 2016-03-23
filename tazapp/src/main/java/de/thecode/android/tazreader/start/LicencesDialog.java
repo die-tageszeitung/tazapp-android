@@ -5,7 +5,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
 
-import de.thecode.android.tazreader.dialog.DialogCustomView;
+import de.mateware.dialog.DialogCustomView;
 
 /**
  * Created by Mate on 16.02.2015.
