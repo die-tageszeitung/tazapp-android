@@ -17,6 +17,8 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,18 +62,18 @@ public class IndexFragment extends BaseFragment {
     IReaderCallback mReaderCallback;
 
     public IndexFragment() {
-       log.trace("");
+        log.trace("");
     }
 
 
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-log.trace("");
+        log.trace("");
         mReaderCallback = (IReaderCallback) activity;
 
-        bookmarkColorNormal = ContextCompat.getColor(activity,R.color.index_bookmark_off);
-        bookmarkColorActive = ContextCompat.getColor(activity,R.color.index_bookmark_on);
+        bookmarkColorNormal = ContextCompat.getColor(activity, R.color.index_bookmark_off);
+        bookmarkColorActive = ContextCompat.getColor(activity, R.color.index_bookmark_on);
 
     }
 
@@ -86,7 +88,7 @@ log.trace("");
         log.debug("");
         View view = inflater.inflate(R.layout.reader_index, container, false);
         toolbar = (CustomToolbar) view.findViewById(R.id.toolbar_article);
-        toolbar.setItemColor(ContextCompat.getColor(inflater.getContext(),R.color.toolbar_foreground_color));
+        toolbar.setItemColor(ContextCompat.getColor(inflater.getContext(), R.color.toolbar_foreground_color));
         toolbar.inflateMenu(R.menu.reader_index);
         // Set an OnMenuItemClickListener to handle menu item clicks
         toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
@@ -158,7 +160,11 @@ log.trace("");
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
-        mRecyclerView.addItemDecoration(new DividerItemDecoration(getResources().getDrawable(android.R.drawable.divider_horizontal_dim_dark)));
+        mRecyclerView.addItemDecoration(new HorizontalDividerItemDecoration.Builder(getContext()).colorResId(R.color.index_divider)
+                                                                                                 .sizeResId(R.dimen.index_divider_size)
+                                                                                                 .marginResId(R.dimen.index_divider_margin)
+                                                                                                 .showLastDivider()
+                                                                                                 .build());
         mRecyclerView.setAdapter(adapter);
 
         setIndexVerbose(TazSettings.getPrefBoolean(getActivity(), TazSettings.PREFKEY.CONTENTVERBOSE, true));
@@ -179,7 +185,7 @@ log.trace("");
     }
 
     public void init(Paper paper) {
-        log.debug("paper: {}",paper);
+        log.debug("paper: {}", paper);
         index.clear();
 
         for (Source source : paper.getPlist()
@@ -341,7 +347,7 @@ log.trace("");
                     break;
                 }
             }
-           log.debug("key: {} {}",key,result);
+            log.debug("key: {} {}", key, result);
             return result;
         }
 
@@ -369,7 +375,7 @@ log.trace("");
                 case CATEGORY:
                     ((CategoryViewholder) viewholder).title.setText(item.getTitle());
                     if (item.areIndexChildsVisible())
-                        ((CategoryViewholder) viewholder).image.setImageDrawable(ContextCompat.getDrawable(getActivity(),R.drawable.ic_remove_24dp));
+                        ((CategoryViewholder) viewholder).image.setImageDrawable(ContextCompat.getDrawable(getActivity(), R.drawable.ic_remove_24dp));
                     else ((CategoryViewholder) viewholder).image.setImageDrawable(ContextCompat.getDrawable(getActivity(), R.drawable.ic_add_24dp));
                     break;
                 case PAGE:
@@ -386,7 +392,7 @@ log.trace("");
                     }
                     FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) ((ArticleViewholder) viewholder).bookmark.getLayoutParams();
                     if (item.isBookmarked()) {
-                        TintHelper.tintDrawable(((ArticleViewholder) viewholder).bookmark.getDrawable(),bookmarkColorActive);
+                        TintHelper.tintDrawable(((ArticleViewholder) viewholder).bookmark.getDrawable(), bookmarkColorActive);
                         layoutParams.topMargin = getActivity().getResources()
                                                               .getDimensionPixelOffset(R.dimen.reader_bookmark_offset_active);
                     } else {
@@ -543,7 +549,7 @@ log.trace("");
     String mCurrentKey = null;
 
     public void updateCurrentPosition(String key) {
-        log.debug("key: {}",key);
+        log.debug("key: {}", key);
 
         if (mCurrentKey != null) {
             IIndexItem lastitem = mReaderCallback.getPaper()

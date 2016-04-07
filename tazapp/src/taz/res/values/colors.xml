@@ -37,6 +37,7 @@
     <item name="refresh_color_2" type="color">@color/TazRot</item>
 
     <item name="index_background" type="color">@color/color_primary_dark</item>
+    <item name="index_divider" type="color">@color/color_accent</item>
     <item name="index_background_source" type="color">@color/color_primary</item>
     <item name="index_background_category" type="color">@color/TAZocker</item>
     <item name="index_background_page" type="color">@color/TAZockerLight</item>
@@ -50,6 +51,7 @@
     <item name="index_bookmark_off" type="color">@color/TAZockerA07</item>
     <item name="index_bookmark_on" type="color">@color/TazRotA07</item>
     <item name="index_currentmarker" type="color">@color/color_primary</item>
+    <item name="pageindex_background" type="color">@color/index_background</item>
     <item name="pageindex_loadingpage_bitmapbackground" type="color">@color/ElementeAufDunklemGrund</item>
     <item name="pageindex_overlay_color" type="color">@color/TazRotTransparent</item>
     <item name="library_item_selected_overlay" type="color">@color/TazRotTransparent</item>

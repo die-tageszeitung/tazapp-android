@@ -96,8 +96,11 @@
     </style>
 
     <style name="PageIndex.Source">
-
         <item name="android:background">@color/index_background_source</item>
+    </style>
+
+    <style name="PageIndex.Page">
+
     </style>
 
 

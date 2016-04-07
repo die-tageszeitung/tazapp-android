@@ -42,6 +42,7 @@ Weitere Infos unter [http://www.taz.de/android](http://www.taz.de/android)
     * viewpagerindicator
     * LeakCanary
     * apache commons lang
+    * RecyclerView-FlexibleDivider
 * Affero GNU General Public License, Vversion 3
     * muPdf
 * MIT License

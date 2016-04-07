@@ -40,7 +40,7 @@
         android:layout_width="@dimen/pageindex_thumbnail_image_width"
         android:layout_height="match_parent"
         android:layout_gravity="end"
-        android:background="@color/index_background"
+        android:background="@color/pageindex_background"
         android:paddingTop="@dimen/reader_navdrawer_topmargin"/>
 
 </android.support.v4.widget.DrawerLayout>
