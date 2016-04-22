@@ -57,7 +57,7 @@
     </style>
 
     <style name="PageIndexText.Source">
-        <item name="android:textColor">@color/index_text_source</item>
+        <item name="android:textColor">@color/pageindex_text_source</item>
         <item name="fontPath">@string/fontBold</item>
         <item name="android:textStyle">bold</item>
     </style>
@@ -96,7 +96,7 @@
     </style>
 
     <style name="PageIndex.Source">
-        <item name="android:background">@color/index_background_source</item>
+        <item name="android:background">@color/pageindex_background_source</item>
     </style>
 
     <style name="PageIndex.Page">

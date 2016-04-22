@@ -54,6 +54,8 @@
     <item name="pageindex_background" type="color">@color/index_background</item>
     <item name="pageindex_loadingpage_bitmapbackground" type="color">@color/ElementeAufDunklemGrund</item>
     <item name="pageindex_overlay_color" type="color">@color/TazRotTransparent</item>
+    <item name="pageindex_background_source" type="color">@color/index_background_source</item>
+    <item name="pageindex_text_source" type="color">@color/index_text_source</item>
     <item name="library_item_selected_overlay" type="color">@color/TazRotTransparent</item>
 
     <item name="start_navigation_background" type="color">@android:color/white</item>
