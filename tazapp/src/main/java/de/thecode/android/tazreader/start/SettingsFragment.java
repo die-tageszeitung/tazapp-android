@@ -14,8 +14,8 @@ import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
-import android.widget.FrameLayout;
 import android.widget.RadioGroup;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import java.lang.ref.WeakReference;
@@ -37,7 +37,7 @@ public class SettingsFragment extends BaseFragment {
     private CheckBox fullscreenCheckBox;
     private CheckBox autodeleteCheckBox;
     private EditText autoDeleteEditText;
-    private FrameLayout notificationSoundLayout;
+    private RelativeLayout notificationSoundLayout;
     private TextView notificationSound;
     private CheckBox notificationVibrateCheckBox;
     private RadioGroup orientationGroup;
@@ -71,7 +71,7 @@ public class SettingsFragment extends BaseFragment {
         autoDeleteEditText = (EditText) view.findViewById(R.id.autodeleteEditText);
         autodeleteCheckBox = (CheckBox) view.findViewById(R.id.autoDeleteCheckBox);
         autodeleteUnitText = (TextView) view.findViewById(R.id.autodeleteUnitText);
-        notificationSoundLayout = (FrameLayout) view.findViewById(R.id.notificationSoundLayout);
+        notificationSoundLayout = (RelativeLayout) view.findViewById(R.id.notificationSoundLayout);
         notificationSound = (TextView) view.findViewById(R.id.notificationSound);
         notificationVibrateCheckBox = (CheckBox) view.findViewById(R.id.notificationVibrateCheckBox);
         pageIndexButtonCheckBox = (CheckBox) view.findViewById(R.id.showPageIndexButtonCheckBox);

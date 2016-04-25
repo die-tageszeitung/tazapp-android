@@ -110,48 +110,57 @@
                 android:text="@string/screen_active"
                 android:checked="false"/>
 
-            <FrameLayout
-                style="@style/SettingsRadioButtonFrame"
+            <RelativeLayout
+                style="@style/SettingsClickFrame"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
-
                 <TextView
-                    style="@style/SettingsRadioButtonFrame.Title"
+                    style="@style/SettingsClickFrame.Title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="start"
-                    android:text="@string/screen_orientation"/>
-
+                    android:text="@string/screen_orientation"
+                    android:layout_toLeftOf="@+id/orientationGroup"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentStart="true"/>
                 <RadioGroup
                     android:id="@+id/orientationGroup"
                     style="@style/SettingsRadioButtonFrame.Group"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal">
+                    android:orientation="horizontal"
+                    android:layout_alignParentTop="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_alignParentEnd="true">
 
 
-                    <RadioButton
-                        android:id="@+id/orientationButtonAuto"
-                        style="@style/SettingsRadioButtonFrame.Value"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/orientationAuto"/>
-
-                    <RadioButton
-                        android:id="@+id/orientationButtonPort"
-                        style="@style/SettingsRadioButtonFrame.Value"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/orientationPort"/>
 
                     <RadioButton
                         android:id="@+id/orientationButtonLand"
                         style="@style/SettingsRadioButtonFrame.Value"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/orientationLand"/>
+                        android:text="@string/orientationLand"
+                        />
+
+                    <RadioButton
+                        android:id="@+id/orientationButtonPort"
+                        style="@style/SettingsRadioButtonFrame.Value"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/orientationPort"
+                        />
+
+                    <RadioButton
+                        android:id="@+id/orientationButtonAuto"
+                        style="@style/SettingsRadioButtonFrame.Value"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/orientationAuto"
+                        />
                 </RadioGroup>
-            </FrameLayout>
+
+
+            </RelativeLayout>
             <View style="@style/SettingsDivider"/>
 
 
@@ -193,7 +202,7 @@
                 android:text="@string/header_notification"
                 fontPath="@string/fontBold"/>
 
-            <FrameLayout
+            <RelativeLayout
                 style="@style/SettingsClickFrame"
                 android:id="@+id/notificationSoundLayout"
                 android:layout_width="match_parent"
@@ -203,17 +212,20 @@
                     style="@style/SettingsClickFrame.Title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/notification_sound"/>
+                    android:text="@string/notification_sound"
+                    android:id="@+id/textView"/>
 
                 <TextView
                     style="@style/SettingsClickFrame.Value"
                     android:id="@+id/notificationSound"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/notification_sound_button"/>
+                    android:text="@string/notification_sound_button"
+                    android:layout_toRightOf="@+id/textView"
+                    android:layout_toEndOf="@+id/textView"/>
 
 
-            </FrameLayout>
+            </RelativeLayout>
 
             <CheckBox
                 android:id="@+id/notificationVibrateCheckBox"
