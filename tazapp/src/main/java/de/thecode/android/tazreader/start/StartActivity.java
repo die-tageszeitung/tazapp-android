@@ -181,7 +181,7 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
         //updateUserInDrawer();
 
         //initial Fragment with colored navdrawer
-        if (getFragmentManager().findFragmentById(R.id.content_frame) == null) mDrawerFragment.simulateClick(libraryItem, false);
+        if (getSupportFragmentManager().findFragmentById(R.id.content_frame) == null) mDrawerFragment.simulateClick(libraryItem, false);
 
 
         //        showMigrationDownloadDialog();
@@ -567,6 +567,13 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
             }
         } else if (DIALOG_ACCOUNT_ERROR.equals(tag)) {
             finish();
+        } else if (ImportFragment.DIALOG_PERMISSION_WRITE.equals(tag) && which == Dialog.BUTTON_POSITIVE){
+            Fragment contentFragment = getSupportFragmentManager().findFragmentById(R.id.content_frame);
+            if (contentFragment!= null && contentFragment instanceof ImportFragment) {
+                ((ImportFragment)contentFragment).startWithPermissionCheck();
+            } else {
+                onBackPressed();
+            }
         }
     }
 

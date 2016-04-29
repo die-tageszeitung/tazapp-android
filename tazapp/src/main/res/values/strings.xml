@@ -89,4 +89,6 @@
     <string name="dialog_tts_error_lang_not_supported">Die Sprache wird nicht unterstützt.</string>
     <string name="dialog_tts_error_settings">Einstellungen</string>
 
+    <string name="dialog_import_permission_explanation">Die Berechtigung wird benötigt, um den Inhalt Ihres Speichers anzuzeigen.</string>
+
 </resources>

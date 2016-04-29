@@ -115,7 +115,7 @@ public class ImportDataRetainFragment extends BaseFragment implements LoaderMana
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         log.debug("");
-        getLoaderManager().initLoader(DIRECTORY_LOADER,null, this);
+        //getLoaderManager().initLoader(DIRECTORY_LOADER,null, this);
     }
 
     @Override
@@ -147,6 +147,7 @@ public class ImportDataRetainFragment extends BaseFragment implements LoaderMana
     @Override
     public Loader<List<ImportDirectoryLoader.ImportFileWrapper>> onCreateLoader(int id, Bundle args) {
        log.debug("");
+
 
 
         if (data==null)

@@ -17,7 +17,7 @@
         android:id="@+id/image"
         android:adjustViewBounds="true"
         android:layout_centerVertical="true"
-        android:src="@drawable/ic_launcher"/>
+        android:src="@mipmap/ic_launcher"/>
 
     <TextView
         android:layout_width="match_parent"
