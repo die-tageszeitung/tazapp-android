@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 import de.greenrobot.event.EventBus;
+import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Resource;
@@ -125,7 +126,7 @@ public class DownloadManager {
 
             Uri downloadUri;
             if (Strings.isNullOrEmpty(resource.getUrl())) {
-                downloadUri = Uri.parse(mContext.getString(R.string.resourceUrl))
+                downloadUri = Uri.parse(BuildConfig.RESOURCEURL)
                                  .buildUpon()
                                  .appendPath(resource.getKey())
                                  .build();

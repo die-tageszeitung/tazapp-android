@@ -12,6 +12,7 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.widget.ImageView;
 
 import com.android.volley.Request;
 import com.android.volley.toolbox.ImageRequest;
@@ -47,7 +48,7 @@ import java.util.concurrent.TimeoutException;
 import javax.xml.parsers.ParserConfigurationException;
 
 import de.greenrobot.event.EventBus;
-import de.thecode.android.tazreader.R;
+import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.TazReaderApplication;
 import de.thecode.android.tazreader.data.FileCacheCoverHelper;
 import de.thecode.android.tazreader.data.Paper;
@@ -132,16 +133,17 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 .postSticky(new SyncStateChangedEvent(true));
 
         //If migration is needed dont sync
-        if (TazSettings.getPrefInt(getContext(), TazSettings.PREFKEY.PAPERMIGRATEFROM, 0) != 0) return;
+        if (TazSettings.getPrefInt(getContext(), TazSettings.PREFKEY.PAPERMIGRATEFROM, 0) != 0)
+            return;
         //if (TazSettings.getPrefBoolean(getContext(), TazSettings.PREFKEY.PAPERMIGRATERUNNING, false)) return;
 
-        String url = getContext().getString(R.string.plist);
+        String url = BuildConfig.PLISTURL;
 
         if (extras != null) {
             if (extras.containsKey(ARG_START_DATE) && extras.containsKey(ARG_END_DATE)) {
                 String startDate = extras.getString(ARG_START_DATE);
                 String endDate = extras.getString(ARG_END_DATE);
-                url = String.format(getContext().getString(R.string.plistArchiv), startDate, endDate);
+                url = String.format(BuildConfig.PLISTARCHIVURL, startDate, endDate);
             }
         }
 
@@ -202,8 +204,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 RequestFuture<String> future = RequestFuture.newFuture();
                 StringRequest request = new StringRequest(Request.Method.GET, url, future, future);
                 request.setShouldCache(false);
-                RequestManager.getInstance()
-                              .doRequest()
+                RequestManager.getInstance(getContext())
                               .add(request);
                 //                Volley.newRequestQueue(getContext())
                 //                      .add(request);
@@ -239,7 +240,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
                 if (Strings.isNullOrEmpty(importedPaper.getImage())) {
                     try {
-                        String importedPaperPlistUrl = Uri.parse(getContext().getString(R.string.plist))
+                        String importedPaperPlistUrl = Uri.parse(BuildConfig.PLISTURL)
                                                           .buildUpon()
                                                           .appendQueryParameter("start", importedPaper.getDate())
                                                           .appendQueryParameter("end", importedPaper.getDate())
@@ -250,8 +251,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                         request.setShouldCache(false);
                         //                        Volley.newRequestQueue(getContext())
                         //                              .add(request);
-                        RequestManager.getInstance()
-                                      .doRequest()
+                        RequestManager.getInstance(getContext())
                                       .add(request);
                         String imageResponse = future.get(30, TimeUnit.SECONDS);
                         NSDictionary root = (NSDictionary) PropertyListParser.parse(new ByteArrayInputStream(imageResponse.getBytes("UTF-8")));
@@ -288,9 +288,11 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                     if (!tomorrowPaper.isDownloaded()) {
                         boolean connectionCheck = false;
                         if (TazSettings.getPrefBoolean(getContext(), TazSettings.PREFKEY.AUTOLOAD_WIFI, true)) {
-                            if (Connection.getConnectionType(getContext()) >= Connection.CONNECTION_FAST) connectionCheck = true;
+                            if (Connection.getConnectionType(getContext()) >= Connection.CONNECTION_FAST)
+                                connectionCheck = true;
                         } else {
-                            if (Connection.getConnectionType(getContext()) >= Connection.CONNECTION_MOBILE_ROAMING) connectionCheck = true;
+                            if (Connection.getConnectionType(getContext()) >= Connection.CONNECTION_MOBILE_ROAMING)
+                                connectionCheck = true;
                         }
                         if (connectionCheck) {
 
@@ -335,9 +337,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     private void downloadImage(Paper paper) throws InterruptedException, ExecutionException, TimeoutException, IOException {
         //Download Image
         RequestFuture<Bitmap> imageFuture = RequestFuture.newFuture();
-        ImageRequest imageRequest = new ImageRequest(paper.getImage(), imageFuture, 0, 0, null, imageFuture);
-        RequestManager.getInstance()
-                      .doRequest()
+        ImageRequest imageRequest = new ImageRequest(paper.getImage(), imageFuture, 0, 0, ImageView.ScaleType.CENTER_INSIDE, null, imageFuture);
+        RequestManager.getInstance(getContext())
                       .add(imageRequest);
         //        VolleySingleton.getInstance(getContext())
         //                       .addToRequestQueue(imageRequest);

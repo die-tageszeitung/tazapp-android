@@ -5,16 +5,18 @@
         <item name="colorPrimary">@color/color_primary</item>
         <item name="colorPrimaryDark">@color/color_primary_dark</item>
         <item name="colorAccent">@color/color_accent</item>
-        <item name="android:windowBackground">?attr/colorPrimary</item>
+        <item name="android:windowBackground">@drawable/splashbackground</item>
         <item name="windowActionModeOverlay">true</item>
     </style>
 
     <style name="AppTheme" parent="BaseTheme">
+
     </style>
 
     <style name="AppTheme.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
+
     </style>
 
     <style name="AppTheme.Toolbar">

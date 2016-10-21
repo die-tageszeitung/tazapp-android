@@ -23,8 +23,8 @@ import java.util.TimeZone;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.reader.ReaderActivity;
 import de.thecode.android.tazreader.service.TazRequestSyncReceiver;
+import de.thecode.android.tazreader.utils.BuildTypeProvider;
 import de.thecode.android.tazreader.utils.Display;
-import de.thecode.android.tazreader.volley.RequestManager;
 import io.fabric.sdk.android.Fabric;
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 
@@ -48,7 +48,7 @@ public class TazReaderApplication extends Application {
         Fabric.with(this, new Crashlytics.Builder().core(core)
                                                    .build());
 
-        RequestManager.init(this);
+        BuildTypeProvider.installStetho(this);
 
         CalligraphyConfig.initDefault(new CalligraphyConfig.Builder().setDefaultFontPath(getString(R.string.fontRegular))
                                                                      .setFontAttrId(R.attr.fontPath)
