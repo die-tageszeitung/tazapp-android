@@ -6,6 +6,8 @@ import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
+import android.os.StatFs;
 
 import com.google.common.base.Strings;
 
@@ -52,7 +54,7 @@ public class DownloadManager {
     }
 
     @SuppressLint("NewApi")
-    public void enquePaper(long paperId) throws IllegalArgumentException, Paper.PaperNotFoundException, CreateAccountException, DownloadNotAllowedException {
+    public void enquePaper(long paperId) throws IllegalArgumentException, Paper.PaperNotFoundException, CreateAccountException, DownloadNotAllowedException, NotEnoughSpaceException {
 
         Paper paper = new Paper(mContext, paperId);
         AccountHelper accountHelper = new AccountHelper(mContext);
@@ -73,11 +75,16 @@ public class DownloadManager {
             request = new Request(Uri.parse(httpUrl));
         }
 
-            if (paper.getPublicationId() > 0) {
-                request.addRequestHeader("Authorization", "Basic " + Base64.encodeToString((accountHelper.getUser() + ":" + accountHelper.getPassword()).getBytes(), Base64.NO_WRAP));
-            }
+        if (paper.getPublicationId() > 0) {
+            request.addRequestHeader("Authorization", "Basic " + Base64.encodeToString((accountHelper.getUser() + ":" + accountHelper.getPassword()).getBytes(), Base64.NO_WRAP));
+        }
 
         File destinationFile = mStorage.getDownloadFile(paper);
+
+
+        if (!hasEnougSpaceForDownload(destinationFile, paper.getLen()))
+            throw new NotEnoughSpaceException();
+
 
         request.setDestinationUri(Uri.fromFile(destinationFile));
 
@@ -104,7 +111,7 @@ public class DownloadManager {
     }
 
     @SuppressLint("NewApi")
-    public void enqueResource(Paper paper) throws IllegalArgumentException {
+    public void enqueResource(Paper paper) throws IllegalArgumentException, NotEnoughSpaceException {
         //Paper paper = new Paper(mContext, paperId);
 
         //Uri downloadUri = Uri.parse(paper.getResourceUrl());
@@ -142,6 +149,9 @@ public class DownloadManager {
 
             File destinationFile = mStorage.getDownloadFile(resource);
 
+            if (!hasEnougSpaceForDownload(destinationFile, paper.getLen()))
+                throw new NotEnoughSpaceException();
+
             request.setDestinationUri(Uri.fromFile(destinationFile));
 
             request.setNotificationVisibility(Request.VISIBILITY_VISIBLE);
@@ -162,15 +172,15 @@ public class DownloadManager {
     public void cancelDownload(long downloadId) {
         DownloadState state = getDownloadState(downloadId);
         if (state != null && state.getStatus() != DownloadState.STATUS_SUCCESSFUL) {
-            if (mDownloadManager.remove(downloadId)>0){
+            if (mDownloadManager.remove(downloadId) > 0) {
                 Cursor cursor = mContext.getContentResolver()
-                                       .query(Paper.CONTENT_URI, null, Paper.Columns.DOWNLOADID + " = " + downloadId, null, null);
+                                        .query(Paper.CONTENT_URI, null, Paper.Columns.DOWNLOADID + " = " + downloadId, null, null);
                 try {
                     while (cursor.moveToNext()) {
                         Paper removedPaper = new Paper(cursor);
                         removedPaper.delete(mContext);
                     }
-                }finally {
+                } finally {
                     cursor.close();
                 }
 
@@ -388,6 +398,21 @@ public class DownloadManager {
         }
     }
 
+
+    private static boolean hasEnougSpaceForDownload(File dir, long bytesNeeded){
+        if (bytesNeeded <= 0) return true;
+        StatFs statFs = new StatFs(dir.getAbsolutePath());
+        long available;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            available = statFs.getAvailableBlocksLong() * statFs.getBlockSizeLong();
+        } else {
+            available = (long) statFs.getAvailableBlocks() * (long) statFs.getBlockSize();
+        }
+        return available >= (bytesNeeded * 10);
+    }
+
+
     public class DownloadNotAllowedException extends Exception {
         public DownloadNotAllowedException() {
         }
@@ -396,5 +421,10 @@ public class DownloadManager {
             super(detailMessage);
         }
     }
+
+    public class NotEnoughSpaceException extends Exception{
+
+    }
+
 
 }

@@ -116,11 +116,12 @@ public class ImportFragment extends BaseFragment implements ImportDataRetainFrag
                 if (shouldShowRequestPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
                     isShowingExplenationDialog = true;
 
-                    new Dialog().withPositiveButton()
-                                .withNegativeButton()
-                                .withStyle(R.style.Dialog)
-                                .withMessage(R.string.dialog_import_permission_explanation)
-                                .showAllowStateLoss(getFragmentManager(), DIALOG_PERMISSION_WRITE);
+                    new Dialog.Builder().setPositiveButton()
+                                        .setNegativeButton()
+                                        .setStyle(R.style.Dialog)
+                                        .setMessage(R.string.dialog_import_permission_explanation)
+                                        .build()
+                                        .showAllowStateLoss(getFragmentManager(), DIALOG_PERMISSION_WRITE);
                 }
             }
         }

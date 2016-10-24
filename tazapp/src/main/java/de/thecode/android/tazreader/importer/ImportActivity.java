@@ -75,10 +75,11 @@ public class ImportActivity extends BaseActivity implements Dialog.DialogButtonL
     }
 
     public void showErrorDialog(String message) {
-        new Dialog().withMessage(message)
-                      .withPositiveButton()
-                      .withCancelable(false)
-                      .show(getSupportFragmentManager(), DIALOG_ERROR_IMPORT);
+        new Dialog.Builder().setMessage(message)
+                            .setPositiveButton()
+                            .setCancelable(false)
+                            .build()
+                            .show(getSupportFragmentManager(), DIALOG_ERROR_IMPORT);
     }
 
 
@@ -110,9 +111,10 @@ public class ImportActivity extends BaseActivity implements Dialog.DialogButtonL
                     if (downloadUris != null) {
                         for (Uri downloadUri : downloadUris) {
                             try {
-                                DownloadManager.getInstance(this).enquePaper(ContentUris.parseId(downloadUri));
-                            } catch (Paper.PaperNotFoundException | AccountHelper.CreateAccountException | DownloadManager.DownloadNotAllowedException e) {
-                                log.error("",e);
+                                DownloadManager.getInstance(this)
+                                               .enquePaper(ContentUris.parseId(downloadUri));
+                            } catch (Paper.PaperNotFoundException | AccountHelper.CreateAccountException | DownloadManager.DownloadNotAllowedException | DownloadManager.NotEnoughSpaceException e) {
+                                log.error("", e);
                                 Crashlytics.logException(e);
                             }
                         }
@@ -169,12 +171,13 @@ public class ImportActivity extends BaseActivity implements Dialog.DialogButtonL
             Bundle bundle = new Bundle();
             bundle.putParcelableArray(BUNDLE_KEY_DOWNLOAD_URIS, downloadPaperUris);
             bundle.putParcelableArray(BUNDLE_KEY_RESULT_URIS, importedPaperUris);
-            new Dialog().withBundle(bundle)
-                          .withMessage(getResources().getQuantityString(R.plurals.import_download, downloadPaperUris.length, downloadPaperUris.length))
-                          .withCancelable(false)
-                          .withPositiveButton(R.string.import_download_positive)
-                          .withNegativeButton(R.string.import_download_negative)
-                          .show(getSupportFragmentManager(), DIALOG_DOWNLOAD);
+            new Dialog.Builder().addBundle(bundle)
+                                .setMessage(getResources().getQuantityString(R.plurals.import_download, downloadPaperUris.length, downloadPaperUris.length))
+                                .setCancelable(false)
+                                .setPositiveButton(R.string.import_download_positive)
+                                .setNegativeButton(R.string.import_download_negative)
+                                .build()
+                                .show(getSupportFragmentManager(), DIALOG_DOWNLOAD);
         } else {
             finishActivity(importedPaperUris);
         }
@@ -187,14 +190,14 @@ public class ImportActivity extends BaseActivity implements Dialog.DialogButtonL
         } else {
             resultIntent.putExtra(EXTRA_RESULT_URIS, paperUris);
             setResult(RESULT_OK, resultIntent);
-            TazSettings.setPref(this,TazSettings.PREFKEY.FORCESYNC,true);
+            TazSettings.setPref(this, TazSettings.PREFKEY.FORCESYNC, true);
         }
         finish();
     }
 
     @Override
     public void onErrorWhileImport(Uri dataUri, Exception e) {
-        log.debug("{} {}",dataUri, e);
+        log.debug("{} {}", dataUri, e);
         showErrorDialog(String.format(getString(R.string.import_error), dataUri, e.getLocalizedMessage()));
     }
 
@@ -206,11 +209,12 @@ public class ImportActivity extends BaseActivity implements Dialog.DialogButtonL
         bundle.putSerializable(BUNDLE_KEY_FILE, cacheFile);
         bundle.putParcelable(BUNDLE_KEY_DATAURI, dataUri);
         bundle.putBoolean(BUNDLE_KEY_DELETEFILE, deleteFile);
-        new Dialog().withCancelable(false)
-                      .withPositiveButton()
-                      .withBundle(bundle)
-                      .withNegativeButton()
-                      .withMessage(String.format(getString(R.string.import_already_exists), metadata.getBookId()))
-                      .show(getSupportFragmentManager(), DIALOG_EXISTS_IMPORT);
+        new Dialog.Builder().setCancelable(false)
+                            .setPositiveButton()
+                            .addBundle(bundle)
+                            .setNegativeButton()
+                            .setMessage(String.format(getString(R.string.import_already_exists), metadata.getBookId()))
+                            .build()
+                            .show(getSupportFragmentManager(), DIALOG_EXISTS_IMPORT);
     }
 }

@@ -109,9 +109,10 @@ public class LoginFragment extends BaseFragment {
     }
 
     private void blockUi() {
-        new DialogIndeterminateProgress().withCancelable(false)
-                                           .withMessage(R.string.dialog_check_credentials)
-                                           .show(getFragmentManager(), DIALOG_CHECK_CREDENTIALS);
+        new DialogIndeterminateProgress.Builder().setCancelable(false)
+                                                 .setMessage(R.string.dialog_check_credentials)
+                                                 .build()
+                                                 .show(getFragmentManager(), DIALOG_CHECK_CREDENTIALS);
         editUser.setEnabled(false);
         editPass.setEnabled(false);
     }
@@ -159,20 +160,22 @@ public class LoginFragment extends BaseFragment {
         if (Strings.isNullOrEmpty(editUser.getText()
                                           .toString()) || Strings.isNullOrEmpty(editPass.getText()
                                                                                         .toString())) {
-            new Dialog().withIcon(R.drawable.ic_alerts_and_states_warning)
-                          .withTitle(R.string.dialog_error_title)
-                          .withMessage(R.string.dialog_error_no_credentials)
-                          .withPositiveButton()
-                          .show(getFragmentManager(), DIALOG_ERROR_CREDENTIALS);
+            new Dialog.Builder().setIcon(R.drawable.ic_alerts_and_states_warning)
+                                .setTitle(R.string.dialog_error_title)
+                                .setMessage(R.string.dialog_error_no_credentials)
+                                .setPositiveButton()
+                                .build()
+                                .show(getFragmentManager(), DIALOG_ERROR_CREDENTIALS);
             return;
         }
         if (AccountHelper.ACCOUNT_DEMO_USER.equalsIgnoreCase(editUser.getText()
                                                                      .toString())) {
-            new Dialog().withIcon(R.drawable.ic_alerts_and_states_warning)
-                          .withTitle(R.string.dialog_error_title)
-                          .withMessage(R.string.dialog_error_credentials_not_allowed)
-                          .withPositiveButton()
-                          .show(getFragmentManager(), DIALOG_ERROR_CREDENTIALS);
+            new Dialog.Builder().setIcon(R.drawable.ic_alerts_and_states_warning)
+                                .setTitle(R.string.dialog_error_title)
+                                .setMessage(R.string.dialog_error_credentials_not_allowed)
+                                .setPositiveButton()
+                                .build()
+                                .show(getFragmentManager(), DIALOG_ERROR_CREDENTIALS);
             return;
         }
 
@@ -202,11 +205,12 @@ public class LoginFragment extends BaseFragment {
             @Override
             public void onErrorResponse(VolleyError error, final String string) {
 
-                new Dialog().withIcon(R.drawable.ic_alerts_and_states_warning)
-                              .withTitle(R.string.dialog_error_title)
-                              .withMessage(string)
-                              .withPositiveButton()
-                              .show(getFragmentManager(), DIALOG_ERROR_CREDENTIALS);
+                new Dialog.Builder().setIcon(R.drawable.ic_alerts_and_states_warning)
+                                    .setTitle(R.string.dialog_error_title)
+                                    .setMessage(string)
+                                    .setPositiveButton()
+                                    .build()
+                                    .show(getFragmentManager(), DIALOG_ERROR_CREDENTIALS);
                 unblockUi();
                 setUiForNotLoggedIn();
             }
@@ -226,7 +230,8 @@ public class LoginFragment extends BaseFragment {
             }
         };
 
-        RequestManager.getInstance(getContext()).add(stringRequest);
+        RequestManager.getInstance(getContext())
+                      .add(stringRequest);
 
     }
 

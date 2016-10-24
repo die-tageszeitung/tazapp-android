@@ -12,6 +12,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.util.LruCache;
 
 import org.json.JSONArray;
@@ -181,7 +182,8 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
         //updateUserInDrawer();
 
         //initial Fragment with colored navdrawer
-        if (getSupportFragmentManager().findFragmentById(R.id.content_frame) == null) mDrawerFragment.simulateClick(libraryItem, false);
+        if (getSupportFragmentManager().findFragmentById(R.id.content_frame) == null)
+            mDrawerFragment.simulateClick(libraryItem, false);
 
 
         //        showMigrationDownloadDialog();
@@ -196,13 +198,13 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-        log.debug("intent: {}",intent);
+        log.debug("intent: {}", intent);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        log.debug("requestCode: {}, resultCode: {}, data: {}",requestCode, resultCode, data);
+        log.debug("requestCode: {}, resultCode: {}, data: {}", requestCode, resultCode, data);
         if (requestCode == ImportActivity.REQUEST_CODE_IMPORT_ACTIVITY) {
             if (resultCode == RESULT_OK) {
 
@@ -227,9 +229,9 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
                 ft.commit();
                 getRetainData().addToNavBackstack(item);
             } catch (InstantiationException e) {
-                log.error("",e);
+                log.error("", e);
             } catch (IllegalAccessException e) {
-                log.error("",e);
+                log.error("", e);
             }
         }
     }
@@ -339,47 +341,56 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
                 showDownloadManagerErrorDialog();
             } catch (DownloadManager.DownloadNotAllowedException e) {
 
+            } catch (DownloadManager.NotEnoughSpaceException e) {
+
             }
+
             retainDataFragment.downloadQueue.remove(0);
         }
     }
 
 
     private void firstStartDialog() {
-        new Dialog().withMessage(R.string.dialog_first)
-                      .withPositiveButton()
-                      .withNeutralButton(R.string.drawer_account)
-                      .show(getSupportFragmentManager(), DIALOG_FIRST);
+        new Dialog.Builder().setMessage(R.string.dialog_first)
+                            .setPositiveButton()
+                            .setNeutralButton(R.string.drawer_account)
+                            .build()
+                            .show(getSupportFragmentManager(), DIALOG_FIRST);
     }
 
     public void showNoConnectionDialog() {
-        new Dialog().withMessage(R.string.dialog_noconnection)
-                      .withPositiveButton()
-                      .show(getSupportFragmentManager(), DIALOG_NO_CONNECTION);
+        new Dialog.Builder().setMessage(R.string.dialog_noconnection)
+                            .setPositiveButton()
+                            .build()
+                            .show(getSupportFragmentManager(), DIALOG_NO_CONNECTION);
     }
 
     private void showMobileConnectionDialog() {
         if (!retainDataFragment.downloadMobileDialog) {
             retainDataFragment.downloadMobileDialog = true;
-            new Dialog().withMessage(R.string.dialog_mobile_download)
-                          .withPositiveButton(R.string.yes)
-                          .withNegativeButton()
-                          .withNeutralButton(R.string.dialog_wifi)
-                          .show(getSupportFragmentManager(), DIALOG_DOWNLOAD_MOBILE);
+
+            new Dialog.Builder().setMessage(R.string.dialog_mobile_download)
+                                .setPositiveButton(R.string.yes)
+                                .setNegativeButton()
+                                .setNeutralButton(R.string.dialog_wifi)
+                                .build()
+                                .show(getSupportFragmentManager(), DIALOG_DOWNLOAD_MOBILE);
         }
     }
 
     private void showAccountErrorDialog() {
-        new Dialog().withMessage(R.string.dialog_account_error)
-                      .withPositiveButton()
-                      .withCancelable(false)
-                      .show(getSupportFragmentManager(), DIALOG_ACCOUNT_ERROR);
+        new Dialog.Builder().setMessage(R.string.dialog_account_error)
+                            .setPositiveButton()
+                            .setCancelable(false)
+                            .build()
+                            .show(getSupportFragmentManager(), DIALOG_ACCOUNT_ERROR);
     }
 
     private void showDownloadManagerErrorDialog() {
-        new Dialog().withMessage(R.string.dialog_downloadmanager_error)
-                      .withPositiveButton()
-                      .show(getSupportFragmentManager(), DIALOG_DOWNLOADMANAGER_ERROR);
+        new Dialog.Builder().setMessage(R.string.dialog_downloadmanager_error)
+                            .setPositiveButton()
+                            .build()
+                            .show(getSupportFragmentManager(), DIALOG_DOWNLOADMANAGER_ERROR);
     }
 
 
@@ -391,14 +402,15 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
         }
 
 
-        new ArchiveDialog().withEntries(years)
-                           .withTitle(R.string.dialog_archive_year_title)
-                           .withCancelable(true)
-                           .show(getSupportFragmentManager(), DIALOG_ARCHIVE_YEAR);
+        new ArchiveDialog.Builder().setEntries(years)
+                                   .setTitle(R.string.dialog_archive_year_title)
+                                   .setCancelable(true)
+                                   .build()
+                                   .show(getSupportFragmentManager(), DIALOG_ARCHIVE_YEAR);
     }
 
     private void showArchiveMonthPicker(int year) {
-        log.debug("year: {}",year);
+        log.debug("year: {}", year);
         Calendar cal = Calendar.getInstance();
         int currentYear = cal.get(Calendar.YEAR);
         int maxMonth = 11;
@@ -413,25 +425,29 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
         Bundle bundle = new Bundle();
         bundle.putInt(ARGUMENT_ARCHIVE_YEAR, year);
 
-        new ArchiveDialog().withEntries(months)
-                           .withTitle(R.string.dialog_archive_month_title)
-                           .withCancelable(true)
-                           .withBundle(bundle)
-                           .show(getSupportFragmentManager(), DIALOG_ARCHIVE_MONTH);
+        new ArchiveDialog.Builder().setEntries(months)
+                                   .setTitle(R.string.dialog_archive_month_title)
+                                   .setCancelable(true)
+                                   .addBundle(bundle)
+                                   .build()
+                                   .show(getSupportFragmentManager(), DIALOG_ARCHIVE_MONTH);
     }
 
-    private void showDownloadErrorDialog(long paperId, Exception exception) {
+    private void showDownloadErrorDialog(long paperId, String extraMessage, Exception exception) {
         try {
             Paper paper = new Paper(this, paperId);
             StringBuilder message = new StringBuilder(String.format(getString(R.string.dialog_error_download), paper.getTitelWithDate(this)));
+            if (!TextUtils.isEmpty(extraMessage)) message.append("\n\n")
+                                                         .append(extraMessage);
             if (exception != null && BuildConfig.DEBUG) message.append("\n\n")
                                                                .append(exception);
 
-            new Dialog().withMessage(message.toString())
-                          .withPositiveButton()
-                          .show(getSupportFragmentManager(), DIALOG_DOWNLOADMANAGER_ERROR);
+            new Dialog.Builder().setMessage(message.toString())
+                                .setPositiveButton()
+                                .build()
+                                .show(getSupportFragmentManager(), DIALOG_DOWNLOADMANAGER_ERROR);
         } catch (Paper.PaperNotFoundException e) {
-            log.error("",e);
+            log.error("", e);
         }
     }
 
@@ -439,9 +455,10 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
     @Override
     public void toggleWaitDialog(String tag) {
         DialogFragment dialog = (DialogFragment) getSupportFragmentManager().findFragmentByTag(tag);
-        if (dialog == null) new DialogIndeterminateProgress().withCancelable(false)
-                                                               .withMessage("Bitte warten...")
-                                                               .show(getSupportFragmentManager(), tag);
+        if (dialog == null) new DialogIndeterminateProgress.Builder().setCancelable(false)
+                                                                     .setMessage("Bitte warten...")
+                                                                     .build()
+                                                                     .show(getSupportFragmentManager(), tag);
         else dialog.dismiss();
     }
 
@@ -459,7 +476,7 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
             Resource paperResource = new Resource(this, openPaper.getResource());
 
             if (paperResource.isDownloaded()) {
-                log.trace("start reader for paper: {}",openPaper);
+                log.trace("start reader for paper: {}", openPaper);
                 Intent intent = new Intent(this, ReaderActivity.class);
                 intent.putExtra(ReaderActivity.KEY_EXTRA_PAPER_ID, id);
                 startActivity(intent);
@@ -477,7 +494,9 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
                 }
             }
         } catch (Paper.PaperNotFoundException e) {
-            log.error("",e);
+            log.error("", e);
+        } catch (DownloadManager.NotEnoughSpaceException e) {
+
         }
     }
 
@@ -502,7 +521,7 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
     }
 
     public void onEventMainThread(PaperDownloadFinishedEvent event) {
-       log.debug("event: {}",event);
+        log.debug("event: {}", event);
         if (retainDataFragment.useOpenPaperafterDownload) {
             if (event.getPaperId() == retainDataFragment.openPaperIdAfterDownload) {
                 openReader(retainDataFragment.openPaperIdAfterDownload);
@@ -511,7 +530,7 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
     }
 
     public void onEventMainThread(PaperDownloadFailedEvent event) {
-        showDownloadErrorDialog(event.getPaperId(), event.getException());
+        showDownloadErrorDialog(event.getPaperId(), null, event.getException());
         NotificationHelper.cancelDownloadErrorNotification(this, event.getPaperId());
     }
 
@@ -547,7 +566,7 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
                         startDownload(json.getLong(i));
                     }
                 } catch (JSONException | Paper.PaperNotFoundException e) {
-                    log.warn("",e);
+                    log.warn("", e);
 
                 }
 
@@ -567,10 +586,10 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
             }
         } else if (DIALOG_ACCOUNT_ERROR.equals(tag)) {
             finish();
-        } else if (ImportFragment.DIALOG_PERMISSION_WRITE.equals(tag) && which == Dialog.BUTTON_POSITIVE){
+        } else if (ImportFragment.DIALOG_PERMISSION_WRITE.equals(tag) && which == Dialog.BUTTON_POSITIVE) {
             Fragment contentFragment = getSupportFragmentManager().findFragmentById(R.id.content_frame);
-            if (contentFragment!= null && contentFragment instanceof ImportFragment) {
-                ((ImportFragment)contentFragment).startWithPermissionCheck();
+            if (contentFragment != null && contentFragment instanceof ImportFragment) {
+                ((ImportFragment) contentFragment).startWithPermissionCheck();
             } else {
                 onBackPressed();
             }
@@ -583,14 +602,13 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
         if (DIALOG_ARCHIVE_YEAR.equals(tag)) {
             if (getResources().getBoolean(R.bool.archive_monthly)) {
                 showArchiveMonthPicker(((ArchiveDialog.ArchiveEntry) entry).getNumber());
-            }
-            else {
+            } else {
                 int year = ((ArchiveDialog.ArchiveEntry) entry).getNumber();
                 Calendar startCal = Calendar.getInstance();
                 Calendar endCal = Calendar.getInstance();
-                startCal.set(year,Calendar.JANUARY,1);
+                startCal.set(year, Calendar.JANUARY, 1);
                 endCal.set(year, Calendar.DECEMBER, 31);
-                requestSync(startCal,endCal);
+                requestSync(startCal, endCal);
             }
         } else if (DIALOG_ARCHIVE_MONTH.equals(tag)) {
             int year = arguments.getInt(ARGUMENT_ARCHIVE_YEAR);
@@ -603,7 +621,6 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
             requestSync(startCal, endCal);
         }
     }
-
 
 
     @Override
@@ -710,7 +727,7 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
 
                 @Override
                 protected void onPostError(Exception exception) {
-                    log.error("",exception);
+                    log.error("", exception);
 
                     if (hasCallback()) getCallback().toggleWaitDialog(DIALOG_WAIT + "delete");
                 }

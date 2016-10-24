@@ -1,7 +1,6 @@
 package de.thecode.android.tazreader.start;
 
 
-
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -71,8 +70,9 @@ public class ImprintFragment extends BaseFragment {
 
 
     private void showLicences() {
-        new LicencesDialog().withPositiveButton()
-                            .show(getFragmentManager(), DIALOG_LICENCES);
+        new LicencesDialog.Builder().setPositiveButton()
+                                    .build()
+                                    .show(getFragmentManager(), DIALOG_LICENCES);
     }
 
 

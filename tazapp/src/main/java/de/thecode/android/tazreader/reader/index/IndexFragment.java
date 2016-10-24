@@ -143,8 +143,9 @@ public class IndexFragment extends BaseFragment {
                 switch (item.getItemId()) {
                     case R.id.toolbar_settings:
                         // mReaderCallback.showSettingsFragment();
-                        new SettingsDialog().withPositiveButton()
-                                            .show(getFragmentManager(), ReaderActivity.TAG_FRAGMENT_DIALOG_SETTING);
+                        new SettingsDialog.Builder().setPositiveButton()
+                                                    .build()
+                                                    .show(getFragmentManager(), ReaderActivity.TAG_FRAGMENT_DIALOG_SETTING);
                         // new SettingsDialogFragment().show(getFragmentManager(), Reader.TAG_FRAGMENT_DIALOG_SETTING);
                         mReaderCallback.closeDrawers();
                         break;
@@ -361,7 +362,8 @@ public class IndexFragment extends BaseFragment {
             IIndexItem item = positions.get(position);
 
             if (!item.isLink() && item.getKey()
-                                      .equals(mReaderCallback.getCurrentKey())) viewholder.setCurrent(true);
+                                      .equals(mReaderCallback.getCurrentKey()))
+                viewholder.setCurrent(true);
             else viewholder.setCurrent(false);
 
 
@@ -370,13 +372,15 @@ public class IndexFragment extends BaseFragment {
                     ((SourceViewholder) viewholder).title.setText(item.getTitle());
                     if (item.areIndexChildsVisible())
                         ((SourceViewholder) viewholder).image.setImageDrawable(ContextCompat.getDrawable(getActivity(), R.drawable.ic_remove_24dp));
-                    else ((SourceViewholder) viewholder).image.setImageDrawable(ContextCompat.getDrawable(getActivity(), R.drawable.ic_add_24dp));
+                    else
+                        ((SourceViewholder) viewholder).image.setImageDrawable(ContextCompat.getDrawable(getActivity(), R.drawable.ic_add_24dp));
                     break;
                 case CATEGORY:
                     ((CategoryViewholder) viewholder).title.setText(item.getTitle());
                     if (item.areIndexChildsVisible())
                         ((CategoryViewholder) viewholder).image.setImageDrawable(ContextCompat.getDrawable(getActivity(), R.drawable.ic_remove_24dp));
-                    else ((CategoryViewholder) viewholder).image.setImageDrawable(ContextCompat.getDrawable(getActivity(), R.drawable.ic_add_24dp));
+                    else
+                        ((CategoryViewholder) viewholder).image.setImageDrawable(ContextCompat.getDrawable(getActivity(), R.drawable.ic_add_24dp));
                     break;
                 case PAGE:
                     ((PageViewholder) viewholder).title.setText(item.getTitle());
@@ -514,7 +518,8 @@ public class IndexFragment extends BaseFragment {
 
         public void onClick(View v) {
             if (mClickListener != null) {
-                if (v.getId() == R.id.bookmarkClickLayout) mClickListener.onBookmarkClick(getPosition());
+                if (v.getId() == R.id.bookmarkClickLayout)
+                    mClickListener.onBookmarkClick(getPosition());
                 else {
                     mReaderCallback.closeDrawers();
                     super.onClick(v);

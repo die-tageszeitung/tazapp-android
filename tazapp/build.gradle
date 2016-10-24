@@ -275,10 +275,12 @@ dependencies {
     compile 'com.github.jrejaud:ViewPagerIndicator2:0.0.1'
     compile 'org.apache.commons:commons-lang3:3.4'
     compile 'commons-io:commons-io:2.4'
-    compile 'org.slf4j:slf4j-api:1.7.12'
-    compile 'com.github.tony19:logback-android-core:1.1.1-4'
-    compile 'com.github.tony19:logback-android-classic:1.1.1-4'
+    compile 'org.slf4j:slf4j-api:1.7.21'
+    compile 'com.github.tony19:logback-android-core:1.1.1-6'
+    compile('com.github.tony19:logback-android-classic:1.1.1-6') {
+        exclude group: 'com.google.android', module: 'android'
+    }
     compile 'uk.co.chrisjenx:calligraphy:2.1.0'
-    compile 'com.gitlab.matecode:androiddialog:1.0.6'
     compile 'com.yqritc:recyclerview-flexibledivider:1.2.9'
+    compile 'com.gitlab.matecode:androiddialog:1.1.0'
 }
