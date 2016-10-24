@@ -67,8 +67,8 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 //    private boolean ttsActive = false;
 
 
-    private static enum GESTURES {
-        swipeUp, swipeDown, swipeRight, swipeLeft
+    private enum GESTURES {
+        undefined, swipeUp, swipeDown, swipeRight, swipeLeft
     }
 
     IIndexItem mArticle;
@@ -85,7 +85,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
     Handler mUiThreadHandler;
     boolean mIndexUpdated;
-    GESTURES mLastGesture;
+    GESTURES mLastGesture = GESTURES.undefined;
 
     public ArticleFragment() {
         super();
@@ -566,12 +566,12 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
                         case swipeDown:
                             direction = DIRECTIONS.TOP;
                             break;
-                        case swipeRight:
-                            direction = DIRECTIONS.LEFT;
-                            if (!TazSettings.getPrefBoolean(mContext, TazSettings.PREFKEY.ISSCROLL, false)) positionString = "EOF";
+                        case swipeLeft:
+                            direction = DIRECTIONS.RIGHT;
                             break;
                         default:
-                            direction = DIRECTIONS.RIGHT;
+                            if (!TazSettings.getPrefBoolean(mContext, TazSettings.PREFKEY.ISSCROLL, false)) positionString = "EOF";
+                            direction = DIRECTIONS.LEFT;
                             break;
                     }
 

@@ -25,6 +25,7 @@ import java.util.Map;
 
 import de.mateware.dialog.Dialog;
 import de.mateware.dialog.DialogIndeterminateProgress;
+import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.secure.Base64;
 import de.thecode.android.tazreader.sync.AccountHelper;
@@ -69,7 +70,7 @@ public class LoginFragment extends BaseFragment {
             @Override
             public void onClick(View v) {
                 Intent i = new Intent(Intent.ACTION_VIEW);
-                i.setData(Uri.parse(getString(R.string.abo_url)));
+                i.setData(Uri.parse(BuildConfig.ABOURL));
                 startActivity(i);
             }
         });
@@ -211,7 +212,7 @@ public class LoginFragment extends BaseFragment {
             }
         };
 
-        TazStringRequest stringRequest = new TazStringRequest(Request.Method.GET, getString(R.string.checkLogin), responseListener, errorListener) {
+        TazStringRequest stringRequest = new TazStringRequest(Request.Method.GET, BuildConfig.CHECKLOGINURL, responseListener, errorListener) {
 
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
@@ -225,7 +226,7 @@ public class LoginFragment extends BaseFragment {
             }
         };
 
-        RequestManager.getInstance().doRequest().add(stringRequest);
+        RequestManager.getInstance(getContext()).add(stringRequest);
 
     }
 

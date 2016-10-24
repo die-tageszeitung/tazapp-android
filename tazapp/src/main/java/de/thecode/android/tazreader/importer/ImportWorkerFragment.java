@@ -22,7 +22,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.thecode.android.tazreader.R;
+import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.download.UnzipPaperTask;
 import de.thecode.android.tazreader.utils.AsyncTaskWithExecption;
@@ -274,7 +274,7 @@ public class ImportWorkerFragment extends BaseFragment {
             paper.setDate(metadata.getDate());
         }
         if (!Strings.isNullOrEmpty(metadata.getArchive())) {
-            paper.setLink(Uri.parse(getString(R.string.archiveUrl))
+            paper.setLink(Uri.parse(BuildConfig.ARCHIVEURL)
                              .buildUpon()
                              .appendEncodedPath(metadata.getArchive())
                              .build()
