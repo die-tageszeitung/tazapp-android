@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
+import android.text.TextUtils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -129,13 +130,15 @@ public class NotificationHelper {
         notificationManager.notify(notificationSuccessId, notification);
     }
 
-    public static void showDownloadErrorNotification(Context context, long paperId) {
+    public static void showDownloadErrorNotification(Context context, String extraMessage, long paperId) {
         Paper paper;
         try {
             paper = new Paper(context,paperId);
             NotificationCompat.Builder nBuilder = new NotificationCompat.Builder(context);
 
-            String message = String.format(context.getString(R.string.dialog_error_download),paper.getTitelWithDate(context));
+            StringBuilder message = new StringBuilder(String.format(context.getString(R.string.dialog_error_download),paper.getTitelWithDate(context)));
+
+            if (!TextUtils.isEmpty(extraMessage)) message.append("\n").append(extraMessage);
 
             Intent intent = new Intent(context, StartActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
@@ -143,7 +146,7 @@ public class NotificationHelper {
             PendingIntent contentIntent = PendingIntent.getActivity(context, 0, intent, 0);
 
             nBuilder.setContentTitle(context.getString(R.string.notification_error_download_title))
-                    .setContentText(message)
+                    .setContentText(message.toString())
                     .setStyle(new NotificationCompat.BigTextStyle().bigText(message))
                     .setAutoCancel(true)
                     .setContentIntent(contentIntent)

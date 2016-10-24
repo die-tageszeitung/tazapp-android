@@ -31,6 +31,7 @@
     <string name="dialog_account_error">Leider ist ein Fehler im Account-Management aufgetreten. Sie haben nicht die nötigen Rechte, um einen Account anzulegen.\nWenn Sie einen eingeschränkten Android-Account auf Ihrem Gerät verwenden, so muss der Hauptuser ebenfalls die App installiert haben.</string>
     <string name="dialog_downloadmanager_error">Leider ist ein Fehler beim Download aufgetreten. Sie haben wahrscheinlich den DownloadManager deaktiviert. Bitte aktivieren Sie den DownloadManager\n\n1. Android-Einstellungen\n2. Apps (ALLE)\n3. Download Manager\n4. Aktivieren</string>
     <string name="dialog_error_download">Beim Download \"%1$s\" ist ein Fehler aufgetreten.</string>
+    <string name="message_not_enough_space">Nicht genügend Speicherplatz vorhanden.</string>
     <string name="notification_message_install_finished">Download fertig!</string>
     <string name="notification_content_text_summary">%1$d Ausgaben heruntergeladen</string>
     <string name="notification_error_download_title">Fehler</string>

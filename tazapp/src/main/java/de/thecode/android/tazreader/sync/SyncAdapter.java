@@ -49,6 +49,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import de.greenrobot.event.EventBus;
 import de.thecode.android.tazreader.BuildConfig;
+import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.TazReaderApplication;
 import de.thecode.android.tazreader.data.FileCacheCoverHelper;
 import de.thecode.android.tazreader.data.Paper;
@@ -56,6 +57,7 @@ import de.thecode.android.tazreader.data.Publication;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.download.CoverDownloadedEvent;
 import de.thecode.android.tazreader.download.DownloadManager;
+import de.thecode.android.tazreader.download.NotificationHelper;
 import de.thecode.android.tazreader.reader.ReaderActivity;
 import de.thecode.android.tazreader.start.ScrollToPaperEvent;
 import de.thecode.android.tazreader.utils.Connection;
@@ -304,6 +306,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                                                    .enquePaper(tomorrowPaper.getId());
                                     autoloadSuccess = true;
                                 } catch (IllegalArgumentException | DownloadManager.DownloadNotAllowedException | Paper.PaperNotFoundException | AccountHelper.CreateAccountException ignored) {
+                                } catch (DownloadManager.NotEnoughSpaceException e) {
+                                    NotificationHelper.showDownloadErrorNotification(getContext(), getContext().getString(R.string.message_not_enough_space), tomorrowPaper.getId());
                                 }
                             }
 
