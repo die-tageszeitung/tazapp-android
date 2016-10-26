@@ -82,7 +82,7 @@ public class DownloadManager {
         File destinationFile = mStorage.getDownloadFile(paper);
 
 
-        assertEnougSpaceForDownload(destinationFile.getParentFile(), paper.getLen());
+        assertEnougSpaceForDownload(destinationFile.getParentFile(), calculateBytesNeeded(paper.getLen()));
 
 
 
@@ -149,7 +149,7 @@ public class DownloadManager {
 
             File destinationFile = mStorage.getDownloadFile(resource);
 
-            assertEnougSpaceForDownload(destinationFile.getParentFile(), paper.getLen());
+            assertEnougSpaceForDownload(destinationFile.getParentFile(), calculateBytesNeeded(resource.getLen()));
 
             request.setDestinationUri(Uri.fromFile(destinationFile));
 
@@ -397,6 +397,15 @@ public class DownloadManager {
         }
     }
 
+    private static long calculateBytesNeeded(long bytesOfDownload) {
+        long oneHundred = 100 * 1024 * 1024;
+        long threeDownloads = bytesOfDownload * 3;
+        long fiveDownloads = bytesOfDownload * 5;
+        if (threeDownloads > oneHundred) {
+            return threeDownloads;
+        }
+        else return Math.min(oneHundred,fiveDownloads);
+    }
 
     private static void assertEnougSpaceForDownload(File dir, long bytesNeeded) throws NotEnoughSpaceException {
         if (bytesNeeded <= 0) return;
