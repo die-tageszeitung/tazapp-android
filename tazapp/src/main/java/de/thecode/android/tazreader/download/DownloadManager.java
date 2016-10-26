@@ -82,7 +82,7 @@ public class DownloadManager {
         File destinationFile = mStorage.getDownloadFile(paper);
 
 
-        assertEnougSpaceForDownload(destinationFile, paper.getLen());
+        assertEnougSpaceForDownload(destinationFile.getParentFile(), paper.getLen());
 
 
 
@@ -149,7 +149,7 @@ public class DownloadManager {
 
             File destinationFile = mStorage.getDownloadFile(resource);
 
-            assertEnougSpaceForDownload(destinationFile, paper.getLen());
+            assertEnougSpaceForDownload(destinationFile.getParentFile(), paper.getLen());
 
             request.setDestinationUri(Uri.fromFile(destinationFile));
 

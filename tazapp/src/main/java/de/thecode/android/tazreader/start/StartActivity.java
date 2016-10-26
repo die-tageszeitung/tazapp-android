@@ -308,8 +308,11 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
                     break;
                 case Connection.CONNECTION_MOBILE:
                 case Connection.CONNECTION_MOBILE_ROAMING:
-                    showMobileConnectionDialog();
                     addToDownloadQueue(paperId);
+                    if (retainDataFragment.allowMobileDownload)
+                        startDownloadQueue();
+                    else
+                        showMobileConnectionDialog();
                     break;
                 default:
                     addToDownloadQueue(paperId);
@@ -343,12 +346,12 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
                 } catch (IllegalArgumentException | AccountHelper.CreateAccountException e) {
                     showDownloadManagerErrorDialog();
                 } catch (DownloadManager.DownloadNotAllowedException e) {
-                    showDownloadErrorDialog(paper.getTitelWithDate(this),getString(R.string.message_download_not_allowed),e);
+                    showDownloadErrorDialog(paper.getTitelWithDate(this), getString(R.string.message_download_not_allowed), e);
                 } catch (DownloadManager.NotEnoughSpaceException e) {
-                    showDownloadErrorDialog(paper.getTitelWithDate(this),getString(R.string.message_not_enough_space),e);
+                    showDownloadErrorDialog(paper.getTitelWithDate(this), getString(R.string.message_not_enough_space), e);
                 }
             } catch (Paper.PaperNotFoundException e) {
-                showDownloadErrorDialog(String.valueOf(paperId),getString(R.string.message_paper_not_found),e);
+                showDownloadErrorDialog(String.valueOf(paperId), getString(R.string.message_paper_not_found), e);
             }
 
 
@@ -373,16 +376,13 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
     }
 
     private void showMobileConnectionDialog() {
-        if (!retainDataFragment.downloadMobileDialog) {
-            retainDataFragment.downloadMobileDialog = true;
 
-            new Dialog.Builder().setMessage(R.string.dialog_mobile_download)
-                                .setPositiveButton(R.string.yes)
-                                .setNegativeButton()
-                                .setNeutralButton(R.string.dialog_wifi)
-                                .build()
-                                .show(getSupportFragmentManager(), DIALOG_DOWNLOAD_MOBILE);
-        }
+        new Dialog.Builder().setMessage(R.string.dialog_mobile_download)
+                            .setPositiveButton(R.string.yes)
+                            .setNegativeButton()
+                            .setNeutralButton(R.string.dialog_wifi)
+                            .build()
+                            .show(getSupportFragmentManager(), DIALOG_DOWNLOAD_MOBILE);
     }
 
     private void showAccountErrorDialog() {
@@ -440,16 +440,16 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
     }
 
     private void showDownloadErrorDialog(String downloadTitle, String extraMessage, Exception exception) {
-            StringBuilder message = new StringBuilder(String.format(getString(R.string.dialog_error_download), downloadTitle));
-            if (!TextUtils.isEmpty(extraMessage)) message.append("\n\n")
-                                                         .append(extraMessage);
-            if (exception != null && BuildConfig.DEBUG) message.append("\n\n")
-                                                               .append(exception);
+        StringBuilder message = new StringBuilder(String.format(getString(R.string.dialog_error_download), downloadTitle));
+        if (!TextUtils.isEmpty(extraMessage)) message.append("\n\n")
+                                                     .append(extraMessage);
+        if (exception != null && BuildConfig.DEBUG) message.append("\n\n")
+                                                           .append(exception);
 
-            new Dialog.Builder().setMessage(message.toString())
-                                .setPositiveButton()
-                                .build()
-                                .show(getSupportFragmentManager(), DIALOG_DOWNLOADMANAGER_ERROR);
+        new Dialog.Builder().setMessage(message.toString())
+                            .setPositiveButton()
+                            .build()
+                            .show(getSupportFragmentManager(), DIALOG_DOWNLOADMANAGER_ERROR);
     }
 
 
@@ -494,7 +494,7 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
                                            .enqueResource(openPaper);
                             retainDataFragment.openPaperWaitingForRessource = id;
                         } catch (DownloadManager.NotEnoughSpaceException e) {
-                            showDownloadErrorDialog(getString(R.string.message_resourcedownload_error),getString(R.string.message_not_enough_space),e);
+                            showDownloadErrorDialog(getString(R.string.message_resourcedownload_error), getString(R.string.message_not_enough_space), e);
                         }
 
                 }
@@ -535,7 +535,7 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
 
     public void onEventMainThread(PaperDownloadFailedEvent event) {
         try {
-            Paper paper = new Paper(this,event.getPaperId());
+            Paper paper = new Paper(this, event.getPaperId());
             showDownloadErrorDialog(paper.getTitelWithDate(this), null, event.getException());
             NotificationHelper.cancelDownloadErrorNotification(this, event.getPaperId());
         } catch (Paper.PaperNotFoundException e) {
@@ -583,6 +583,7 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
         } else if (DIALOG_DOWNLOAD_MOBILE.equals(tag)) {
             switch (which) {
                 case Dialog.BUTTON_POSITIVE:
+                    retainDataFragment.allowMobileDownload = true;
                     startDownloadQueue();
                     break;
                 case Dialog.BUTTON_NEGATIVE:
@@ -635,7 +636,7 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
     @Override
     public void onDialogDismiss(String tag, Bundle arguments) {
         if (DIALOG_DOWNLOAD_MOBILE.equals(tag)) {
-            retainDataFragment.downloadMobileDialog = false;
+            retainDataFragment.downloadQueue.clear();
         }
     }
 
@@ -654,7 +655,7 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
         public List<Long> selectedInLibrary = new ArrayList<>();
         boolean actionMode;
         List<Long> downloadQueue = new ArrayList<>();
-        boolean downloadMobileDialog = false;
+        boolean allowMobileDownload = false;
         private long openPaperIdAfterDownload = -1;
         private long openPaperWaitingForRessource = -1;
         private boolean useOpenPaperafterDownload = true;
