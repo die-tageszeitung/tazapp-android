@@ -68,6 +68,7 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
     private static final String DIALOG_DOWNLOAD_MOBILE = "dialogDownloadMobile";
     private static final String DIALOG_ACCOUNT_ERROR = "dialogAccountError";
     private static final String DIALOG_DOWNLOADMANAGER_ERROR = "dialogDownloadManagerError";
+    private static final String DIALOG_DOWNLOAD_ERROR = "dialogDownloadManagerError";
     private static final String DIALOG_ARCHIVE_YEAR = "dialogArchiveYear";
     private static final String DIALOG_ARCHIVE_MONTH = "dialogArchiveMonth";
     private static final String DIALOG_WAIT = "dialogWait";
@@ -335,15 +336,21 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
         while (retainDataFragment.downloadQueue.size() > 0) {
             long paperId = retainDataFragment.downloadQueue.get(0);
             try {
-                DownloadManager.getInstance(this)
-                               .enquePaper(paperId);
-            } catch (IllegalArgumentException | Paper.PaperNotFoundException | AccountHelper.CreateAccountException e) {
-                showDownloadManagerErrorDialog();
-            } catch (DownloadManager.DownloadNotAllowedException e) {
-
-            } catch (DownloadManager.NotEnoughSpaceException e) {
-
+                Paper paper = new Paper(this, paperId);
+                try {
+                    DownloadManager.getInstance(this)
+                                   .enquePaper(paperId);
+                } catch (IllegalArgumentException | AccountHelper.CreateAccountException e) {
+                    showDownloadManagerErrorDialog();
+                } catch (DownloadManager.DownloadNotAllowedException e) {
+                    showDownloadErrorDialog(paper.getTitelWithDate(this),getString(R.string.message_download_not_allowed),e);
+                } catch (DownloadManager.NotEnoughSpaceException e) {
+                    showDownloadErrorDialog(paper.getTitelWithDate(this),getString(R.string.message_not_enough_space),e);
+                }
+            } catch (Paper.PaperNotFoundException e) {
+                showDownloadErrorDialog(String.valueOf(paperId),getString(R.string.message_paper_not_found),e);
             }
+
 
             retainDataFragment.downloadQueue.remove(0);
         }
@@ -393,7 +400,6 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
                             .show(getSupportFragmentManager(), DIALOG_DOWNLOADMANAGER_ERROR);
     }
 
-
     private void showArchiveYearPicker() {
         Calendar cal = Calendar.getInstance();
         ArrayList<ArchiveDialog.ArchiveEntry> years = new ArrayList<>();
@@ -433,10 +439,8 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
                                    .show(getSupportFragmentManager(), DIALOG_ARCHIVE_MONTH);
     }
 
-    private void showDownloadErrorDialog(long paperId, String extraMessage, Exception exception) {
-        try {
-            Paper paper = new Paper(this, paperId);
-            StringBuilder message = new StringBuilder(String.format(getString(R.string.dialog_error_download), paper.getTitelWithDate(this)));
+    private void showDownloadErrorDialog(String downloadTitle, String extraMessage, Exception exception) {
+            StringBuilder message = new StringBuilder(String.format(getString(R.string.dialog_error_download), downloadTitle));
             if (!TextUtils.isEmpty(extraMessage)) message.append("\n\n")
                                                          .append(extraMessage);
             if (exception != null && BuildConfig.DEBUG) message.append("\n\n")
@@ -446,9 +450,6 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
                                 .setPositiveButton()
                                 .build()
                                 .show(getSupportFragmentManager(), DIALOG_DOWNLOADMANAGER_ERROR);
-        } catch (Paper.PaperNotFoundException e) {
-            log.error("", e);
-        }
     }
 
 
@@ -488,15 +489,18 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
                     default:
                         toggleWaitDialog(DIALOG_WAIT + openPaper.getBookId());
                         //DownloadHelper downloadHelper = new DownloadHelper(this);
-                        DownloadManager.getInstance(this)
-                                       .enqueResource(openPaper);
-                        retainDataFragment.openPaperWaitingForRessource = id;
+                        try {
+                            DownloadManager.getInstance(this)
+                                           .enqueResource(openPaper);
+                            retainDataFragment.openPaperWaitingForRessource = id;
+                        } catch (DownloadManager.NotEnoughSpaceException e) {
+                            showDownloadErrorDialog(getString(R.string.message_resourcedownload_error),getString(R.string.message_not_enough_space),e);
+                        }
+
                 }
             }
         } catch (Paper.PaperNotFoundException e) {
             log.error("", e);
-        } catch (DownloadManager.NotEnoughSpaceException e) {
-
         }
     }
 
@@ -530,8 +534,13 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
     }
 
     public void onEventMainThread(PaperDownloadFailedEvent event) {
-        showDownloadErrorDialog(event.getPaperId(), null, event.getException());
-        NotificationHelper.cancelDownloadErrorNotification(this, event.getPaperId());
+        try {
+            Paper paper = new Paper(this,event.getPaperId());
+            showDownloadErrorDialog(paper.getTitelWithDate(this), null, event.getException());
+            NotificationHelper.cancelDownloadErrorNotification(this, event.getPaperId());
+        } catch (Paper.PaperNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     public void onEventMainThread(ResourceDownloadEvent event) {

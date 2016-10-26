@@ -82,8 +82,8 @@ public class DownloadManager {
         File destinationFile = mStorage.getDownloadFile(paper);
 
 
-        if (!hasEnougSpaceForDownload(destinationFile, paper.getLen()))
-            throw new NotEnoughSpaceException();
+        assertEnougSpaceForDownload(destinationFile, paper.getLen());
+
 
 
         request.setDestinationUri(Uri.fromFile(destinationFile));
@@ -149,8 +149,7 @@ public class DownloadManager {
 
             File destinationFile = mStorage.getDownloadFile(resource);
 
-            if (!hasEnougSpaceForDownload(destinationFile, paper.getLen()))
-                throw new NotEnoughSpaceException();
+            assertEnougSpaceForDownload(destinationFile, paper.getLen());
 
             request.setDestinationUri(Uri.fromFile(destinationFile));
 
@@ -399,17 +398,18 @@ public class DownloadManager {
     }
 
 
-    private static boolean hasEnougSpaceForDownload(File dir, long bytesNeeded){
-        if (bytesNeeded <= 0) return true;
+    private static void assertEnougSpaceForDownload(File dir, long bytesNeeded) throws NotEnoughSpaceException {
+        if (bytesNeeded <= 0) return;
         StatFs statFs = new StatFs(dir.getAbsolutePath());
         long available;
-
+        long requested = bytesNeeded * 10;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
             available = statFs.getAvailableBlocksLong() * statFs.getBlockSizeLong();
         } else {
             available = (long) statFs.getAvailableBlocks() * (long) statFs.getBlockSize();
         }
-        return available >= (bytesNeeded * 10);
+        if (available < requested) throw new NotEnoughSpaceException(requested,available);
+        return ;
     }
 
 
@@ -422,8 +422,22 @@ public class DownloadManager {
         }
     }
 
-    public class NotEnoughSpaceException extends Exception{
+    public static class NotEnoughSpaceException extends Exception{
+        final long requestedByte;
+        final long availableByte;
+        public NotEnoughSpaceException(long requestedByte, long availableByte) {
+            super();
+            this.requestedByte = requestedByte;
+            this.availableByte = availableByte;
+        }
 
+        public long getRequestedByte() {
+            return requestedByte;
+        }
+
+        public long getAvailableByte() {
+            return availableByte;
+        }
     }
 
 
