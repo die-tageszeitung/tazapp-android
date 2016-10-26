@@ -125,7 +125,7 @@ public class DownloadFinishedPaperService extends IntentService implements Unzip
         } else {
             log.error("",exception);
             Crashlytics.getInstance().core.logException(exception);
-            NotificationHelper.showDownloadErrorNotification(this, paper.getId());
+            NotificationHelper.showDownloadErrorNotification(this, null, paper.getId());
             EventBus.getDefault()
                     .post(new PaperDownloadFailedEvent(paper.getId(), exception));
         }

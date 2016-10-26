@@ -103,7 +103,7 @@ public class DownloadReceiver extends BroadcastReceiver {
                                            .exists()) //noinspection ResultOfMethodCallIgnored
                             externalStorage.getDownloadFile(paper)
                                            .delete();
-                        NotificationHelper.showDownloadErrorNotification(context, paper.getId());
+                        NotificationHelper.showDownloadErrorNotification(context, null, paper.getId());
                         EventBus.getDefault()
                                 .post(new PaperDownloadFailedEvent(paper.getId(), exception));
                     }

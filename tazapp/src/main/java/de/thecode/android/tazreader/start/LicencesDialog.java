@@ -18,4 +18,10 @@ public class LicencesDialog extends DialogCustomView {
         webView.loadUrl("file:///android_asset/licences.html");
         return webView;
     }
+
+    public static class Builder extends AbstractBuilder<Builder, LicencesDialog> {
+        public Builder() {
+            super(LicencesDialog.class);
+        }
+    }
 }

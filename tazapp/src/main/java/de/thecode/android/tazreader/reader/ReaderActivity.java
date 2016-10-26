@@ -127,7 +127,8 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
 
         //mUiThreadHandler = new Handler(Looper.getMainLooper());
 
-        if (!getIntent().hasExtra(KEY_EXTRA_PAPER_ID)) throw new IllegalStateException("Activity Reader has to be called with extra PaperId");
+        if (!getIntent().hasExtra(KEY_EXTRA_PAPER_ID))
+            throw new IllegalStateException("Activity Reader has to be called with extra PaperId");
         else paperId = getIntent().getLongExtra(KEY_EXTRA_PAPER_ID, -1);
         if (paperId == -1) throw new IllegalStateException("paperId must not be " + paperId);
 
@@ -173,7 +174,8 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
         retainTtsFragment = ReaderTtsFragment.createOrRetainFragment(getSupportFragmentManager(), this);
         //retainTtsFragment.initTts(this);
 
-        if (retainTtsFragment.getTtsState() == ReaderTtsFragment.TTS.PLAYING) ttsPreparePlayingInActivty();
+        if (retainTtsFragment.getTtsState() == ReaderTtsFragment.TTS.PLAYING)
+            ttsPreparePlayingInActivty();
         //int currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
         //Toast.makeText(this,"Volume: "+currentVolume,Toast.LENGTH_LONG).show();
     }
@@ -338,7 +340,8 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
                 fragmentTransaction.commitAllowingStateLoss();
                 needInit = true;
             }
-            if (needInit) mContentFragment.init(retainDataFragment.getPaper(), indexItem.getKey(), "");
+            if (needInit)
+                mContentFragment.init(retainDataFragment.getPaper(), indexItem.getKey(), "");
             else ((PagesFragment) mContentFragment).setPage(indexItem.getKey());
         }
     }
@@ -480,7 +483,8 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
         if (mIndexFragment != null) mIndexFragment.onBookmarkChange(item.getKey());
         if (item.getKey()
                 .equals(retainDataFragment.getCurrentKey())) {
-            if (mContentFragment instanceof ArticleFragment) ((ArticleFragment) mContentFragment).initialBookmark();
+            if (mContentFragment instanceof ArticleFragment)
+                ((ArticleFragment) mContentFragment).initialBookmark();
         }
         JSONArray bookmarks = getPaper().getBookmarkJson();
         if (bookmarks.length() > 0) {
@@ -569,9 +573,10 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
         retainDataFragment.setCurrentKey(this, key, position);
         if (mIndexFragment != null) mIndexFragment.updateCurrentPosition(key);
         if (mPageIndexFragment != null) mPageIndexFragment.updateCurrentPosition(key);
-        if (mContentFragment instanceof PagesFragment) ((PagesFragment) mContentFragment).setShareButtonCallback(retainDataFragment.getPaper()
-                                                                                                                                   .getPlist()
-                                                                                                                                   .getIndexItem(key));
+        if (mContentFragment instanceof PagesFragment)
+            ((PagesFragment) mContentFragment).setShareButtonCallback(retainDataFragment.getPaper()
+                                                                                        .getPlist()
+                                                                                        .getIndexItem(key));
         log.debug("{} {}", key, System.currentTimeMillis());
     }
 
@@ -703,10 +708,11 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
                        .append(getString(R.string.dialog_tts_error_lang_not_supported));
                 break;
         }
-        new Dialog().withMessage(message.toString())
-                    .withNeutralButton(R.string.dialog_tts_error_settings)
-                    .withPositiveButton()
-                    .show(getSupportFragmentManager(), TAG_DIALOG_TTS_ERROR);
+        new Dialog.Builder().setMessage(message.toString())
+                            .setNeutralButton(R.string.dialog_tts_error_settings)
+                            .setPositiveButton()
+                            .build()
+                            .show(getSupportFragmentManager(), TAG_DIALOG_TTS_ERROR);
     }
 
 

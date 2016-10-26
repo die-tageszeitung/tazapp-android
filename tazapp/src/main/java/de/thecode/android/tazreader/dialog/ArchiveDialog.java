@@ -121,5 +121,12 @@ public class ArchiveDialog extends DialogAdapterList {
 
     }
 
+    public static class Builder extends DialogAdapterList.AbstractBuilder<Builder,ArchiveDialog>{
+
+        public Builder() {
+            super(ArchiveDialog.class);
+        }
+    }
+
 
 }

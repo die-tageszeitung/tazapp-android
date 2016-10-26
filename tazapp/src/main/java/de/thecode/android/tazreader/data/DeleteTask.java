@@ -40,9 +40,10 @@ public abstract class DeleteTask extends AsyncTaskWithExecption<Long, Void, Void
                         }
                         else
                             DownloadManager.getInstance(context).cancelDownload(deletePaper.getDownloadId());
-                    } else {
-                        deletePaper.delete(context);
+
                     }
+                        deletePaper.delete(context);
+
                 } catch (Paper.PaperNotFoundException e) {
                     log.warn("Cannot delete Paper:",e);
                 }

@@ -194,5 +194,11 @@ public class SettingsDialog extends DialogCustomView {
         }
     }
 
+    public static class Builder extends AbstractBuilder<Builder,SettingsDialog> {
+        public Builder() {
+            super(SettingsDialog.class);
+        }
+    }
+
 
 }

@@ -8,18 +8,18 @@ def versionCodeInt = 52
 def versionNamePrefix = "3.0."
 
 def tazPlist = '"http://dl.taz.de/tpaperIssue.plist"'
-def tazPlistArchiv = '"http://dl.taz.de/tpaperIssue.plist?start=%1$s&amp;end=%2$s"'
+def tazPlistArchiv = '"http://dl.taz.de/tpaperIssue.plist?start=%1$s&end=%2$s"'
 def tazStagingPlist = '"http://dl.taz.de/tpaperIssueTest.plist"'
-def tazStagingPlistArchiv = '"http://dl.taz.de/tpaperIssueTest.plist?start=%1$s&amp;end=%2$s"'
+def tazStagingPlistArchiv = '"http://dl.taz.de/tpaperIssueTest.plist?start=%1$s&end=%2$s"'
 def tazAboUrl = '"https://www.taz.de/zeitung/abo/digitales-abo/apaper"'
 def tazCheckLogin = '"https://dl.taz.de/digiAboCheckLogin"'
 def tazResourceUrl = '"https://dl.taz.de/ressourcen"'
 def tazArchiveUrl = '"https://dl.taz.de/tpaperArchiv"'
 
 def lmdPlist = '"http://dl.monde-diplomatique.de/tpaperIssue.plist"'
-def lmdPlistArchiv = '"http://dl.monde-diplomatique.de/tpaperIssue.plist?start=%1$s&amp;end=%2$s"'
+def lmdPlistArchiv = '"http://dl.monde-diplomatique.de/tpaperIssue.plist?start=%1$s&end=%2$s"'
 def lmdStagingPlist = '"http://dl.monde-diplomatique.de/tpaperIssueTest.plist"'
-def lmdStagingPlistArchiv = '"http://dl.monde-diplomatique.de/tpaperIssueTest.plist?start=%1$s&amp;end=%2$s"'
+def lmdStagingPlistArchiv = '"http://dl.monde-diplomatique.de/tpaperIssueTest.plist?start=%1$s&end=%2$s"'
 def lmdAboUrl = '"https://dl.monde-diplomatique.de/zeitung/abo/digitales-abo/apaper"'
 def lmdCheckLogin = '"https://dl.monde-diplomatique.de/digiAboCheckLogin"'
 def lmdResourceUrl = '"https://dl.monde-diplomatique.de/ressourcen"'
@@ -44,7 +44,9 @@ idea {
 
 buildscript {
     repositories {
-        maven { url 'https://maven.fabric.io/public' }
+        maven {
+            url 'https://maven.fabric.io/public'
+        }
     }
 
     dependencies {
@@ -245,7 +247,7 @@ afterEvaluate {
 }
 
 repositories {
-    maven { url "https://repo.commonsware.com.s3.amazonaws.com" }
+    maven { url "https://s3.amazonaws.com/repo.commonsware.com" }
     maven { url 'https://maven.fabric.io/public' }
 }
 
@@ -275,10 +277,12 @@ dependencies {
     compile 'com.github.jrejaud:ViewPagerIndicator2:0.0.1'
     compile 'org.apache.commons:commons-lang3:3.4'
     compile 'commons-io:commons-io:2.4'
-    compile 'org.slf4j:slf4j-api:1.7.12'
-    compile 'com.github.tony19:logback-android-core:1.1.1-4'
-    compile 'com.github.tony19:logback-android-classic:1.1.1-4'
+    compile 'org.slf4j:slf4j-api:1.7.21'
+    compile 'com.github.tony19:logback-android-core:1.1.1-6'
+    compile('com.github.tony19:logback-android-classic:1.1.1-6') {
+        exclude group: 'com.google.android', module: 'android'
+    }
     compile 'uk.co.chrisjenx:calligraphy:2.1.0'
-    compile 'com.gitlab.matecode:androiddialog:1.0.6'
     compile 'com.yqritc:recyclerview-flexibledivider:1.2.9'
+    compile 'com.gitlab.matecode:androiddialog:1.1.0'
 }
