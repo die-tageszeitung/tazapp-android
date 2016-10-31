@@ -3,6 +3,7 @@ package de.thecode.android.tazreader.dialog;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -20,10 +21,6 @@ import de.mateware.dialog.DialogAdapterList;
  */
 public class ArchiveDialog extends DialogAdapterList {
 
-    @Override
-    public ArrayList<ArchiveEntry> getEntries() {
-        return getArguments().getParcelableArrayList(ARG_ARRAY_PARCABLE_ARCHIVEENTRIES);
-    }
 
     @Override
     public ListAdapter getAdapter() {
@@ -52,8 +49,8 @@ public class ArchiveDialog extends DialogAdapterList {
             public View getView(int position, View convertView, ViewGroup parent) {
                 ViewHolder viewHolder;
                 if (convertView == null) {
-                    convertView = getActivity().getLayoutInflater()
-                                               .inflate(android.R.layout.simple_list_item_1, parent, false);
+                    convertView = LayoutInflater.from(getContext())
+                                                             .inflate(android.R.layout.simple_list_item_1, parent, false);
                     viewHolder = new ViewHolder();
                     viewHolder.text = (TextView) convertView.findViewById(android.R.id.text1);
                     viewHolder.text.setGravity(Gravity.CENTER);
@@ -121,7 +118,7 @@ public class ArchiveDialog extends DialogAdapterList {
 
     }
 
-    public static class Builder extends DialogAdapterList.AbstractBuilder<Builder,ArchiveDialog>{
+    public static class Builder extends DialogAdapterList.AbstractBuilder<ArchiveEntry,Builder,ArchiveDialog>{
 
         public Builder() {
             super(ArchiveDialog.class);

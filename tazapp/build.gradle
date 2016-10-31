@@ -284,5 +284,5 @@ dependencies {
     }
     compile 'uk.co.chrisjenx:calligraphy:2.1.0'
     compile 'com.yqritc:recyclerview-flexibledivider:1.2.9'
-    compile 'com.gitlab.matecode:androiddialog:1.1.0'
+    compile 'com.gitlab.matecode:androiddialog:23baa1e6'
 }

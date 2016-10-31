@@ -37,6 +37,8 @@ import org.slf4j.LoggerFactory;
 import java.util.WeakHashMap;
 
 import de.mateware.dialog.Dialog;
+import de.mateware.dialog.listener.DialogButtonListener;
+import de.mateware.dialog.listener.DialogDismissListener;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Store;
@@ -53,7 +55,7 @@ import de.thecode.android.tazreader.utils.Orientation;
 import de.thecode.android.tazreader.utils.StorageManager;
 
 @SuppressLint("RtlHardcoded")
-public class ReaderActivity extends BaseActivity implements LoaderManager.LoaderCallbacks<PaperLoader.PaperLoaderResult>, IReaderCallback, Dialog.DialogButtonListener, Dialog.DialogDismissListener, ReaderDataFragment.ReaderDataFramentCallback, ReaderTtsFragment.ReaderTtsFragmentCallback {
+public class ReaderActivity extends BaseActivity implements LoaderManager.LoaderCallbacks<PaperLoader.PaperLoaderResult>, IReaderCallback, DialogButtonListener, DialogDismissListener, ReaderDataFragment.ReaderDataFramentCallback, ReaderTtsFragment.ReaderTtsFragmentCallback {
 
     private static final Logger log = LoggerFactory.getLogger(ReaderActivity.class);
     private AudioManager audioManager;
@@ -711,7 +713,7 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
         new Dialog.Builder().setMessage(message.toString())
                             .setNeutralButton(R.string.dialog_tts_error_settings)
                             .setPositiveButton()
-                            .build()
+                            .buildSupport()
                             .show(getSupportFragmentManager(), TAG_DIALOG_TTS_ERROR);
     }
 

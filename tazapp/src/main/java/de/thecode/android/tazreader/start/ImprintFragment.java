@@ -71,7 +71,7 @@ public class ImprintFragment extends BaseFragment {
 
     private void showLicences() {
         new LicencesDialog.Builder().setPositiveButton()
-                                    .build()
+                                    .buildSupport()
                                     .show(getFragmentManager(), DIALOG_LICENCES);
     }
 

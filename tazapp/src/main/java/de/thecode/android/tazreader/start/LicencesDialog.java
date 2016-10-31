@@ -14,7 +14,7 @@ public class LicencesDialog extends DialogCustomView {
 
     @Override
     public View getView(LayoutInflater inflater,ViewGroup parent) {
-        WebView webView = new WebView(getActivity());
+        WebView webView = new WebView(getContext());
         webView.loadUrl("file:///android_asset/licences.html");
         return webView;
     }

@@ -111,7 +111,7 @@ public class LoginFragment extends BaseFragment {
     private void blockUi() {
         new DialogIndeterminateProgress.Builder().setCancelable(false)
                                                  .setMessage(R.string.dialog_check_credentials)
-                                                 .build()
+                                                 .buildSupport()
                                                  .show(getFragmentManager(), DIALOG_CHECK_CREDENTIALS);
         editUser.setEnabled(false);
         editPass.setEnabled(false);
@@ -164,7 +164,7 @@ public class LoginFragment extends BaseFragment {
                                 .setTitle(R.string.dialog_error_title)
                                 .setMessage(R.string.dialog_error_no_credentials)
                                 .setPositiveButton()
-                                .build()
+                                .buildSupport()
                                 .show(getFragmentManager(), DIALOG_ERROR_CREDENTIALS);
             return;
         }
@@ -174,7 +174,7 @@ public class LoginFragment extends BaseFragment {
                                 .setTitle(R.string.dialog_error_title)
                                 .setMessage(R.string.dialog_error_credentials_not_allowed)
                                 .setPositiveButton()
-                                .build()
+                                .buildSupport()
                                 .show(getFragmentManager(), DIALOG_ERROR_CREDENTIALS);
             return;
         }
@@ -209,7 +209,7 @@ public class LoginFragment extends BaseFragment {
                                     .setTitle(R.string.dialog_error_title)
                                     .setMessage(string)
                                     .setPositiveButton()
-                                    .build()
+                                    .buildSupport()
                                     .show(getFragmentManager(), DIALOG_ERROR_CREDENTIALS);
                 unblockUi();
                 setUiForNotLoggedIn();

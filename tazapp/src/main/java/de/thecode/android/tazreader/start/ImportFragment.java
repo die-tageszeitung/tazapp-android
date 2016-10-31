@@ -120,7 +120,7 @@ public class ImportFragment extends BaseFragment implements ImportDataRetainFrag
                                         .setNegativeButton()
                                         .setStyle(R.style.Dialog)
                                         .setMessage(R.string.dialog_import_permission_explanation)
-                                        .build()
+                                        .buildSupport()
                                         .showAllowStateLoss(getFragmentManager(), DIALOG_PERMISSION_WRITE);
                 }
             }

@@ -17,6 +17,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import de.mateware.dialog.Dialog;
+import de.mateware.dialog.listener.DialogButtonListener;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.TazSettings;
@@ -27,7 +28,7 @@ import de.thecode.android.tazreader.utils.BaseActivity;
 /**
  * Created by mate on 16.04.2015.
  */
-public class ImportActivity extends BaseActivity implements Dialog.DialogButtonListener, ImportWorkerFragment.ImportRetainFragmentCallback {
+public class ImportActivity extends BaseActivity implements DialogButtonListener, ImportWorkerFragment.ImportRetainFragmentCallback {
 
     private static final Logger log = LoggerFactory.getLogger(ImportActivity.class);
 
@@ -78,7 +79,7 @@ public class ImportActivity extends BaseActivity implements Dialog.DialogButtonL
         new Dialog.Builder().setMessage(message)
                             .setPositiveButton()
                             .setCancelable(false)
-                            .build()
+                            .buildSupport()
                             .show(getSupportFragmentManager(), DIALOG_ERROR_IMPORT);
     }
 
@@ -176,7 +177,7 @@ public class ImportActivity extends BaseActivity implements Dialog.DialogButtonL
                                 .setCancelable(false)
                                 .setPositiveButton(R.string.import_download_positive)
                                 .setNegativeButton(R.string.import_download_negative)
-                                .build()
+                                .buildSupport()
                                 .show(getSupportFragmentManager(), DIALOG_DOWNLOAD);
         } else {
             finishActivity(importedPaperUris);
@@ -214,7 +215,7 @@ public class ImportActivity extends BaseActivity implements Dialog.DialogButtonL
                             .addBundle(bundle)
                             .setNegativeButton()
                             .setMessage(String.format(getString(R.string.import_already_exists), metadata.getBookId()))
-                            .build()
+                            .buildSupport()
                             .show(getSupportFragmentManager(), DIALOG_EXISTS_IMPORT);
     }
 }

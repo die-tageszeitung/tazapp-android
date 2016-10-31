@@ -30,6 +30,10 @@ import de.greenrobot.event.EventBus;
 import de.mateware.dialog.Dialog;
 import de.mateware.dialog.DialogAdapterList;
 import de.mateware.dialog.DialogIndeterminateProgress;
+import de.mateware.dialog.listener.DialogAdapterListListener;
+import de.mateware.dialog.listener.DialogButtonListener;
+import de.mateware.dialog.listener.DialogCancelListener;
+import de.mateware.dialog.listener.DialogDismissListener;
 import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.DeleteTask;
@@ -56,7 +60,7 @@ import de.thecode.android.tazreader.widget.CustomToolbar;
 /**
  * Created by mate on 27.01.2015.
  */
-public class StartActivity extends BaseActivity implements IStartCallback, Dialog.DialogButtonListener, Dialog.DialogDismissListener, Dialog.DialogCancelListener, DialogAdapterList.DialogAdapterListListener {
+public class StartActivity extends BaseActivity implements IStartCallback, DialogButtonListener, DialogDismissListener, DialogCancelListener, DialogAdapterListListener {
 
     private static final Logger log = LoggerFactory.getLogger(StartActivity.class);
 
@@ -364,14 +368,14 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
         new Dialog.Builder().setMessage(R.string.dialog_first)
                             .setPositiveButton()
                             .setNeutralButton(R.string.drawer_account)
-                            .build()
+                            .buildSupport()
                             .show(getSupportFragmentManager(), DIALOG_FIRST);
     }
 
     public void showNoConnectionDialog() {
         new Dialog.Builder().setMessage(R.string.dialog_noconnection)
                             .setPositiveButton()
-                            .build()
+                            .buildSupport()
                             .show(getSupportFragmentManager(), DIALOG_NO_CONNECTION);
     }
 
@@ -381,7 +385,7 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
                             .setPositiveButton(R.string.yes)
                             .setNegativeButton()
                             .setNeutralButton(R.string.dialog_wifi)
-                            .build()
+                            .buildSupport()
                             .show(getSupportFragmentManager(), DIALOG_DOWNLOAD_MOBILE);
     }
 
@@ -389,14 +393,14 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
         new Dialog.Builder().setMessage(R.string.dialog_account_error)
                             .setPositiveButton()
                             .setCancelable(false)
-                            .build()
+                            .buildSupport()
                             .show(getSupportFragmentManager(), DIALOG_ACCOUNT_ERROR);
     }
 
     private void showDownloadManagerErrorDialog() {
         new Dialog.Builder().setMessage(R.string.dialog_downloadmanager_error)
                             .setPositiveButton()
-                            .build()
+                            .buildSupport()
                             .show(getSupportFragmentManager(), DIALOG_DOWNLOADMANAGER_ERROR);
     }
 
@@ -411,7 +415,7 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
         new ArchiveDialog.Builder().setEntries(years)
                                    .setTitle(R.string.dialog_archive_year_title)
                                    .setCancelable(true)
-                                   .build()
+                                   .buildSupport()
                                    .show(getSupportFragmentManager(), DIALOG_ARCHIVE_YEAR);
     }
 
@@ -435,7 +439,7 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
                                    .setTitle(R.string.dialog_archive_month_title)
                                    .setCancelable(true)
                                    .addBundle(bundle)
-                                   .build()
+                                   .buildSupport()
                                    .show(getSupportFragmentManager(), DIALOG_ARCHIVE_MONTH);
     }
 
@@ -448,7 +452,7 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
 
         new Dialog.Builder().setMessage(message.toString())
                             .setPositiveButton()
-                            .build()
+                            .buildSupport()
                             .show(getSupportFragmentManager(), DIALOG_DOWNLOADMANAGER_ERROR);
     }
 
@@ -458,7 +462,7 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
         DialogFragment dialog = (DialogFragment) getSupportFragmentManager().findFragmentByTag(tag);
         if (dialog == null) new DialogIndeterminateProgress.Builder().setCancelable(false)
                                                                      .setMessage("Bitte warten...")
-                                                                     .build()
+                                                                     .buildSupport()
                                                                      .show(getSupportFragmentManager(), tag);
         else dialog.dismiss();
     }
@@ -605,6 +609,8 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
             }
         }
     }
+
+
 
 
     @Override

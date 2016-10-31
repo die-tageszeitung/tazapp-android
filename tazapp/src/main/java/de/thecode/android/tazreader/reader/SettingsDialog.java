@@ -1,6 +1,5 @@
 package de.thecode.android.tazreader.reader;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.SwitchCompat;
@@ -39,19 +38,19 @@ public class SettingsDialog extends DialogCustomView {
     }
 
     @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        isScroll = TazSettings.getPrefBoolean(activity, TazSettings.PREFKEY.ISSCROLL, false);
-        isFullscreen = TazSettings.getPrefBoolean(activity, TazSettings.PREFKEY.FULLSCREEN, false);
-        mCallback = (IReaderCallback) getActivity();
+    public void onActivityCreated(Bundle saveInstanceState) {
+        isScroll = TazSettings.getPrefBoolean(getContext(), TazSettings.PREFKEY.ISSCROLL, false);
+        isFullscreen = TazSettings.getPrefBoolean(getContext(), TazSettings.PREFKEY.FULLSCREEN, false);
+        mCallback = (IReaderCallback) getContext();
     }
 
-    @Override
-    public void onDestroyView() {
-        if (getDialog() != null && getRetainInstance())
-            getDialog().setDismissMessage(null);
-        super.onDestroyView();
-    }
+
+//    @Override
+//    public void onDestroyView() {
+//        if (getDialog() != null && getRetainInstance())
+//            getDialog().setDismissMessage(null);
+//        super.onDestroyView();
+//    }
 
     @Override
     public View getView(LayoutInflater inflater, ViewGroup parent) {
@@ -92,7 +91,7 @@ public class SettingsDialog extends DialogCustomView {
                 colorThemeButtonText(THEMES.night);
             }
         });
-        colorThemeButtonText(THEMES.valueOf(TazSettings.getPrefString(getActivity(), TazSettings.PREFKEY.THEME, null)));
+        colorThemeButtonText(THEMES.valueOf(TazSettings.getPrefString(getContext(), TazSettings.PREFKEY.THEME, null)));
 
         SwitchCompat switchPaging = (SwitchCompat) view.findViewById(R.id.switchPaging);
         switchPaging.setChecked(!isScroll);
@@ -123,7 +122,7 @@ public class SettingsDialog extends DialogCustomView {
         seekBarColumns = (SeekBar) view.findViewById(R.id.seekBarColumn);
 
         seekBarColumns.setEnabled(!isScroll);
-        seekBarColumns.setProgress((int) (Float.valueOf(TazSettings.getPrefString(getActivity(), TazSettings.PREFKEY.COLSIZE, "0")) * 10));
+        seekBarColumns.setProgress((int) (Float.valueOf(TazSettings.getPrefString(getContext(), TazSettings.PREFKEY.COLSIZE, "0")) * 10));
         seekBarColumns.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
 
             @Override
@@ -146,7 +145,7 @@ public class SettingsDialog extends DialogCustomView {
         });
 
         SeekBar seekBarFontSize = (SeekBar) view.findViewById(R.id.seekBarFontSize);
-        seekBarFontSize.setProgress(Integer.valueOf(TazSettings.getPrefString(getActivity(), TazSettings.PREFKEY.FONTSIZE, "0")));
+        seekBarFontSize.setProgress(Integer.valueOf(TazSettings.getPrefString(getContext(), TazSettings.PREFKEY.FONTSIZE, "0")));
         seekBarFontSize.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
 
             @Override
@@ -178,18 +177,18 @@ public class SettingsDialog extends DialogCustomView {
 
     private void colorThemeButtonText(THEMES theme) {
         if (theme == null) return;
-        btnNight.setTextColor(ContextCompat.getColor(getActivity(),R.color.reader_settings_button_text));
-        btnNormal.setTextColor(ContextCompat.getColor(getActivity(), R.color.reader_settings_button_text));
-        btnSepia.setTextColor(ContextCompat.getColor(getActivity(), R.color.reader_settings_button_text));
+        btnNight.setTextColor(ContextCompat.getColor(getContext(),R.color.reader_settings_button_text));
+        btnNormal.setTextColor(ContextCompat.getColor(getContext(), R.color.reader_settings_button_text));
+        btnSepia.setTextColor(ContextCompat.getColor(getContext(), R.color.reader_settings_button_text));
         switch (theme) {
             case night:
-                btnNight.setTextColor(ContextCompat.getColor(getActivity(), R.color.reader_settings_button_text_activated));
+                btnNight.setTextColor(ContextCompat.getColor(getContext(), R.color.reader_settings_button_text_activated));
                 break;
             case sepia:
-                btnSepia.setTextColor(ContextCompat.getColor(getActivity(), R.color.reader_settings_button_text_activated));
+                btnSepia.setTextColor(ContextCompat.getColor(getContext(), R.color.reader_settings_button_text_activated));
                 break;
             case normal:
-                btnNormal.setTextColor(ContextCompat.getColor(getActivity(), R.color.reader_settings_button_text_activated));
+                btnNormal.setTextColor(ContextCompat.getColor(getContext(), R.color.reader_settings_button_text_activated));
                 break;
         }
     }
