@@ -1,6 +1,5 @@
 package de.thecode.android.tazreader.reader;
 
-import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.SwitchCompat;
 import android.view.LayoutInflater;
@@ -24,36 +23,19 @@ public class SettingsDialog extends DialogCustomView {
 
     private static final Logger log = LoggerFactory.getLogger(SettingsDialog.class);
 
-    IReaderCallback mCallback;
-    boolean isScroll;
-    boolean isFullscreen;
-    SeekBar seekBarColumns;
+    private IReaderCallback mCallback;
+    private SeekBar seekBarColumns;
     private Button btnNormal;
     private Button btnSepia;
     private Button btnNight;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-    }
-
-    @Override
-    public void onActivityCreated(Bundle saveInstanceState) {
-        isScroll = TazSettings.getPrefBoolean(getContext(), TazSettings.PREFKEY.ISSCROLL, false);
-        isFullscreen = TazSettings.getPrefBoolean(getContext(), TazSettings.PREFKEY.FULLSCREEN, false);
-        mCallback = (IReaderCallback) getContext();
-    }
-
-
-//    @Override
-//    public void onDestroyView() {
-//        if (getDialog() != null && getRetainInstance())
-//            getDialog().setDismissMessage(null);
-//        super.onDestroyView();
-//    }
-
-    @Override
     public View getView(LayoutInflater inflater, ViewGroup parent) {
+
+        boolean isScroll = TazSettings.getPrefBoolean(getContext(), TazSettings.PREFKEY.ISSCROLL, false);
+        //boolean isFullscreen = TazSettings.getPrefBoolean(getContext(), TazSettings.PREFKEY.FULLSCREEN, false);
+        mCallback = (IReaderCallback) getContext();
+
         View view = inflater.inflate(R.layout.reader_settings, parent);
 
 
@@ -65,7 +47,7 @@ public class SettingsDialog extends DialogCustomView {
             @Override
             public void onClick(View v) {
                 log.debug("v: {}", v);
-                mCallback.onConfigurationChange(TazSettings.PREFKEY.THEME, THEMES.normal.name());
+                if (mCallback != null) mCallback.onConfigurationChange(TazSettings.PREFKEY.THEME, THEMES.normal.name());
                 colorThemeButtonText(THEMES.normal);
             }
         });
@@ -100,7 +82,7 @@ public class SettingsDialog extends DialogCustomView {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 log.debug("buttonView: {}, isChecked: {}",buttonView, isChecked);
-                mCallback.onConfigurationChange(TazSettings.PREFKEY.ISSCROLL, !isChecked);
+                if (mCallback != null) mCallback.onConfigurationChange(TazSettings.PREFKEY.ISSCROLL, !isChecked);
                 seekBarColumns.setEnabled(isChecked);
             }
         });
@@ -167,14 +149,7 @@ public class SettingsDialog extends DialogCustomView {
 
         return view;
     }
-
-//    @Override
-//    public Dialog onCreateDialog(Bundle savedInstanceState) {
-//        Dialog dialog = super.onCreateDialog(savedInstanceState);
-//        // dialog.getWindow().requestFeature(Window.FEATURE_NO_TITLE);
-//        return dialog;
-//    }
-
+    
     private void colorThemeButtonText(THEMES theme) {
         if (theme == null) return;
         btnNight.setTextColor(ContextCompat.getColor(getContext(),R.color.reader_settings_button_text));
