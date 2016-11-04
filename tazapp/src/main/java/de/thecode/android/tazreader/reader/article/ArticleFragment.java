@@ -267,7 +267,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
     private void onGestureToTazapi(GESTURES gesture, MotionEvent e1) {
         //mOpenGesureResult = true;
-        log.debug("{} {}",mArticle.getKey(), gesture);
+        log.debug("{} {}", mArticle.getKey(), gesture);
         callTazapi("onGesture", "'" + gesture.name() + "'," + e1.getX() + "," + e1.getY());
     }
 
@@ -309,18 +309,18 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
     @Override
     public void onConfigurationChange(String key, String value) {
-        log.debug("{} {}",key, value);
+        log.debug("{} {}", key, value);
         callTazapi("onConfigurationChanged", "'" + key + "','" + value + "'");
     }
 
     @Override
     public void onScrollStarted(ArticleWebView view) {
-        log.debug("{} {}",view.getScrollX(), view.getScrollY());
+        log.debug("{} {}", view.getScrollX(), view.getScrollY());
     }
 
     @Override
     public void onScrollFinished(ArticleWebView view) {
-        log.debug("{} {}",view.getScrollX(), view.getScrollY());
+        log.debug("{} {}", view.getScrollX(), view.getScrollY());
     }
 
 
@@ -361,11 +361,11 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
             ImageView bookmark = (ImageView) mBookmarkClickLayout.findViewById(R.id.bookmark);
             FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) bookmark.getLayoutParams();
             if (mArticle.isBookmarked()) {
-                TintHelper.tintDrawable(bookmark.getDrawable(), ContextCompat.getColor(getActivity(),R.color.index_bookmark_on));
+                TintHelper.tintDrawable(bookmark.getDrawable(), ContextCompat.getColor(getActivity(), R.color.index_bookmark_on));
                 layoutParams.topMargin = mContext.getResources()
                                                  .getDimensionPixelOffset(R.dimen.reader_bookmark_offset_active);
             } else {
-                TintHelper.tintDrawable(bookmark.getDrawable(), ContextCompat.getColor(getActivity(),R.color.index_bookmark_off));
+                TintHelper.tintDrawable(bookmark.getDrawable(), ContextCompat.getColor(getActivity(), R.color.index_bookmark_off));
                 layoutParams.topMargin = mContext.getResources()
                                                  .getDimensionPixelOffset(R.dimen.reader_bookmark_offset_normal);
             }
@@ -389,19 +389,19 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
             switch (consoleMessage.messageLevel()) {
                 case TIP:
-                    log.info("{} {}",mArticle.getKey(), messagBuilder.toString());
+                    log.info("{} {}", mArticle.getKey(), messagBuilder.toString());
                     break;
                 case WARNING:
-                    log.warn("{} {}",mArticle.getKey(), messagBuilder.toString());
+                    log.warn("{} {}", mArticle.getKey(), messagBuilder.toString());
                     break;
                 case DEBUG:
-                    log.debug("{} {}",mArticle.getKey(), messagBuilder.toString());
+                    log.debug("{} {}", mArticle.getKey(), messagBuilder.toString());
                     break;
                 case ERROR:
-                    log.error("{} {}",mArticle.getKey(), messagBuilder.toString());
+                    log.error("{} {}", mArticle.getKey(), messagBuilder.toString());
                     break;
                 case LOG:
-                    log.trace("{} {}",mArticle.getKey(), messagBuilder.toString());
+                    log.trace("{} {}", mArticle.getKey(), messagBuilder.toString());
                     break;
             }
             return true;
@@ -409,7 +409,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
         @Override
         public boolean onJsConfirm(WebView view, String url, String message, final JsResult result) {
-            log.debug("{} {} {}",message, url, result.toString());
+            log.debug("{} {} {}", message, url, result.toString());
 
             return true;
         }
@@ -420,7 +420,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
         @JavascriptInterface
         public void openUrl(final String url) {
-            log.debug("{} {}",mArticle.getKey(), url);
+            log.debug("{} {}", mArticle.getKey(), url);
             if (url.startsWith("http")) {
                 Intent i = new Intent(Intent.ACTION_VIEW);
                 i.setData(Uri.parse(url));
@@ -448,7 +448,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
         @JavascriptInterface
         public String getValue(String path) {
             String result = Store.getValueForKey(mContext, path);
-            log.debug("{} {} {}",mArticle.getKey(), path, result);
+            log.debug("{} {} {}", mArticle.getKey(), path, result);
             return result;
         }
 
@@ -467,27 +467,27 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
                                        .update(Store.getUriForKey(path), store.getContentValues(), null, null);
                 if (affected > 0) result = true;
             }
-            log.debug("{} {} {}",mArticle.getKey(), path, value, result);
+            log.debug("{} {} {}", mArticle.getKey(), path, value, result);
             return result;
         }
 
         @JavascriptInterface
         public String getConfiguration(String name) {
             String result = getConfig(name);
-            log.debug("{} {} {}",mArticle.getKey(), name, result);
+            log.debug("{} {} {}", mArticle.getKey(), name, result);
             return result;
         }
 
         @JavascriptInterface
         public boolean setConfiguration(String name, String value) {
             boolean result = setConfig(name, value);
-            log.debug("{} {} {}",mArticle.getKey(), name, value, result);
+            log.debug("{} {} {}", mArticle.getKey(), name, value, result);
             return result;
         }
 
         @JavascriptInterface
         public void pageReady(String percentSeen, final String position, String numberOfPages) {
-            log.debug("{} {} {}",mArticle.getKey(), percentSeen, position, numberOfPages);
+            log.debug("{} {} {}", mArticle.getKey(), percentSeen, position, numberOfPages);
 
             //fade(1F, 800);
 
@@ -499,8 +499,10 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
                     mProgressBar.setVisibility(View.GONE);
                     if (!mIndexUpdated) {
                         String newposition = position;
-                        if (TazSettings.getPrefBoolean(mContext, TazSettings.PREFKEY.ISSCROLL, false)) newposition = "0";
-                        if (hasCallback()) getCallback().updateIndexes(mArticle.getKey(), newposition);
+                        if (TazSettings.getPrefBoolean(mContext, TazSettings.PREFKEY.ISSCROLL, false))
+                            newposition = "0";
+                        if (hasCallback())
+                            getCallback().updateIndexes(mArticle.getKey(), newposition);
                         mIndexUpdated = true;
                     }
                 }
@@ -509,7 +511,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
         @JavascriptInterface
         public void enableRegionScroll(boolean isOn) {
-            log.debug("{} {}",mArticle.getKey(), isOn);
+            log.debug("{} {}", mArticle.getKey(), isOn);
         }
 
         @JavascriptInterface
@@ -519,7 +521,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
         @JavascriptInterface
         public void nextArticle(final int position) {
-            log.debug("{} {}",mArticle.getKey(), position);
+            log.debug("{} {}", mArticle.getKey(), position);
             //mAnimationLock = true;
             runOnUiThread(new Runnable() {
 
@@ -541,7 +543,8 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
                             break;
                     }
 
-                    if (hasCallback()) getCallback().onLoadNextArticle(direction, String.valueOf(position));
+                    if (hasCallback())
+                        getCallback().onLoadNextArticle(direction, String.valueOf(position));
                 }
             });
 
@@ -549,7 +552,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
         @JavascriptInterface
         public void previousArticle(final int position) {
-            log.debug("{} {}",mArticle.getKey(), position);
+            log.debug("{} {}", mArticle.getKey(), position);
 
             runOnUiThread(new Runnable() {
 
@@ -570,7 +573,8 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
                             direction = DIRECTIONS.RIGHT;
                             break;
                         default:
-                            if (!TazSettings.getPrefBoolean(mContext, TazSettings.PREFKEY.ISSCROLL, false)) positionString = "EOF";
+                            if (!TazSettings.getPrefBoolean(mContext, TazSettings.PREFKEY.ISSCROLL, false))
+                                positionString = "EOF";
                             direction = DIRECTIONS.LEFT;
                             break;
                     }
@@ -610,12 +614,16 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
                        .startsWith("http")) {
                     Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
                     startActivity(browserIntent);
+                    return true;
                 } else {
                     if (hasCallback()) {
                         IIndexItem indexItem = getCallback().getPaper()
                                                             .getPlist()
                                                             .getIndexItem(url);
-                        if (indexItem != null) getCallback().onLoad(url);
+                        if (indexItem != null) {
+                            getCallback().onLoad(url);
+                            return true;
+                        }
                     }
                 }
             }
@@ -625,11 +633,10 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
         @Override
         public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
             log.error("{} errorCode: {}", mArticle.getKey(), errorCode);
-            log.error("{} description: {}",mArticle.getKey(), description);
+            log.error("{} description: {}", mArticle.getKey(), description);
             log.error("{} failingUrl: {}", mArticle.getKey(), failingUrl);
             super.onReceivedError(view, errorCode, description, failingUrl);
         }
-
     }
 
     private static final String TAZAPI_FILE_STRING = "TAZAPI.js";
@@ -677,7 +684,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
     @Override
     public void onTtsStateChanged(ReaderTtsFragment.TTS state) {
-        log.debug("{}",state);
+        log.debug("{}", state);
     }
 
     private CharSequence getTextToSpeech() {
