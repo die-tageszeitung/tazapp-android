@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -76,6 +77,12 @@ public class TazReaderApplication extends Application {
             TazSettings.removePref(this, TazSettings.PREFKEY.FONTSIZE);
             TazSettings.removePref(this, TazSettings.PREFKEY.COLSIZE);
             TazSettings.setPref(this, TazSettings.PREFKEY.PAPERMIGRATEFROM, lastVersionCode);
+        }
+        if (lastVersionCode < 53) {
+            File dir = new File(getFilesDir().getParent() + "/shared_prefs/");
+            String[] children = dir.list();
+            for (int i = 0; i < children.length; i++) {
+            }
         }
 
         // MIGRATION BEENDET, setzten der aktuellen Version
