@@ -16,6 +16,7 @@ import de.thecode.android.tazreader.service.TazRequestSyncReceiver;
 import de.thecode.android.tazreader.utils.BuildTypeProvider;
 import de.thecode.android.tazreader.utils.Display;
 
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +49,7 @@ public class TazReaderApplication extends Application {
     @Override
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
-        AnalyticsWrapper.initialize(base,true);
+        AnalyticsWrapper.initialize(base, true);
     }
 
     @Override
@@ -78,10 +79,13 @@ public class TazReaderApplication extends Application {
             TazSettings.removePref(this, TazSettings.PREFKEY.COLSIZE);
             TazSettings.setPref(this, TazSettings.PREFKEY.PAPERMIGRATEFROM, lastVersionCode);
         }
-        if (lastVersionCode < 53) {
+        if (lastVersionCode < 52) {
+            //Remvoing all dead prefs from crashlytics
             File dir = new File(getFilesDir().getParent() + "/shared_prefs/");
             String[] children = dir.list();
-            for (int i = 0; i < children.length; i++) {
+            for (String aChildren : children) {
+                if (aChildren.startsWith("com.crashlytics") || aChildren.startsWith("Twitter") || aChildren.startsWith(
+                        "io.fabric")) FileUtils.deleteQuietly(new File(dir, aChildren));
             }
         }
 
