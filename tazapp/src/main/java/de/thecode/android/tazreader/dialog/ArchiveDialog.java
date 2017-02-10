@@ -1,7 +1,5 @@
 package de.thecode.android.tazreader.dialog;
 
-import android.os.Parcel;
-import android.os.Parcelable;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,22 +8,17 @@ import android.widget.BaseAdapter;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
-import com.google.common.base.Strings;
+import de.mateware.dialog.DialogAdapterList;
 
 import java.util.ArrayList;
-
-import de.mateware.dialog.DialogAdapterList;
 
 /**
  * Created by mate on 19.03.2015.
  */
-public class ArchiveDialog extends DialogAdapterList {
-
+public class ArchiveDialog extends DialogAdapterList<ArchiveEntry> {
 
     @Override
-    public ListAdapter getAdapter() {
-
-        final ArrayList<ArchiveEntry> entries = getEntries();
+    public ListAdapter getAdapter(final ArrayList<ArchiveEntry> entries) {
         return new BaseAdapter() {
             @Override
             public int getCount() {
@@ -67,56 +60,6 @@ public class ArchiveDialog extends DialogAdapterList {
         };
     }
 
-
-    public static class ArchiveEntry extends DialogAdapterListEntry {
-        int number;
-        String name;
-
-        public ArchiveEntry(int number) {
-            this.number = number;
-        }
-
-        public ArchiveEntry(int number, String name) {
-            this.number = number;
-            this.name = name;
-        }
-
-        public int getNumber() {
-            return number;
-        }
-
-        public String getName() {
-            if (Strings.isNullOrEmpty(name)) return String.valueOf(number);
-            return name;
-        }
-
-        @Override
-        public int describeContents() {
-            return 0;
-        }
-
-        @Override
-        public void writeToParcel(Parcel dest, int flags) {
-            dest.writeInt(this.number);
-            dest.writeString(this.name);
-        }
-
-        private ArchiveEntry(Parcel in) {
-            this.number = in.readInt();
-            this.name = in.readString();
-        }
-
-        public static final Parcelable.Creator<ArchiveEntry> CREATOR = new Parcelable.Creator<ArchiveEntry>() {
-            public ArchiveEntry createFromParcel(Parcel source) {
-                return new ArchiveEntry(source);
-            }
-
-            public ArchiveEntry[] newArray(int size) {
-                return new ArchiveEntry[size];
-            }
-        };
-
-    }
 
     public static class Builder extends DialogAdapterList.AbstractBuilder<ArchiveEntry,Builder,ArchiveDialog>{
 

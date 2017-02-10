@@ -15,17 +15,6 @@ import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.LruCache;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.lang.ref.WeakReference;
-import java.text.DateFormatSymbols;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
-
 import de.greenrobot.event.EventBus;
 import de.mateware.dialog.Dialog;
 import de.mateware.dialog.DialogAdapterList;
@@ -41,6 +30,7 @@ import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Resource;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.dialog.ArchiveDialog;
+import de.thecode.android.tazreader.dialog.ArchiveEntry;
 import de.thecode.android.tazreader.download.DownloadManager;
 import de.thecode.android.tazreader.download.NotificationHelper;
 import de.thecode.android.tazreader.download.PaperDownloadFailedEvent;
@@ -56,6 +46,17 @@ import de.thecode.android.tazreader.utils.BaseFragment;
 import de.thecode.android.tazreader.utils.Connection;
 import de.thecode.android.tazreader.utils.Orientation;
 import de.thecode.android.tazreader.widget.CustomToolbar;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.lang.ref.WeakReference;
+import java.text.DateFormatSymbols;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
 
 /**
  * Created by mate on 27.01.2015.
@@ -406,9 +407,9 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
 
     private void showArchiveYearPicker() {
         Calendar cal = Calendar.getInstance();
-        ArrayList<ArchiveDialog.ArchiveEntry> years = new ArrayList<>();
+        ArrayList<ArchiveEntry> years = new ArrayList<>();
         for (int year = cal.get(Calendar.YEAR); year >= 2011; year--) {
-            years.add(new ArchiveDialog.ArchiveEntry(year));
+            years.add(new ArchiveEntry(year));
         }
 
 
@@ -427,9 +428,9 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
         if (year == currentYear) {
             maxMonth = cal.get(Calendar.MONTH);
         }
-        ArrayList<ArchiveDialog.ArchiveEntry> months = new ArrayList<>();
+        ArrayList<ArchiveEntry> months = new ArrayList<>();
         for (int i = maxMonth; i >= 0; i--) {
-            months.add(new ArchiveDialog.ArchiveEntry(i, new DateFormatSymbols().getMonths()[i]));
+            months.add(new ArchiveEntry(i, new DateFormatSymbols().getMonths()[i]));
         }
 
         Bundle bundle = new Bundle();
@@ -617,9 +618,9 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
     public void onDialogAdapterListClick(String tag, DialogAdapterList.DialogAdapterListEntry entry, Bundle arguments) {
         if (DIALOG_ARCHIVE_YEAR.equals(tag)) {
             if (getResources().getBoolean(R.bool.archive_monthly)) {
-                showArchiveMonthPicker(((ArchiveDialog.ArchiveEntry) entry).getNumber());
+                showArchiveMonthPicker(((ArchiveEntry) entry).getNumber());
             } else {
-                int year = ((ArchiveDialog.ArchiveEntry) entry).getNumber();
+                int year = ((ArchiveEntry) entry).getNumber();
                 Calendar startCal = Calendar.getInstance();
                 Calendar endCal = Calendar.getInstance();
                 startCal.set(year, Calendar.JANUARY, 1);
@@ -628,7 +629,7 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
             }
         } else if (DIALOG_ARCHIVE_MONTH.equals(tag)) {
             int year = arguments.getInt(ARGUMENT_ARCHIVE_YEAR);
-            int month = ((ArchiveDialog.ArchiveEntry) entry).getNumber();
+            int month = ((ArchiveEntry) entry).getNumber();
             Calendar startCal = Calendar.getInstance();
             Calendar endCal = Calendar.getInstance();
             startCal.set(year, month, 1);

@@ -357,11 +357,6 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
 
     @Override
     public void onLoadFinished(Loader<PaperLoader.PaperLoaderResult> loader, final PaperLoader.PaperLoaderResult result) {
-
-        String test = null;
-        test.toString();
-
-
         log.trace("");
         this.runOnUiThread(new Runnable() {
 
