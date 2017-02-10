@@ -7,7 +7,13 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 
-import com.crashlytics.android.Crashlytics;
+import de.greenrobot.event.EventBus;
+import de.thecode.android.tazreader.analytics.AnalyticsWrapper;
+import de.thecode.android.tazreader.data.Paper;
+import de.thecode.android.tazreader.data.Resource;
+import de.thecode.android.tazreader.secure.HashHelper;
+import de.thecode.android.tazreader.start.StartActivity;
+import de.thecode.android.tazreader.utils.StorageManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,13 +21,6 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
-
-import de.greenrobot.event.EventBus;
-import de.thecode.android.tazreader.data.Paper;
-import de.thecode.android.tazreader.data.Resource;
-import de.thecode.android.tazreader.secure.HashHelper;
-import de.thecode.android.tazreader.start.StartActivity;
-import de.thecode.android.tazreader.utils.StorageManager;
 
 public class DownloadReceiver extends BroadcastReceiver {
 
@@ -78,7 +77,7 @@ public class DownloadReceiver extends BroadcastReceiver {
                                 } else log.trace("... checked correct hash of paper download");
                             } catch (NoSuchAlgorithmException e) {
                                 log.warn("",e);
-                                Crashlytics.logException(e);
+                                AnalyticsWrapper.getInstance().logException(e);
                             } catch (IOException e) {
                                 log.error("",e);
                                 failed = true;
@@ -95,7 +94,7 @@ public class DownloadReceiver extends BroadcastReceiver {
                     if (failed) {
                         log.error("Download failed");
                         DownloadException exception = new DownloadException(state.getStatusText() + ": " + state.getReasonText());
-                        Crashlytics.logException(exception);
+                        AnalyticsWrapper.getInstance().logException(exception);
                         paper.setDownloadId(0);
                         context.getContentResolver()
                                .update(ContentUris.withAppendedId(Paper.CONTENT_URI, paper.getId()), paper.getContentValues(), null, null);
@@ -143,7 +142,7 @@ public class DownloadReceiver extends BroadcastReceiver {
                                 } else log.trace("... checked correct hash of resource download");
                             } catch (NoSuchAlgorithmException e) {
                                 log.warn("", e);
-                                Crashlytics.logException(e);
+                                AnalyticsWrapper.getInstance().logException(e);
                             } catch (IOException e) {
                                 log.error("",e);
                                 failed = true;
@@ -160,7 +159,7 @@ public class DownloadReceiver extends BroadcastReceiver {
                     if (failed) {
                         log.error("Download failed");
                         DownloadException exception = new DownloadException(state.getStatusText() + ": " + state.getReasonText());
-                        Crashlytics.logException(exception);
+                        AnalyticsWrapper.getInstance().logException(exception);
                         resource.setDownloadId(0);
                         context.getContentResolver()
                                .update(Uri.withAppendedPath(Resource.CONTENT_URI, resource.getKey()), resource.getContentValues(), null, null);

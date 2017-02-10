@@ -6,8 +6,6 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.SharedPreferences.Editor;
 
-import com.crashlytics.android.Crashlytics;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,6 +13,7 @@ import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 
 import de.thecode.android.tazreader.BuildConfig;
+import de.thecode.android.tazreader.analytics.AnalyticsWrapper;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.provider.TazProvider;
 import de.thecode.android.tazreader.secure.HashHelper;
@@ -69,7 +68,7 @@ public class AccountHelper {
             }
             logUser();
         } else {
-            Crashlytics.getInstance().core.logException(new CreateAccountException("accounts is null"));
+            AnalyticsWrapper.getInstance().logException(new CreateAccountException("accounts is null"));
         }
     }
 
@@ -84,8 +83,8 @@ public class AccountHelper {
 
     private void logUser() {
         try {
-            Crashlytics.getInstance().core.setUserIdentifier(HashHelper.getHash(getUser(), HashHelper.UTF_8, HashHelper.SHA_1));
-            Crashlytics.getInstance().core.setBool("isAuthenticated", isAuthenticated());
+            AnalyticsWrapper.getInstance().logData("User",HashHelper.getHash(getUser(), HashHelper.UTF_8, HashHelper.SHA_1));
+            AnalyticsWrapper.getInstance().logData("isAuthenticated", String.valueOf(isAuthenticated()));
         } catch (UnsupportedEncodingException | NoSuchAlgorithmException ignored) {
         }
     }
@@ -139,11 +138,11 @@ public class AccountHelper {
                 if ("1".equals(mAccountManager.getUserData(mAccount, KEY_AUTH)) && !ACCOUNT_DEMO_USER.equals(getUser())) return true;
             } catch (IllegalArgumentException e) {
                 log.error("", e);
-                Crashlytics.logException(e);
+                AnalyticsWrapper.getInstance().logException(e);
             }
         } else {
             log.trace("{}",mAccountManager);
-            Crashlytics.logException(new IllegalStateException("isAuthenticated called, but mAccount is null"));
+            AnalyticsWrapper.getInstance().logException(new IllegalStateException("isAuthenticated called, but mAccount is null"));
         }
         return false;
     }

@@ -1,5 +1,7 @@
 package de.thecode.android.tazreader.reader;
 
+import com.google.common.base.Strings;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
@@ -27,19 +29,11 @@ import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.crashlytics.android.Crashlytics;
-import com.google.common.base.Strings;
-
-import org.json.JSONArray;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.WeakHashMap;
-
 import de.mateware.dialog.Dialog;
 import de.mateware.dialog.listener.DialogButtonListener;
 import de.mateware.dialog.listener.DialogDismissListener;
 import de.thecode.android.tazreader.R;
+import de.thecode.android.tazreader.analytics.AnalyticsWrapper;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Store;
 import de.thecode.android.tazreader.data.TazSettings;
@@ -53,6 +47,12 @@ import de.thecode.android.tazreader.reader.page.PagesFragment;
 import de.thecode.android.tazreader.utils.BaseActivity;
 import de.thecode.android.tazreader.utils.Orientation;
 import de.thecode.android.tazreader.utils.StorageManager;
+
+import org.json.JSONArray;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.WeakHashMap;
 
 @SuppressLint("RtlHardcoded")
 public class ReaderActivity extends BaseActivity implements LoaderManager.LoaderCallbacks<PaperLoader.PaperLoaderResult>, IReaderCallback, DialogButtonListener, DialogDismissListener, ReaderDataFragment.ReaderDataFramentCallback, ReaderTtsFragment.ReaderTtsFragmentCallback {
@@ -357,6 +357,11 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
 
     @Override
     public void onLoadFinished(Loader<PaperLoader.PaperLoaderResult> loader, final PaperLoader.PaperLoaderResult result) {
+
+        String test = null;
+        test.toString();
+
+
         log.trace("");
         this.runOnUiThread(new Runnable() {
 
@@ -395,7 +400,7 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
                     initializeFragments();
                 } else {
                     log.error("", result.getError());
-                    Crashlytics.logException(result.getError());
+                    AnalyticsWrapper.getInstance().logException(result.getError());
                     ReaderActivity.this.finish();
                 }
             }

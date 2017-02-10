@@ -6,7 +6,15 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
 
-import com.crashlytics.android.Crashlytics;
+import de.mateware.dialog.Dialog;
+import de.mateware.dialog.listener.DialogButtonListener;
+import de.thecode.android.tazreader.R;
+import de.thecode.android.tazreader.analytics.AnalyticsWrapper;
+import de.thecode.android.tazreader.data.Paper;
+import de.thecode.android.tazreader.data.TazSettings;
+import de.thecode.android.tazreader.download.DownloadManager;
+import de.thecode.android.tazreader.sync.AccountHelper;
+import de.thecode.android.tazreader.utils.BaseActivity;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,15 +23,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import de.mateware.dialog.Dialog;
-import de.mateware.dialog.listener.DialogButtonListener;
-import de.thecode.android.tazreader.R;
-import de.thecode.android.tazreader.data.Paper;
-import de.thecode.android.tazreader.data.TazSettings;
-import de.thecode.android.tazreader.download.DownloadManager;
-import de.thecode.android.tazreader.sync.AccountHelper;
-import de.thecode.android.tazreader.utils.BaseActivity;
 
 /**
  * Created by mate on 16.04.2015.
@@ -116,7 +115,7 @@ public class ImportActivity extends BaseActivity implements DialogButtonListener
                                                .enquePaper(ContentUris.parseId(downloadUri));
                             } catch (Paper.PaperNotFoundException | AccountHelper.CreateAccountException | DownloadManager.DownloadNotAllowedException | DownloadManager.NotEnoughSpaceException e) {
                                 log.error("", e);
-                                Crashlytics.logException(e);
+                                AnalyticsWrapper.getInstance().logException(e);
                             }
                         }
                     }

@@ -7,12 +7,6 @@
         </encoder>
     </appender>
 
-    <appender name="Crashlytics" class="de.thecode.android.tazreader.utils.CrashlyticsAppender">
-        <encoder>
-            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
-        </encoder>
-    </appender>
-
     <root level="TRACE">
         <appender-ref ref="Crashlytics" />
     </root>

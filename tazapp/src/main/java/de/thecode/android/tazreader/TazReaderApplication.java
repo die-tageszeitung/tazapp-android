@@ -9,25 +9,30 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.media.RingtoneManager;
 
-import com.crashlytics.android.Crashlytics;
-import com.crashlytics.android.core.CrashlyticsCore;
+import de.thecode.android.tazreader.analytics.AnalyticsWrapper;
+import de.thecode.android.tazreader.data.TazSettings;
+import de.thecode.android.tazreader.reader.ReaderActivity;
+import de.thecode.android.tazreader.service.TazRequestSyncReceiver;
+import de.thecode.android.tazreader.utils.BuildTypeProvider;
+import de.thecode.android.tazreader.utils.Display;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
-import de.thecode.android.tazreader.data.TazSettings;
-import de.thecode.android.tazreader.reader.ReaderActivity;
-import de.thecode.android.tazreader.service.TazRequestSyncReceiver;
-import de.thecode.android.tazreader.utils.BuildTypeProvider;
-import de.thecode.android.tazreader.utils.Display;
-import io.fabric.sdk.android.Fabric;
-import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
-
+//@ReportsCrashes(
+//        httpMethod = HttpSender.Method.PUT,
+//        reportType = HttpSender.Type.JSON,
+//        formUri = BuildConfig.ACRA_FORM_URI,
+//        formUriBasicAuthLogin = BuildConfig.ACRA_FORM_URI_BASIC_AUTH_LOGIN,
+//        formUriBasicAuthPassword = BuildConfig.ACRA_FORM_URI_BASIC_AUTH_PASSWORD
+//)
 public class TazReaderApplication extends Application {
 
     private static final Logger log = LoggerFactory.getLogger(TazReaderApplication.class);
@@ -40,13 +45,16 @@ public class TazReaderApplication extends Application {
     private static PendingIntent autoDownloadSender;
 
     @Override
+    protected void attachBaseContext(Context base) {
+        super.attachBaseContext(base);
+        AnalyticsWrapper.initialize(base,true);
+    }
+
+    @Override
     public void onCreate() {
 
         super.onCreate();
-        CrashlyticsCore core = new CrashlyticsCore.Builder().disabled(BuildConfig.DEBUG)
-                                                            .build();
-        Fabric.with(this, new Crashlytics.Builder().core(core)
-                                                   .build());
+
 
         BuildTypeProvider.installStetho(this);
 
@@ -57,8 +65,9 @@ public class TazReaderApplication extends Application {
         log.info("");
 
         // Migration von alter Version
-        int lastVersionCode = TazSettings.getPrefInt(this, TazSettings.PREFKEY.LASTVERSION, Integer.parseInt(String.valueOf(BuildConfig.VERSION_CODE)
-                                                                                                                   .substring(1)));
+        int lastVersionCode = TazSettings.getPrefInt(this, TazSettings.PREFKEY.LASTVERSION, Integer.parseInt(
+                String.valueOf(BuildConfig.VERSION_CODE)
+                      .substring(1)));
         if (lastVersionCode < 16) {
             if (TazSettings.getPrefString(this, TazSettings.PREFKEY.COLSIZE, "0")
                            .equals("4")) TazSettings.setPref(this, TazSettings.PREFKEY.COLSIZE, "3");
@@ -86,7 +95,8 @@ public class TazReaderApplication extends Application {
         TazSettings.setDefaultPref(this, TazSettings.PREFKEY.ORIENTATION, "auto");
         TazSettings.setDefaultPref(this, TazSettings.PREFKEY.AUTODELETE, false);
         TazSettings.setDefaultPref(this, TazSettings.PREFKEY.AUTODELETE_VALUE, 14);
-        TazSettings.setDefaultPref(this, TazSettings.PREFKEY.RINGTONE, RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
+        TazSettings.setDefaultPref(this, TazSettings.PREFKEY.RINGTONE,
+                                   RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
         TazSettings.setDefaultPref(this, TazSettings.PREFKEY.VIBRATE, true);
         TazSettings.setDefaultPref(this, TazSettings.PREFKEY.ISSOCIAL, false);
         TazSettings.setDefaultPref(this, TazSettings.PREFKEY.PAGEINDEXBUTTON, false);
@@ -142,7 +152,7 @@ public class TazReaderApplication extends Application {
     }
 
     static final int HOUR_OF_DAY = Calendar.HOUR_OF_DAY;
-    static final int MINUTE = Calendar.MINUTE;
+    static final int MINUTE      = Calendar.MINUTE;
     static final int DAY_OF_WEEK = Calendar.DAY_OF_WEEK;
 
     private static long getNextAutodownloadCheckTime(boolean notToday) {

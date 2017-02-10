@@ -1,7 +1,7 @@
-def supportLibVer = "25.0.0"
-def buildToolsVer = "25.0.0"
-def compileSdkVer = 24
-def targetSdkVer = 24
+def supportLibVer = "25.1.1"
+def buildToolsVer = "25.0.1"
+def compileSdkVer = 25
+def targetSdkVer = 25
 def minSdkVer = 15
 
 def versionCodeInt = 52
@@ -42,20 +42,8 @@ idea {
     }
 }
 
-buildscript {
-    repositories {
-        maven {
-            url 'https://maven.fabric.io/public'
-        }
-    }
-
-    dependencies {
-        classpath 'io.fabric.tools:gradle:1.+'
-    }
-}
 apply plugin: 'android-sdk-manager'
 apply plugin: 'com.android.application'
-apply plugin: 'io.fabric'
 apply plugin: 'com.github.gfx.ribbonizer'
 
 def overheadPath
@@ -97,6 +85,9 @@ android {
         targetSdkVersion targetSdkVer
         versionCode versionCodeInt
         versionName versionNamePrefix + versionCode
+//        buildConfigField 'String', 'ACRA_FORM_URI', '""'
+//        buildConfigField 'String', 'ACRA_FORM_URI_BASIC_AUTH_LOGIN', '""'
+//        buildConfigField 'String', 'ACRA_FORM_URI_BASIC_AUTH_PASSWORD', '""'
     }
     packagingOptions {
         exclude 'META-INF/LICENSE.txt'
@@ -107,14 +98,12 @@ android {
     }
     buildTypes {
         debug {
-            ext.enableCrashlytics = false
             debuggable true
             versionNameSuffix "_debug"
             applicationIdSuffix ".debug"
         }
         staging.initWith(buildTypes.debug)
         staging {
-            ext.enableCrashlytics = false
             versionNameSuffix "_staging"
             applicationIdSuffix ".staging"
         }
@@ -265,9 +254,6 @@ dependencies {
     compile 'com.google.guava:guava:18.0'
     compile 'com.commonsware.cwac:provider:0.2.3'
     compile 'de.greenrobot:eventbus:2.4.0'
-    compile('com.crashlytics.sdk.android:crashlytics:2.6.5@aar') {
-        transitive = true;
-    }
 
     debugCompile 'com.facebook.stetho:stetho:1.4.1'
     debugCompile 'com.facebook.stetho:stetho-js-rhino:1.4.1'
@@ -287,4 +273,6 @@ dependencies {
     compile 'uk.co.chrisjenx:calligraphy:2.1.0'
     compile 'com.yqritc:recyclerview-flexibledivider:1.2.9'
     compile 'com.gitlab.matecode:androiddialog:23baa1e6'
+
+    //compile 'ch.acra:acra:4.9.2'
 }

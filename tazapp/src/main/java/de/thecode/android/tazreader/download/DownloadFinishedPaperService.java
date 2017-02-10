@@ -4,8 +4,12 @@ import android.app.IntentService;
 import android.content.ContentUris;
 import android.content.Intent;
 
-import com.crashlytics.android.Crashlytics;
 import com.dd.plist.PropertyListFormatException;
+
+import de.greenrobot.event.EventBus;
+import de.thecode.android.tazreader.analytics.AnalyticsWrapper;
+import de.thecode.android.tazreader.data.Paper;
+import de.thecode.android.tazreader.utils.StorageManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,10 +21,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
-
-import de.greenrobot.event.EventBus;
-import de.thecode.android.tazreader.data.Paper;
-import de.thecode.android.tazreader.utils.StorageManager;
 
 /**
  * Created by mate on 07.08.2015.
@@ -124,7 +124,7 @@ public class DownloadFinishedPaperService extends IntentService implements Unzip
             log.warn("", exception);
         } else {
             log.error("",exception);
-            Crashlytics.getInstance().core.logException(exception);
+            AnalyticsWrapper.getInstance().logException(exception);
             NotificationHelper.showDownloadErrorNotification(this, null, paper.getId());
             EventBus.getDefault()
                     .post(new PaperDownloadFailedEvent(paper.getId(), exception));

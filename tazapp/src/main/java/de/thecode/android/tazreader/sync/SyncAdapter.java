@@ -1,5 +1,7 @@
 package de.thecode.android.tazreader.sync;
 
+import com.google.common.base.Strings;
+
 import android.accounts.Account;
 import android.annotation.SuppressLint;
 import android.content.AbstractThreadedSyncAdapter;
@@ -18,13 +20,29 @@ import com.android.volley.Request;
 import com.android.volley.toolbox.ImageRequest;
 import com.android.volley.toolbox.RequestFuture;
 import com.android.volley.toolbox.StringRequest;
-import com.crashlytics.android.Crashlytics;
 import com.dd.plist.NSArray;
 import com.dd.plist.NSDictionary;
 import com.dd.plist.NSObject;
 import com.dd.plist.PropertyListFormatException;
 import com.dd.plist.PropertyListParser;
-import com.google.common.base.Strings;
+
+import de.greenrobot.event.EventBus;
+import de.thecode.android.tazreader.BuildConfig;
+import de.thecode.android.tazreader.R;
+import de.thecode.android.tazreader.TazReaderApplication;
+import de.thecode.android.tazreader.analytics.AnalyticsWrapper;
+import de.thecode.android.tazreader.data.FileCacheCoverHelper;
+import de.thecode.android.tazreader.data.Paper;
+import de.thecode.android.tazreader.data.Publication;
+import de.thecode.android.tazreader.data.TazSettings;
+import de.thecode.android.tazreader.download.CoverDownloadedEvent;
+import de.thecode.android.tazreader.download.DownloadManager;
+import de.thecode.android.tazreader.download.NotificationHelper;
+import de.thecode.android.tazreader.reader.ReaderActivity;
+import de.thecode.android.tazreader.start.ScrollToPaperEvent;
+import de.thecode.android.tazreader.utils.Connection;
+import de.thecode.android.tazreader.utils.StorageManager;
+import de.thecode.android.tazreader.volley.RequestManager;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -46,23 +64,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import javax.xml.parsers.ParserConfigurationException;
-
-import de.greenrobot.event.EventBus;
-import de.thecode.android.tazreader.BuildConfig;
-import de.thecode.android.tazreader.R;
-import de.thecode.android.tazreader.TazReaderApplication;
-import de.thecode.android.tazreader.data.FileCacheCoverHelper;
-import de.thecode.android.tazreader.data.Paper;
-import de.thecode.android.tazreader.data.Publication;
-import de.thecode.android.tazreader.data.TazSettings;
-import de.thecode.android.tazreader.download.CoverDownloadedEvent;
-import de.thecode.android.tazreader.download.DownloadManager;
-import de.thecode.android.tazreader.download.NotificationHelper;
-import de.thecode.android.tazreader.reader.ReaderActivity;
-import de.thecode.android.tazreader.start.ScrollToPaperEvent;
-import de.thecode.android.tazreader.utils.Connection;
-import de.thecode.android.tazreader.utils.StorageManager;
-import de.thecode.android.tazreader.volley.RequestManager;
 
 /**
  * The type Sync adapter.
@@ -129,7 +130,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult) {
-        //Crashlytics.start(mContext);
+
         log.debug("account: {}, extras: {}, authority: {}, provider: {}, syncResult: {}", account, extras, authority, provider, syncResult);
         EventBus.getDefault()
                 .postSticky(new SyncStateChangedEvent(true));
@@ -229,8 +230,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         }
 
         if (!pListSuccess) {
-            Crashlytics.getInstance().core.setString("SyncResponse", response);
-            Crashlytics.getInstance().core.logException(syncExeption);
+            AnalyticsWrapper.getInstance().logData("SyncResponse",response);
+            AnalyticsWrapper.getInstance().logException(syncExeption);
         }
 
         // Missing cover images for imported

@@ -1,12 +1,17 @@
 package de.thecode.android.tazreader.download;
 
+import com.google.common.base.Strings;
+
 import android.app.IntentService;
 import android.content.Intent;
 import android.net.Uri;
 
-import com.crashlytics.android.Crashlytics;
 import com.dd.plist.PropertyListFormatException;
-import com.google.common.base.Strings;
+
+import de.greenrobot.event.EventBus;
+import de.thecode.android.tazreader.analytics.AnalyticsWrapper;
+import de.thecode.android.tazreader.data.Resource;
+import de.thecode.android.tazreader.utils.StorageManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,10 +21,6 @@ import java.io.IOException;
 import java.text.ParseException;
 
 import javax.xml.parsers.ParserConfigurationException;
-
-import de.greenrobot.event.EventBus;
-import de.thecode.android.tazreader.data.Resource;
-import de.thecode.android.tazreader.utils.StorageManager;
 
 /**
  * Created by mate on 07.08.2015.
@@ -68,7 +69,7 @@ public class DownloadFinishedResourceService extends IntentService {
         } else {
             getContentResolver().delete(Uri.withAppendedPath(Resource.CONTENT_URI, resource.getKey()), null, null);
             log.error("", e);
-            Crashlytics.getInstance().core.logException(e);
+            AnalyticsWrapper.getInstance().logException(e);
             EventBus.getDefault()
                     .post(new ResourceDownloadEvent(resource.getKey(), e));
         }
