@@ -54,8 +54,8 @@ public class AccountHelper {
                                .contains("credentialsWorking")) {
                     setAuth = true;
                     log.debug("Migration vorhandener Credentials");
-                    user = TazSettings.getDecryptedPrefString(context, "user", AccountHelper.ACCOUNT_DEMO_USER);
-                    pass = TazSettings.getDecryptedPrefString(context, "pass", AccountHelper.ACCOUNT_DEMO_PASS);
+                    user = TazSettings.getOldDecryptedPrefString(context, "user", AccountHelper.ACCOUNT_DEMO_USER);
+                    pass = TazSettings.getOldDecryptedPrefString(context, "pass", AccountHelper.ACCOUNT_DEMO_PASS);
                     Editor edit = TazSettings.getSharedPreferences(context)
                                              .edit();
                     edit.remove("user");

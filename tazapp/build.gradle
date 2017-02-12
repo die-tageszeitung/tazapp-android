@@ -274,5 +274,6 @@ dependencies {
     compile 'com.yqritc:recyclerview-flexibledivider:1.2.9'
     compile 'com.gitlab.matecode:androiddialog:1.2.29'
 
+    compile 'com.scottyab:aescrypt:0.0.1'
     //compile 'ch.acra:acra:4.9.2'
 }
