@@ -57,8 +57,8 @@ public class DownloadManager {
 
         Paper paper = new Paper(mContext, paperId);
 
-        if (!AccountHelper.getInstance(mContext)
-                          .isAuthenticated() && !paper.isDemo()) throw new DownloadNotAllowedException();
+//        if (!AccountHelper.getInstance(mContext)
+//                          .isAuthenticated() && !paper.isDemo()) throw new DownloadNotAllowedException();
 
         log.trace("requesting paper download: {}", paper);
 

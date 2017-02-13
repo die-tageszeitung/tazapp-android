@@ -175,4 +175,8 @@ public final class TazSettings {
     public SharedPreferences getSharedPreferences() {
         return sharedPreferences;
     }
+
+    public boolean hasPreference(String key) {
+        return sharedPreferences.contains(key);
+    }
 }

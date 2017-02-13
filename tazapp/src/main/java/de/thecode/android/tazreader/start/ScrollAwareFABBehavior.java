@@ -31,7 +31,7 @@ public class ScrollAwareFABBehavior extends FloatingActionButton.Behavior {
                                        View target, int nestedScrollAxes) {
         boolean isAuthenticated = false;
         if (mAccountHelper != null) {
-            isAuthenticated = mAccountHelper.isAuthenticated();
+            isAuthenticated = !mAccountHelper.isDemoMode();
         }
         return nestedScrollAxes == ViewCompat.SCROLL_AXIS_VERTICAL && isAuthenticated;
     }

@@ -93,8 +93,8 @@ public class LoginFragment extends BaseFragment {
             }
         });
 
-        if (AccountHelper.getInstance(getContext())
-                         .isAuthenticated()) {
+        if (!AccountHelper.getInstance(getContext())
+                         .isDemoMode()) {
             editUser.setText(AccountHelper.getInstance(getContext())
                                           .getUser());
             editPass.setText(AccountHelper.getInstance(getContext())
@@ -199,7 +199,8 @@ public class LoginFragment extends BaseFragment {
 
             @Override
             public void onErrorResponse(VolleyError error, final String string) {
-
+                //TODO Achtung hier nur entfenrnen wenn Request OK, aber USer falsch!
+                AccountHelper.getInstance(getContext()).removeUser();
                 new Dialog.Builder().setIcon(R.drawable.ic_alerts_and_states_warning)
                                     .setTitle(R.string.dialog_error_title)
                                     .setMessage(string)

@@ -498,7 +498,7 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
 
     public void updateTitle() {
         StringBuilder titleBuilder = new StringBuilder(getString(getApplicationInfo().labelRes));
-        if (!AccountHelper.getInstance(this).isAuthenticated()) {
+        if (AccountHelper.getInstance(this).isDemoMode()) {
             titleBuilder.append(" ")
                         .append(getString(R.string.demo_titel_appendix));
         }

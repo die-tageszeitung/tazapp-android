@@ -256,7 +256,7 @@ public class SyncService extends IntentService {
                         }
                         if (connectionCheck) {
 
-                            if (AccountHelper.getInstance(this).isAuthenticated()) {
+                            if (!AccountHelper.getInstance(this).isDemoMode()) {
                                 //DownloadHelper downloadHelper = new DownloadHelper(this);
                                 try {
                                     DownloadManager.getInstance(this)

@@ -237,8 +237,8 @@ public class LibraryFragment extends BaseFragment
         StringBuilder selection = new StringBuilder();
         boolean demo = true;
         if (hasCallback()) {
-            demo = !AccountHelper.getInstance(getContext())
-                                 .isAuthenticated();
+            demo = AccountHelper.getInstance(getContext())
+                                 .isDemoMode();
         }
 
         if (demo) selection.append("(");
@@ -384,8 +384,8 @@ public class LibraryFragment extends BaseFragment
 
 
     private void showFab() {
-        if (AccountHelper.getInstance(getContext())
-                         .isAuthenticated()) {
+        if (!AccountHelper.getInstance(getContext())
+                         .isDemoMode()) {
             if (!isSyncing) {
                 fabArchive.show();
             }

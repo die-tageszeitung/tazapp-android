@@ -44,7 +44,7 @@ public class AccountHelper {
                                      .edit();
             edit.remove("credentialsWorking");
             edit.apply();
-            setUser(user,pass);
+            setUser(user, pass);
         }
     }
 
@@ -59,20 +59,24 @@ public class AccountHelper {
     public void setUser(String user, String password) {
         preferences.setEncrytedPrefString(cipherPassword, TazSettings.PREFKEY.USER, user);
         preferences.setEncrytedPrefString(cipherPassword, TazSettings.PREFKEY.PASS, password);
-        setAuthenticated(true);
+//        setAuthenticated(true);
     }
 
     public void removeUser() {
         preferences.removePref(TazSettings.PREFKEY.USER);
         preferences.removePref(TazSettings.PREFKEY.PASS);
-        setAuthenticated(false);
+//        setAuthenticated(false);
     }
 
-    public void setAuthenticated(boolean isAuthenticated) {
-        preferences.setPref(TazSettings.PREFKEY.AUTHENTICATED,isAuthenticated);
+    public boolean isDemoMode() {
+        return !(preferences.hasPreference(TazSettings.PREFKEY.USER) && preferences.hasPreference(TazSettings.PREFKEY.PASS));
     }
 
-    public boolean isAuthenticated(){
-       return preferences.getPrefBoolean(TazSettings.PREFKEY.AUTHENTICATED,false);
-    }
+//    public void setAuthenticated(boolean isAuthenticated) {
+//        preferences.setPref(TazSettings.PREFKEY.AUTHENTICATED,isAuthenticated);
+//    }
+//
+//    public boolean isAuthenticated(){
+//       return preferences.getPrefBoolean(TazSettings.PREFKEY.AUTHENTICATED,false);
+//    }
 }
