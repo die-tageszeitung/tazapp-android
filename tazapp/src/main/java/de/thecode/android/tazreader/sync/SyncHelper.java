@@ -29,10 +29,10 @@ public class SyncHelper {
 
 
     public static void requestManualSync(Context context, Calendar start, Calendar end) {
-        Intent serviceIntent = new Intent(context,NewSyncService.class);
+        Intent serviceIntent = new Intent(context,SyncService.class);
         if (start != null && end != null) {
-            serviceIntent.putExtra(NewSyncService.ARG_START_DATE, new SimpleDateFormat("yyyy-MM-dd", Locale.GERMANY).format(start.getTime()));
-            serviceIntent.putExtra(NewSyncService.ARG_END_DATE, new SimpleDateFormat("yyyy-MM-dd",Locale.GERMANY).format(end.getTime()));
+            serviceIntent.putExtra(SyncService.ARG_START_DATE, new SimpleDateFormat("yyyy-MM-dd", Locale.GERMANY).format(start.getTime()));
+            serviceIntent.putExtra(SyncService.ARG_END_DATE, new SimpleDateFormat("yyyy-MM-dd", Locale.GERMANY).format(end.getTime()));
         }
         context.startService(serviceIntent);
     }

@@ -90,7 +90,7 @@
                 android:name=".download.DownloadFinishedPaperService"
                 android:exported="false"/>
         <service
-                android:name=".sync.NewSyncService"
+                android:name=".sync.SyncService"
                 android:exported="false"/>
 
         <receiver android:name=".service.TazBootCompleteReceiver">
