@@ -25,7 +25,7 @@ public class Orientation {
 
     public static int getOrientationFromConfigurationFromPrefs(Context context)
     {
-        String orientationKey = TazSettings.getPrefString(context, TazSettings.PREFKEY.ORIENTATION, "0");
+        String orientationKey = TazSettings.getInstance(context).getPrefString(TazSettings.PREFKEY.ORIENTATION, "0");
         int preferenceOrientation = Configuration.ORIENTATION_UNDEFINED;
         if (orientationKey.equals("auto"))
             preferenceOrientation = Configuration.ORIENTATION_UNDEFINED;

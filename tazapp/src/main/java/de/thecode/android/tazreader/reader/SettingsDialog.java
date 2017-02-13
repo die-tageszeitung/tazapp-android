@@ -11,13 +11,13 @@ import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import de.mateware.dialog.DialogCustomView;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.reader.ReaderActivity.THEMES;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SettingsDialog extends DialogCustomView {
 
@@ -32,7 +32,7 @@ public class SettingsDialog extends DialogCustomView {
     @Override
     public View getView(LayoutInflater inflater, ViewGroup parent) {
 
-        boolean isScroll = TazSettings.getPrefBoolean(getContext(), TazSettings.PREFKEY.ISSCROLL, false);
+        boolean isScroll = TazSettings.getInstance(getContext()).getPrefBoolean(TazSettings.PREFKEY.ISSCROLL, false);
         //boolean isFullscreen = TazSettings.getPrefBoolean(getContext(), TazSettings.PREFKEY.FULLSCREEN, false);
         mCallback = (IReaderCallback) getContext();
 
@@ -73,7 +73,7 @@ public class SettingsDialog extends DialogCustomView {
                 colorThemeButtonText(THEMES.night);
             }
         });
-        colorThemeButtonText(THEMES.valueOf(TazSettings.getPrefString(getContext(), TazSettings.PREFKEY.THEME, null)));
+        colorThemeButtonText(THEMES.valueOf(TazSettings.getInstance(getContext()).getPrefString(TazSettings.PREFKEY.THEME, null)));
 
         SwitchCompat switchPaging = (SwitchCompat) view.findViewById(R.id.switchPaging);
         switchPaging.setChecked(!isScroll);
@@ -104,7 +104,7 @@ public class SettingsDialog extends DialogCustomView {
         seekBarColumns = (SeekBar) view.findViewById(R.id.seekBarColumn);
 
         seekBarColumns.setEnabled(!isScroll);
-        seekBarColumns.setProgress((int) (Float.valueOf(TazSettings.getPrefString(getContext(), TazSettings.PREFKEY.COLSIZE, "0")) * 10));
+        seekBarColumns.setProgress((int) (Float.valueOf(TazSettings.getInstance(getContext()).getPrefString(TazSettings.PREFKEY.COLSIZE, "0")) * 10));
         seekBarColumns.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
 
             @Override
@@ -127,7 +127,7 @@ public class SettingsDialog extends DialogCustomView {
         });
 
         SeekBar seekBarFontSize = (SeekBar) view.findViewById(R.id.seekBarFontSize);
-        seekBarFontSize.setProgress(Integer.valueOf(TazSettings.getPrefString(getContext(), TazSettings.PREFKEY.FONTSIZE, "0")));
+        seekBarFontSize.setProgress(Integer.valueOf(TazSettings.getInstance(getContext()).getPrefString(TazSettings.PREFKEY.FONTSIZE, "0")));
         seekBarFontSize.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
 
             @Override

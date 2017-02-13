@@ -13,7 +13,6 @@ import de.thecode.android.tazreader.analytics.AnalyticsWrapper;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.download.DownloadManager;
-import de.thecode.android.tazreader.sync.AccountHelper;
 import de.thecode.android.tazreader.utils.BaseActivity;
 
 import org.slf4j.Logger;
@@ -113,7 +112,7 @@ public class ImportActivity extends BaseActivity implements DialogButtonListener
                             try {
                                 DownloadManager.getInstance(this)
                                                .enquePaper(ContentUris.parseId(downloadUri));
-                            } catch (Paper.PaperNotFoundException | AccountHelper.CreateAccountException | DownloadManager.DownloadNotAllowedException | DownloadManager.NotEnoughSpaceException e) {
+                            } catch (Paper.PaperNotFoundException | DownloadManager.DownloadNotAllowedException | DownloadManager.NotEnoughSpaceException e) {
                                 log.error("", e);
                                 AnalyticsWrapper.getInstance().logException(e);
                             }
@@ -190,7 +189,7 @@ public class ImportActivity extends BaseActivity implements DialogButtonListener
         } else {
             resultIntent.putExtra(EXTRA_RESULT_URIS, paperUris);
             setResult(RESULT_OK, resultIntent);
-            TazSettings.setPref(this, TazSettings.PREFKEY.FORCESYNC, true);
+            TazSettings.getInstance(this).setPref(TazSettings.PREFKEY.FORCESYNC, true);
         }
         finish();
     }

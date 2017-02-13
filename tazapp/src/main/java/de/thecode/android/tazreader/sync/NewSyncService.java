@@ -3,7 +3,6 @@ package de.thecode.android.tazreader.sync;
 import com.google.common.base.Strings;
 
 import android.app.IntentService;
-import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Intent;
 import android.database.Cursor;
@@ -36,6 +35,7 @@ import de.thecode.android.tazreader.download.NotificationHelper;
 import de.thecode.android.tazreader.reader.ReaderActivity;
 import de.thecode.android.tazreader.start.ScrollToPaperEvent;
 import de.thecode.android.tazreader.utils.Connection;
+import de.thecode.android.tazreader.utils.StorageManager;
 import de.thecode.android.tazreader.volley.RequestManager;
 
 import org.json.JSONArray;
@@ -68,27 +68,14 @@ public class NewSyncService extends IntentService {
     private static final Logger log = LoggerFactory.getLogger(NewSyncService.class);
 
     private static final String PLIST_KEY_ISSUES = "issues";
-    /**
-     * The constant ARG_START_DATE.
-     */
+
     public static final  String ARG_START_DATE   = "startDate";
-    /**
-     * The constant ARG_END_DATE.
-     */
     public static final  String ARG_END_DATE     = "endDate";
 
-    /**
-     * The M cover helper.
-     */
     FileCacheCoverHelper mCoverHelper;
 
     private Paper moveToPaperAtEnd;
 
-    /**
-     * Creates an IntentService.  Invoked by your subclass's constructor.
-     *
-     * @param name Used to name the worker thread, important only for debugging.
-     */
     public NewSyncService() {
         super("SyncService");
     }
@@ -100,8 +87,11 @@ public class NewSyncService extends IntentService {
                 .postSticky(new SyncStateChangedEvent(true));
 
         //If migration is needed dont sync
-        if (TazSettings.getPrefInt(this, TazSettings.PREFKEY.PAPERMIGRATEFROM, 0) != 0) return;
+        if (TazSettings.getInstance(this).getPrefInt(TazSettings.PREFKEY.PAPERMIGRATEFROM, 0) != 0) return;
         //if (TazSettings.getPrefBoolean(this, TazSettings.PREFKEY.PAPERMIGRATERUNNING, false)) return;
+
+
+        mCoverHelper = new FileCacheCoverHelper(StorageManager.getInstance(this));
 
         String url = BuildConfig.PLISTURL;
 
@@ -112,16 +102,16 @@ public class NewSyncService extends IntentService {
         }
 
 
-        Long currentOpenPaperId = TazSettings.getPrefLong(this, TazSettings.PREFKEY.LASTOPENPAPER, -1L);
+        Long currentOpenPaperId = TazSettings.getInstance(this).getPrefLong(TazSettings.PREFKEY.LASTOPENPAPER, -1L);
         log.debug("+++++++ TazSettings: Current Paper SyncAdapter View: {}", currentOpenPaperId);
 
         // If ForceSync it's now done
-        TazSettings.setPref(this, TazSettings.PREFKEY.FORCESYNC, false);
+        TazSettings.getInstance(this).setPref(TazSettings.PREFKEY.FORCESYNC, false);
 
         // AutoDelete
-        if (TazSettings.getPrefBoolean(this, TazSettings.PREFKEY.AUTODELETE, false)) {
+        if (TazSettings.getInstance(this).getPrefBoolean(TazSettings.PREFKEY.AUTODELETE, false)) {
 
-            int papersToKeep = TazSettings.getPrefInt(this, TazSettings.PREFKEY.AUTODELETE_VALUE, 0);
+            int papersToKeep = TazSettings.getInstance(this).getPrefInt(TazSettings.PREFKEY.AUTODELETE_VALUE, 0);
             if (papersToKeep > 0) {
                 Cursor deletePapersCursor = this.getContentResolver()
                                                 .query(Paper.CONTENT_URI, null,
@@ -255,10 +245,10 @@ public class NewSyncService extends IntentService {
                 // Ausgabe von morgen ist da
                 log.debug("Ausgabe von morgen veröffentlicht");
                 Paper tomorrowPaper = new Paper(tomorrowCursor);
-                if (TazSettings.getPrefBoolean(this, TazSettings.PREFKEY.AUTOLOAD, false)) {
+                if (TazSettings.getInstance(this).getPrefBoolean(TazSettings.PREFKEY.AUTOLOAD, false)) {
                     if (!tomorrowPaper.isDownloaded()) {
                         boolean connectionCheck = false;
-                        if (TazSettings.getPrefBoolean(this, TazSettings.PREFKEY.AUTOLOAD_WIFI, true)) {
+                        if (TazSettings.getInstance(this).getPrefBoolean(TazSettings.PREFKEY.AUTOLOAD_WIFI, true)) {
                             if (Connection.getConnectionType(this) >= Connection.CONNECTION_FAST) connectionCheck = true;
                         } else {
                             if (Connection.getConnectionType(this) >= Connection.CONNECTION_MOBILE_ROAMING)
@@ -266,14 +256,13 @@ public class NewSyncService extends IntentService {
                         }
                         if (connectionCheck) {
 
-                            AccountHelper accountHelper = new AccountHelper(this, account);
-                            if (accountHelper.isAuthenticated()) {
+                            if (AccountHelper.getInstance(this).isAuthenticated()) {
                                 //DownloadHelper downloadHelper = new DownloadHelper(this);
                                 try {
                                     DownloadManager.getInstance(this)
                                                    .enquePaper(tomorrowPaper.getId());
                                     autoloadSuccess = true;
-                                } catch (IllegalArgumentException | DownloadManager.DownloadNotAllowedException | Paper.PaperNotFoundException | AccountHelper.CreateAccountException ignored) {
+                                } catch (IllegalArgumentException | DownloadManager.DownloadNotAllowedException | Paper.PaperNotFoundException ignored) {
                                 } catch (DownloadManager.NotEnoughSpaceException e) {
                                     NotificationHelper.showDownloadErrorNotification(this, this.getString(
                                             R.string.message_not_enough_space), tomorrowPaper.getId());
@@ -291,7 +280,7 @@ public class NewSyncService extends IntentService {
             tomorrowCursor.close();
         }
 
-        if (TazSettings.getPrefBoolean(this, TazSettings.PREFKEY.AUTOLOAD, false)) {
+        if (TazSettings.getInstance(this).getPrefBoolean(TazSettings.PREFKEY.AUTOLOAD, false)) {
             if (autoloadSuccess) TazReaderApplication.registerAutoDownload(this, true);
             else TazReaderApplication.registerAutoDownload(this, false);
         }

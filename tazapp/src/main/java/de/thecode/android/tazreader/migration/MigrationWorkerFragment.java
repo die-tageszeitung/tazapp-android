@@ -7,6 +7,15 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 
+import de.thecode.android.tazreader.BuildConfig;
+import de.thecode.android.tazreader.data.Paper;
+import de.thecode.android.tazreader.data.Store;
+import de.thecode.android.tazreader.data.TazSettings;
+import de.thecode.android.tazreader.reader.ReaderActivity;
+import de.thecode.android.tazreader.utils.AsyncTaskWithExecption;
+import de.thecode.android.tazreader.utils.BaseFragment;
+import de.thecode.android.tazreader.utils.StorageManager;
+
 import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -20,15 +29,6 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
-
-import de.thecode.android.tazreader.BuildConfig;
-import de.thecode.android.tazreader.data.Paper;
-import de.thecode.android.tazreader.data.Store;
-import de.thecode.android.tazreader.data.TazSettings;
-import de.thecode.android.tazreader.reader.ReaderActivity;
-import de.thecode.android.tazreader.utils.AsyncTaskWithExecption;
-import de.thecode.android.tazreader.utils.BaseFragment;
-import de.thecode.android.tazreader.utils.StorageManager;
 
 /**
  * Created by mate on 21.04.2015.
@@ -45,7 +45,8 @@ public class MigrationWorkerFragment extends BaseFragment {
     }
 
 
-    public static MigrationWorkerFragment findOrCreateWorkerFragment(FragmentManager fm, String tag, MigrationWorkerCallback callback) {
+    public static MigrationWorkerFragment findOrCreateWorkerFragment(FragmentManager fm, String tag,
+                                                                     MigrationWorkerCallback callback) {
         MigrationWorkerFragment fragment = (MigrationWorkerFragment) fm.findFragmentByTag(tag);
         if (fragment == null) {
             fragment = new MigrationWorkerFragment();
@@ -71,8 +72,10 @@ public class MigrationWorkerFragment extends BaseFragment {
 
 
     public void checkForMigration() {
-        int migrateFrom = TazSettings.getPrefInt(applicationContext, TazSettings.PREFKEY.PAPERMIGRATEFROM, Integer.parseInt(String.valueOf(BuildConfig.VERSION_CODE)
-                                                                                                                                  .substring(1)));
+        int migrateFrom = TazSettings.getInstance(applicationContext)
+                                     .getPrefInt(TazSettings.PREFKEY.PAPERMIGRATEFROM, Integer.parseInt(
+                                             String.valueOf(BuildConfig.VERSION_CODE)
+                                                   .substring(1)));
         log.debug("{}", migrateFrom);
 
         if (migrateFrom < 32) {
@@ -121,11 +124,12 @@ public class MigrationWorkerFragment extends BaseFragment {
                 log.info("Deleting old temp dir");
                 File oldTemp = storage.get("temp");
                 if (oldTemp.exists()) FileUtils.deleteQuietly(oldTemp);//Utils.deleteDir(oldTemp);
-               log.info("...finished");
+                log.info("...finished");
 
                 log.info("Deleting Cache");
                 if (storage.getCache(null)
-                           .exists()) FileUtils.deleteQuietly(storage.getCache(null));//Utils.deleteDirContent(storage.getCache(null));
+                           .exists())
+                    FileUtils.deleteQuietly(storage.getCache(null));//Utils.deleteDirContent(storage.getCache(null));
                 log.info("...finished");
 
                 List<Store> storeList = Store.getAllStores(applicationContext);
@@ -216,14 +220,14 @@ public class MigrationWorkerFragment extends BaseFragment {
 
             @Override
             protected void onPostError(Exception exception) {
-                log.error("",exception);
+                log.error("", exception);
                 if (callback != null) callback.onMigrationError(exception);
             }
 
             @Override
             protected void onPostSuccess(List<File> filesToImport) {
                 log.debug("");
-                TazSettings.setPref(applicationContext, TazSettings.PREFKEY.PAPERMIGRATEFROM, 32);
+                TazSettings.getInstance(applicationContext).setPref(TazSettings.PREFKEY.PAPERMIGRATEFROM, 32);
                 if (callback != null) callback.onMigrationFinished(32, filesToImport);
             }
         }.execute();

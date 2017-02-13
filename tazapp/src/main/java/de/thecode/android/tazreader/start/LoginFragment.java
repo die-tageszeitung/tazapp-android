@@ -1,6 +1,8 @@
 package de.thecode.android.tazreader.start;
 
 
+import com.google.common.base.Strings;
+
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -17,11 +19,6 @@ import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.google.common.base.Strings;
-
-import java.lang.ref.WeakReference;
-import java.util.HashMap;
-import java.util.Map;
 
 import de.mateware.dialog.Dialog;
 import de.mateware.dialog.DialogIndeterminateProgress;
@@ -33,6 +30,10 @@ import de.thecode.android.tazreader.utils.BaseFragment;
 import de.thecode.android.tazreader.volley.RequestManager;
 import de.thecode.android.tazreader.volley.TazStringRequest;
 
+import java.lang.ref.WeakReference;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * A simple {@link Fragment} subclass.
  */
@@ -40,10 +41,8 @@ public class LoginFragment extends BaseFragment {
 
     public static final String DIALOG_CHECK_CREDENTIALS = "checkCrd";
     public static final String DIALOG_ERROR_CREDENTIALS = "errorCrd";
-    private EditText editUser;
-    private EditText editPass;
-    private Button loginButton;
-    private Button orderButton;
+    private EditText                      editUser;
+    private EditText                      editPass;
     private WeakReference<IStartCallback> callback;
 
     public LoginFragment() {
@@ -64,8 +63,14 @@ public class LoginFragment extends BaseFragment {
         if (hasCallback()) getCallback().onUpdateDrawer(this);
 
         View view = inflater.inflate(R.layout.start_login, container, false);
-        loginButton = (Button) view.findViewById(R.id.buttonLogin);
-        orderButton = (Button) view.findViewById(R.id.buttonOrder);
+        Button loginButton = (Button) view.findViewById(R.id.buttonLogin);
+        loginButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                checkLogin();
+            }
+        });
+        Button orderButton = (Button) view.findViewById(R.id.buttonOrder);
         orderButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -88,14 +93,13 @@ public class LoginFragment extends BaseFragment {
             }
         });
 
-        if (hasCallback() && getCallback().getAccountHelper()
-                                          .isAuthenticated()) {
-            setUiForLoggedIn();
-            editUser.setText(getCallback().getAccountHelper()
+        if (AccountHelper.getInstance(getContext())
+                         .isAuthenticated()) {
+            editUser.setText(AccountHelper.getInstance(getContext())
                                           .getUser());
-            editPass.setText(getCallback().getAccountHelper()
+            editPass.setText(AccountHelper.getInstance(getContext())
                                           .getPassword());
-        } else setUiForNotLoggedIn();
+        }
 
         return view;
     }
@@ -123,38 +127,34 @@ public class LoginFragment extends BaseFragment {
         DialogIndeterminateProgress.dismissDialog(getFragmentManager(), DIALOG_CHECK_CREDENTIALS);
     }
 
-    private void setUiForLoggedIn() {
-        editUser.setEnabled(false);
-        editPass.setEnabled(false);
-        loginButton.setText(R.string.string_deleteAccount_button);
-        loginButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (hasCallback()) getCallback().getAccountHelper()
-                                                .setUser(AccountHelper.ACCOUNT_DEMO_USER);
-                if (hasCallback()) getCallback().getAccountHelper()
-                                                .setPassword(AccountHelper.ACCOUNT_DEMO_PASS);
-                if (hasCallback()) getCallback().getAccountHelper()
-                                                .setAuthenticated(false);
-                setUiForNotLoggedIn();
-                if (hasCallback()) getCallback().logoutFinished();
-            }
-        });
-        orderButton.setVisibility(View.INVISIBLE);
-    }
-
-    private void setUiForNotLoggedIn() {
-        editUser.setEnabled(true);
-        editPass.setEnabled(true);
-        loginButton.setText(R.string.string_login_button);
-        loginButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                checkLogin();
-            }
-        });
-        orderButton.setVisibility(View.VISIBLE);
-    }
+//    private void setUiForLoggedIn() {
+//        editUser.setEnabled(false);
+//        editPass.setEnabled(false);
+//        loginButton.setText(R.string.string_deleteAccount_button);
+//        loginButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                AccountHelper.getInstance(getContext())
+//                             .removeUser();
+//                setUiForNotLoggedIn();
+//                if (hasCallback()) getCallback().logoutFinished();
+//            }
+//        });
+//        orderButton.setVisibility(View.INVISIBLE);
+//    }
+//
+//    private void setUiForNotLoggedIn() {
+//        editUser.setEnabled(true);
+//        editPass.setEnabled(true);
+//        loginButton.setText(R.string.string_login_button);
+//        loginButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                checkLogin();
+//            }
+//        });
+//        orderButton.setVisibility(View.VISIBLE);
+//    }
 
     private void checkLogin() {
         if (Strings.isNullOrEmpty(editUser.getText()
@@ -187,15 +187,10 @@ public class LoginFragment extends BaseFragment {
             @Override
             public void onResponse(String response) {
                 unblockUi();
-                if (hasCallback()) getCallback().getAccountHelper()
-                                                .setUser(editUser.getText()
-                                                                 .toString());
-                if (hasCallback()) getCallback().getAccountHelper()
-                                                .setPassword(editPass.getText()
-                                                                     .toString());
-                if (hasCallback()) getCallback().getAccountHelper()
-                                                .setAuthenticated(true);
-                setUiForLoggedIn();
+                AccountHelper.getInstance(getContext())
+                             .setUser(editUser.getText()
+                                              .toString(), editPass.getText()
+                                                                   .toString());
                 if (hasCallback()) getCallback().loginFinished();
             }
         };
@@ -212,11 +207,11 @@ public class LoginFragment extends BaseFragment {
                                     .buildSupport()
                                     .show(getFragmentManager(), DIALOG_ERROR_CREDENTIALS);
                 unblockUi();
-                setUiForNotLoggedIn();
             }
         };
 
-        TazStringRequest stringRequest = new TazStringRequest(Request.Method.GET, BuildConfig.CHECKLOGINURL, responseListener, errorListener) {
+        TazStringRequest stringRequest = new TazStringRequest(Request.Method.GET, BuildConfig.CHECKLOGINURL, responseListener,
+                                                              errorListener) {
 
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {

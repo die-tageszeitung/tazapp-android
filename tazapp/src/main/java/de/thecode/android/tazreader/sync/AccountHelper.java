@@ -1,176 +1,78 @@
 package de.thecode.android.tazreader.sync;
 
-import android.accounts.Account;
-import android.accounts.AccountManager;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.SharedPreferences.Editor;
 
+import de.thecode.android.tazreader.data.TazSettings;
+import de.thecode.android.tazreader.secure.Installation;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.UnsupportedEncodingException;
-import java.security.NoSuchAlgorithmException;
-
-import de.thecode.android.tazreader.BuildConfig;
-import de.thecode.android.tazreader.analytics.AnalyticsWrapper;
-import de.thecode.android.tazreader.data.TazSettings;
-import de.thecode.android.tazreader.provider.TazProvider;
-import de.thecode.android.tazreader.secure.HashHelper;
 
 public class AccountHelper {
 
     private static final Logger log = LoggerFactory.getLogger(AccountHelper.class);
 
-    public static final String ACCOUNT_TYPE = BuildConfig.ACCOUNT_TYPE;
-
-    public static final String ACCOUNT_NAME = "Sync";
-
     public static final String ACCOUNT_DEMO_USER = "demo";
     public static final String ACCOUNT_DEMO_PASS = "demo";
 
-    public static final String KEY_AUTH = "auth";
-    public static final String KEY_USER = "user";
+    private static AccountHelper instance;
 
-    AccountManager mAccountManager;
-    Account mAccount;
+    public static synchronized AccountHelper getInstance(Context context) {
+        if (instance == null) instance = new AccountHelper(context.getApplicationContext());
+        return instance;
+    }
 
-    public AccountHelper(Context context) throws CreateAccountException {
 
-        log.trace("");
-        mAccountManager = (AccountManager) context.getSystemService(Context.ACCOUNT_SERVICE);
-        Account[] accounts = mAccountManager.getAccountsByType(ACCOUNT_TYPE);
+    private TazSettings preferences;
+    private String      cipherPassword;
 
-        if (accounts != null) {
-            if (accounts.length > 0) {
-                mAccount = accounts[0];
-                if (ACCOUNT_DEMO_USER.equals(getUser())) setAuthenticated(false);
-            } else {
-                String user = ACCOUNT_DEMO_USER;
-                String pass = ACCOUNT_DEMO_PASS;
-                // Migrtion von vorhandenen User-Daten aus Version vor 2
-                boolean setAuth = false;
-                if (TazSettings.getSharedPreferences(context)
-                               .contains("credentialsWorking")) {
-                    setAuth = true;
-                    log.debug("Migration vorhandener Credentials");
-                    user = TazSettings.getOldDecryptedPrefString(context, "user", AccountHelper.ACCOUNT_DEMO_USER);
-                    pass = TazSettings.getOldDecryptedPrefString(context, "pass", AccountHelper.ACCOUNT_DEMO_PASS);
-                    Editor edit = TazSettings.getSharedPreferences(context)
-                                             .edit();
-                    edit.remove("user");
-                    edit.remove("pass");
-                    edit.remove("credentialsWorking");
-                    edit.commit();
-                }
-                addAccount(user, pass);
-                setAuthenticated(setAuth);
-            }
-            logUser();
-        } else {
-            AnalyticsWrapper.getInstance().logException(new CreateAccountException("accounts is null"));
+    private AccountHelper(Context context) {
+        preferences = TazSettings.getInstance(context);
+        cipherPassword = Installation.id(context);
+        // Migrtion von vorhandenen User-Daten aus Version vor 2
+        if (TazSettings.getInstance(context)
+                       .getSharedPreferences()
+                       .contains("credentialsWorking")) {
+            log.debug("Migration vorhandener Credentials");
+            String user = TazSettings.getInstance(context)
+                                     .getOldDecryptedPrefString(TazSettings.PREFKEY.USER, AccountHelper.ACCOUNT_DEMO_USER);
+            String pass = TazSettings.getInstance(context)
+                                     .getOldDecryptedPrefString(TazSettings.PREFKEY.PASS, AccountHelper.ACCOUNT_DEMO_PASS);
+            Editor edit = TazSettings.getInstance(context)
+                                     .getSharedPreferences()
+                                     .edit();
+            edit.remove("credentialsWorking");
+            edit.apply();
+            setUser(user,pass);
         }
-    }
-
-    public AccountHelper(Context context, Account account) {
-        log.trace("");
-        mAccountManager = (AccountManager) context.getSystemService(Context.ACCOUNT_SERVICE);
-        mAccount = account;
-        if (mAccount != null && ACCOUNT_DEMO_USER.equals(getUser())) {
-            setAuthenticated(false);
-        }
-    }
-
-    private void logUser() {
-        try {
-            AnalyticsWrapper.getInstance().logData("User",HashHelper.getHash(getUser(), HashHelper.UTF_8, HashHelper.SHA_1));
-            AnalyticsWrapper.getInstance().logData("isAuthenticated", String.valueOf(isAuthenticated()));
-        } catch (UnsupportedEncodingException | NoSuchAlgorithmException ignored) {
-        }
-    }
-
-
-    public void setUser(String userName) {
-        if (mAccount != null) mAccountManager.setUserData(mAccount, KEY_USER, userName);
-    }
-
-    private synchronized boolean addAccount(String username, String password) throws CreateAccountException {
-        if (mAccount != null) return false;
-        Account newAccount = new Account(ACCOUNT_NAME, ACCOUNT_TYPE);
-        if (mAccountManager.addAccountExplicitly(newAccount, password, null)) {
-            log.debug("addAccountExplicitly");
-            mAccount = newAccount;
-            setUser(username);
-            ContentResolver.setSyncAutomatically(mAccount, TazProvider.AUTHORITY, true);
-            // makeAccountUnremovable();
-            return true;
-        } else {
-            log.error("Fehler bei Anlegen des Accounts");
-            throw new CreateAccountException();
-            /*
-             * The account exists or some other error occurred. Log this, report it, or handle it internally.
-             */
-        }
-    }
-
-    public Account getAccount() {
-        return mAccount;
     }
 
     public String getUser() {
-        if (mAccount != null) return mAccountManager.getUserData(mAccount, KEY_USER);
-        return null;
+        return preferences.getDecrytedPrefString(cipherPassword, TazSettings.PREFKEY.USER, AccountHelper.ACCOUNT_DEMO_USER);
     }
 
     public String getPassword() {
-        if (mAccount != null) return mAccountManager.getPassword(mAccount);
-        return null;
+        return preferences.getDecrytedPrefString(cipherPassword, TazSettings.PREFKEY.PASS, AccountHelper.ACCOUNT_DEMO_PASS);
     }
 
-    public void setPassword(String password) {
-        if (mAccount != null) mAccountManager.setPassword(mAccount, password);
+    public void setUser(String user, String password) {
+        preferences.setEncrytedPrefString(cipherPassword, TazSettings.PREFKEY.USER, user);
+        preferences.setEncrytedPrefString(cipherPassword, TazSettings.PREFKEY.PASS, password);
+        setAuthenticated(true);
     }
 
-
-    public boolean isAuthenticated() {
-        if (mAccount != null) {
-            try {
-                if ("1".equals(mAccountManager.getUserData(mAccount, KEY_AUTH)) && !ACCOUNT_DEMO_USER.equals(getUser())) return true;
-            } catch (IllegalArgumentException e) {
-                log.error("", e);
-                AnalyticsWrapper.getInstance().logException(e);
-            }
-        } else {
-            log.trace("{}",mAccountManager);
-            AnalyticsWrapper.getInstance().logException(new IllegalStateException("isAuthenticated called, but mAccount is null"));
-        }
-        return false;
+    public void removeUser() {
+        preferences.removePref(TazSettings.PREFKEY.USER);
+        preferences.removePref(TazSettings.PREFKEY.PASS);
+        setAuthenticated(false);
     }
 
-    public void setAuthenticated(boolean auth) {
-        if (mAccount != null) {
-            if (auth) mAccountManager.setUserData(mAccount, KEY_AUTH, "1");
-            else mAccountManager.setUserData(mAccount, KEY_AUTH, "0");
-        }
+    public void setAuthenticated(boolean isAuthenticated) {
+        preferences.setPref(TazSettings.PREFKEY.AUTHENTICATED,isAuthenticated);
     }
 
-    public class CreateAccountException extends Exception {
-        public CreateAccountException() {
-        }
-
-        public CreateAccountException(String detailMessage) {
-            super(detailMessage);
-        }
-
-        public CreateAccountException(String detailMessage, Throwable throwable) {
-            super(detailMessage, throwable);
-        }
-
-        public CreateAccountException(Throwable throwable) {
-            super(throwable);
-        }
-
-        private static final long serialVersionUID = 1L;
+    public boolean isAuthenticated(){
+       return preferences.getPrefBoolean(TazSettings.PREFKEY.AUTHENTICATED,false);
     }
-
 }

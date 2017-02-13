@@ -4,18 +4,15 @@ package de.thecode.android.tazreader.start;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.Toolbar;
 
-import java.util.Calendar;
-
 import de.thecode.android.tazreader.data.Paper;
-import de.thecode.android.tazreader.sync.AccountHelper;
+
+import java.util.Calendar;
 
 /**
  * Created by mate on 05.02.2015.
  */
 public interface IStartCallback {
     public StartActivity.RetainDataFragment getRetainData();
-
-    public AccountHelper getAccountHelper();
 
     public void loadFragment(NavigationDrawerFragment.NavigationItem item);
 

@@ -1,5 +1,9 @@
 package de.thecode.android.tazreader.reader.article;
 
+import com.google.common.base.Charsets;
+import com.google.common.base.Strings;
+import com.google.common.io.Files;
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
@@ -28,19 +32,6 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import com.google.common.base.Charsets;
-import com.google.common.base.Strings;
-import com.google.common.io.Files;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Locale;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Paper.Plist.Page.Article;
@@ -56,6 +47,15 @@ import de.thecode.android.tazreader.utils.StorageManager;
 import de.thecode.android.tazreader.utils.TintHelper;
 import de.thecode.android.tazreader.widget.PageIndexButton;
 import de.thecode.android.tazreader.widget.ShareButton;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ArticleFragment extends AbstractContentFragment implements ArticleWebViewCallback {
 
@@ -120,7 +120,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
         mWebView = (ArticleWebView) result.findViewById(R.id.webview);
         mWebView.setArticleWebViewCallback(this);
 
-        mWebView.setBackgroundColor(getCallback().onGetBackgroundColor(TazSettings.getPrefString(mContext, TazSettings.PREFKEY.THEME, "normal")));
+        mWebView.setBackgroundColor(getCallback().onGetBackgroundColor(TazSettings.getInstance(mContext).getPrefString(TazSettings.PREFKEY.THEME, "normal")));
 
         mWebView.setWebViewClient(new ArticleWebViewClient());
         mWebView.setWebChromeClient(new ArticleWebChromeClient());
@@ -152,7 +152,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
         mShareButton = (ShareButton) result.findViewById(R.id.share);
         mPageIndexButton = (PageIndexButton) result.findViewById(R.id.pageindex);
-        if (TazSettings.getPrefBoolean(mContext, TazSettings.PREFKEY.PAGEINDEXBUTTON, false)) {
+        if (TazSettings.getInstance(mContext).getPrefBoolean(TazSettings.PREFKEY.PAGEINDEXBUTTON, false)) {
             mPageIndexButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -499,7 +499,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
                     mProgressBar.setVisibility(View.GONE);
                     if (!mIndexUpdated) {
                         String newposition = position;
-                        if (TazSettings.getPrefBoolean(mContext, TazSettings.PREFKEY.ISSCROLL, false))
+                        if (TazSettings.getInstance(mContext).getPrefBoolean(TazSettings.PREFKEY.ISSCROLL, false))
                             newposition = "0";
                         if (hasCallback())
                             getCallback().updateIndexes(mArticle.getKey(), newposition);
@@ -573,7 +573,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
                             direction = DIRECTIONS.RIGHT;
                             break;
                         default:
-                            if (!TazSettings.getPrefBoolean(mContext, TazSettings.PREFKEY.ISSCROLL, false))
+                            if (!TazSettings.getInstance(mContext).getPrefBoolean(TazSettings.PREFKEY.ISSCROLL, false))
                                 positionString = "EOF";
                             direction = DIRECTIONS.LEFT;
                             break;

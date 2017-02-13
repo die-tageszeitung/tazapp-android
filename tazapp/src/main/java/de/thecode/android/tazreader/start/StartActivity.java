@@ -95,8 +95,6 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
     NavigationDrawerFragment.NavigationItem imprintItem;
     NavigationDrawerFragment.NavigationItem importItem;
 
-    AccountHelper mAccountHelper;
-
     @Override
     public void onStart() {
         super.onStart();
@@ -115,13 +113,13 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (TazSettings.getPrefInt(this, TazSettings.PREFKEY.PAPERMIGRATEFROM, 0) != 0) {
+        if (TazSettings.getInstance(this).getPrefInt(TazSettings.PREFKEY.PAPERMIGRATEFROM, 0) != 0) {
             Intent migrationIntent = new Intent(this, MigrationActivity.class);
             migrationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(migrationIntent);
             return;
         }
-        TazSettings.removePref(this, TazSettings.PREFKEY.PAPERMIGRATEFROM);
+        TazSettings.getInstance(this).removePref(TazSettings.PREFKEY.PAPERMIGRATEFROM);
 
         Orientation.setActivityOrientationFromPrefs(this);
 
@@ -143,12 +141,6 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
                     return bitmap.getByteCount() / 1024;
                 }
             };
-        }
-
-        try {
-            mAccountHelper = new AccountHelper(this);
-        } catch (AccountHelper.CreateAccountException e) {
-            showAccountErrorDialog();
         }
 
         setContentView(R.layout.activity_start);
@@ -195,8 +187,8 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
         //        showMigrationDownloadDialog();
 
 
-        if (TazSettings.getPrefBoolean(this, TazSettings.PREFKEY.FISRTSTART, true)) {
-            TazSettings.setPref(this, TazSettings.PREFKEY.FISRTSTART, false);
+        if (TazSettings.getInstance(this).getPrefBoolean(TazSettings.PREFKEY.FISRTSTART, true)) {
+            TazSettings.getInstance(this).setPref(TazSettings.PREFKEY.FISRTSTART, false);
             firstStartDialog();
         }
     }
@@ -261,11 +253,6 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
     @Override
     public RetainDataFragment getRetainData() {
         return retainDataFragment;
-    }
-
-    @Override
-    public AccountHelper getAccountHelper() {
-        return mAccountHelper;
     }
 
     @Override
@@ -348,7 +335,7 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
                 try {
                     DownloadManager.getInstance(this)
                                    .enquePaper(paperId);
-                } catch (IllegalArgumentException | AccountHelper.CreateAccountException e) {
+                } catch (IllegalArgumentException e) {
                     showDownloadManagerErrorDialog();
                 } catch (DownloadManager.DownloadNotAllowedException e) {
                     showDownloadErrorDialog(paper.getTitelWithDate(this), getString(R.string.message_download_not_allowed), e);
@@ -511,7 +498,7 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
 
     public void updateTitle() {
         StringBuilder titleBuilder = new StringBuilder(getString(getApplicationInfo().labelRes));
-        if (!mAccountHelper.isAuthenticated()) {
+        if (!AccountHelper.getInstance(this).isAuthenticated()) {
             titleBuilder.append(" ")
                         .append(getString(R.string.demo_titel_appendix));
         }

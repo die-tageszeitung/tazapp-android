@@ -229,7 +229,6 @@ def buildConfigAndResStringField(variant, name, value) {
 afterEvaluate {
     android.applicationVariants.all { variant ->
         variant.resValue 'string', 'application_id', variant.applicationId
-        buildConfigAndResStringField variant, "ACCOUNT_TYPE", variant.applicationId
         buildConfigAndResStringField variant, "CONTENT_AUTHORITY", variant.applicationId + ".provider"
         buildConfigAndResStringField variant, "STREAM_CONTENT_AUTHORITY", variant.applicationId + ".streamprovider"
     }

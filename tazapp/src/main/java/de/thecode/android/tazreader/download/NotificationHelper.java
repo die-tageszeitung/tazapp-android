@@ -10,15 +10,15 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 
+import de.thecode.android.tazreader.R;
+import de.thecode.android.tazreader.data.Paper;
+import de.thecode.android.tazreader.data.TazSettings;
+import de.thecode.android.tazreader.start.StartActivity;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import de.thecode.android.tazreader.R;
-import de.thecode.android.tazreader.data.TazSettings;
-import de.thecode.android.tazreader.data.Paper;
-import de.thecode.android.tazreader.start.StartActivity;
 
 /**
  * Created by mate on 09.03.2015.
@@ -33,14 +33,14 @@ public class NotificationHelper {
     public static void showDownloadFinishedNotification(Context context, long paperId) {
         JSONArray notifiedPaperIds = getNotifiedPaperIds(context);
         notifiedPaperIds.put(paperId);
-        TazSettings.setPref(context, TazSettings.PREFKEY.PAPERNOTIFICATIONIDS, notifiedPaperIds.toString());
+        TazSettings.getInstance(context).setPref(TazSettings.PREFKEY.PAPERNOTIFICATIONIDS, notifiedPaperIds.toString());
         showDownloadFinishedNotification(context, true, true);
     }
 
     private static JSONArray getNotifiedPaperIds(Context context) {
         JSONArray notifiedPaperIds = new JSONArray();
         try {
-            notifiedPaperIds = new JSONArray(TazSettings.getPrefString(context, TazSettings.PREFKEY.PAPERNOTIFICATIONIDS, "[]"));
+            notifiedPaperIds = new JSONArray(TazSettings.getInstance(context).getPrefString(TazSettings.PREFKEY.PAPERNOTIFICATIONIDS, "[]"));
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -48,7 +48,7 @@ public class NotificationHelper {
     }
 
     public static void clearNotifiedPaperIds(Context context) {
-        TazSettings.removePref(context, TazSettings.PREFKEY.PAPERNOTIFICATIONIDS);
+        TazSettings.getInstance(context).removePref(TazSettings.PREFKEY.PAPERNOTIFICATIONIDS);
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.cancel(notificationSuccessId);
     }
@@ -69,7 +69,7 @@ public class NotificationHelper {
         if (newNotifiedPaperIds.length() == 0) {
             clearNotifiedPaperIds(context);
         } else if (newNotifiedPaperIds.length() != notifiedPaperIds.length()) {
-            TazSettings.setPref(context, TazSettings.PREFKEY.PAPERNOTIFICATIONIDS, newNotifiedPaperIds.toString());
+            TazSettings.getInstance(context).setPref(TazSettings.PREFKEY.PAPERNOTIFICATIONIDS, newNotifiedPaperIds.toString());
             showDownloadFinishedNotification(context, false, false);
         }
     }
@@ -119,11 +119,11 @@ public class NotificationHelper {
                 .setSmallIcon(R.drawable.notification_icon);
 
         if (withSound) {
-            Uri ringtoneUri = TazSettings.getRingtone(context);
+            Uri ringtoneUri = TazSettings.getInstance(context).getRingtone();
             if (ringtoneUri != null) nBuilder.setSound(ringtoneUri);
         }
         if (withVibration) {
-            if (TazSettings.getPrefBoolean(context, TazSettings.PREFKEY.VIBRATE, false)) nBuilder.setDefaults(Notification.DEFAULT_VIBRATE);
+            if (TazSettings.getInstance(context).getPrefBoolean(TazSettings.PREFKEY.VIBRATE, false)) nBuilder.setDefaults(Notification.DEFAULT_VIBRATE);
         }
 
         Notification notification = nBuilder.build();
@@ -155,9 +155,9 @@ public class NotificationHelper {
                     .setColor(context.getResources()
                                      .getColor(R.color.notification))
                     .setSmallIcon(android.R.drawable.stat_notify_error);
-            Uri ringtoneUri = TazSettings.getRingtone(context);
+            Uri ringtoneUri = TazSettings.getInstance(context).getRingtone();
             if (ringtoneUri != null) nBuilder.setSound(ringtoneUri);
-            if (TazSettings.getPrefBoolean(context, TazSettings.PREFKEY.VIBRATE, false)) nBuilder.setDefaults(Notification.DEFAULT_VIBRATE);
+            if (TazSettings.getInstance(context).getPrefBoolean(TazSettings.PREFKEY.VIBRATE, false)) nBuilder.setDefaults(Notification.DEFAULT_VIBRATE);
             Notification notification = nBuilder.build();
 
             NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);

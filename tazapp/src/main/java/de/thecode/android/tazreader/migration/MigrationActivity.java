@@ -4,17 +4,17 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.util.List;
-
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.importer.ImportActivity;
 import de.thecode.android.tazreader.start.StartActivity;
 import de.thecode.android.tazreader.utils.BaseActivity;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.util.List;
 
 /**
  * Created by mate on 21.04.2015.
@@ -31,24 +31,24 @@ public class MigrationActivity extends BaseActivity implements MigrationWorkerFr
         super.onCreate(savedInstanceState);
         log.debug("");
         setContentView(R.layout.activity_migrate);
-        workerFragment = MigrationWorkerFragment.findOrCreateWorkerFragment(getSupportFragmentManager(), WORKER_FRAGMENT_TAG, this);
+        workerFragment = MigrationWorkerFragment.findOrCreateWorkerFragment(getSupportFragmentManager(), WORKER_FRAGMENT_TAG,
+                                                                            this);
     }
-
-
 
 
     @Override
     public void onMigrationStart(int toVersionNumber) {
-        log.debug("{}",toVersionNumber);
+        log.debug("{}", toVersionNumber);
     }
 
     @Override
-    public void onMigrationFinished(int toVersionNumber,List<File> importFiles) {
-        log.debug("{}",toVersionNumber);
+    public void onMigrationFinished(int toVersionNumber, List<File> importFiles) {
+        log.debug("{}", toVersionNumber);
 //        if (toVersionNumber < ??)                                                     For futher Migrations activate this
 //            TazSettings.setPref(this, TazSettings.PREFKEY.PAPERMIGRATEFROM,toVersionNumber);
 //        else
-            TazSettings.removePref(this, TazSettings.PREFKEY.PAPERMIGRATEFROM);
+        TazSettings.getInstance(this)
+                   .removePref(TazSettings.PREFKEY.PAPERMIGRATEFROM);
 
         if (importFiles != null && importFiles.size() > 0) {
             Uri[] dataUris = new Uri[importFiles.size()];
@@ -58,13 +58,12 @@ public class MigrationActivity extends BaseActivity implements MigrationWorkerFr
             Intent importIntent = new Intent(this, ImportActivity.class);
             //importIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             importIntent.putExtra(ImportActivity.EXTRA_DATA_URIS, dataUris);
-            importIntent.putExtra(ImportActivity.EXTRA_PREVENT_IMPORT_FLAG,true);
-            importIntent.putExtra(ImportActivity.EXTRA_DELETE_SOURCE_FILE,true);
+            importIntent.putExtra(ImportActivity.EXTRA_PREVENT_IMPORT_FLAG, true);
+            importIntent.putExtra(ImportActivity.EXTRA_DELETE_SOURCE_FILE, true);
 //            importIntent.putExtra(ImportActivity.EXTRA_START_LIBRARY,true);
-            importIntent.putExtra(ImportActivity.EXTRA_NO_USER_CALLBACK,true);
+            importIntent.putExtra(ImportActivity.EXTRA_NO_USER_CALLBACK, true);
             startActivityForResult(importIntent, ImportActivity.REQUEST_CODE_IMPORT_ACTIVITY);
-        } else
-        {
+        } else {
             finishActivity();
         }
     }
@@ -73,7 +72,8 @@ public class MigrationActivity extends BaseActivity implements MigrationWorkerFr
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         log.debug("");
         if (requestCode == ImportActivity.REQUEST_CODE_IMPORT_ACTIVITY) {
-            TazSettings.setPref(this,TazSettings.PREFKEY.FORCESYNC,true);
+            TazSettings.getInstance(this)
+                       .setPref(TazSettings.PREFKEY.FORCESYNC, true);
             finishActivity();
         }
     }
@@ -87,9 +87,8 @@ public class MigrationActivity extends BaseActivity implements MigrationWorkerFr
 
     @Override
     public void onMigrationError(Exception e) {
-        log.error("",e);
+        log.error("", e);
     }
-
 
 
     @Override

@@ -20,34 +20,37 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.lang.ref.WeakReference;
-
 import de.greenrobot.event.EventBus;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.download.CoverDownloadedEvent;
+import de.thecode.android.tazreader.sync.AccountHelper;
 import de.thecode.android.tazreader.sync.SyncStateChangedEvent;
 import de.thecode.android.tazreader.utils.BaseFragment;
 import de.thecode.android.tazreader.widget.AutofitRecyclerView;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.lang.ref.WeakReference;
+
 /**
  * A simple {@link Fragment} subclass.
  */
-public class LibraryFragment extends BaseFragment implements LoaderManager.LoaderCallbacks<Cursor>, LibraryAdapter.OnItemClickListener, LibraryAdapter.OnItemLongClickListener {
+public class LibraryFragment extends BaseFragment
+        implements LoaderManager.LoaderCallbacks<Cursor>, LibraryAdapter.OnItemClickListener,
+        LibraryAdapter.OnItemLongClickListener {
     private static final Logger log = LoggerFactory.getLogger(LibraryFragment.class);
     WeakReference<IStartCallback> callback;
-    LibraryAdapter adapter;
-    SwipeRefreshLayout swipeRefresh;
+    LibraryAdapter                adapter;
+    SwipeRefreshLayout            swipeRefresh;
 
     ActionMode actionMode;
 
     boolean isSyncing;
 
-    private AutofitRecyclerView recyclerView;
+    private AutofitRecyclerView  recyclerView;
     private FloatingActionButton fabArchive;
 
     public LibraryFragment() {
@@ -169,8 +172,10 @@ public class LibraryFragment extends BaseFragment implements LoaderManager.Loade
     @Override
     public void onResume() {
         super.onResume();
-        log.debug("{}", TazSettings.getPrefBoolean(getActivity(), TazSettings.PREFKEY.FORCESYNC, false));
-        if (TazSettings.getPrefBoolean(getActivity(), TazSettings.PREFKEY.FORCESYNC, false)) {
+        log.debug("{}", TazSettings.getInstance(getActivity())
+                                   .getPrefBoolean(TazSettings.PREFKEY.FORCESYNC, false));
+        if (TazSettings.getInstance(getActivity())
+                       .getPrefBoolean(TazSettings.PREFKEY.FORCESYNC, false)) {
 
             if (hasCallback()) getCallback().requestSync(null, null);
         }
@@ -232,7 +237,7 @@ public class LibraryFragment extends BaseFragment implements LoaderManager.Loade
         StringBuilder selection = new StringBuilder();
         boolean demo = true;
         if (hasCallback()) {
-            demo = !getCallback().getAccountHelper()
+            demo = !AccountHelper.getInstance(getContext())
                                  .isAuthenticated();
         }
 
@@ -290,7 +295,8 @@ public class LibraryFragment extends BaseFragment implements LoaderManager.Loade
 
     public void onEventMainThread(CoverDownloadedEvent event) {
         try {
-            LibraryAdapter.ViewHolder viewHolder = (LibraryAdapter.ViewHolder) recyclerView.findViewHolderForItemId(event.getPaperId());
+            LibraryAdapter.ViewHolder viewHolder = (LibraryAdapter.ViewHolder) recyclerView.findViewHolderForItemId(
+                    event.getPaperId());
             if (viewHolder != null) viewHolder.image.setTag(null);
             adapter.notifyItemChanged(adapter.getItemPosition(event.getPaperId()));
         } catch (IllegalStateException e) {
@@ -378,8 +384,8 @@ public class LibraryFragment extends BaseFragment implements LoaderManager.Loade
 
 
     private void showFab() {
-        if (hasCallback() && getCallback().getAccountHelper()
-                                          .isAuthenticated()) {
+        if (AccountHelper.getInstance(getContext())
+                         .isAuthenticated()) {
             if (!isSyncing) {
                 fabArchive.show();
             }

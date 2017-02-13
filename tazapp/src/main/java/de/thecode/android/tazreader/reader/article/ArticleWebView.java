@@ -13,10 +13,10 @@ import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.webkit.WebView;
 
+import de.thecode.android.tazreader.data.TazSettings;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import de.thecode.android.tazreader.data.TazSettings;
 
 public class ArticleWebView extends WebView {
 
@@ -56,7 +56,7 @@ public class ArticleWebView extends WebView {
     }
 
     private void setIsScroll() {
-        isScroll = TazSettings.getPrefBoolean(mContext, TazSettings.PREFKEY.ISSCROLL, false);
+        isScroll = TazSettings.getInstance(mContext).getPrefBoolean(TazSettings.PREFKEY.ISSCROLL, false);
     }
 
     @Override

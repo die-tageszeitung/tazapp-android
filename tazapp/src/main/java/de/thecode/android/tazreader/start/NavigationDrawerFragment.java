@@ -17,17 +17,17 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import de.greenrobot.event.EventBus;
+import de.thecode.android.tazreader.R;
+import de.thecode.android.tazreader.data.TazSettings;
+import de.thecode.android.tazreader.utils.BaseFragment;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
-
-import de.greenrobot.event.EventBus;
-import de.thecode.android.tazreader.R;
-import de.thecode.android.tazreader.data.TazSettings;
-import de.thecode.android.tazreader.utils.BaseFragment;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -70,7 +70,7 @@ public class NavigationDrawerFragment extends BaseFragment {
         if (savedInstanceState != null) mActive = savedInstanceState.getInt(KEY_ACTIVE);
 
 
-        mUserLearnedDrawer = TazSettings.getPrefBoolean(getActivity(), TazSettings.PREFKEY.NAVDRAWERLEARNED, false);
+        mUserLearnedDrawer = TazSettings.getInstance(getActivity()).getPrefBoolean(TazSettings.PREFKEY.NAVDRAWERLEARNED, false);
         if (savedInstanceState != null) mFromSavedInstanceState = true;
         mClickListener = new Item.ClickListener() {
             @Override
@@ -119,7 +119,7 @@ public class NavigationDrawerFragment extends BaseFragment {
                 super.onDrawerClosed(drawerView);
                 if (!mUserLearnedDrawer) {
                     mUserLearnedDrawer = true;
-                    TazSettings.setPref(getActivity(), TazSettings.PREFKEY.NAVDRAWERLEARNED, true);
+                    TazSettings.getInstance(getActivity()).setPref(TazSettings.PREFKEY.NAVDRAWERLEARNED, true);
                 }
             }
 

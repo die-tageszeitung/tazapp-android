@@ -1,5 +1,7 @@
 package de.thecode.android.tazreader.download;
 
+import com.google.common.base.Strings;
+
 import android.annotation.SuppressLint;
 import android.app.DownloadManager.Request;
 import android.content.ContentUris;
@@ -9,7 +11,14 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.StatFs;
 
-import com.google.common.base.Strings;
+import de.greenrobot.event.EventBus;
+import de.thecode.android.tazreader.BuildConfig;
+import de.thecode.android.tazreader.R;
+import de.thecode.android.tazreader.data.Paper;
+import de.thecode.android.tazreader.data.Resource;
+import de.thecode.android.tazreader.secure.Base64;
+import de.thecode.android.tazreader.sync.AccountHelper;
+import de.thecode.android.tazreader.utils.StorageManager;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.slf4j.Logger;
@@ -21,29 +30,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import de.greenrobot.event.EventBus;
-import de.thecode.android.tazreader.BuildConfig;
-import de.thecode.android.tazreader.R;
-import de.thecode.android.tazreader.data.Paper;
-import de.thecode.android.tazreader.data.Resource;
-import de.thecode.android.tazreader.secure.Base64;
-import de.thecode.android.tazreader.sync.AccountHelper;
-import de.thecode.android.tazreader.sync.AccountHelper.CreateAccountException;
-import de.thecode.android.tazreader.utils.StorageManager;
-
 public class DownloadManager {
 
     private static final Logger log = LoggerFactory.getLogger(DownloadManager.class);
 
     android.app.DownloadManager mDownloadManager;
-    Context mContext;
-    StorageManager mStorage;
+    Context                     mContext;
+    StorageManager              mStorage;
 
     private static DownloadManager instance;
 
     public static DownloadManager getInstance(Context context) {
-        if (instance == null)
-            instance = new DownloadManager(context.getApplicationContext());
+        if (instance == null) instance = new DownloadManager(context.getApplicationContext());
         return instance;
     }
 
@@ -54,13 +52,13 @@ public class DownloadManager {
     }
 
     @SuppressLint("NewApi")
-    public void enquePaper(long paperId) throws IllegalArgumentException, Paper.PaperNotFoundException, CreateAccountException, DownloadNotAllowedException, NotEnoughSpaceException {
+    public void enquePaper(long paperId) throws IllegalArgumentException, Paper.PaperNotFoundException,
+            DownloadNotAllowedException, NotEnoughSpaceException {
 
         Paper paper = new Paper(mContext, paperId);
-        AccountHelper accountHelper = new AccountHelper(mContext);
 
-        if (!accountHelper.isAuthenticated() && !paper.isDemo())
-            throw new DownloadNotAllowedException();
+        if (!AccountHelper.getInstance(mContext)
+                          .isAuthenticated() && !paper.isDemo()) throw new DownloadNotAllowedException();
 
         log.trace("requesting paper download: {}", paper);
 
@@ -76,14 +74,17 @@ public class DownloadManager {
         }
 
         if (paper.getPublicationId() > 0) {
-            request.addRequestHeader("Authorization", "Basic " + Base64.encodeToString((accountHelper.getUser() + ":" + accountHelper.getPassword()).getBytes(), Base64.NO_WRAP));
+            request.addRequestHeader("Authorization", "Basic " + Base64.encodeToString((AccountHelper.getInstance(mContext)
+                                                                                                     .getUser() + ":" + AccountHelper.getInstance(
+                    mContext)
+                                                                                                                                     .getPassword()).getBytes(),
+                                                                                       Base64.NO_WRAP));
         }
 
         File destinationFile = mStorage.getDownloadFile(paper);
 
 
         assertEnougSpaceForDownload(destinationFile.getParentFile(), calculateBytesNeeded(paper.getLen()));
-
 
 
         request.setDestinationUri(Uri.fromFile(destinationFile));
@@ -163,7 +164,8 @@ public class DownloadManager {
             resource.setDownloadId(downloadId);
 
             mContext.getContentResolver()
-                    .update(Uri.withAppendedPath(Resource.CONTENT_URI, resource.getKey()), resource.getContentValues(), null, null);
+                    .update(Uri.withAppendedPath(Resource.CONTENT_URI, resource.getKey()), resource.getContentValues(), null,
+                            null);
         }
 
     }
@@ -173,7 +175,8 @@ public class DownloadManager {
         if (state != null && state.getStatus() != DownloadState.STATUS_SUCCESSFUL) {
             if (mDownloadManager.remove(downloadId) > 0) {
                 Cursor cursor = mContext.getContentResolver()
-                                        .query(Paper.CONTENT_URI, null, Paper.Columns.DOWNLOADID + " = " + downloadId, null, null);
+                                        .query(Paper.CONTENT_URI, null, Paper.Columns.DOWNLOADID + " = " + downloadId, null,
+                                               null);
                 try {
                     while (cursor.moveToNext()) {
                         Paper removedPaper = new Paper(cursor);
@@ -228,20 +231,20 @@ public class DownloadManager {
 
 
         public static final int STATUS_SUCCESSFUL = android.app.DownloadManager.STATUS_SUCCESSFUL;
-        public static final int STATUS_FAILED = android.app.DownloadManager.STATUS_FAILED;
-        public static final int STATUS_PAUSED = android.app.DownloadManager.STATUS_PAUSED;
-        public static final int STATUS_PENDING = android.app.DownloadManager.STATUS_PENDING;
-        public static final int STATUS_RUNNING = android.app.DownloadManager.STATUS_RUNNING;
-        public static final int STATUS_NOTFOUND = 0;
+        public static final int STATUS_FAILED     = android.app.DownloadManager.STATUS_FAILED;
+        public static final int STATUS_PAUSED     = android.app.DownloadManager.STATUS_PAUSED;
+        public static final int STATUS_PENDING    = android.app.DownloadManager.STATUS_PENDING;
+        public static final int STATUS_RUNNING    = android.app.DownloadManager.STATUS_RUNNING;
+        public static final int STATUS_NOTFOUND   = 0;
 
-        int mStatus;
-        int mReason;
-        long mBytesTotal;
-        long mBytesDownloaded;
+        int    mStatus;
+        int    mReason;
+        long   mBytesTotal;
+        long   mBytesDownloaded;
         String mUri;
         String mTitle;
         String mDescription;
-        long mDownloadId;
+        long   mDownloadId;
 
         public DownloadState(long downloadId) {
             mDownloadId = downloadId;
@@ -254,7 +257,8 @@ public class DownloadManager {
                 if (cursor != null && cursor.moveToFirst()) {
                     mStatus = cursor.getInt(cursor.getColumnIndex(android.app.DownloadManager.COLUMN_STATUS));
                     mReason = cursor.getInt(cursor.getColumnIndex(android.app.DownloadManager.COLUMN_REASON));
-                    mBytesDownloaded = cursor.getLong(cursor.getColumnIndex(android.app.DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR));
+                    mBytesDownloaded = cursor.getLong(
+                            cursor.getColumnIndex(android.app.DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR));
                     mBytesTotal = cursor.getLong(cursor.getColumnIndex(android.app.DownloadManager.COLUMN_TOTAL_SIZE_BYTES));
                     mUri = cursor.getString(cursor.getColumnIndex(android.app.DownloadManager.COLUMN_URI));
                     mTitle = cursor.getString(cursor.getColumnIndex(android.app.DownloadManager.COLUMN_TITLE));
@@ -314,8 +318,6 @@ public class DownloadManager {
         /**
          * Gibt einen lesbaren Text des Grundes für den DownloadStatus zurück... Dieser ist in /res/values/strings_download.xml
          * hinterlegt und kann im erbenden Projekt überschrieben werden.
-         *
-         * @return
          */
         public String getReasonText() {
             int id = mContext.getResources()
@@ -328,10 +330,8 @@ public class DownloadManager {
         }
 
         /**
-         * Gibt einen lesbaren Text des DownloadStatus zurück... Dieser ist in /res/values/strings_download.xml hinterlegt und kann im
-         * erbenden Projekt überschrieben werden.
-         *
-         * @return
+         * Gibt einen lesbaren Text des DownloadStatus zurück... Dieser ist in /res/values/strings_download.xml hinterlegt und
+         * kann im erbenden Projekt überschrieben werden.
          */
         public String getStatusText() {
             switch (getStatus()) {
@@ -360,7 +360,7 @@ public class DownloadManager {
 
         long downloadId;
         long paperId;
-        int progress;
+        int  progress;
 
         public DownloadProgressThread(long downloadId, long paperId) {
             this.downloadId = downloadId;
@@ -403,8 +403,7 @@ public class DownloadManager {
         long fiveDownloads = bytesOfDownload * 5;
         if (threeDownloads > oneHundred) {
             return threeDownloads;
-        }
-        else return Math.min(oneHundred,fiveDownloads);
+        } else return Math.min(oneHundred, fiveDownloads);
     }
 
     private static void assertEnougSpaceForDownload(File dir, long bytesNeeded) throws NotEnoughSpaceException {
@@ -417,8 +416,8 @@ public class DownloadManager {
         } else {
             available = (long) statFs.getAvailableBlocks() * (long) statFs.getBlockSize();
         }
-        if (available < requested) throw new NotEnoughSpaceException(requested,available);
-        return ;
+        if (available < requested) throw new NotEnoughSpaceException(requested, available);
+        return;
     }
 
 
@@ -431,9 +430,10 @@ public class DownloadManager {
         }
     }
 
-    public static class NotEnoughSpaceException extends Exception{
+    public static class NotEnoughSpaceException extends Exception {
         final long requestedByte;
         final long availableByte;
+
         public NotEnoughSpaceException(long requestedByte, long availableByte) {
             super();
             this.requestedByte = requestedByte;

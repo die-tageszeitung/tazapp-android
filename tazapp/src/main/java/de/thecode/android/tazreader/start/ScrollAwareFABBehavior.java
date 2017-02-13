@@ -7,10 +7,10 @@ import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
 import android.view.View;
 
+import de.thecode.android.tazreader.sync.AccountHelper;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import de.thecode.android.tazreader.sync.AccountHelper;
 
 /**
  * Created by mate on 03.03.2016.
@@ -19,20 +19,17 @@ public class ScrollAwareFABBehavior extends FloatingActionButton.Behavior {
 
     private static final Logger log = LoggerFactory.getLogger(ScrollAwareFABBehavior.class);
 
-    AccountHelper mAccountHelper;
-    boolean isAuthenticated;
+    private AccountHelper mAccountHelper;
 
     public ScrollAwareFABBehavior(Context context, AttributeSet attrs) {
         super();
-        try {
-            mAccountHelper = new AccountHelper(context);
-        } catch (AccountHelper.CreateAccountException e) {
-
-        }
+        mAccountHelper = AccountHelper.getInstance(context);
     }
 
     @Override
-    public boolean onStartNestedScroll(CoordinatorLayout coordinatorLayout, FloatingActionButton child, View directTargetChild, View target, int nestedScrollAxes) {
+    public boolean onStartNestedScroll(CoordinatorLayout coordinatorLayout, FloatingActionButton child, View directTargetChild,
+                                       View target, int nestedScrollAxes) {
+        boolean isAuthenticated = false;
         if (mAccountHelper != null) {
             isAuthenticated = mAccountHelper.isAuthenticated();
         }
@@ -40,7 +37,8 @@ public class ScrollAwareFABBehavior extends FloatingActionButton.Behavior {
     }
 
     @Override
-    public void onNestedScroll(CoordinatorLayout coordinatorLayout, FloatingActionButton child, View target, int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed) {
+    public void onNestedScroll(CoordinatorLayout coordinatorLayout, FloatingActionButton child, View target, int dxConsumed,
+                               int dyConsumed, int dxUnconsumed, int dyUnconsumed) {
         if (dyConsumed > 0) child.hide();
         else child.show();
     }

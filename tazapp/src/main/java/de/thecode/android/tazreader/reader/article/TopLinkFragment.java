@@ -2,11 +2,11 @@ package de.thecode.android.tazreader.reader.article;
 
 import android.view.MotionEvent;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.reader.ReaderActivity.DIRECTIONS;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TopLinkFragment extends ArticleFragment {
 
@@ -38,7 +38,7 @@ public class TopLinkFragment extends ArticleFragment {
     public void onSwipeRight(ArticleWebView view, MotionEvent e1, MotionEvent e2) {
         log.trace("");
         String position = "0";
-        if (!TazSettings.getPrefBoolean(mContext, TazSettings.PREFKEY.ISSCROLL, false)) position = "EOF";
+        if (!TazSettings.getInstance(mContext).getPrefBoolean(TazSettings.PREFKEY.ISSCROLL, false)) position = "EOF";
         if (hasCallback()) getCallback().onLoadPrevArticle(DIRECTIONS.LEFT, position);
     }
 

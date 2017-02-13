@@ -19,12 +19,6 @@ import android.widget.TextView;
 
 import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Paper.Plist.Book;
@@ -40,6 +34,12 @@ import de.thecode.android.tazreader.reader.SettingsDialog;
 import de.thecode.android.tazreader.utils.BaseFragment;
 import de.thecode.android.tazreader.utils.TintHelper;
 import de.thecode.android.tazreader.widget.CustomToolbar;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class IndexFragment extends BaseFragment {
 
@@ -168,7 +168,7 @@ public class IndexFragment extends BaseFragment {
                                                                                                  .build());
         mRecyclerView.setAdapter(adapter);
 
-        setIndexVerbose(TazSettings.getPrefBoolean(getActivity(), TazSettings.PREFKEY.CONTENTVERBOSE, true));
+        setIndexVerbose(TazSettings.getInstance(getActivity()).getPrefBoolean(TazSettings.PREFKEY.CONTENTVERBOSE, true));
 
         return view;
     }
@@ -262,7 +262,7 @@ public class IndexFragment extends BaseFragment {
     public void setIndexVerbose(boolean bool) {
         mShowSubtitles = bool;
         adapter.notifyDataSetChanged();
-        TazSettings.setPref(getActivity(), TazSettings.PREFKEY.CONTENTVERBOSE, bool);
+        TazSettings.getInstance(getActivity()).setPref(TazSettings.PREFKEY.CONTENTVERBOSE, bool);
         Menu menu = toolbar.getMenu();
         MenuItem menuItemFull = menu.findItem(R.id.toolbar_index_full);
         MenuItem menuItemShort = menu.findItem(R.id.toolbar_index_short);

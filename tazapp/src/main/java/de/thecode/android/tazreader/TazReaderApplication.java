@@ -67,17 +67,23 @@ public class TazReaderApplication extends Application {
         log.info("");
 
         // Migration von alter Version
-        int lastVersionCode = TazSettings.getPrefInt(this, TazSettings.PREFKEY.LASTVERSION, Integer.parseInt(
-                String.valueOf(BuildConfig.VERSION_CODE)
-                      .substring(1)));
+        int lastVersionCode = TazSettings.getInstance(this)
+                                         .getPrefInt(TazSettings.PREFKEY.LASTVERSION, Integer.parseInt(
+                                                 String.valueOf(BuildConfig.VERSION_CODE)
+                                                       .substring(1)));
         if (lastVersionCode < 16) {
-            if (TazSettings.getPrefString(this, TazSettings.PREFKEY.COLSIZE, "0")
-                           .equals("4")) TazSettings.setPref(this, TazSettings.PREFKEY.COLSIZE, "3");
+            if (TazSettings.getInstance(this)
+                           .getPrefString(TazSettings.PREFKEY.COLSIZE, "0")
+                           .equals("4")) TazSettings.getInstance(this)
+                                                    .setPref(TazSettings.PREFKEY.COLSIZE, "3");
         }
         if (lastVersionCode < 32) {
-            TazSettings.removePref(this, TazSettings.PREFKEY.FONTSIZE);
-            TazSettings.removePref(this, TazSettings.PREFKEY.COLSIZE);
-            TazSettings.setPref(this, TazSettings.PREFKEY.PAPERMIGRATEFROM, lastVersionCode);
+            TazSettings.getInstance(this)
+                       .removePref(TazSettings.PREFKEY.FONTSIZE);
+            TazSettings.getInstance(this)
+                       .removePref(TazSettings.PREFKEY.COLSIZE);
+            TazSettings.getInstance(this)
+                       .setPref(TazSettings.PREFKEY.PAPERMIGRATEFROM, lastVersionCode);
         }
         if (lastVersionCode < 52) {
             //Remvoing all dead prefs from crashlytics
@@ -90,28 +96,47 @@ public class TazReaderApplication extends Application {
         }
 
         // MIGRATION BEENDET, setzten der aktuellen Version
-        TazSettings.setPref(this, TazSettings.PREFKEY.LASTVERSION, Integer.parseInt(String.valueOf(BuildConfig.VERSION_CODE)
-                                                                                          .substring(1)));
+        TazSettings.getInstance(this)
+                   .setPref(TazSettings.PREFKEY.LASTVERSION, Integer.parseInt(String.valueOf(BuildConfig.VERSION_CODE)
+                                                                                    .substring(1)));
 
-        TazSettings.setPref(this, TazSettings.PREFKEY.ISFOOT, false);
-        TazSettings.setDefaultPref(this, TazSettings.PREFKEY.FONTSIZE, "10");
-        TazSettings.setDefaultPref(this, TazSettings.PREFKEY.AUTOLOAD, false);
-        TazSettings.setDefaultPref(this, TazSettings.PREFKEY.AUTOLOAD_WIFI, true);
-        TazSettings.setDefaultPref(this, TazSettings.PREFKEY.ISSCROLL, Display.getScreenSizeInch(this) <= 6.5D);
-        TazSettings.setDefaultPref(this, TazSettings.PREFKEY.COLSIZE, "0.5");
-        TazSettings.setDefaultPref(this, TazSettings.PREFKEY.THEME, ReaderActivity.THEMES.normal.name());
-        TazSettings.setDefaultPref(this, TazSettings.PREFKEY.FULLSCREEN, false);
-        TazSettings.setDefaultPref(this, TazSettings.PREFKEY.CONTENTVERBOSE, true);
-        TazSettings.setDefaultPref(this, TazSettings.PREFKEY.KEEPSCREEN, false);
-        TazSettings.setDefaultPref(this, TazSettings.PREFKEY.ORIENTATION, "auto");
-        TazSettings.setDefaultPref(this, TazSettings.PREFKEY.AUTODELETE, false);
-        TazSettings.setDefaultPref(this, TazSettings.PREFKEY.AUTODELETE_VALUE, 14);
-        TazSettings.setDefaultPref(this, TazSettings.PREFKEY.RINGTONE,
+        TazSettings.getInstance(this)
+                   .setPref(TazSettings.PREFKEY.ISFOOT, false);
+        TazSettings.getInstance(this)
+                   .setDefaultPref(TazSettings.PREFKEY.FONTSIZE, "10");
+        TazSettings.getInstance(this)
+                   .setDefaultPref(TazSettings.PREFKEY.AUTOLOAD, false);
+        TazSettings.getInstance(this)
+                   .setDefaultPref(TazSettings.PREFKEY.AUTOLOAD_WIFI, true);
+        TazSettings.getInstance(this)
+                   .setDefaultPref(TazSettings.PREFKEY.ISSCROLL, Display.getScreenSizeInch(this) <= 6.5D);
+        TazSettings.getInstance(this)
+                   .setDefaultPref(TazSettings.PREFKEY.COLSIZE, "0.5");
+        TazSettings.getInstance(this)
+                   .setDefaultPref(TazSettings.PREFKEY.THEME, ReaderActivity.THEMES.normal.name());
+        TazSettings.getInstance(this)
+                   .setDefaultPref(TazSettings.PREFKEY.FULLSCREEN, false);
+        TazSettings.getInstance(this)
+                   .setDefaultPref(TazSettings.PREFKEY.CONTENTVERBOSE, true);
+        TazSettings.getInstance(this)
+                   .setDefaultPref(TazSettings.PREFKEY.KEEPSCREEN, false);
+        TazSettings.getInstance(this)
+                   .setDefaultPref(TazSettings.PREFKEY.ORIENTATION, "auto");
+        TazSettings.getInstance(this)
+                   .setDefaultPref(TazSettings.PREFKEY.AUTODELETE, false);
+        TazSettings.getInstance(this)
+                   .setDefaultPref(TazSettings.PREFKEY.AUTODELETE_VALUE, 14);
+        TazSettings.getInstance(this)
+                   .setDefaultPref(TazSettings.PREFKEY.RINGTONE,
                                    RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
-        TazSettings.setDefaultPref(this, TazSettings.PREFKEY.VIBRATE, true);
-        TazSettings.setDefaultPref(this, TazSettings.PREFKEY.ISSOCIAL, false);
-        TazSettings.setDefaultPref(this, TazSettings.PREFKEY.PAGEINDEXBUTTON, false);
-        TazSettings.setDefaultPref(this, TazSettings.PREFKEY.TEXTTOSPEACH, false);
+        TazSettings.getInstance(this)
+                   .setDefaultPref(TazSettings.PREFKEY.VIBRATE, true);
+        TazSettings.getInstance(this)
+                   .setDefaultPref(TazSettings.PREFKEY.ISSOCIAL, false);
+        TazSettings.getInstance(this)
+                   .setDefaultPref(TazSettings.PREFKEY.PAGEINDEXBUTTON, false);
+        TazSettings.getInstance(this)
+                   .setDefaultPref(TazSettings.PREFKEY.TEXTTOSPEACH, false);
 
         listener = new OnSharedPreferenceChangeListener() {
 
@@ -122,7 +147,8 @@ public class TazReaderApplication extends Application {
                 }
             }
         };
-        TazSettings.getSharedPreferences(this)
+        TazSettings.getInstance(this)
+                   .getSharedPreferences()
                    .registerOnSharedPreferenceChangeListener(listener);
 
         autoDownloadSender = PendingIntent.getBroadcast(this, 0, new Intent(this, TazRequestSyncReceiver.class), 0);
@@ -139,13 +165,15 @@ public class TazReaderApplication extends Application {
     public void onTerminate() {
         //TazReaderHTTPD.stopInstance();
         // db.closeDB();
-        TazSettings.getSharedPreferences(this)
+        TazSettings.getInstance(this)
+                   .getSharedPreferences()
                    .unregisterOnSharedPreferenceChangeListener(listener);
         super.onTerminate();
     }
 
     public static void checkAutoDownload(Context context) {
-        if (TazSettings.getPrefBoolean(context, TazSettings.PREFKEY.AUTOLOAD, false)) registerAutoDownload(context, false);
+        if (TazSettings.getInstance(context)
+                       .getPrefBoolean(TazSettings.PREFKEY.AUTOLOAD, false)) registerAutoDownload(context, false);
         else unregisterAutoDownload(context);
     }
 

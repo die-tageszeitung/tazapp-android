@@ -139,7 +139,7 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
         setContentView(R.layout.activity_reader);
 
 
-        setBackgroundColor(onGetBackgroundColor(TazSettings.getPrefString(this, TazSettings.PREFKEY.THEME, "normal")));
+        setBackgroundColor(onGetBackgroundColor(TazSettings.getInstance(this).getPrefString(TazSettings.PREFKEY.THEME, "normal")));
 
         mLoadingProgress = (ProgressBar) findViewById(R.id.loading);
         mLoadingProgress.setVisibility(View.GONE);
@@ -212,7 +212,7 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
     protected void onResume() {
         super.onResume();
         log.trace("");
-        if (TazSettings.getPrefBoolean(this, TazSettings.PREFKEY.KEEPSCREEN, false)) {
+        if (TazSettings.getInstance(this).getPrefBoolean(TazSettings.PREFKEY.KEEPSCREEN, false)) {
             log.debug("Bildschirm bleibt an!");
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         } else {
@@ -467,7 +467,7 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
     public int onGetBackgroundColor(String themeName) {
         THEMES theme = THEMES.valueOf(themeName);
         // THEMES theme = THEMES.valueOf(TazSettings.getPrefString(this, TazSettings.PREFKEY.THEME, "normal"));
-        String hexColor = TazSettings.getPrefString(this, theme.getBgColorName(), "#FFFFFF");
+        String hexColor = TazSettings.getInstance(this).getPrefString(theme.getBgColorName(), "#FFFFFF");
         return Color.parseColor(hexColor);
     }
 
@@ -646,7 +646,7 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
     @Override
     public void setImmersiveMode() {
 
-        boolean onOff = TazSettings.getPrefBoolean(this, TazSettings.PREFKEY.FULLSCREEN, false);
+        boolean onOff = TazSettings.getInstance(this).getPrefBoolean(TazSettings.PREFKEY.FULLSCREEN, false);
 
         log.trace("immersive: {}", onOff);
 
@@ -789,7 +789,7 @@ public class ReaderActivity extends BaseActivity implements LoaderManager.Loader
 
     @Override
     public void speak(@NonNull String id, CharSequence text) {
-        if (TazSettings.getPrefBoolean(this, TazSettings.PREFKEY.TEXTTOSPEACH, false)) {
+        if (TazSettings.getInstance(this).getPrefBoolean(TazSettings.PREFKEY.TEXTTOSPEACH, false)) {
             switch (getTtsState()) {
                 case DISABLED:
                     if (ttsPreparePlayingInActivty()) {

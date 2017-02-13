@@ -1,5 +1,7 @@
 package de.thecode.android.tazreader.reader.page;
 
+import com.google.common.base.Strings;
+
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.Point;
@@ -8,14 +10,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-
-import com.google.common.base.Strings;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
@@ -30,6 +24,12 @@ import de.thecode.android.tazreader.reader.ReaderTtsFragment;
 import de.thecode.android.tazreader.reader.index.IIndexItem;
 import de.thecode.android.tazreader.widget.PageIndexButton;
 import de.thecode.android.tazreader.widget.ShareButton;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class PagesFragment extends AbstractContentFragment {
 
@@ -71,7 +71,7 @@ public class PagesFragment extends AbstractContentFragment {
         _readerView.setAdapter(_adapter);
         mShareButton = (ShareButton) view.findViewById(R.id.share);
         PageIndexButton mPageIndexButton = (PageIndexButton) view.findViewById(R.id.pageindex);
-        if (TazSettings.getPrefBoolean(mContext, TazSettings.PREFKEY.PAGEINDEXBUTTON, false)) {
+        if (TazSettings.getInstance(mContext).getPrefBoolean(TazSettings.PREFKEY.PAGEINDEXBUTTON, false)) {
             mPageIndexButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
