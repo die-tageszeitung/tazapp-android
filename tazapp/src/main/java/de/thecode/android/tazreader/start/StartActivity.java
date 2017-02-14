@@ -61,29 +61,31 @@ import java.util.List;
 /**
  * Created by mate on 27.01.2015.
  */
-public class StartActivity extends BaseActivity implements IStartCallback, DialogButtonListener, DialogDismissListener, DialogCancelListener, DialogAdapterListListener {
+public class StartActivity extends BaseActivity
+        implements IStartCallback, DialogButtonListener, DialogDismissListener, DialogCancelListener, DialogAdapterListListener {
 
     private static final Logger log = LoggerFactory.getLogger(StartActivity.class);
 
-    private static final String DIALOG_FIRST = "dialogFirst";
+    private static final String DIALOG_FIRST                 = "dialogFirst";
+    private static final String DIALOG_USER_REENTER          = "dialogUserReenter";
     //private static final String DIALOG_MISSING_RESOURCE = "dialogMissingResource";
-    private static final String DIALOG_RESOURCE_DOWNLOADING = "dialogResourceDownloading";
-    private static final String DIALOG_NO_CONNECTION = "dialogNoConnection";
-    private static final String DIALOG_MIGRATION_FINISHED = "dialogMigrationFinished";
-    private static final String DIALOG_DOWNLOAD_MOBILE = "dialogDownloadMobile";
-    private static final String DIALOG_ACCOUNT_ERROR = "dialogAccountError";
+    private static final String DIALOG_RESOURCE_DOWNLOADING  = "dialogResourceDownloading";
+    private static final String DIALOG_NO_CONNECTION         = "dialogNoConnection";
+    private static final String DIALOG_MIGRATION_FINISHED    = "dialogMigrationFinished";
+    private static final String DIALOG_DOWNLOAD_MOBILE       = "dialogDownloadMobile";
+    private static final String DIALOG_ACCOUNT_ERROR         = "dialogAccountError";
     private static final String DIALOG_DOWNLOADMANAGER_ERROR = "dialogDownloadManagerError";
-    private static final String DIALOG_DOWNLOAD_ERROR = "dialogDownloadManagerError";
-    private static final String DIALOG_ARCHIVE_YEAR = "dialogArchiveYear";
-    private static final String DIALOG_ARCHIVE_MONTH = "dialogArchiveMonth";
-    private static final String DIALOG_WAIT = "dialogWait";
+    private static final String DIALOG_DOWNLOAD_ERROR        = "dialogDownloadManagerError";
+    private static final String DIALOG_ARCHIVE_YEAR          = "dialogArchiveYear";
+    private static final String DIALOG_ARCHIVE_MONTH         = "dialogArchiveMonth";
+    private static final String DIALOG_WAIT                  = "dialogWait";
 
-    private static final String ARGUMENT_RESOURCE_KEY = "resourceKey";
-    private static final String ARGUMENT_RESOURCE_URL = "resourceUrl";
+    private static final String ARGUMENT_RESOURCE_KEY           = "resourceKey";
+    private static final String ARGUMENT_RESOURCE_URL           = "resourceUrl";
     private static final String ARGUMENT_MIGRATED_IDS_JSONARRAY = "migratedIds";
-    private static final String ARGUMENT_ARCHIVE_YEAR = "archiveYear";
+    private static final String ARGUMENT_ARCHIVE_YEAR           = "archiveYear";
 
-    private CustomToolbar toolbar;
+    private CustomToolbar            toolbar;
     private NavigationDrawerFragment mDrawerFragment;
 
     RetainDataFragment retainDataFragment;
@@ -113,13 +115,15 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (TazSettings.getInstance(this).getPrefInt(TazSettings.PREFKEY.PAPERMIGRATEFROM, 0) != 0) {
+        if (TazSettings.getInstance(this)
+                       .getPrefInt(TazSettings.PREFKEY.PAPERMIGRATEFROM, 0) != 0) {
             Intent migrationIntent = new Intent(this, MigrationActivity.class);
             migrationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(migrationIntent);
             return;
         }
-        TazSettings.getInstance(this).removePref(TazSettings.PREFKEY.PAPERMIGRATEFROM);
+        TazSettings.getInstance(this)
+                   .removePref(TazSettings.PREFKEY.PAPERMIGRATEFROM);
 
         Orientation.setActivityOrientationFromPrefs(this);
 
@@ -152,18 +156,25 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
         if (getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         updateTitle();
 
-        mDrawerFragment = (NavigationDrawerFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_navigation_drawer);
+        mDrawerFragment = (NavigationDrawerFragment) getSupportFragmentManager().findFragmentById(
+                R.id.fragment_navigation_drawer);
         mDrawerFragment.setUp(R.id.fragment_navigation_drawer, (DrawerLayout) findViewById(R.id.drawer_layout), toolbar);
 
-        userItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_account), R.drawable.ic_account, LoginFragment.class);
-        importItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_import), R.drawable.ic_file_folder, ImportFragment.class);
+        userItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_account), R.drawable.ic_account,
+                                                               LoginFragment.class);
+        importItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_import), R.drawable.ic_file_folder,
+                                                                 ImportFragment.class);
         importItem.setAccessibilty(false);
-        libraryItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_library), R.drawable.ic_library, LibraryFragment.class);
-        settingsItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_settings), R.drawable.ic_settings, SettingsFragment.class);
+        libraryItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_library), R.drawable.ic_library,
+                                                                  LibraryFragment.class);
+        settingsItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_settings), R.drawable.ic_settings,
+                                                                   SettingsFragment.class);
         settingsItem.setAccessibilty(false);
-        helpItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_help), R.drawable.ic_help, HelpFragment.class);
+        helpItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_help), R.drawable.ic_help,
+                                                               HelpFragment.class);
         helpItem.setAccessibilty(false);
-        imprintItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_imprint), R.drawable.ic_imprint, ImprintFragment.class);
+        imprintItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_imprint), R.drawable.ic_imprint,
+                                                                  ImprintFragment.class);
 
 
         mDrawerFragment.addItem(libraryItem);
@@ -187,10 +198,23 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
         //        showMigrationDownloadDialog();
 
 
-        if (TazSettings.getInstance(this).getPrefBoolean(TazSettings.PREFKEY.FISRTSTART, true)) {
-            TazSettings.getInstance(this).setPref(TazSettings.PREFKEY.FISRTSTART, false);
+        if (TazSettings.getInstance(this)
+                       .getPrefBoolean(TazSettings.PREFKEY.FISRTSTART, true)) {
+            TazSettings.getInstance(this)
+                       .setPref(TazSettings.PREFKEY.FISRTSTART, false);
+            TazSettings.getInstance(this)
+                       .setPref(TazSettings.PREFKEY.USERMIGRATIONNOTIFICATION, true);
             firstStartDialog();
+        } else if (!TazSettings.getInstance(this)
+                               .getPrefBoolean(TazSettings.PREFKEY.USERMIGRATIONNOTIFICATION, false)) {
+            new Dialog.Builder().setCancelable(false)
+                                .setMessage(R.string.dialog_user_reenter)
+                                .setPositiveButton(R.string.dialog_understood)
+                                .buildSupport()
+                                .show(getSupportFragmentManager(), DIALOG_USER_REENTER);
         }
+
+        SyncHelper.requestSync(this);
     }
 
     @Override
@@ -301,10 +325,8 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
                 case Connection.CONNECTION_MOBILE:
                 case Connection.CONNECTION_MOBILE_ROAMING:
                     addToDownloadQueue(paperId);
-                    if (retainDataFragment.allowMobileDownload)
-                        startDownloadQueue();
-                    else
-                        showMobileConnectionDialog();
+                    if (retainDataFragment.allowMobileDownload) startDownloadQueue();
+                    else showMobileConnectionDialog();
                     break;
                 default:
                     addToDownloadQueue(paperId);
@@ -486,7 +508,8 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
                                            .enqueResource(openPaper);
                             retainDataFragment.openPaperWaitingForRessource = id;
                         } catch (DownloadManager.NotEnoughSpaceException e) {
-                            showDownloadErrorDialog(getString(R.string.message_resourcedownload_error), getString(R.string.message_not_enough_space), e);
+                            showDownloadErrorDialog(getString(R.string.message_resourcedownload_error),
+                                                    getString(R.string.message_not_enough_space), e);
                         }
 
                 }
@@ -498,7 +521,8 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
 
     public void updateTitle() {
         StringBuilder titleBuilder = new StringBuilder(getString(getApplicationInfo().labelRes));
-        if (AccountHelper.getInstance(this).isDemoMode()) {
+        if (AccountHelper.getInstance(this)
+                         .isDemoMode()) {
             titleBuilder.append(" ")
                         .append(getString(R.string.demo_titel_appendix));
         }
@@ -510,10 +534,10 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
     @Override
     public void requestSync(Calendar start, Calendar end) {
         if (start != null && end != null) {
-            SyncHelper.requestManualSync(this, start, end);
+            SyncHelper.requestSync(this, start, end);
             return;
         }
-        SyncHelper.requestManualSync(this);
+        SyncHelper.requestSync(this);
     }
 
     public void onEventMainThread(PaperDownloadFinishedEvent event) {
@@ -559,6 +583,12 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
     public void onDialogClick(String tag, Bundle arguments, int which) {
         if (DIALOG_FIRST.equals(tag)) {
             if (which == Dialog.BUTTON_NEUTRAL) mDrawerFragment.simulateClick(userItem, true);
+        } else if (DIALOG_USER_REENTER.equals(tag)) {
+            if (which == Dialog.BUTTON_POSITIVE) {
+                TazSettings.getInstance(this)
+                           .setPref(TazSettings.PREFKEY.USERMIGRATIONNOTIFICATION, true);
+                mDrawerFragment.simulateClick(userItem, true);
+            }
         } else if (DIALOG_MIGRATION_FINISHED.equals(tag)) {
             if (which == Dialog.BUTTON_POSITIVE) {
                 try {
@@ -597,8 +627,6 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
             }
         }
     }
-
-
 
 
     @Override
@@ -648,11 +676,11 @@ public class StartActivity extends BaseActivity implements IStartCallback, Dialo
         public LruCache<String, Bitmap> cache;
         public List<Long> selectedInLibrary = new ArrayList<>();
         boolean actionMode;
-        List<Long> downloadQueue = new ArrayList<>();
-        boolean allowMobileDownload = false;
-        private long openPaperIdAfterDownload = -1;
-        private long openPaperWaitingForRessource = -1;
-        private boolean useOpenPaperafterDownload = true;
+        List<Long> downloadQueue       = new ArrayList<>();
+        boolean    allowMobileDownload = false;
+        private long    openPaperIdAfterDownload     = -1;
+        private long    openPaperWaitingForRessource = -1;
+        private boolean useOpenPaperafterDownload    = true;
         List<NavigationDrawerFragment.NavigationItem> navBackstack = new ArrayList<>();
         WeakReference<IStartCallback> callback;
 

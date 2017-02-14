@@ -55,7 +55,6 @@ public final class TazSettings {
         public static final String TEXTTOSPEACH              = "textToSpeech";
         public static final String USER                      = "user";
         public static final String PASS                      = "pass";
-        public static final String AUTHENTICATED             = "authenticated";
         public static final String USERMIGRATIONNOTIFICATION = "usermigrationnotification";
     }
 

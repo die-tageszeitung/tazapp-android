@@ -6,6 +6,7 @@
     <string name="string_badge_update">Update</string>
     <string name="string_badge_kiosk">Kiosk</string>
     <string name="dialog_yes">Ja</string>
+    <string name="dialog_understood">Verstanden</string>
     <string name="dialog_wifi">WiFi</string>
     <string name="string_titel_seperator">vom</string>
     <string name="ic_action_delete">Löschen</string>
@@ -25,6 +26,7 @@
     <string name="dialog_error_credentials_not_allowed">Benutzer ist nicht erlaubt</string>
     <string name="dialog_resources_loading">Ressourcen werden im Moment heruntergeladen, bitte versuchen Sie es in einigen Augenblicken nochmal.</string>
     <string name="dialog_resources_not_found">Ressourcen, die zum Anzeigen der Ausgabe benötigt werden, wurden nicht gefunden. Möchten Sie diese jetzt herunterladen?</string>
+    <string name="dialog_user_reenter">Wir haben die Benutzerdatenspeicherung in unserer App umgestellt. Dadurch werden nun weniger Berechtigungen benötigt, aber leider müssen Sie Ihre Benutzerdaten erneut eingeben.</string>
     <!--<string name="dialog_migration_wait">Migriere Ausgaben für die neue App-Version, bitte warten …\n\nBitte beenden Sie die App während der Migration nicht, um mögliche Fehler zu vermeiden. Vielen Dank.</string>-->
     <!--<string name="dialog_migration_download">%1$d Ausgaben wurden migriert. Möchten Sie die Ausgaben jetzt herunterladen?</string>-->
     <string name="dialog_mobile_download">Sie sind mit dem Mobilfunknetz verbunden.\nBeim Download können zusätzliche Kosten entstehen.</string>

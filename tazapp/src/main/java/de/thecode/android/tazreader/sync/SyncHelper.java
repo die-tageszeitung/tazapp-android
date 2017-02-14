@@ -22,13 +22,13 @@ public class SyncHelper {
      *
      * @param context the context
      */
-    public static void requestManualSync(Context context) {
+    public static void requestSync(Context context) {
         log.trace("Requested manual sync");
-        requestManualSync(context, null, null);
+        requestSync(context, null, null);
     }
 
 
-    public static void requestManualSync(Context context, Calendar start, Calendar end) {
+    public static void requestSync(Context context, Calendar start, Calendar end) {
         Intent serviceIntent = new Intent(context,SyncService.class);
         if (start != null && end != null) {
             serviceIntent.putExtra(SyncService.ARG_START_DATE, new SimpleDateFormat("yyyy-MM-dd", Locale.GERMANY).format(start.getTime()));
