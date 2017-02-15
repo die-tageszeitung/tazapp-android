@@ -100,8 +100,6 @@
                 <category android:name="android.intent.category.HOME"/>
             </intent-filter>
         </receiver>
-        <receiver android:name="de.thecode.android.tazreader.service.TazRequestSyncReceiver">
-        </receiver>
 
         <receiver android:name=".download.NotificationBroadcastReceiver">
             <intent-filter>

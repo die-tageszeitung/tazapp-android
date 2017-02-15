@@ -23,7 +23,6 @@ import com.dd.plist.PropertyListParser;
 import de.greenrobot.event.EventBus;
 import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.R;
-import de.thecode.android.tazreader.TazReaderApplication;
 import de.thecode.android.tazreader.analytics.AnalyticsWrapper;
 import de.thecode.android.tazreader.data.FileCacheCoverHelper;
 import de.thecode.android.tazreader.data.Paper;
@@ -69,8 +68,8 @@ public class SyncService extends IntentService {
 
     private static final String PLIST_KEY_ISSUES = "issues";
 
-    public static final  String ARG_START_DATE   = "startDate";
-    public static final  String ARG_END_DATE     = "endDate";
+    public static final String ARG_START_DATE = "startDate";
+    public static final String ARG_END_DATE   = "endDate";
 
     FileCacheCoverHelper mCoverHelper;
 
@@ -87,7 +86,8 @@ public class SyncService extends IntentService {
                 .postSticky(new SyncStateChangedEvent(true));
 
         //If migration is needed dont sync
-        if (TazSettings.getInstance(this).getPrefInt(TazSettings.PREFKEY.PAPERMIGRATEFROM, 0) != 0) return;
+        if (TazSettings.getInstance(this)
+                       .getPrefInt(TazSettings.PREFKEY.PAPERMIGRATEFROM, 0) != 0) return;
         //if (TazSettings.getPrefBoolean(this, TazSettings.PREFKEY.PAPERMIGRATERUNNING, false)) return;
 
 
@@ -102,16 +102,20 @@ public class SyncService extends IntentService {
         }
 
 
-        Long currentOpenPaperId = TazSettings.getInstance(this).getPrefLong(TazSettings.PREFKEY.LASTOPENPAPER, -1L);
+        Long currentOpenPaperId = TazSettings.getInstance(this)
+                                             .getPrefLong(TazSettings.PREFKEY.LASTOPENPAPER, -1L);
         log.debug("+++++++ TazSettings: Current Paper SyncAdapter View: {}", currentOpenPaperId);
 
         // If ForceSync it's now done
-        TazSettings.getInstance(this).setPref(TazSettings.PREFKEY.FORCESYNC, false);
+        TazSettings.getInstance(this)
+                   .setPref(TazSettings.PREFKEY.FORCESYNC, false);
 
         // AutoDelete
-        if (TazSettings.getInstance(this).getPrefBoolean(TazSettings.PREFKEY.AUTODELETE, false)) {
+        if (TazSettings.getInstance(this)
+                       .getPrefBoolean(TazSettings.PREFKEY.AUTODELETE, false)) {
 
-            int papersToKeep = TazSettings.getInstance(this).getPrefInt(TazSettings.PREFKEY.AUTODELETE_VALUE, 0);
+            int papersToKeep = TazSettings.getInstance(this)
+                                          .getPrefInt(TazSettings.PREFKEY.AUTODELETE_VALUE, 0);
             if (papersToKeep > 0) {
                 Cursor deletePapersCursor = this.getContentResolver()
                                                 .query(Paper.CONTENT_URI, null,
@@ -228,7 +232,7 @@ public class SyncService extends IntentService {
 
 
         // AutoUpdate und Download der nächsten Ausgabe
-        Boolean autoloadSuccess = false;
+        boolean tomorrowPaperExists = false;
 
         Date now = new Date();
         Calendar cal = Calendar.getInstance();
@@ -243,32 +247,29 @@ public class SyncService extends IntentService {
         try {
             if (tomorrowCursor.moveToNext()) {
                 // Ausgabe von morgen ist da
+                tomorrowPaperExists = true;
                 log.debug("Ausgabe von morgen veröffentlicht");
                 Paper tomorrowPaper = new Paper(tomorrowCursor);
-                if (TazSettings.getInstance(this).getPrefBoolean(TazSettings.PREFKEY.AUTOLOAD, false)) {
+                if (TazSettings.getInstance(this)
+                               .getPrefBoolean(TazSettings.PREFKEY.AUTOLOAD, false)) {
                     if (!tomorrowPaper.isDownloaded()) {
                         boolean connectionCheck = false;
-                        if (TazSettings.getInstance(this).getPrefBoolean(TazSettings.PREFKEY.AUTOLOAD_WIFI, true)) {
+                        if (TazSettings.getInstance(this)
+                                       .getPrefBoolean(TazSettings.PREFKEY.AUTOLOAD_WIFI, true)) {
                             if (Connection.getConnectionType(this) >= Connection.CONNECTION_FAST) connectionCheck = true;
                         } else {
                             if (Connection.getConnectionType(this) >= Connection.CONNECTION_MOBILE_ROAMING)
                                 connectionCheck = true;
                         }
                         if (connectionCheck) {
-
-                            if (!AccountHelper.getInstance(this).isDemoMode()) {
-                                //DownloadHelper downloadHelper = new DownloadHelper(this);
-                                try {
-                                    DownloadManager.getInstance(this)
-                                                   .enquePaper(tomorrowPaper.getId());
-                                    autoloadSuccess = true;
-                                } catch (IllegalArgumentException | DownloadManager.DownloadNotAllowedException | Paper.PaperNotFoundException ignored) {
-                                } catch (DownloadManager.NotEnoughSpaceException e) {
-                                    NotificationHelper.showDownloadErrorNotification(this, this.getString(
-                                            R.string.message_not_enough_space), tomorrowPaper.getId());
-                                }
+                            try {
+                                DownloadManager.getInstance(this)
+                                               .enquePaper(tomorrowPaper.getId());
+                            } catch (IllegalArgumentException | DownloadManager.DownloadNotAllowedException | Paper.PaperNotFoundException ignored) {
+                            } catch (DownloadManager.NotEnoughSpaceException e) {
+                                NotificationHelper.showDownloadErrorNotification(this, this.getString(
+                                        R.string.message_not_enough_space), tomorrowPaper.getId());
                             }
-
                         }
                     }
                 }
@@ -280,9 +281,14 @@ public class SyncService extends IntentService {
             tomorrowCursor.close();
         }
 
-        if (TazSettings.getInstance(this).getPrefBoolean(TazSettings.PREFKEY.AUTOLOAD, false)) {
-            if (autoloadSuccess) TazReaderApplication.registerAutoDownload(this, true);
-            else TazReaderApplication.registerAutoDownload(this, false);
+//        if (TazSettings.getInstance(this).getPrefBoolean(TazSettings.PREFKEY.AUTOLOAD, false)) {
+//            if (autoloadSuccess) TazReaderApplication.registerAutoDownload(this, true);
+//            else TazReaderApplication.registerAutoDownload(this, false);
+//        }
+
+        if (System.currentTimeMillis() >= TazSettings.getInstance(this)
+                                                     .getSyncServiceNextRun()) {
+            SyncHelper.setAlarmManager(this,tomorrowPaperExists);
         }
 
 

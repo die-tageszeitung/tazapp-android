@@ -214,7 +214,8 @@ public class StartActivity extends BaseActivity
                                 .show(getSupportFragmentManager(), DIALOG_USER_REENTER);
         }
 
-        SyncHelper.requestSync(this);
+        if (TazSettings.getInstance(this)
+                       .getSyncServiceNextRun() == 0) SyncHelper.requestSync(this);
     }
 
     @Override

@@ -56,11 +56,12 @@ public final class TazSettings {
         public static final String USER                      = "user";
         public static final String PASS                      = "pass";
         public static final String USERMIGRATIONNOTIFICATION = "usermigrationnotification";
+        static final        String SYNCSERVICENEXTRUN        = "syncServiceNextRun";
     }
 
 
-    private static TazSettings instance;
-    private SharedPreferences sharedPreferences;
+    private static TazSettings       instance;
+    private        SharedPreferences sharedPreferences;
 
     public static synchronized TazSettings getInstance(Context context) {
         if (instance == null) instance = new TazSettings(context.getApplicationContext());
@@ -178,4 +179,16 @@ public final class TazSettings {
     public boolean hasPreference(String key) {
         return sharedPreferences.contains(key);
     }
+
+
+    public long getSyncServiceNextRun() {
+        return sharedPreferences.getLong(PREFKEY.SYNCSERVICENEXTRUN, 0);
+    }
+
+    public void setSyncServiceNextRun(long timeInMillis) {
+        sharedPreferences.edit()
+                         .putLong(PREFKEY.SYNCSERVICENEXTRUN, timeInMillis)
+                         .apply();
+    }
+
 }
