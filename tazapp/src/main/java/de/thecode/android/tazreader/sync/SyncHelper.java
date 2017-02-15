@@ -108,14 +108,19 @@ public class SyncHelper {
 
     public static void setAlarmManager(Context context, boolean notToday) {
         long nextRunAt = getNextServiceTime(notToday);
+        setAlarmManager(context,nextRunAt);
+    }
+
+    public static void setAlarmManager(Context context, long runAt) {
         TazSettings.getInstance(context)
-                   .setSyncServiceNextRun(nextRunAt);
+                   .setSyncServiceNextRun(runAt);
         Intent serviceIntent = new Intent(context.getApplicationContext(), SyncService.class);
         PendingIntent pendingServiceIntent = PendingIntent.getService(context.getApplicationContext(), 0, serviceIntent,
                                                                       PendingIntent.FLAG_UPDATE_CURRENT);
         AlarmManager alarm = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         //TODO maybe we want to use alarm.setAndAllowWhileIdle() because of Doze mode?
-        alarm.set(AlarmManager.RTC_WAKEUP, nextRunAt, pendingServiceIntent);
+        alarm.set(AlarmManager.RTC_WAKEUP, runAt, pendingServiceIntent);
+
     }
 
 }
