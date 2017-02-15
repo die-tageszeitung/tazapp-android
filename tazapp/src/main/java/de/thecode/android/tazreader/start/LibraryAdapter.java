@@ -1,13 +1,7 @@
 package de.thecode.android.tazreader.start;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
-import android.os.AsyncTask;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
@@ -19,17 +13,6 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.google.common.base.Strings;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.lang.ref.WeakReference;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.util.List;
-
 import de.greenrobot.event.EventBus;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.FileCacheCoverHelper;
@@ -40,6 +23,14 @@ import de.thecode.android.tazreader.download.PaperDownloadFailedEvent;
 import de.thecode.android.tazreader.download.UnzipProgressEvent;
 import de.thecode.android.tazreader.utils.StorageManager;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.lang.ref.WeakReference;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.util.List;
+
 /**
  * Created by mate on 10.02.2015.
  */
@@ -49,7 +40,7 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
     FileCacheCoverHelper mCoverHelper;
     int mCoverImageHeight;
     int mCoverImageWidth;
-    Bitmap mPlaceHolderBitmap;
+    //Bitmap mPlaceHolderBitmap;
     Context mContext;
     WeakReference<IStartCallback> callback;
     OnItemClickListener mClickListener;
@@ -74,7 +65,7 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
                                    .getDimensionPixelSize(R.dimen.cover_image_height);
         mCoverImageWidth = context.getResources()
                                   .getDimensionPixelSize(R.dimen.cover_image_width);
-        mPlaceHolderBitmap = bitmapFromResource(context, R.drawable.dummy, mCoverImageWidth, mCoverImageHeight);
+       // mPlaceHolderBitmap = bitmapFromResource(context, R.drawable.dummy, mCoverImageWidth, mCoverImageHeight);
     }
 
     private boolean hasCallback() {
@@ -198,16 +189,18 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
             viewHolder.date.setText(e.getMessage());
         }
 
-        String hash = paper.getImageHash();
-        if (!Strings.isNullOrEmpty(hash)) {
-            if (!hash.equals(viewHolder.image.getTag())) {
-                loadBitmap(hash, viewHolder.image);
+        //TODO insert Picasso here, Policy only memory and disk
 
-                viewHolder.image.setTag(hash);
-            }
-        } else {
-            viewHolder.image.setImageResource(R.drawable.dummy);
-        }
+//        String hash = paper.getImageHash();
+//        if (!Strings.isNullOrEmpty(hash)) {
+//            if (!hash.equals(viewHolder.image.getTag())) {
+//                loadBitmap(hash, viewHolder.image);
+//
+//                viewHolder.image.setTag(hash);
+//            }
+//        } else {
+//            viewHolder.image.setImageResource(R.drawable.dummy);
+//        }
 
         //        viewHolder.progress.setProgress(100 - progressMap.get(paper.getId()));
 
@@ -221,6 +214,7 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
             viewHolder.badge.setText(R.string.string_badge_update);
             viewHolder.badge.setVisibility(View.VISIBLE);
         }
+
         //        else if (paper.isImported()) {
         //            viewHolder.badge.setText(R.string.string_badge_import);
         //            viewHolder.badge.setVisibility(View.VISIBLE);
@@ -262,171 +256,171 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
     }
 
 
-    private void loadBitmap(String hash, ImageView imageView) {
-        if (cancelPotentialWork(hash, imageView)) {
+//    private void loadBitmap(String hash, ImageView imageView) {
+//        if (cancelPotentialWork(hash, imageView)) {
+//
+//            final Bitmap bitmap = getBitmapFromMemCache(hash);
+//
+//            if (bitmap != null) {
+//                imageView.setImageBitmap(bitmap);
+//            } else {
+//                final BitmapWorkerTask task = new BitmapWorkerTask(imageView);
+//                final AsyncDrawable asyncDrawable = new AsyncDrawable(mContext.getResources(), mPlaceHolderBitmap, task);
+//                imageView.setImageDrawable(asyncDrawable);
+//                task.execute(hash);
+//            }
+//        }
+//    }
 
-            final Bitmap bitmap = getBitmapFromMemCache(hash);
+//    public boolean cancelPotentialWork(String hash, ImageView imageView) {
+//        final BitmapWorkerTask bitmapWorkerTask = getBitmapWorkerTask(imageView);
+//
+//        if (bitmapWorkerTask != null) {
+//            final String bitmapData = bitmapWorkerTask.hash;
+//            // If bitmapData is not yet set or it differs from the new data
+//            if (!hash.equals(bitmapData)) {
+//                // Cancel previous task
+//                bitmapWorkerTask.cancel(true);
+//            } else {
+//                // The same work is already in progress
+//                return false;
+//            }
+//        }
+//        // No task associated with the ImageView, or an existing task was cancelled
+//        return true;
+//    }
 
-            if (bitmap != null) {
-                imageView.setImageBitmap(bitmap);
-            } else {
-                final BitmapWorkerTask task = new BitmapWorkerTask(imageView);
-                final AsyncDrawable asyncDrawable = new AsyncDrawable(mContext.getResources(), mPlaceHolderBitmap, task);
-                imageView.setImageDrawable(asyncDrawable);
-                task.execute(hash);
-            }
-        }
-    }
-
-    public boolean cancelPotentialWork(String hash, ImageView imageView) {
-        final BitmapWorkerTask bitmapWorkerTask = getBitmapWorkerTask(imageView);
-
-        if (bitmapWorkerTask != null) {
-            final String bitmapData = bitmapWorkerTask.hash;
-            // If bitmapData is not yet set or it differs from the new data
-            if (!hash.equals(bitmapData)) {
-                // Cancel previous task
-                bitmapWorkerTask.cancel(true);
-            } else {
-                // The same work is already in progress
-                return false;
-            }
-        }
-        // No task associated with the ImageView, or an existing task was cancelled
-        return true;
-    }
-
-    private BitmapWorkerTask getBitmapWorkerTask(ImageView imageView) {
-        if (imageView != null) {
-            final Drawable drawable = imageView.getDrawable();
-            if (drawable instanceof AsyncDrawable) {
-                final AsyncDrawable asyncDrawable = (AsyncDrawable) drawable;
-                return asyncDrawable.getBitmapWorkerTask();
-            }
-        }
-        return null;
-    }
+//    private BitmapWorkerTask getBitmapWorkerTask(ImageView imageView) {
+//        if (imageView != null) {
+//            final Drawable drawable = imageView.getDrawable();
+//            if (drawable instanceof AsyncDrawable) {
+//                final AsyncDrawable asyncDrawable = (AsyncDrawable) drawable;
+//                return asyncDrawable.getBitmapWorkerTask();
+//            }
+//        }
+//        return null;
+//    }
 
 
-    private int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {
-        // Raw height and width of image
-        final int height = options.outHeight;
-        final int width = options.outWidth;
-        int inSampleSize = 1;
+//    private int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {
+//        // Raw height and width of image
+//        final int height = options.outHeight;
+//        final int width = options.outWidth;
+//        int inSampleSize = 1;
+//
+//        if (height > reqHeight || width > reqWidth) {
+//
+//            final int halfHeight = height / 2;
+//            final int halfWidth = width / 2;
+//
+//            // Calculate the largest inSampleSize value that is a power of 2 and keeps both
+//            // height and width larger than the requested height and width.
+//            while ((halfHeight / inSampleSize) > reqHeight && (halfWidth / inSampleSize) > reqWidth) {
+//                inSampleSize *= 2;
+//            }
+//        }
+//        //Log.d(reqWidth, width, reqHeight, height, inSampleSize);
+//        return inSampleSize;
+//    }
 
-        if (height > reqHeight || width > reqWidth) {
+//    private Bitmap bitmapFromResource(Context context, int resId, int width, int height) {
+//        BitmapFactory.Options options = new BitmapFactory.Options();
+//        options.inJustDecodeBounds = true;
+//        BitmapFactory.decodeResource(context.getResources(), resId, options);
+//
+//        // Calculate inSampleSize
+//        options.inSampleSize = calculateInSampleSize(options, width, height);
+//
+//        // Decode bitmap with inSampleSize set
+//        options.inJustDecodeBounds = false;
+//        return BitmapFactory.decodeResource(context.getResources(), resId, options);
+//    }
 
-            final int halfHeight = height / 2;
-            final int halfWidth = width / 2;
+//    public Bitmap getBitmap(String hash, int width, int height) {
+//        File imageFile = mCoverHelper.getFile(hash);
+//        //Log.d(imageFile.getName());
+//        if (imageFile.exists()) {
+//            final BitmapFactory.Options options = new BitmapFactory.Options();
+//            options.inJustDecodeBounds = true;
+//            BitmapFactory.decodeFile(imageFile.getAbsolutePath(), options);
+//
+//            // Calculate inSampleSize
+//            options.inSampleSize = calculateInSampleSize(options, width, height);
+//
+//            // Decode bitmap with inSampleSize set
+//            options.inJustDecodeBounds = false;
+//            return BitmapFactory.decodeFile(imageFile.getAbsolutePath(), options);
+//        }
+//        return null;
+//    }
 
-            // Calculate the largest inSampleSize value that is a power of 2 and keeps both
-            // height and width larger than the requested height and width.
-            while ((halfHeight / inSampleSize) > reqHeight && (halfWidth / inSampleSize) > reqWidth) {
-                inSampleSize *= 2;
-            }
-        }
-        //Log.d(reqWidth, width, reqHeight, height, inSampleSize);
-        return inSampleSize;
-    }
+//    public void addBitmapToMemoryCache(String key, Bitmap bitmap) {
+//        if (getBitmapFromMemCache(key) == null) {
+//            if (hasCallback()) getCallback().getRetainData()
+//                                            .getCache()
+//                                            .put(key, bitmap);
+//        }
+//    }
 
-    private Bitmap bitmapFromResource(Context context, int resId, int width, int height) {
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inJustDecodeBounds = true;
-        BitmapFactory.decodeResource(context.getResources(), resId, options);
-
-        // Calculate inSampleSize
-        options.inSampleSize = calculateInSampleSize(options, width, height);
-
-        // Decode bitmap with inSampleSize set
-        options.inJustDecodeBounds = false;
-        return BitmapFactory.decodeResource(context.getResources(), resId, options);
-    }
-
-    public Bitmap getBitmap(String hash, int width, int height) {
-        File imageFile = mCoverHelper.getFile(hash);
-        //Log.d(imageFile.getName());
-        if (imageFile.exists()) {
-            final BitmapFactory.Options options = new BitmapFactory.Options();
-            options.inJustDecodeBounds = true;
-            BitmapFactory.decodeFile(imageFile.getAbsolutePath(), options);
-
-            // Calculate inSampleSize
-            options.inSampleSize = calculateInSampleSize(options, width, height);
-
-            // Decode bitmap with inSampleSize set
-            options.inJustDecodeBounds = false;
-            return BitmapFactory.decodeFile(imageFile.getAbsolutePath(), options);
-        }
-        return null;
-    }
-
-    public void addBitmapToMemoryCache(String key, Bitmap bitmap) {
-        if (getBitmapFromMemCache(key) == null) {
-            if (hasCallback()) getCallback().getRetainData()
-                                            .getCache()
-                                            .put(key, bitmap);
-        }
-    }
-
-    public Bitmap getBitmapFromMemCache(String key) {
-        if (hasCallback()) return getCallback().getRetainData()
-                                               .getCache()
-                                               .get(key);
-        return null;
-    }
+//    public Bitmap getBitmapFromMemCache(String key) {
+//        if (hasCallback()) return getCallback().getRetainData()
+//                                               .getCache()
+//                                               .get(key);
+//        return null;
+//    }
 
 
     //    public void removeAllProgress() {
     //        progressMap.clear();
     //    }
 
-    class AsyncDrawable extends BitmapDrawable {
+//    class AsyncDrawable extends BitmapDrawable {
+//
+//        private final WeakReference<BitmapWorkerTask> bitmapWorkerTaskReference;
+//
+//        public AsyncDrawable(Resources res, Bitmap bitmap, BitmapWorkerTask bitmapWorkerTask) {
+//            super(res, bitmap);
+//            bitmapWorkerTaskReference = new WeakReference<BitmapWorkerTask>(bitmapWorkerTask);
+//        }
+//
+//        public BitmapWorkerTask getBitmapWorkerTask() {
+//            return bitmapWorkerTaskReference.get();
+//        }
+//    }
 
-        private final WeakReference<BitmapWorkerTask> bitmapWorkerTaskReference;
-
-        public AsyncDrawable(Resources res, Bitmap bitmap, BitmapWorkerTask bitmapWorkerTask) {
-            super(res, bitmap);
-            bitmapWorkerTaskReference = new WeakReference<BitmapWorkerTask>(bitmapWorkerTask);
-        }
-
-        public BitmapWorkerTask getBitmapWorkerTask() {
-            return bitmapWorkerTaskReference.get();
-        }
-    }
-
-    class BitmapWorkerTask extends AsyncTask<String, Void, Bitmap> {
-
-        private final WeakReference<ImageView> imageViewReference;
-        private String hash;
-
-        public BitmapWorkerTask(ImageView imageView) {
-            // Use a WeakReference to ensure the ImageView can be garbage collected
-            imageViewReference = new WeakReference<>(imageView);
-        }
-
-        // Decode image in background.
-        @Override
-        protected Bitmap doInBackground(String... params) {
-            hash = params[0];
-            return getBitmap(hash, mCoverImageWidth, mCoverImageHeight);
-        }
-
-        @Override
-        protected void onPostExecute(Bitmap bitmap) {
-            if (isCancelled()) {
-                bitmap = null;
-            }
-
-            if (bitmap != null) {
-                final ImageView imageView = imageViewReference.get();
-                final BitmapWorkerTask bitmapWorkerTask = getBitmapWorkerTask(imageView);
-                if (this == bitmapWorkerTask && imageView != null) {
-                    imageView.setImageBitmap(bitmap);
-                    addBitmapToMemoryCache(hash, bitmap);
-                }
-            }
-        }
-    }
+//    class BitmapWorkerTask extends AsyncTask<String, Void, Bitmap> {
+//
+//        private final WeakReference<ImageView> imageViewReference;
+//        private String hash;
+//
+//        public BitmapWorkerTask(ImageView imageView) {
+//            // Use a WeakReference to ensure the ImageView can be garbage collected
+//            imageViewReference = new WeakReference<>(imageView);
+//        }
+//
+//        // Decode image in background.
+//        @Override
+//        protected Bitmap doInBackground(String... params) {
+//            hash = params[0];
+//            return getBitmap(hash, mCoverImageWidth, mCoverImageHeight);
+//        }
+//
+//        @Override
+//        protected void onPostExecute(Bitmap bitmap) {
+//            if (isCancelled()) {
+//                bitmap = null;
+//            }
+//
+//            if (bitmap != null) {
+//                final ImageView imageView = imageViewReference.get();
+//                final BitmapWorkerTask bitmapWorkerTask = getBitmapWorkerTask(imageView);
+//                if (this == bitmapWorkerTask && imageView != null) {
+//                    imageView.setImageBitmap(bitmap);
+//                    addBitmapToMemoryCache(hash, bitmap);
+//                }
+//            }
+//        }
+//    }
 
     class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener {
 
