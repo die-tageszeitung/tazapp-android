@@ -7,6 +7,7 @@ import android.media.RingtoneManager;
 
 import de.thecode.android.tazreader.analytics.AnalyticsWrapper;
 import de.thecode.android.tazreader.data.TazSettings;
+import de.thecode.android.tazreader.picasso.PicassoHelper;
 import de.thecode.android.tazreader.reader.ReaderActivity;
 import de.thecode.android.tazreader.utils.BuildTypeProvider;
 import de.thecode.android.tazreader.utils.Display;
@@ -50,6 +51,7 @@ public class TazReaderApplication extends Application {
 
 
         BuildTypeProvider.installStetho(this);
+        PicassoHelper.initPicasso(this);
 
         CalligraphyConfig.initDefault(new CalligraphyConfig.Builder().setDefaultFontPath(getString(R.string.fontRegular))
                                                                      .setFontAttrId(R.attr.fontPath)

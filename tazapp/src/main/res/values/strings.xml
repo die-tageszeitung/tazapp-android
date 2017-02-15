@@ -20,6 +20,7 @@
     <string name="string_deleteAccount_button">Daten löschen</string>
     <string name="string_library_selected">%1$d ausgewählt</string>
     <string name="dialog_error_title">Fehler</string>
+    <string name="dialog_error_unknown">Es ist ein Fehler aufgetreten.</string>
     <string name="dialog_check_credentials">Kontaktiere Server und überprüfe Daten</string>
     <string name="dialog_noconnection">Keine Verbindung zum Internet.</string>
     <string name="dialog_error_no_credentials">Email/Passwort Feld leer</string>

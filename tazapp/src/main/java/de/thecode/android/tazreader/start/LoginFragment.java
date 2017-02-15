@@ -1,13 +1,12 @@
 package de.thecode.android.tazreader.start;
 
 
-import com.google.common.base.Strings;
-
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,24 +14,20 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 
-import com.android.volley.AuthFailureError;
-import com.android.volley.Request;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-
 import de.mateware.dialog.Dialog;
 import de.mateware.dialog.DialogIndeterminateProgress;
 import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.R;
-import de.thecode.android.tazreader.secure.Base64;
+import de.thecode.android.tazreader.retrofit.LoginCallback;
+import de.thecode.android.tazreader.retrofit.RetrofitHelper;
 import de.thecode.android.tazreader.sync.AccountHelper;
 import de.thecode.android.tazreader.utils.BaseFragment;
-import de.thecode.android.tazreader.volley.RequestManager;
-import de.thecode.android.tazreader.volley.TazStringRequest;
 
+import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.util.HashMap;
-import java.util.Map;
+
+import okhttp3.ResponseBody;
+import retrofit2.Call;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -94,7 +89,7 @@ public class LoginFragment extends BaseFragment {
         });
 
         if (!AccountHelper.getInstance(getContext())
-                         .isDemoMode()) {
+                          .isDemoMode()) {
             editUser.setText(AccountHelper.getInstance(getContext())
                                           .getUser());
             editPass.setText(AccountHelper.getInstance(getContext())
@@ -127,39 +122,14 @@ public class LoginFragment extends BaseFragment {
         DialogIndeterminateProgress.dismissDialog(getFragmentManager(), DIALOG_CHECK_CREDENTIALS);
     }
 
-//    private void setUiForLoggedIn() {
-//        editUser.setEnabled(false);
-//        editPass.setEnabled(false);
-//        loginButton.setText(R.string.string_deleteAccount_button);
-//        loginButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                AccountHelper.getInstance(getContext())
-//                             .removeUser();
-//                setUiForNotLoggedIn();
-//                if (hasCallback()) getCallback().logoutFinished();
-//            }
-//        });
-//        orderButton.setVisibility(View.INVISIBLE);
-//    }
-//
-//    private void setUiForNotLoggedIn() {
-//        editUser.setEnabled(true);
-//        editPass.setEnabled(true);
-//        loginButton.setText(R.string.string_login_button);
-//        loginButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                checkLogin();
-//            }
-//        });
-//        orderButton.setVisibility(View.VISIBLE);
-//    }
-
     private void checkLogin() {
-        if (Strings.isNullOrEmpty(editUser.getText()
-                                          .toString()) || Strings.isNullOrEmpty(editPass.getText()
-                                                                                        .toString())) {
+
+        String username = editUser.getText()
+                                  .toString();
+        String password = editPass.getText()
+                                  .toString();
+
+        if (TextUtils.isEmpty(username) || TextUtils.isEmpty(password)) {
             new Dialog.Builder().setIcon(R.drawable.ic_alerts_and_states_warning)
                                 .setTitle(R.string.dialog_error_title)
                                 .setMessage(R.string.dialog_error_no_credentials)
@@ -168,8 +138,7 @@ public class LoginFragment extends BaseFragment {
                                 .show(getFragmentManager(), DIALOG_ERROR_CREDENTIALS);
             return;
         }
-        if (AccountHelper.ACCOUNT_DEMO_USER.equalsIgnoreCase(editUser.getText()
-                                                                     .toString())) {
+        if (AccountHelper.ACCOUNT_DEMO_USER.equalsIgnoreCase(username)) {
             new Dialog.Builder().setIcon(R.drawable.ic_alerts_and_states_warning)
                                 .setTitle(R.string.dialog_error_title)
                                 .setMessage(R.string.dialog_error_credentials_not_allowed)
@@ -182,53 +151,45 @@ public class LoginFragment extends BaseFragment {
 
         blockUi();
 
-        Response.Listener<String> responseListener = new Response.Listener<String>() {
+        Call<ResponseBody> checkLoginCall = RetrofitHelper.getInstance(getContext())
+                                                          .createService(username, password)
+                                                          .checkLogin();
 
+        checkLoginCall.enqueue(new LoginCallback<ResponseBody>(username, password) {
             @Override
-            public void onResponse(String response) {
+            public void onResponse(Call<ResponseBody> call, retrofit2.Response<ResponseBody> response, String username,
+                                   String password) {
                 unblockUi();
-                AccountHelper.getInstance(getContext())
-                             .setUser(editUser.getText()
-                                              .toString(), editPass.getText()
-                                                                   .toString());
-                if (hasCallback()) getCallback().loginFinished();
+                if (response.isSuccessful()) {
+                    AccountHelper.getInstance(getContext())
+                                 .setUser(username, password);
+                    if (hasCallback()) getCallback().loginFinished();
+                } else {
+                    String message = getString(R.string.dialog_error_unknown);
+                    if (response.errorBody() != null) {
+                        try {
+                            String errorMessage = response.errorBody()
+                                                          .string();
+                            if (!TextUtils.isEmpty(errorMessage)) message = errorMessage;
+                        } catch (IOException ignored) {
+                        }
+                    }
+                    //TODO remove user or not if checked wrong credentials?
+                    onFailure(call, new Exception(message), username, password);
+                }
             }
-        };
-
-        TazStringRequest.MyStringErrorListener errorListener = new TazStringRequest.MyStringErrorListener() {
 
             @Override
-            public void onErrorResponse(VolleyError error, final String string) {
-                //TODO Achtung hier nur entfenrnen wenn Request OK, aber USer falsch!
-                AccountHelper.getInstance(getContext()).removeUser();
+            public void onFailure(Call<ResponseBody> call, Throwable t, String username, String password) {
+                unblockUi();
                 new Dialog.Builder().setIcon(R.drawable.ic_alerts_and_states_warning)
                                     .setTitle(R.string.dialog_error_title)
-                                    .setMessage(string)
+                                    .setMessage(t.getMessage())
                                     .setPositiveButton()
                                     .buildSupport()
                                     .show(getFragmentManager(), DIALOG_ERROR_CREDENTIALS);
-                unblockUi();
             }
-        };
-
-        TazStringRequest stringRequest = new TazStringRequest(Request.Method.GET, BuildConfig.CHECKLOGINURL, responseListener,
-                                                              errorListener) {
-
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                Map<String, String> headerMap = new HashMap<String, String>();
-                String credentials = editUser.getText()
-                                             .toString() + ":" + editPass.getText()
-                                                                         .toString();
-                String base64EncodedCredentials = Base64.encodeToString(credentials.getBytes(), Base64.NO_WRAP);
-                headerMap.put("Authorization", "Basic " + base64EncodedCredentials);
-                return headerMap;
-            }
-        };
-
-        RequestManager.getInstance(getContext())
-                      .add(stringRequest);
-
+        });
     }
 
 

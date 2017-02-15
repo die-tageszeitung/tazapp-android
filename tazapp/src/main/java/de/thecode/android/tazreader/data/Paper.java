@@ -1,5 +1,7 @@
 package de.thecode.android.tazreader.data;
 
+import com.google.common.base.Strings;
+
 import android.content.ComponentName;
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -18,8 +20,18 @@ import com.dd.plist.NSObject;
 import com.dd.plist.NSString;
 import com.dd.plist.PropertyListFormatException;
 import com.dd.plist.PropertyListParser;
-import com.google.common.base.Strings;
 
+import de.greenrobot.event.EventBus;
+import de.thecode.android.tazreader.BuildConfig;
+import de.thecode.android.tazreader.R;
+import de.thecode.android.tazreader.data.Paper.Plist.Page.Article;
+import de.thecode.android.tazreader.download.PaperDeletedEvent;
+import de.thecode.android.tazreader.provider.TazProvider;
+import de.thecode.android.tazreader.reader.index.IIndexItem;
+import de.thecode.android.tazreader.utils.PlistHelper;
+import de.thecode.android.tazreader.utils.StorageManager;
+
+import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.json.JSONArray;
 import org.slf4j.Logger;
@@ -43,16 +55,6 @@ import java.util.Set;
 import java.util.zip.ZipException;
 
 import javax.xml.parsers.ParserConfigurationException;
-
-import de.greenrobot.event.EventBus;
-import de.thecode.android.tazreader.BuildConfig;
-import de.thecode.android.tazreader.R;
-import de.thecode.android.tazreader.data.Paper.Plist.Page.Article;
-import de.thecode.android.tazreader.download.PaperDeletedEvent;
-import de.thecode.android.tazreader.provider.TazProvider;
-import de.thecode.android.tazreader.reader.index.IIndexItem;
-import de.thecode.android.tazreader.utils.PlistHelper;
-import de.thecode.android.tazreader.utils.StorageManager;
 
 public class Paper {
 
@@ -1560,6 +1562,33 @@ public class Paper {
     public String toString() {
         //return Log.toString(this, ":", "; ");
         return ToStringBuilder.reflectionToString(this);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) { return false; }
+        if (obj == this) { return true; }
+        if (obj.getClass() != getClass()) {
+            return false;
+        }
+        Paper rhs = (Paper) obj;
+        return new EqualsBuilder().appendSuper(super.equals(obj))
+                                  .append(date,rhs.date)
+                                  .append(image,rhs.image)
+                                  .append(imageHash,rhs.imageHash)
+                                  .append(link,rhs.link)
+                                  .append(fileHash,rhs.fileHash)
+                                  .append(len,rhs.len)
+                                  .append(resource,rhs.resource)
+                                  .append(resourceFileHash,rhs.resourceFileHash)
+                                  .append(resourceLen,rhs.resourceLen)
+                                  .append(resourceUrl,rhs.resourceUrl)
+                                  .append(lastModified,rhs.lastModified)
+                                  .append(bookId,rhs.bookId)
+                                  .append(isDemo,rhs.isDemo)
+                                  .append(publicationId,rhs.publicationId)
+                                  .append(validUntil,rhs.validUntil)
+                                  .isEquals();
     }
 
     public static class PaperNotFoundException extends Exception {
