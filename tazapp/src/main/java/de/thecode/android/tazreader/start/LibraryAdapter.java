@@ -13,6 +13,9 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.squareup.picasso.NetworkPolicy;
+import com.squareup.picasso.Picasso;
+
 import de.greenrobot.event.EventBus;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.FileCacheCoverHelper;
@@ -37,14 +40,14 @@ import java.util.List;
 public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.ViewHolder> {
     private static final Logger log = LoggerFactory.getLogger(LibraryAdapter.class);
 
-    FileCacheCoverHelper mCoverHelper;
-    int mCoverImageHeight;
-    int mCoverImageWidth;
+    FileCacheCoverHelper          mCoverHelper;
+    int                           mCoverImageHeight;
+    int                           mCoverImageWidth;
     //Bitmap mPlaceHolderBitmap;
-    Context mContext;
+    Context                       mContext;
     WeakReference<IStartCallback> callback;
-    OnItemClickListener mClickListener;
-    OnItemLongClickListener mLongClickListener;
+    OnItemClickListener           mClickListener;
+    OnItemLongClickListener       mLongClickListener;
 
     DownloadManager downloadHelper;
 
@@ -65,7 +68,7 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
                                    .getDimensionPixelSize(R.dimen.cover_image_height);
         mCoverImageWidth = context.getResources()
                                   .getDimensionPixelSize(R.dimen.cover_image_width);
-       // mPlaceHolderBitmap = bitmapFromResource(context, R.drawable.dummy, mCoverImageWidth, mCoverImageHeight);
+        // mPlaceHolderBitmap = bitmapFromResource(context, R.drawable.dummy, mCoverImageWidth, mCoverImageHeight);
     }
 
     private boolean hasCallback() {
@@ -170,7 +173,7 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
         try {
             notifyItemChanged(getItemPosition(event.getPaperId()));
         } catch (IllegalStateException e) {
-            log.warn("",e);
+            log.warn("", e);
         }
     }
 
@@ -190,6 +193,12 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
         }
 
         //TODO insert Picasso here, Policy only memory and disk
+
+        Picasso.with(viewHolder.image.getContext())
+               .load(paper.getImage())
+               .placeholder(R.drawable.dummy)
+               .networkPolicy(NetworkPolicy.OFFLINE)
+               .into(viewHolder.image);
 
 //        String hash = paper.getImageHash();
 //        if (!Strings.isNullOrEmpty(hash)) {
@@ -230,7 +239,7 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
         try {
             viewHolder.card.setContentDescription(paper.getDate(DateFormat.LONG));
         } catch (ParseException e) {
-            log.error("",e);
+            log.error("", e);
         }
 
     }
@@ -424,10 +433,10 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
 
     class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener {
 
-        CardView card;
-        TextView date;
-        TextView badge;
-        ImageView image;
+        CardView    card;
+        TextView    date;
+        TextView    badge;
+        ImageView   image;
         ProgressBar wait;
         ProgressBar progress;
         FrameLayout selected;

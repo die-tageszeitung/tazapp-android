@@ -44,7 +44,7 @@ public class PicassoHelper {
         Picasso.Builder picassoBuilder = new Picasso.Builder(context);
         picassoBuilder.downloader(new OkHttp3Downloader(picassoClient));
         Picasso picasso = picassoBuilder.build();
-        picasso.setIndicatorsEnabled(BuildConfig.DEBUG);
+        //picasso.setIndicatorsEnabled(BuildConfig.DEBUG);
         picasso.setLoggingEnabled(BuildConfig.DEBUG);
         Picasso.setSingletonInstance(picasso);
     }

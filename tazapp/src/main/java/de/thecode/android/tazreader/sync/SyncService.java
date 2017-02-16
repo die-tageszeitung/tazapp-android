@@ -6,12 +6,9 @@ import android.app.IntentService;
 import android.content.ContentUris;
 import android.content.Intent;
 import android.database.Cursor;
-import android.graphics.Bitmap;
 import android.net.Uri;
-import android.widget.ImageView;
 
 import com.android.volley.Request;
-import com.android.volley.toolbox.ImageRequest;
 import com.android.volley.toolbox.RequestFuture;
 import com.android.volley.toolbox.StringRequest;
 import com.dd.plist.NSArray;
@@ -19,12 +16,14 @@ import com.dd.plist.NSDictionary;
 import com.dd.plist.NSObject;
 import com.dd.plist.PropertyListFormatException;
 import com.dd.plist.PropertyListParser;
+import com.squareup.picasso.Callback;
+import com.squareup.picasso.NetworkPolicy;
+import com.squareup.picasso.Picasso;
 
 import de.greenrobot.event.EventBus;
 import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.analytics.AnalyticsWrapper;
-import de.thecode.android.tazreader.data.FileCacheCoverHelper;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Publication;
 import de.thecode.android.tazreader.data.TazSettings;
@@ -34,7 +33,6 @@ import de.thecode.android.tazreader.download.NotificationHelper;
 import de.thecode.android.tazreader.reader.ReaderActivity;
 import de.thecode.android.tazreader.start.ScrollToPaperEvent;
 import de.thecode.android.tazreader.utils.Connection;
-import de.thecode.android.tazreader.utils.StorageManager;
 import de.thecode.android.tazreader.volley.RequestManager;
 
 import org.json.JSONArray;
@@ -50,8 +48,10 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -71,7 +71,7 @@ public class SyncService extends IntentService {
     public static final String ARG_START_DATE = "startDate";
     public static final String ARG_END_DATE   = "endDate";
 
-    FileCacheCoverHelper mCoverHelper;
+    //FileCacheCoverHelper mCoverHelper;
 
     private Paper moveToPaperAtEnd;
 
@@ -91,7 +91,7 @@ public class SyncService extends IntentService {
         //if (TazSettings.getPrefBoolean(this, TazSettings.PREFKEY.PAPERMIGRATERUNNING, false)) return;
 
 
-        mCoverHelper = new FileCacheCoverHelper(StorageManager.getInstance(this));
+        //mCoverHelper = new FileCacheCoverHelper(StorageManager.getInstance(this));
 
         String url = BuildConfig.PLISTURL;
 
@@ -288,7 +288,7 @@ public class SyncService extends IntentService {
 
         if (System.currentTimeMillis() >= TazSettings.getInstance(this)
                                                      .getSyncServiceNextRun()) {
-            SyncHelper.setAlarmManager(this,tomorrowPaperExists);
+            SyncHelper.setAlarmManager(this, tomorrowPaperExists);
         }
 
 
@@ -300,27 +300,37 @@ public class SyncService extends IntentService {
                     .post(new ScrollToPaperEvent(moveToPaperAtEnd.getId()));
             moveToPaperAtEnd = null;
         }
-    }
 
-    private void downloadImage(Paper paper) throws InterruptedException, ExecutionException, TimeoutException, IOException {
-        //Download Image
-        RequestFuture<Bitmap> imageFuture = RequestFuture.newFuture();
-        ImageRequest imageRequest = new ImageRequest(paper.getImage(), imageFuture, 0, 0, ImageView.ScaleType.CENTER_INSIDE, null,
-                                                     imageFuture);
-        RequestManager.getInstance(this)
-                      .add(imageRequest);
-        //        VolleySingleton.getInstance(this)
-        //                       .addToRequestQueue(imageRequest);
-        Bitmap bitmap = imageFuture.get(30, TimeUnit.SECONDS);
-        if (mCoverHelper.save(bitmap, paper.getImageHash())) {
-            if (paper.getId() != null) {
-                EventBus.getDefault()
-                        .post(new CoverDownloadedEvent(paper.getId()));
+        while (!imagePreloadingQueue.isEmpty()) {
+//            Timber.v("Waiting for imageQueue to be empty...");
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+//                Timber.e(e);
             }
         }
 
-
     }
+
+//    private void downloadImage(Paper paper) throws InterruptedException, ExecutionException, TimeoutException, IOException {
+//        //Download Image
+//        RequestFuture<Bitmap> imageFuture = RequestFuture.newFuture();
+//        ImageRequest imageRequest = new ImageRequest(paper.getImage(), imageFuture, 0, 0, ImageView.ScaleType.CENTER_INSIDE, null,
+//                                                     imageFuture);
+//        RequestManager.getInstance(this)
+//                      .add(imageRequest);
+//        //        VolleySingleton.getInstance(this)
+//        //                       .addToRequestQueue(imageRequest);
+//        Bitmap bitmap = imageFuture.get(30, TimeUnit.SECONDS);
+//        if (mCoverHelper.save(bitmap, paper.getImageHash())) {
+//            if (paper.getId() != null) {
+//                EventBus.getDefault()
+//                        .post(new CoverDownloadedEvent(paper.getId()));
+//            }
+//        }
+//
+//
+//    }
 
     /**
      * Handle plist.
@@ -391,11 +401,11 @@ public class SyncService extends IntentService {
                         log.debug("found difference in paper");
                         //Uri idUri = ContentUris.withAppendedId(Paper.CONTENT_URI, oldPaper.getId());
                         oldPaper.setImage(newPaper.getImage());
-                        if (!equalsHelper(newPaper.getImageHash(), oldPaper.getImageHash())) {
-                            mCoverHelper.delete(oldPaper.getImageHash());
-
-                            //downloadImage(newPaper);
-                        }
+//                        if (!equalsHelper(newPaper.getImageHash(), oldPaper.getImageHash())) {
+//                            //mCoverHelper.delete(oldPaper.getImageHash());
+//
+//                            //downloadImage(newPaper);
+//                        }
                         oldPaper.setImageHash(newPaper.getImageHash());
                         if (!oldPaper.isImported() && !oldPaper.isKiosk()) {
 
@@ -419,20 +429,34 @@ public class SyncService extends IntentService {
                         if (oldPaper.getPublicationId() == null) {
                             oldPaper.setPublicationId(publicationId);
                         }
-                        updatedPapers.add(oldPaper);
-                        //                    this.getContentResolver()
-                        //                            .update(idUri, oldPaper.getContentValues(), null, null);
+                        this.getContentResolver()
+                            .update(oldPaper.getContentUri(), oldPaper.getContentValues(), null, null);
+                        setMoveToPaperAtEnd(oldPaper);
+                        preLoadImage(oldPaper);
+                    } else {
+                        //TODO check if image is in cache
+                        Picasso.with(this)
+                               .load(oldPaper.getImage())
+                               .networkPolicy(NetworkPolicy.OFFLINE)
+                               .fetch(new PreloadImageCallback(oldPaper) {
+                                   @Override
+                                   public void onSuccess(Paper paper) {
+                                   }
+
+                                   @Override
+                                   public void onError(Paper paper) {
+                                       preLoadImage(paper);
+                                   }
+                               });
                     }
-                    //if (!mCoverHelper.exists(oldPaper.getImageHash())) downloadImage(oldPaper);
                 } else {
                     log.debug("notfound");
 
-                    //                Uri newPaperUri = this.getContentResolver()
-                    //                                          .insert(Paper.CONTENT_URI, newPaper.getContentValues());
-                    //                long newPaperId = ContentUris.parseId(newPaperUri);
-                    //downloadImage(newPaper);
-                    insertPapers.add(newPaper);
-
+                    long newPaperId = ContentUris.parseId(this.getContentResolver()
+                                                              .insert(Paper.CONTENT_URI, newPaper.getContentValues()));
+                    newPaper.setId(newPaperId);
+                    setMoveToPaperAtEnd(newPaper);
+                    preLoadImage(newPaper);
                 }
             } finally {
                 cursor.close();
@@ -440,27 +464,56 @@ public class SyncService extends IntentService {
 
 
         }
-        for (Paper insertPaper : insertPapers) {
-            long newPaperId = ContentUris.parseId(this.getContentResolver()
-                                                      .insert(Paper.CONTENT_URI, insertPaper.getContentValues()));
-            insertPaper.setId(newPaperId);
-            setMoveToPaperAtEnd(insertPaper);
-        }
-
-        for (Paper updatedPaper : updatedPapers) {
-            this.getContentResolver()
-                .update(updatedPaper.getContentUri(), updatedPaper.getContentValues(), null, null);
-            setMoveToPaperAtEnd(updatedPaper);
-        }
-
-        List<Paper> imagePapers = new ArrayList<>(insertPapers);
-        imagePapers.addAll(updatedPapers);
-        for (Paper imagePaper : imagePapers) {
-            if (!mCoverHelper.exists(imagePaper.getImageHash())) downloadImage(imagePaper);
-        }
-
-
     }
+
+    private final Set<Object> imagePreloadingQueue = new HashSet<>();
+
+    private void preLoadImage(Paper paper) {
+        //Timber.v("preloading image %s", url);
+        PreloadImageCallback callback = new PreloadImageCallback(paper) {
+            @Override
+            public void onSuccess(Paper paper) {
+                EventBus.getDefault()
+                        .post(new CoverDownloadedEvent(paper.getId()));
+                imagePreloadingQueue.remove(this);
+            }
+
+            @Override
+            public void onError(Paper paper) {
+                imagePreloadingQueue.remove(this);
+            }
+        };
+        imagePreloadingQueue.add(callback);
+        Picasso.with(this)
+               .load(paper.getImage())
+               .fetch(callback);
+    }
+
+    private abstract static class PreloadImageCallback implements Callback {
+
+        final Paper paper;
+
+
+        protected PreloadImageCallback(Paper paper) {
+            this.paper = paper;
+
+        }
+
+        @Override
+        public void onSuccess() {
+            onSuccess(paper);
+        }
+
+        @Override
+        public void onError() {
+            onError(paper);
+        }
+
+        public abstract void onSuccess(Paper paper);
+
+        public abstract void onError(Paper paper);
+    }
+
 
     private void setMoveToPaperAtEnd(Paper paper) {
         try {
