@@ -6,8 +6,6 @@ import android.support.v7.widget.Toolbar;
 
 import de.thecode.android.tazreader.data.Paper;
 
-import java.util.Calendar;
-
 /**
  * Created by mate on 05.02.2015.
  */
@@ -31,8 +29,6 @@ public interface IStartCallback {
     public void startDownload(long paperId) throws Paper.PaperNotFoundException;
 
     public void callArchive();
-
-    public void requestSync(Calendar start, Calendar end);
 
     public void toggleWaitDialog(String tag);
 

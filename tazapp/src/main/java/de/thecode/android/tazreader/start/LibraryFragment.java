@@ -26,6 +26,7 @@ import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.download.CoverDownloadedEvent;
 import de.thecode.android.tazreader.sync.AccountHelper;
+import de.thecode.android.tazreader.sync.SyncHelper;
 import de.thecode.android.tazreader.sync.SyncStateChangedEvent;
 import de.thecode.android.tazreader.utils.BaseFragment;
 import de.thecode.android.tazreader.widget.AutofitRecyclerView;
@@ -75,7 +76,7 @@ public class LibraryFragment extends BaseFragment
             public void onRefresh() {
                 log.debug("");
                 hideFab();
-                if (hasCallback()) getCallback().requestSync(null, null);
+                SyncHelper.requestSync(getContext());
             }
         });
 
@@ -177,7 +178,7 @@ public class LibraryFragment extends BaseFragment
         if (TazSettings.getInstance(getActivity())
                        .getPrefBoolean(TazSettings.PREFKEY.FORCESYNC, false)) {
 
-            if (hasCallback()) getCallback().requestSync(null, null);
+            SyncHelper.requestSync(getContext());
         }
     }
 

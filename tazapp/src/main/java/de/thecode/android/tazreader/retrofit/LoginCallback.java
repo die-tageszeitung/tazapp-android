@@ -1,14 +1,17 @@
 package de.thecode.android.tazreader.retrofit;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
+
+import java.io.IOException;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.Response;
 
 /**
  * Created by mate on 15.02.2017.
  */
 
-public abstract class LoginCallback<T> implements Callback<T> {
+public abstract class LoginCallback implements Callback {
 
     private final String username;
     private final String password;
@@ -19,15 +22,16 @@ public abstract class LoginCallback<T> implements Callback<T> {
     }
 
     @Override
-    public void onResponse(Call<T> call, Response<T> response) {
-        onResponse(call,response,username,password);
+    public void onResponse(Call call, Response response) throws IOException {
+        onResponse(call, response, username, password);
     }
 
     @Override
-    public void onFailure(Call<T> call, Throwable t) {
-        onFailure(call,t,username,password);
+    public void onFailure(Call call, IOException e) {
+        onFailure(call, e, username, password);
     }
 
-    public abstract void onResponse(Call<T> call, Response<T> response, String username, String password);
-    public abstract void onFailure(Call<T> call, Throwable t, String username, String password);
+    public abstract void onResponse(Call call, Response response, String username, String password) throws IOException;
+
+    public abstract void onFailure(Call call, IOException e, String username, String password);
 }

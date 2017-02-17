@@ -2,6 +2,11 @@ package de.thecode.android.tazreader.utils;
 
 import android.content.Context;
 
+import de.thecode.android.tazreader.data.FileCachePDFThumbHelper;
+import de.thecode.android.tazreader.data.Paper;
+import de.thecode.android.tazreader.data.Resource;
+import de.thecode.android.tazreader.secure.HashHelper;
+
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,12 +14,6 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
-
-import de.thecode.android.tazreader.data.FileCacheCoverHelper;
-import de.thecode.android.tazreader.data.FileCachePDFThumbHelper;
-import de.thecode.android.tazreader.data.Paper;
-import de.thecode.android.tazreader.data.Resource;
-import de.thecode.android.tazreader.secure.HashHelper;
 
 
 public class StorageManager {
@@ -96,9 +95,6 @@ public class StorageManager {
             FileUtils.deleteQuietly(getPaperDirectory(paper));
 //        Utils.deleteDir(getPaperDirectory(paper));
         new FileCachePDFThumbHelper(this, paper.getFileHash()).deleteDir();
-        if (paper.isImported() || paper.isKiosk()) {
-            new FileCacheCoverHelper(this).delete(paper.getImageHash());
-        }
     }
 
     public void deleteResourceDir(String key)  {

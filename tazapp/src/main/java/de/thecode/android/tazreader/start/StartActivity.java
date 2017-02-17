@@ -532,15 +532,6 @@ public class StartActivity extends BaseActivity
         }
     }
 
-    @Override
-    public void requestSync(Calendar start, Calendar end) {
-        if (start != null && end != null) {
-            SyncHelper.requestSync(this, start, end);
-            return;
-        }
-        SyncHelper.requestSync(this);
-    }
-
     public void onEventMainThread(PaperDownloadFinishedEvent event) {
         log.debug("event: {}", event);
         if (retainDataFragment.useOpenPaperafterDownload) {
@@ -641,7 +632,7 @@ public class StartActivity extends BaseActivity
                 Calendar endCal = Calendar.getInstance();
                 startCal.set(year, Calendar.JANUARY, 1);
                 endCal.set(year, Calendar.DECEMBER, 31);
-                requestSync(startCal, endCal);
+                SyncHelper.requestSync(this,startCal,endCal);
             }
         } else if (DIALOG_ARCHIVE_MONTH.equals(tag)) {
             int year = arguments.getInt(ARGUMENT_ARCHIVE_YEAR);
@@ -651,7 +642,7 @@ public class StartActivity extends BaseActivity
             startCal.set(year, month, 1);
             int lastDayOfMont = startCal.getActualMaximum(Calendar.DAY_OF_MONTH);
             endCal.set(year, month, lastDayOfMont);
-            requestSync(startCal, endCal);
+            SyncHelper.requestSync(this,startCal,endCal);
         }
     }
 

@@ -18,13 +18,12 @@ import com.squareup.picasso.Picasso;
 
 import de.greenrobot.event.EventBus;
 import de.thecode.android.tazreader.R;
-import de.thecode.android.tazreader.data.FileCacheCoverHelper;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.download.DownloadManager;
 import de.thecode.android.tazreader.download.DownloadProgressEvent;
 import de.thecode.android.tazreader.download.PaperDownloadFailedEvent;
 import de.thecode.android.tazreader.download.UnzipProgressEvent;
-import de.thecode.android.tazreader.utils.StorageManager;
+import de.thecode.android.tazreader.sync.SyncService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +39,6 @@ import java.util.List;
 public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.ViewHolder> {
     private static final Logger log = LoggerFactory.getLogger(LibraryAdapter.class);
 
-    FileCacheCoverHelper          mCoverHelper;
     int                           mCoverImageHeight;
     int                           mCoverImageWidth;
     //Bitmap mPlaceHolderBitmap;
@@ -61,8 +59,6 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
         this.callback = new WeakReference<IStartCallback>(callback);
 
         downloadHelper = DownloadManager.getInstance(context);
-
-        mCoverHelper = new FileCacheCoverHelper(StorageManager.getInstance(context));
 
         mCoverImageHeight = context.getResources()
                                    .getDimensionPixelSize(R.dimen.cover_image_height);
@@ -198,7 +194,20 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
                .load(paper.getImage())
                .placeholder(R.drawable.dummy)
                .networkPolicy(NetworkPolicy.OFFLINE)
-               .into(viewHolder.image);
+               .into(viewHolder.image, new MissingCoverCallback(viewHolder.image, paper) {
+                   @Override
+                   public void onError(ImageView imageView, Paper paper) {
+                       Picasso.with(imageView.getContext())
+                              .load(paper.getImage())
+                              .placeholder(R.drawable.dummy)
+                              .into(imageView);
+                   }
+
+                   @Override
+                   public void onSuccess(Paper paper) {
+
+                   }
+               });
 
 //        String hash = paper.getImageHash();
 //        if (!Strings.isNullOrEmpty(hash)) {
@@ -538,6 +547,23 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
 
     public interface OnItemLongClickListener {
         public boolean onItemLongClick(View v, int position, Paper paper);
+    }
+
+    private static abstract class MissingCoverCallback extends SyncService.PreloadImageCallback {
+
+        final ImageView imageView;
+
+        protected MissingCoverCallback(ImageView imageView, Paper paper) {
+            super(paper);
+            this.imageView = imageView;
+        }
+
+        @Override
+        public void onError(Paper paper) {
+            onError(imageView, paper);
+        }
+
+        public abstract void onError(ImageView imageView, Paper paper);
     }
 
 }
