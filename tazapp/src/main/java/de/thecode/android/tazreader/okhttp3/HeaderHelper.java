@@ -11,7 +11,6 @@ import java.util.Map;
 
 public class HeaderHelper {
 
-
     private static HeaderHelper instance;
 
     public synchronized static HeaderHelper getInstance(Context context) {
@@ -22,7 +21,6 @@ public class HeaderHelper {
 
     private HeaderHelper(Context context) {
     }
-
 
     public Map<String,String> getStandardHeader() {
         Map<String,String> result = new HashMap<>();

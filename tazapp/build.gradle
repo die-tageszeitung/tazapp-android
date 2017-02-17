@@ -85,9 +85,6 @@ if (overheadPath != null) {
 }
 
 android {
-    //TODO remove
-    useLibrary 'org.apache.http.legacy'
-
     sourceSets {
         staging {
             java {
@@ -269,7 +266,6 @@ dependencies {
     compile "com.android.support:support-v4:$supportLibVer"
     compile "com.android.support:cardview-v7:$supportLibVer"
 
-    compile 'com.android.volley:volley:1.0.0'
     compile 'com.squareup.okhttp3:okhttp:3.6.0'
     compile 'com.squareup.okhttp3:logging-interceptor:3.6.0'
     compile 'com.squareup.picasso:picasso:2.5.2'

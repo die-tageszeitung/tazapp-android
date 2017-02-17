@@ -4,6 +4,8 @@ package de.thecode.android.tazreader.start;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
@@ -18,16 +20,19 @@ import de.mateware.dialog.Dialog;
 import de.mateware.dialog.DialogIndeterminateProgress;
 import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.R;
-import de.thecode.android.tazreader.retrofit.LoginCallback;
-import de.thecode.android.tazreader.retrofit.RetrofitHelper;
+import de.thecode.android.tazreader.okhttp3.OkHttp3Helper;
 import de.thecode.android.tazreader.sync.AccountHelper;
 import de.thecode.android.tazreader.utils.BaseFragment;
+import de.thecode.android.tazreader.utils.RunnableExtended;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 
-import okhttp3.ResponseBody;
-import retrofit2.Call;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.HttpUrl;
+import okhttp3.Response;
+
 
 /**
  * A simple {@link Fragment} subclass.
@@ -117,6 +122,7 @@ public class LoginFragment extends BaseFragment {
     }
 
     private void unblockUi() {
+
         editUser.setEnabled(true);
         editPass.setEnabled(true);
         DialogIndeterminateProgress.dismissDialog(getFragmentManager(), DIALOG_CHECK_CREDENTIALS);
@@ -151,46 +157,72 @@ public class LoginFragment extends BaseFragment {
 
         blockUi();
 
-        Call<ResponseBody> checkLoginCall = RetrofitHelper.getInstance(getContext())
-                                                          .createService(username, password)
-                                                          .checkLogin();
 
-        checkLoginCall.enqueue(new LoginCallback<ResponseBody>(username, password) {
+        Call call = OkHttp3Helper.getInstance(getContext())
+                                 .getCall(HttpUrl.parse(BuildConfig.CHECKLOGINURL), username, password);
+
+        call.enqueue(new LoginCallback(username, password) {
+
+            Handler mainHandler = new Handler(Looper.getMainLooper());
+
             @Override
-            public void onResponse(Call<ResponseBody> call, retrofit2.Response<ResponseBody> response, String username,
-                                   String password) {
-                unblockUi();
+            public void onResponse(Call call, Response response, String username, String password) throws IOException {
                 if (response.isSuccessful()) {
-                    AccountHelper.getInstance(getContext())
-                                 .setUser(username, password);
-                    if (hasCallback()) getCallback().loginFinished();
-                } else {
-                    String message = getString(R.string.dialog_error_unknown);
-                    if (response.errorBody() != null) {
-                        try {
-                            String errorMessage = response.errorBody()
-                                                          .string();
-                            if (!TextUtils.isEmpty(errorMessage)) message = errorMessage;
-                        } catch (IOException ignored) {
+                    mainHandler.post(new RunnableExtended(username, password) {
+                        @Override
+                        public void run() {
+                            unblockUi();
+                            AccountHelper.getInstance(getContext())
+                                         .setUser((String) getObject(0), (String) getObject(1));
+                            if (hasCallback()) getCallback().loginFinished();
                         }
-                    }
-                    //TODO remove user or not if checked wrong credentials?
-                    onFailure(call, new Exception(message), username, password);
+                    });
+                } else {
+                    onFailure(call, new IOException(response.body()
+                                                            .string()));
                 }
             }
 
             @Override
-            public void onFailure(Call<ResponseBody> call, Throwable t, String username, String password) {
-                unblockUi();
-                new Dialog.Builder().setIcon(R.drawable.ic_alerts_and_states_warning)
-                                    .setTitle(R.string.dialog_error_title)
-                                    .setMessage(t.getMessage())
-                                    .setPositiveButton()
-                                    .buildSupport()
-                                    .show(getFragmentManager(), DIALOG_ERROR_CREDENTIALS);
+            public void onFailure(Call call, IOException e, String username, String password) {
+                mainHandler.post(new RunnableExtended(e) {
+                    @Override
+                    public void run() {
+                        unblockUi();
+                        new Dialog.Builder().setIcon(R.drawable.ic_alerts_and_states_warning)
+                                            .setTitle(R.string.dialog_error_title)
+                                            .setMessage(((Exception) getObject(0)).getMessage())
+                                            .setPositiveButton()
+                                            .buildSupport()
+                                            .show(getFragmentManager(), DIALOG_ERROR_CREDENTIALS);
+                    }
+                });
             }
         });
     }
 
+    private static abstract class LoginCallback implements Callback {
 
+        private final String username;
+        private final String password;
+
+        LoginCallback(String username, String password) {
+            this.username = username;
+            this.password = password;
+        }
+
+        @Override
+        public void onResponse(Call call, Response response) throws IOException {
+            onResponse(call, response, username, password);
+        }
+
+        @Override
+        public void onFailure(Call call, IOException e) {
+            onFailure(call, e, username, password);
+        }
+
+        public abstract void onResponse(Call call, Response response, String username, String password) throws IOException;
+
+        public abstract void onFailure(Call call, IOException e, String username, String password);
+    }
 }

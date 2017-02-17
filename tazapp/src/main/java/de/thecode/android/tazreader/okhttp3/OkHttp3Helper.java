@@ -18,30 +18,41 @@ import okhttp3.Request;
 
 public class OkHttp3Helper {
 
-    private static OkHttp3Helper       instance;
-    private static Map<String, String> standardHeaders;
+    private static OkHttp3Helper instance;
 
     public synchronized static OkHttp3Helper getInstance(Context context) {
         if (instance == null) instance = new OkHttp3Helper(context.getApplicationContext());
         return instance;
     }
 
+    private final Map<String, String> standardHeaders;
+
+    private final UserAgentInterceptor userAgentInterceptor;
+
     private OkHttp3Helper(Context context) {
         standardHeaders = HeaderHelper.getInstance(context)
                                       .getStandardHeader();
-
-
+        userAgentInterceptor = new UserAgentInterceptor(context);
     }
 
-    public Call getCall(HttpUrl url, String username, String password) {
+    public OkHttpClient.Builder getOkHttpClientBuilder(String username, String password) {
         OkHttpClient.Builder httpClientBuilder = new OkHttpClient.Builder();
-        BuildTypeProvider.addStethoInterceptor(httpClientBuilder);
-        BuildTypeProvider.addLoggingInterceptor(httpClientBuilder);
         httpClientBuilder.addNetworkInterceptor(new HeaderInterceptor(standardHeaders));
+        httpClientBuilder.addNetworkInterceptor(userAgentInterceptor);
         if (!TextUtils.isEmpty(username) && !TextUtils.isEmpty(password)) {
             httpClientBuilder.addInterceptor(new BasicAuthenticationInterceptor(username, password));
         }
-        OkHttpClient client = httpClientBuilder.build();
+        BuildTypeProvider.addStethoInterceptor(httpClientBuilder);
+        BuildTypeProvider.addLoggingInterceptor(httpClientBuilder);
+        return httpClientBuilder;
+    }
+
+    public OkHttpClient.Builder getOkHttpClientBuilder() {
+        return getOkHttpClientBuilder(null, null);
+    }
+
+    public Call getCall(HttpUrl url, String username, String password) {
+        OkHttpClient client = getOkHttpClientBuilder(username, password).build();
         Request request = new Request.Builder().url(url)
                                                .build();
         return client.newCall(request);

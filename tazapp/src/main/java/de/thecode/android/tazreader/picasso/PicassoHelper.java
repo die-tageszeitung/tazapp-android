@@ -6,9 +6,7 @@ import com.jakewharton.picasso.OkHttp3Downloader;
 import com.squareup.picasso.Picasso;
 
 import de.thecode.android.tazreader.BuildConfig;
-import de.thecode.android.tazreader.okhttp3.HeaderHelper;
-import de.thecode.android.tazreader.okhttp3.HeaderInterceptor;
-import de.thecode.android.tazreader.utils.BuildTypeProvider;
+import de.thecode.android.tazreader.okhttp3.OkHttp3Helper;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,17 +28,10 @@ public class PicassoHelper {
     private static final String IMAGES_CACHE_DIR = "picasso";
 
     public static void initPicasso(Context context) {
-        OkHttpClient.Builder picassoClientBuilder = new OkHttpClient.Builder();
-
-
-        picassoClientBuilder.addNetworkInterceptor(new HeaderInterceptor(HeaderHelper.getInstance(context)
-                                                                                     .getStandardHeader()));
-
-        BuildTypeProvider.addLoggingInterceptor(picassoClientBuilder);
-        BuildTypeProvider.addStethoInterceptor(picassoClientBuilder);
-
+        OkHttpClient.Builder picassoClientBuilder = OkHttp3Helper.getInstance(context).getOkHttpClientBuilder();
         picassoClientBuilder.cache(new Cache(new File(context.getExternalCacheDir(), IMAGES_CACHE_DIR), IMAGES_DISK_USAGE_BYTES));
         OkHttpClient picassoClient = picassoClientBuilder.build();
+
         Picasso.Builder picassoBuilder = new Picasso.Builder(context);
         picassoBuilder.downloader(new OkHttp3Downloader(picassoClient));
         Picasso picasso = picassoBuilder.build();
