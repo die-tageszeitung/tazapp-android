@@ -10,14 +10,20 @@ import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.TextView;
 
+import de.mateware.dialog.LicenceDialog;
+import de.mateware.dialog.licences.Agpl30Licence;
+import de.mateware.dialog.licences.Apache20Licence;
+import de.mateware.dialog.licences.BsdLicence;
+import de.mateware.dialog.licences.MitLicence;
+import de.thecode.android.tazreader.BuildConfig;
+import de.thecode.android.tazreader.R;
+import de.thecode.android.tazreader.dialog.LogbackLicence;
+import de.thecode.android.tazreader.utils.BaseFragment;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.ref.WeakReference;
-
-import de.thecode.android.tazreader.BuildConfig;
-import de.thecode.android.tazreader.R;
-import de.thecode.android.tazreader.utils.BaseFragment;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -70,9 +76,30 @@ public class ImprintFragment extends BaseFragment {
 
 
     private void showLicences() {
-        new LicencesDialog.Builder().setPositiveButton()
-                                    .buildSupport()
-                                    .show(getFragmentManager(), DIALOG_LICENCES);
+        new LicenceDialog.Builder().addEntry(
+                new Apache20Licence(getContext(), "Android Support Library", "The Android Open Source Project", 2011))
+                                   .addEntry(new Apache20Licence(getContext(), "OkHttp", "Square, Inc.", 2016))
+                                   .addEntry(new Apache20Licence(getContext(), "Picasso", "Square, Inc.", 2013))
+                                   .addEntry(new Apache20Licence(getContext(), "Picasso 2 OkHttp 3 Downloader", "Jake Wharton",
+                                                                 2016))
+                                   .addEntry(new Apache20Licence(getContext(), "AESCrypt-Android", "Scott Alexander-Bown", 2014))
+                                   .addEntry(new MitLicence(getContext(), "dd-plist", "Daniel Dreibrodt", 2016))
+                                   .addEntry(new Apache20Licence(getContext(), "Guava", "Google", 2016))
+                                   .addEntry(new Apache20Licence(getContext(), "cwac-provider", "Mark Murphy", 2016))
+                                   .addEntry(new Apache20Licence(getContext(), "EventBus", "Markus Junginger, greenrobot", 2014))
+                                   .addEntry(new MitLicence(getContext(), "SLF4J API", "QOS.ch", 2013))
+                                   .addEntry(new LogbackLicence())
+                                   .addEntry(new Apache20Licence(getContext(), "Calligraphy", "Christopher Jenkins", 2013))
+                                   .addEntry(new Apache20Licence(getContext(), "Commons Lang, Commons IO",
+                                                                 "The Apache Software Foundation", 2016))
+                                   .addEntry(new Apache20Licence(getContext(), "ViewpagerIndicator", "Jordan Réjaud", 2016))
+                                   .addEntry(new Apache20Licence(getContext(), "RecyclerView-FlexibleDivider", "yqritc", 2016))
+                                   .addEntry(new Agpl30Licence(getContext(), "mupdf", "Artifex Software, Inc.", 2015))
+                                   .addEntry(new BsdLicence(getContext(), "Stetho", "Facebook, Inc.", 2015))
+                                   .addEntry(new Agpl30Licence(getContext(),"Toasty","Daniel Morales", 2017))
+                                   .setPositiveButton()
+                                   .buildSupport()
+                                   .show(getFragmentManager(), DIALOG_LICENCES);
     }
 
 

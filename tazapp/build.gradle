@@ -296,6 +296,7 @@ dependencies {
     compile 'com.gitlab.matecode:androiddialog:1.2.29'
 
     compile 'com.scottyab:aescrypt:0.0.1'
+    compile 'com.github.GrenderG:Toasty:1.1.3'
     //compile 'ch.acra:acra:4.9.2'
 
 

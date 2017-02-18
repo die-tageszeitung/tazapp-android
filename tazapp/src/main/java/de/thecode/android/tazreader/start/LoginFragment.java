@@ -9,12 +9,14 @@ import android.os.Looper;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import de.mateware.dialog.Dialog;
 import de.mateware.dialog.DialogIndeterminateProgress;
@@ -28,6 +30,7 @@ import de.thecode.android.tazreader.utils.RunnableExtended;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 
+import es.dmoral.toasty.Toasty;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.HttpUrl;
@@ -172,6 +175,9 @@ public class LoginFragment extends BaseFragment {
                         @Override
                         public void run() {
                             unblockUi();
+                            Toast success = Toasty.success(getContext(), "Nutzerdaten akzeptiert", Toast.LENGTH_SHORT, true);
+                            success.setGravity(Gravity.CENTER, 0, 0);
+                            success.show();
                             AccountHelper.getInstance(getContext())
                                          .setUser((String) getObject(0), (String) getObject(1));
                             if (hasCallback()) getCallback().loginFinished();
@@ -189,12 +195,14 @@ public class LoginFragment extends BaseFragment {
                     @Override
                     public void run() {
                         unblockUi();
-                        new Dialog.Builder().setIcon(R.drawable.ic_alerts_and_states_warning)
-                                            .setTitle(R.string.dialog_error_title)
-                                            .setMessage(((Exception) getObject(0)).getMessage())
-                                            .setPositiveButton()
-                                            .buildSupport()
-                                            .show(getFragmentManager(), DIALOG_ERROR_CREDENTIALS);
+                        Toasty.error(getContext(), ((Exception) getObject(0)).getMessage(), Toast.LENGTH_LONG, true)
+                              .show();
+//                        new Dialog.Builder().setIcon(R.drawable.ic_alerts_and_states_warning)
+//                                            .setTitle(R.string.dialog_error_title)
+//                                            .setMessage(((Exception) getObject(0)).getMessage())
+//                                            .setPositiveButton()
+//                                            .buildSupport()
+//                                            .show(getFragmentManager(), DIALOG_ERROR_CREDENTIALS);
                     }
                 });
             }
