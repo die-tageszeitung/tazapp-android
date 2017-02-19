@@ -83,6 +83,7 @@ public class ImprintFragment extends BaseFragment {
                                    .addEntry(new Apache20Licence(getContext(), "Picasso 2 OkHttp 3 Downloader", "Jake Wharton",
                                                                  2016))
                                    .addEntry(new Apache20Licence(getContext(), "AESCrypt-Android", "Scott Alexander-Bown", 2014))
+                                   .addEntry(new Apache20Licence(getContext(),"Snacky","Mate Siede", 2017))
                                    .addEntry(new MitLicence(getContext(), "dd-plist", "Daniel Dreibrodt", 2016))
                                    .addEntry(new Apache20Licence(getContext(), "Guava", "Google", 2016))
                                    .addEntry(new Apache20Licence(getContext(), "cwac-provider", "Mark Murphy", 2016))
@@ -96,7 +97,6 @@ public class ImprintFragment extends BaseFragment {
                                    .addEntry(new Apache20Licence(getContext(), "RecyclerView-FlexibleDivider", "yqritc", 2016))
                                    .addEntry(new Agpl30Licence(getContext(), "mupdf", "Artifex Software, Inc.", 2015))
                                    .addEntry(new BsdLicence(getContext(), "Stetho", "Facebook, Inc.", 2015))
-                                   .addEntry(new Agpl30Licence(getContext(),"Toasty","Daniel Morales", 2017))
                                    .setPositiveButton()
                                    .buildSupport()
                                    .show(getFragmentManager(), DIALOG_LICENCES);

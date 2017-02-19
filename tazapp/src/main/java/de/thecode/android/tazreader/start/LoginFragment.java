@@ -46,6 +46,7 @@ public class LoginFragment extends BaseFragment {
     private EditText                      editUser;
     private EditText                      editPass;
     private WeakReference<IStartCallback> callback;
+    private Button loginButton;
 
     public LoginFragment() {
         // Required empty public constructor
@@ -65,7 +66,7 @@ public class LoginFragment extends BaseFragment {
         if (hasCallback()) getCallback().onUpdateDrawer(this);
 
         View view = inflater.inflate(R.layout.start_login, container, false);
-        Button loginButton = (Button) view.findViewById(R.id.buttonLogin);
+        loginButton = (Button) view.findViewById(R.id.buttonLogin);
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -114,19 +115,20 @@ public class LoginFragment extends BaseFragment {
         return callback.get();
     }
 
-    private void blockUi() {
+    private void blockUi(boolean block) {
+        editUser.setEnabled(!block);
+        editPass.setEnabled(!block);
+        loginButton.setEnabled(!block);
+    }
+
+    private void showWaitingDialog(){
         new DialogIndeterminateProgress.Builder().setCancelable(false)
                                                  .setMessage(R.string.dialog_check_credentials)
                                                  .buildSupport()
                                                  .show(getFragmentManager(), DIALOG_CHECK_CREDENTIALS);
-        editUser.setEnabled(false);
-        editPass.setEnabled(false);
     }
 
-    private void unblockUi() {
-
-        editUser.setEnabled(true);
-        editPass.setEnabled(true);
+    private void hideWaitingDialog(){
         DialogIndeterminateProgress.dismissDialog(getFragmentManager(), DIALOG_CHECK_CREDENTIALS);
     }
 
@@ -157,8 +159,8 @@ public class LoginFragment extends BaseFragment {
         }
 
 
-        blockUi();
-
+        blockUi(true);
+        showWaitingDialog();
 
         Call call = OkHttp3Helper.getInstance(getContext())
                                  .getCall(HttpUrl.parse(BuildConfig.CHECKLOGINURL), username, password);
@@ -175,15 +177,16 @@ public class LoginFragment extends BaseFragment {
                         public void run() {
                             AccountHelper.getInstance(getContext())
                                          .setUser((String) getObject(0), (String) getObject(1));
+                            hideWaitingDialog();
                             Snacky.builder()
-                                  .setActivty(getActivity())
+                                  .setView(getActivity().findViewById(R.id.content_frame))
                                   .setDuration(Snacky.LENGTH_SHORT)
                                   .setText("Nutzerdaten akzeptiert")
                                   .success()
                                   .addCallback(new Snackbar.Callback(){
                                       @Override
                                       public void onDismissed(Snackbar transientBottomBar, int event) {
-                                          unblockUi();
+                                          blockUi(false);
                                           if (hasCallback()) getCallback().loginFinished();
                                       }
                                   })
@@ -201,8 +204,9 @@ public class LoginFragment extends BaseFragment {
                 mainHandler.post(new RunnableExtended(e) {
                     @Override
                     public void run() {
+                        hideWaitingDialog();
                         Snacky.builder()
-                              .setActivty(getActivity())
+                              .setView(getActivity().findViewById(R.id.content_frame))
                               .setDuration(Snacky.LENGTH_INDEFINITE)
                               .setText(((Exception) getObject(0)).getMessage())
                               .setActionText(android.R.string.ok)
@@ -210,7 +214,7 @@ public class LoginFragment extends BaseFragment {
                               .addCallback(new Snackbar.Callback(){
                                   @Override
                                   public void onDismissed(Snackbar transientBottomBar, int event) {
-                                      unblockUi();
+                                      blockUi(false);
                                   }
                               })
                               .show();

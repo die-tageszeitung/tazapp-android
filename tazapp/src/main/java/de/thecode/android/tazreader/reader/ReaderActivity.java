@@ -28,13 +28,11 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 
 import de.mateware.dialog.Dialog;
 import de.mateware.dialog.listener.DialogButtonListener;
 import de.mateware.dialog.listener.DialogDismissListener;
 import de.mateware.snacky.Snacky;
-import de.mateware.snacky.SnackyUtils;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.analytics.AnalyticsWrapper;
 import de.thecode.android.tazreader.data.Paper;
@@ -737,10 +735,10 @@ public class ReaderActivity extends BaseActivity
                 switch (retainTtsFragment.getTtsState()) {
                     case DISABLED:
                     case IDLE:
-                        showSnackbar(makeTtsPlayingSpan(getString(R.string.toast_tts_started)));
+                        showTtsSnackbar(makeTtsPlayingSpan(getString(R.string.toast_tts_started)));
                         break;
                     case PAUSED:
-                        showSnackbar(makeTtsPlayingSpan(getString(R.string.toast_tts_continued)), getString(R.string.toast_tts_action_restart), new View.OnClickListener() {
+                        showTtsSnackbar(makeTtsPlayingSpan(getString(R.string.toast_tts_continued)), getString(R.string.toast_tts_action_restart), new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
                                 retainTtsFragment.stopTts();
@@ -780,7 +778,7 @@ public class ReaderActivity extends BaseActivity
     public void onTtsStopped() {
         audioManager.abandonAudioFocus(retainTtsFragment.getAudioFocusChangeListener());
         if (retainTtsFragment.getTtsState() == ReaderTtsFragment.TTS.PAUSED) {
-            showSnackbar(getString(R.string.toast_tts_paused), getString(R.string.toast_tts_action_restart), new View.OnClickListener() {
+            showTtsSnackbar(getString(R.string.toast_tts_paused), getString(R.string.toast_tts_action_restart), new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     retainTtsFragment.stopTts();
@@ -833,11 +831,11 @@ public class ReaderActivity extends BaseActivity
         }
     }
 
-    public void showSnackbar(CharSequence message) {
-        showSnackbar(message, null, null);
+    public void showTtsSnackbar(CharSequence message) {
+        showTtsSnackbar(message, null, null);
     }
 
-    public void showSnackbar(CharSequence message, String action, View.OnClickListener actionListener) {
+    public void showTtsSnackbar(CharSequence message, String action, View.OnClickListener actionListener) {
         Snacky.builder()
               .setActivty(this)
               .setText(message)
