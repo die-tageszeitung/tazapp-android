@@ -178,6 +178,8 @@ public class LoginFragment extends BaseFragment {
                             AccountHelper.getInstance(getContext())
                                          .setUser((String) getObject(0), (String) getObject(1));
                             hideWaitingDialog();
+                            blockUi(false);
+                            if (hasCallback()) getCallback().loginFinished();
                             Snacky.builder()
                                   .setView(getActivity().findViewById(R.id.content_frame))
                                   .setDuration(Snacky.LENGTH_SHORT)
@@ -186,8 +188,6 @@ public class LoginFragment extends BaseFragment {
                                   .addCallback(new Snackbar.Callback(){
                                       @Override
                                       public void onDismissed(Snackbar transientBottomBar, int event) {
-                                          blockUi(false);
-                                          if (hasCallback()) getCallback().loginFinished();
                                       }
                                   })
                                   .show();
