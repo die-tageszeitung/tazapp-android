@@ -63,6 +63,8 @@ public class SyncService extends IntentService {
 
     private Paper moveToPaperAtEnd;
 
+    private long minDataValidUntil = Long.MAX_VALUE;
+
     public SyncService() {
         super("SyncService");
     }
@@ -114,11 +116,11 @@ public class SyncService extends IntentService {
             if (!tomorrowPaper.isDownloaded() && !tomorrowPaper.isDownloading()) downloadPaper(tomorrowPaper);
         }
 
-        if (System.currentTimeMillis() >= TazSettings.getInstance(this)
-                                                     .getSyncServiceNextRun()) {
-            SyncHelper.setAlarmManager(this, tomorrowPaper != null);
-        }
+        long nextPlannedRunAt = TazSettings.getInstance(this).getSyncServiceNextRun();
+        if (nextPlannedRunAt <= System.currentTimeMillis()) nextPlannedRunAt = Long.MAX_VALUE;
+        minDataValidUntil = Math.min(nextPlannedRunAt,minDataValidUntil);
 
+        SyncHelper.setAlarmManager(this, tomorrowPaper != null, minDataValidUntil);
 
         EventBus.getDefault()
                 .postSticky(new SyncStateChangedEvent(false));
@@ -274,6 +276,7 @@ public class SyncService extends IntentService {
         long publicationId;
         String publicationTitle = publication.getName();
         long validUntil = publication.getValidUntil();
+        minDataValidUntil = Math.min(minDataValidUntil, validUntil * 1000);
 
         try {
             if (pubCursor.moveToNext()) {
@@ -319,6 +322,8 @@ public class SyncService extends IntentService {
                     if (!newPaper.equals(oldPaper)) {
                         log.debug("found difference in paper");
                         oldPaper.setImage(newPaper.getImage());
+                        boolean reloadImage = !new EqualsBuilder().append(oldPaper.getImageHash(), newPaper.getImageHash())
+                                                                  .isEquals();
                         oldPaper.setImageHash(newPaper.getImageHash());
                         if (!oldPaper.isImported() && !oldPaper.isKiosk()) {
 
@@ -337,16 +342,16 @@ public class SyncService extends IntentService {
                             oldPaper.setResourceUrl(newPaper.getResourceUrl());
                             oldPaper.setResourceLen(newPaper.getResourceLen());
                             oldPaper.setDemo(newPaper.isDemo());
+                            oldPaper.setValidUntil(newPaper.getValidUntil());
                         }
                         if (oldPaper.getPublicationId() == null) {
                             oldPaper.setPublicationId(publicationId);
                         }
-                        preLoadImage(oldPaper);
-                        setMoveToPaperAtEnd(oldPaper);
+                        this.getContentResolver()
+                            .update(oldPaper.getContentUri(), oldPaper.getContentValues(), null, null);
+                        if (reloadImage) preLoadImage(oldPaper);
+                        //setMoveToPaperAtEnd(oldPaper);
                     }
-                    oldPaper.setValidUntil(newPaper.getValidUntil());
-                    this.getContentResolver()
-                        .update(oldPaper.getContentUri(), oldPaper.getContentValues(), null, null);
                 } else {
                     log.debug("notfound");
 

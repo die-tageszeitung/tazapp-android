@@ -4,7 +4,7 @@ import android.content.Context;
 import android.os.Build;
 
 import de.thecode.android.tazreader.BuildConfig;
-import de.thecode.android.tazreader.secure.Installation;
+import de.thecode.android.tazreader.R;
 
 import java.io.IOException;
 
@@ -22,9 +22,11 @@ public class UserAgentInterceptor implements Interceptor {
     private final String userAgentHeaderValue;
 
     public UserAgentInterceptor(Context context) {
-        this.userAgentHeaderValue = "Android" + " " + Build.VERSION.RELEASE +
+        this.userAgentHeaderValue = "Android" + " " + Build.VERSION.RELEASE + " " + (context.getResources()
+                                                                                            .getBoolean(
+                                                                                                    R.bool.isTablet) ? "Tablet" : "Phone") +
                 " (" + BuildConfig.VERSION_CODE + ";" + BuildConfig.VERSION_NAME + ";" +
-                Build.BRAND + ";" + Build.MODEL + ") [" + Installation.id(context) + "]";
+                Build.BRAND + ";" + Build.MODEL + ")"/*+" [" + Installation.id(context) + "]"*/;
     }
 
     @Override

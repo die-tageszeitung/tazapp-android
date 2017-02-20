@@ -614,7 +614,6 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
                        .startsWith("http")) {
                     Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
                     startActivity(browserIntent);
-                    return true;
                 } else {
                     if (hasCallback()) {
                         IIndexItem indexItem = getCallback().getPaper()
@@ -622,13 +621,13 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
                                                             .getIndexItem(url);
                         if (indexItem != null) {
                             getCallback().onLoad(url);
-                            return true;
                         }
                     }
                 }
             }
             return true;
         }
+
 
         @Override
         public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {

@@ -1600,7 +1600,7 @@ public class Paper {
         equalsBuilder.append(bookId, rhs.bookId);
         equalsBuilder.append(isDemo, rhs.isDemo);
         equalsBuilder.append(publicationId, rhs.publicationId);
-        //equalsBuilder.append(validUntil,rhs.validUntil);
+        equalsBuilder.append(validUntil,rhs.validUntil);
         return equalsBuilder.isEquals();
     }
 

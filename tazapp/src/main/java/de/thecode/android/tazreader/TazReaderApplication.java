@@ -11,6 +11,7 @@ import de.thecode.android.tazreader.picasso.PicassoHelper;
 import de.thecode.android.tazreader.reader.ReaderActivity;
 import de.thecode.android.tazreader.utils.BuildTypeProvider;
 import de.thecode.android.tazreader.utils.Display;
+import de.thecode.android.tazreader.utils.StorageManager;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -86,6 +87,8 @@ public class TazReaderApplication extends Application {
                 if (aChildren.startsWith("com.crashlytics") || aChildren.startsWith("Twitter") || aChildren.startsWith(
                         "io.fabric")) FileUtils.deleteQuietly(new File(dir, aChildren));
             }
+            File oldLibImageDir = StorageManager.getInstance(this).getCache("library");
+            FileUtils.deleteQuietly(oldLibImageDir);
         }
 
         // MIGRATION BEENDET, setzten der aktuellen Version

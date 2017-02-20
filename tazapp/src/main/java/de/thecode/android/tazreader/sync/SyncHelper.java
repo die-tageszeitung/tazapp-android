@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.TimeZone;
@@ -106,21 +107,36 @@ public class SyncHelper {
         return cal.getTimeInMillis();
     }
 
-    public static void setAlarmManager(Context context, boolean notToday) {
+    public static void setAlarmManager(Context context, boolean notToday, long dataValidUntil) {
         long nextRunAt = getNextServiceTime(notToday);
-        setAlarmManager(context,nextRunAt);
+        setAlarmManager(context, Math.min(nextRunAt, dataValidUntil));
     }
 
     public static void setAlarmManager(Context context, long runAt) {
+
+        log.debug("next run at {}", new SimpleDateFormat("dd.MM.yyyy HH:mm:ss",Locale.GERMANY).format(new Date(runAt)));
+
+        AlarmManager alarm = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+
         TazSettings.getInstance(context)
                    .setSyncServiceNextRun(runAt);
         Intent serviceIntent = new Intent(context.getApplicationContext(), SyncService.class);
-        PendingIntent pendingServiceIntent = PendingIntent.getService(context.getApplicationContext(), 0, serviceIntent,
-                                                                      PendingIntent.FLAG_UPDATE_CURRENT);
-        AlarmManager alarm = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+
+        PendingIntent pendingServiceIntent = createPendingIntent(context, serviceIntent);
+
+        alarm.cancel(pendingServiceIntent);
+
+        pendingServiceIntent.cancel();
+
+        pendingServiceIntent = createPendingIntent(context, serviceIntent);
+
         //TODO maybe we want to use alarm.setAndAllowWhileIdle() because of Doze mode?
         alarm.set(AlarmManager.RTC_WAKEUP, runAt, pendingServiceIntent);
 
+    }
+
+    private static PendingIntent createPendingIntent(Context context, Intent serviceIntent) {
+        return PendingIntent.getService(context.getApplicationContext(), 0, serviceIntent, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
 }
