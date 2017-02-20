@@ -3,6 +3,7 @@ package de.thecode.android.tazreader.start;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
@@ -39,7 +40,6 @@ import de.thecode.android.tazreader.download.ResourceDownloadEvent;
 import de.thecode.android.tazreader.importer.ImportActivity;
 import de.thecode.android.tazreader.migration.MigrationActivity;
 import de.thecode.android.tazreader.reader.ReaderActivity;
-import de.thecode.android.tazreader.sync.AccountHelper;
 import de.thecode.android.tazreader.sync.SyncHelper;
 import de.thecode.android.tazreader.utils.BaseActivity;
 import de.thecode.android.tazreader.utils.BaseFragment;
@@ -97,15 +97,26 @@ public class StartActivity extends BaseActivity
     NavigationDrawerFragment.NavigationItem imprintItem;
     NavigationDrawerFragment.NavigationItem importItem;
 
+    TazSettings.OnPreferenceChangeListener demoModeChanged = new TazSettings.OnPreferenceChangeListener() {
+        @Override
+        public void onPreferenceChanged(String key, SharedPreferences preferences) {
+            onDemoModeChanged(preferences.getBoolean(key, true));
+        }
+    };
+
     @Override
     public void onStart() {
         super.onStart();
+        TazSettings.getInstance(this)
+                   .addOnPreferenceChangeListener(TazSettings.PREFKEY.DEMOMODE, demoModeChanged);
         EventBus.getDefault()
                 .register(this);
     }
 
     @Override
     public void onStop() {
+        TazSettings.getInstance(this)
+                   .removeOnPreferenceChangeListener(demoModeChanged);
         EventBus.getDefault()
                 .unregister(this);
         super.onStop();
@@ -280,17 +291,16 @@ public class StartActivity extends BaseActivity
         return retainDataFragment;
     }
 
+
+
+
     @Override
-    public void loginFinished() {
-        //        updateUserInDrawer();
-        updateTitle();
+    public void onSuccessfulCredentialsCheck() {
         mDrawerFragment.simulateClick(libraryItem, false);
     }
 
-    @Override
-    public void logoutFinished() {
+    public void onDemoModeChanged(boolean demoMode) {
         updateTitle();
-        //        updateUserInDrawer();
     }
 
     @Override
@@ -522,8 +532,8 @@ public class StartActivity extends BaseActivity
 
     public void updateTitle() {
         StringBuilder titleBuilder = new StringBuilder(getString(getApplicationInfo().labelRes));
-        if (AccountHelper.getInstance(this)
-                         .isDemoMode()) {
+        if (TazSettings.getInstance(this)
+                       .isDemoMode()) {
             titleBuilder.append(" ")
                         .append(getString(R.string.demo_titel_appendix));
         }
@@ -632,7 +642,7 @@ public class StartActivity extends BaseActivity
                 Calendar endCal = Calendar.getInstance();
                 startCal.set(year, Calendar.JANUARY, 1);
                 endCal.set(year, Calendar.DECEMBER, 31);
-                SyncHelper.requestSync(this,startCal,endCal);
+                SyncHelper.requestSync(this, startCal, endCal);
             }
         } else if (DIALOG_ARCHIVE_MONTH.equals(tag)) {
             int year = arguments.getInt(ARGUMENT_ARCHIVE_YEAR);
@@ -642,7 +652,7 @@ public class StartActivity extends BaseActivity
             startCal.set(year, month, 1);
             int lastDayOfMont = startCal.getActualMaximum(Calendar.DAY_OF_MONTH);
             endCal.set(year, month, lastDayOfMont);
-            SyncHelper.requestSync(this,startCal,endCal);
+            SyncHelper.requestSync(this, startCal, endCal);
         }
     }
 

@@ -16,11 +16,9 @@ public interface IStartCallback {
 
     public void onUpdateDrawer(Fragment fragement);
 
-    public void loginFinished();
-
-    public void logoutFinished();
-
     public Toolbar getToolbar();
+
+    void onSuccessfulCredentialsCheck();
 
     public void enableDrawer(boolean bool);
 

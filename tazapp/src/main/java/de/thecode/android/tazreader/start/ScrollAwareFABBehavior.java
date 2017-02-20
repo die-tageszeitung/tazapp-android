@@ -7,7 +7,7 @@ import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
 import android.view.View;
 
-import de.thecode.android.tazreader.sync.AccountHelper;
+import de.thecode.android.tazreader.data.TazSettings;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,19 +19,19 @@ public class ScrollAwareFABBehavior extends FloatingActionButton.Behavior {
 
     private static final Logger log = LoggerFactory.getLogger(ScrollAwareFABBehavior.class);
 
-    private AccountHelper mAccountHelper;
+    private TazSettings tazSettings;
 
     public ScrollAwareFABBehavior(Context context, AttributeSet attrs) {
         super();
-        mAccountHelper = AccountHelper.getInstance(context);
+        tazSettings = TazSettings.getInstance(context);
     }
 
     @Override
     public boolean onStartNestedScroll(CoordinatorLayout coordinatorLayout, FloatingActionButton child, View directTargetChild,
                                        View target, int nestedScrollAxes) {
         boolean isAuthenticated = false;
-        if (mAccountHelper != null) {
-            isAuthenticated = !mAccountHelper.isDemoMode();
+        if (tazSettings != null) {
+            isAuthenticated = !tazSettings.isDemoMode();
         }
         return nestedScrollAxes == ViewCompat.SCROLL_AXIS_VERTICAL && isAuthenticated;
     }

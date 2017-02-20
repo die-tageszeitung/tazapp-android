@@ -15,9 +15,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.security.GeneralSecurityException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-public final class TazSettings {
+public final class TazSettings implements SharedPreferences.OnSharedPreferenceChangeListener {
 
     private static final Logger log = LoggerFactory.getLogger(TazSettings.class);
 
@@ -56,7 +60,8 @@ public final class TazSettings {
         public static final String USER                      = "user";
         public static final String PASS                      = "pass";
         public static final String USERMIGRATIONNOTIFICATION = "usermigrationnotification";
-        static final        String SYNCSERVICENEXTRUN        = "syncServiceNextRun";
+        public static final        String SYNCSERVICENEXTRUN        = "syncServiceNextRun";
+        public static final        String DEMOMODE                  = "demoMode";
     }
 
 
@@ -70,6 +75,18 @@ public final class TazSettings {
 
     private TazSettings(Context context) {
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        sharedPreferences.registerOnSharedPreferenceChangeListener(this);
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        if (changeListeners.containsKey(key) && changeListeners.get(key) != null) {
+            for (OnPreferenceChangeListener listener : changeListeners.get(key)) {
+                if (listener != null) {
+                    listener.onPreferenceChanged(key, sharedPreferences);
+                }
+            }
+        }
     }
 
     public boolean setPref(String key, Object v) {
@@ -190,5 +207,54 @@ public final class TazSettings {
                          .putLong(PREFKEY.SYNCSERVICENEXTRUN, timeInMillis)
                          .apply();
     }
+
+    public boolean isDemoMode() {
+        return sharedPreferences.getBoolean(PREFKEY.DEMOMODE, true);
+    }
+
+    public void setDemoMode(boolean demoMode) {
+        sharedPreferences.edit()
+                         .putBoolean(PREFKEY.DEMOMODE, demoMode)
+                         .apply();
+    }
+
+    private Map<String, List<OnPreferenceChangeListener>> changeListeners = new HashMap<>();
+
+    public void addOnPreferenceChangeListener(String key, OnPreferenceChangeListener listener) {
+        if (changeListeners.containsKey(key)) {
+            List<OnPreferenceChangeListener> listenerList = changeListeners.get(key);
+            int listSize = listenerList.size();
+            for (int i = 0; i < listSize; i++) {
+                if ((listenerList.get(i) != null && listenerList.get(i) == listener)) {
+                    listenerList.remove(i);
+                    listSize--;
+                    i--;
+                }
+            }
+            listenerList.add(listener);
+            changeListeners.put(key, listenerList);
+        } else {
+            List<OnPreferenceChangeListener> newListenerList = new ArrayList<>();
+            newListenerList.add(listener);
+            changeListeners.put(key, newListenerList);
+        }
+    }
+
+    public void removeOnPreferenceChangeListener(OnPreferenceChangeListener listener) {
+        Set<String> keys = changeListeners.keySet();
+        for (String key : keys) {
+            List<OnPreferenceChangeListener> list = changeListeners.get(key);
+            if (list != null) {
+                if (list.remove(listener)) {
+                    changeListeners.put(key, list);
+                }
+            }
+        }
+    }
+
+    public interface OnPreferenceChangeListener {
+        void onPreferenceChanged(String key, SharedPreferences preferences);
+    }
+
 
 }

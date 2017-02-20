@@ -48,12 +48,12 @@ public class AccountHelper {
         }
     }
 
-    public String getUser() {
-        return preferences.getDecrytedPrefString(cipherPassword, TazSettings.PREFKEY.USER, AccountHelper.ACCOUNT_DEMO_USER);
+    public String getUser(String defValue) {
+        return preferences.getDecrytedPrefString(cipherPassword, TazSettings.PREFKEY.USER, defValue);
     }
 
-    public String getPassword() {
-        return preferences.getDecrytedPrefString(cipherPassword, TazSettings.PREFKEY.PASS, AccountHelper.ACCOUNT_DEMO_PASS);
+    public String getPassword(String defValue) {
+        return preferences.getDecrytedPrefString(cipherPassword, TazSettings.PREFKEY.PASS, defValue);
     }
 
     public void setUser(String user, String password) {
@@ -66,10 +66,6 @@ public class AccountHelper {
         preferences.removePref(TazSettings.PREFKEY.USER);
         preferences.removePref(TazSettings.PREFKEY.PASS);
 //        setAuthenticated(false);
-    }
-
-    public boolean isDemoMode() {
-        return !(preferences.hasPreference(TazSettings.PREFKEY.USER) && preferences.hasPreference(TazSettings.PREFKEY.PASS));
     }
 
 //    public void setAuthenticated(boolean isAuthenticated) {

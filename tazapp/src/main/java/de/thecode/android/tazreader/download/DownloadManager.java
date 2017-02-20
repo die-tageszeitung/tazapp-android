@@ -16,6 +16,7 @@ import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Resource;
+import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.secure.Base64;
 import de.thecode.android.tazreader.sync.AccountHelper;
 import de.thecode.android.tazreader.utils.StorageManager;
@@ -57,8 +58,8 @@ public class DownloadManager {
 
         Paper paper = new Paper(mContext, paperId);
 
-//        if (!AccountHelper.getInstance(mContext)
-//                          .isAuthenticated() && !paper.isDemo()) throw new DownloadNotAllowedException();
+        if (TazSettings.getInstance(mContext)
+                       .isDemoMode() && !paper.isDemo()) throw new DownloadNotAllowedException();
 
         log.trace("requesting paper download: {}", paper);
 
@@ -75,17 +76,15 @@ public class DownloadManager {
 
         if (paper.getPublicationId() > 0) {
             request.addRequestHeader("Authorization", "Basic " + Base64.encodeToString((AccountHelper.getInstance(mContext)
-                                                                                                     .getUser() + ":" + AccountHelper.getInstance(
-                    mContext)
-                                                                                                                                     .getPassword()).getBytes(),
-                                                                                       Base64.NO_WRAP));
+                                                                                                     .getUser(
+                                                                                                             AccountHelper.ACCOUNT_DEMO_USER) +
+                    ":" + AccountHelper.getInstance(mContext)
+                                       .getPassword(AccountHelper.ACCOUNT_DEMO_PASS)).getBytes(), Base64.NO_WRAP));
         }
 
         File destinationFile = mStorage.getDownloadFile(paper);
 
-
         assertEnougSpaceForDownload(destinationFile.getParentFile(), calculateBytesNeeded(paper.getLen()));
-
 
         request.setDestinationUri(Uri.fromFile(destinationFile));
 
@@ -406,11 +405,10 @@ public class DownloadManager {
         } else return Math.min(oneHundred, fiveDownloads);
     }
 
-    private static void assertEnougSpaceForDownload(File dir, long bytesNeeded) throws NotEnoughSpaceException {
-        if (bytesNeeded <= 0) return;
+    private static void assertEnougSpaceForDownload(File dir, long requested) throws NotEnoughSpaceException {
+        if (requested <= 0) return;
         StatFs statFs = new StatFs(dir.getAbsolutePath());
         long available;
-        long requested = bytesNeeded * 10;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
             available = statFs.getAvailableBlocksLong() * statFs.getBlockSizeLong();
         } else {

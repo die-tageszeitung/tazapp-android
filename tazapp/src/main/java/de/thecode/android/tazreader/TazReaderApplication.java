@@ -2,7 +2,6 @@ package de.thecode.android.tazreader;
 
 import android.app.Application;
 import android.content.Context;
-import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.media.RingtoneManager;
 
 import de.thecode.android.tazreader.analytics.AnalyticsWrapper;
@@ -31,13 +30,6 @@ import java.io.File;
 public class TazReaderApplication extends Application {
 
     private static final Logger log = LoggerFactory.getLogger(TazReaderApplication.class);
-
-    public static final String LOGTAG = "TAZ";
-
-
-    private OnSharedPreferenceChangeListener listener;
-
-    //private static PendingIntent autoDownloadSender;
 
     @Override
     protected void attachBaseContext(Context base) {

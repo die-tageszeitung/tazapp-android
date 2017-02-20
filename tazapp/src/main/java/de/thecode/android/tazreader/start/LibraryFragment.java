@@ -1,6 +1,7 @@
 package de.thecode.android.tazreader.start;
 
 
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -25,7 +26,6 @@ import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.download.CoverDownloadedEvent;
-import de.thecode.android.tazreader.sync.AccountHelper;
 import de.thecode.android.tazreader.sync.SyncHelper;
 import de.thecode.android.tazreader.sync.SyncStateChangedEvent;
 import de.thecode.android.tazreader.utils.BaseFragment;
@@ -53,6 +53,13 @@ public class LibraryFragment extends BaseFragment
 
     private AutofitRecyclerView  recyclerView;
     private FloatingActionButton fabArchive;
+
+    private TazSettings.OnPreferenceChangeListener demoModeChangedListener = new TazSettings.OnPreferenceChangeListener() {
+        @Override
+        public void onPreferenceChanged(String key, SharedPreferences preferences) {
+            onDemoModeChanged(preferences.getBoolean(key,true));
+        }
+    };
 
     public LibraryFragment() {
         // Required empty public constructor
@@ -192,15 +199,24 @@ public class LibraryFragment extends BaseFragment
     @Override
     public void onStart() {
         super.onStart();
+        TazSettings.getInstance(getContext())
+                   .addOnPreferenceChangeListener(TazSettings.PREFKEY.DEMOMODE, demoModeChangedListener);
         EventBus.getDefault()
                 .registerSticky(this);
     }
 
     @Override
     public void onStop() {
+        TazSettings.getInstance(getContext())
+                   .removeOnPreferenceChangeListener(demoModeChangedListener);
         EventBus.getDefault()
                 .unregister(this);
         super.onStop();
+    }
+
+    private void onDemoModeChanged(boolean demoMode) {
+        showFab();
+        getLoaderManager().restartLoader(0, null, this);
     }
 
     @Override
@@ -238,8 +254,8 @@ public class LibraryFragment extends BaseFragment
         StringBuilder selection = new StringBuilder();
         boolean demo = true;
         if (hasCallback()) {
-            demo = AccountHelper.getInstance(getContext())
-                                 .isDemoMode();
+            demo = TazSettings.getInstance(getContext())
+                              .isDemoMode();
         }
 
         if (demo) selection.append("(");
@@ -385,8 +401,8 @@ public class LibraryFragment extends BaseFragment
 
 
     private void showFab() {
-        if (!AccountHelper.getInstance(getContext())
-                         .isDemoMode()) {
+        if (!TazSettings.getInstance(getContext())
+                        .isDemoMode()) {
             if (!isSyncing) {
                 fabArchive.show();
             }

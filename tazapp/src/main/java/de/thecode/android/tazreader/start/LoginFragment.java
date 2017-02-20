@@ -22,6 +22,7 @@ import de.mateware.dialog.DialogIndeterminateProgress;
 import de.mateware.snacky.Snacky;
 import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.R;
+import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.okhttp3.OkHttp3Helper;
 import de.thecode.android.tazreader.sync.AccountHelper;
 import de.thecode.android.tazreader.utils.BaseFragment;
@@ -46,7 +47,7 @@ public class LoginFragment extends BaseFragment {
     private EditText                      editUser;
     private EditText                      editPass;
     private WeakReference<IStartCallback> callback;
-    private Button loginButton;
+    private Button                        loginButton;
 
     public LoginFragment() {
         // Required empty public constructor
@@ -96,13 +97,10 @@ public class LoginFragment extends BaseFragment {
             }
         });
 
-        if (!AccountHelper.getInstance(getContext())
-                          .isDemoMode()) {
-            editUser.setText(AccountHelper.getInstance(getContext())
-                                          .getUser());
-            editPass.setText(AccountHelper.getInstance(getContext())
-                                          .getPassword());
-        }
+        editUser.setText(AccountHelper.getInstance(getContext())
+                                      .getUser(""));
+        editPass.setText(AccountHelper.getInstance(getContext())
+                                      .getPassword(""));
 
         return view;
     }
@@ -121,14 +119,14 @@ public class LoginFragment extends BaseFragment {
         loginButton.setEnabled(!block);
     }
 
-    private void showWaitingDialog(){
+    private void showWaitingDialog() {
         new DialogIndeterminateProgress.Builder().setCancelable(false)
                                                  .setMessage(R.string.dialog_check_credentials)
                                                  .buildSupport()
                                                  .show(getFragmentManager(), DIALOG_CHECK_CREDENTIALS);
     }
 
-    private void hideWaitingDialog(){
+    private void hideWaitingDialog() {
         DialogIndeterminateProgress.dismissDialog(getFragmentManager(), DIALOG_CHECK_CREDENTIALS);
     }
 
@@ -175,17 +173,20 @@ public class LoginFragment extends BaseFragment {
                     mainHandler.post(new RunnableExtended(username, password) {
                         @Override
                         public void run() {
+                            TazSettings.getInstance(getContext())
+                                       .setDemoMode(false);
                             AccountHelper.getInstance(getContext())
                                          .setUser((String) getObject(0), (String) getObject(1));
                             hideWaitingDialog();
                             blockUi(false);
-                            if (hasCallback()) getCallback().loginFinished();
+                            if (hasCallback()) getCallback().onSuccessfulCredentialsCheck();
+                            //if (hasCallback()) getCallback().onDemoModeChanged(false);
                             Snacky.builder()
                                   .setView(getActivity().findViewById(R.id.content_frame))
                                   .setDuration(Snacky.LENGTH_SHORT)
                                   .setText("Nutzerdaten akzeptiert")
                                   .success()
-                                  .addCallback(new Snackbar.Callback(){
+                                  .addCallback(new Snackbar.Callback() {
                                       @Override
                                       public void onDismissed(Snackbar transientBottomBar, int event) {
                                       }
@@ -204,14 +205,17 @@ public class LoginFragment extends BaseFragment {
                 mainHandler.post(new RunnableExtended(e) {
                     @Override
                     public void run() {
+                        TazSettings.getInstance(getContext())
+                                   .setDemoMode(true);
                         hideWaitingDialog();
+                        //if (hasCallback()) getCallback().onDemoModeChanged(true);
                         Snacky.builder()
                               .setView(getActivity().findViewById(R.id.content_frame))
                               .setDuration(Snacky.LENGTH_INDEFINITE)
                               .setText(((Exception) getObject(0)).getMessage())
                               .setActionText(android.R.string.ok)
                               .error()
-                              .addCallback(new Snackbar.Callback(){
+                              .addCallback(new Snackbar.Callback() {
                                   @Override
                                   public void onDismissed(Snackbar transientBottomBar, int event) {
                                       blockUi(false);
