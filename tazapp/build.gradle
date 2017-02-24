@@ -1,4 +1,4 @@
-def supportLibVer = "25.1.1"
+def supportLibVer = "25.2.0"
 def buildToolsVer = "25.0.1"
 def compileSdkVer = 25
 def targetSdkVer = 25
@@ -164,7 +164,6 @@ android {
             buildConfigField 'String', checkLoginUrl, lmdCheckLogin
             buildConfigField 'String', resourceUrl, lmdResourceUrl
             buildConfigField 'String', archiveUrl, lmdArchiveUrl
-
         }
         x86 {
             dimension "abi"
@@ -229,6 +228,9 @@ android {
 
     variantFilter { variant ->
         variant.getFlavors().each { flavor ->
+            if (flavor.name.equalsIgnoreCase('lmd')) {
+                variant.setIgnore(true)
+            }
             if (!variant.buildType.name.equals('release')) {
                 if (flavor.dimension.equalsIgnoreCase('abi') && (flavor.name.equalsIgnoreCase('arm') || flavor.name.equalsIgnoreCase('mips'))) {
                     variant.setIgnore(true)

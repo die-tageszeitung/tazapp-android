@@ -9,7 +9,6 @@ import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.picasso.PicassoHelper;
 import de.thecode.android.tazreader.reader.ReaderActivity;
 import de.thecode.android.tazreader.utils.BuildTypeProvider;
-import de.thecode.android.tazreader.utils.Display;
 import de.thecode.android.tazreader.utils.StorageManager;
 
 import org.apache.commons.io.FileUtils;
@@ -98,7 +97,7 @@ public class TazReaderApplication extends Application {
         TazSettings.getInstance(this)
                    .setDefaultPref(TazSettings.PREFKEY.AUTOLOAD_WIFI, true);
         TazSettings.getInstance(this)
-                   .setDefaultPref(TazSettings.PREFKEY.ISSCROLL, Display.getScreenSizeInch(this) <= 6.5D);
+                   .setDefaultPref(TazSettings.PREFKEY.ISSCROLL, !getResources().getBoolean(R.bool.isTablet));
         TazSettings.getInstance(this)
                    .setDefaultPref(TazSettings.PREFKEY.COLSIZE, "0.5");
         TazSettings.getInstance(this)

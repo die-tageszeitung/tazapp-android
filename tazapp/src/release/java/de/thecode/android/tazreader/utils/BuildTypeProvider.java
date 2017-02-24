@@ -17,4 +17,8 @@ public class BuildTypeProvider {
         //do nothing
     }
 
+    public static void addLoggingInterceptor(OkHttpClient.Builder builder) {
+        //do nothing
+    }
+
 }
