@@ -144,6 +144,7 @@ public class IndexFragment extends BaseFragment {
                     case R.id.toolbar_settings:
                         // mReaderCallback.showSettingsFragment();
                         new SettingsDialog.Builder().setPositiveButton()
+                                                    .setPadding(0)
                                                     .buildSupport()
                                                     .show(getFragmentManager(), ReaderActivity.TAG_FRAGMENT_DIALOG_SETTING);
                         // new SettingsDialogFragment().show(getFragmentManager(), Reader.TAG_FRAGMENT_DIALOG_SETTING);
@@ -526,8 +527,6 @@ public class IndexFragment extends BaseFragment {
                 }
             }
         }
-
-        ;
 
         ImageView bookmark;
         TextView title;

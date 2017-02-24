@@ -56,14 +56,34 @@
             app:switchTextAppearance="@style/SettingsTextAppearance" />
 
         <android.support.v7.widget.SwitchCompat
-            android:id="@+id/switchPaging"
+            android:id="@+id/switchIsScroll"
             style="@style/SettingsWidget"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/paging"
+            android:text="@string/isscroll"
 
             android:textAppearance="@style/SettingsTextAppearance"
             app:switchTextAppearance="@style/SettingsTextAppearance" />
+
+        <android.support.v7.widget.SwitchCompat
+                android:id="@+id/switchIsPaging"
+                style="@style/SettingsWidget"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/ispaging"
+
+                android:textAppearance="@style/SettingsTextAppearance"
+                app:switchTextAppearance="@style/SettingsTextAppearance" />
+
+        <android.support.v7.widget.SwitchCompat
+                android:id="@+id/switchIsScrollToNext"
+                style="@style/SettingsWidget"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/isscrolltonext"
+                android:textAppearance="@style/SettingsTextAppearance"
+                app:switchTextAppearance="@style/SettingsTextAppearance" />
+
 
         <LinearLayout
             android:id="@+id/layoutColumns"

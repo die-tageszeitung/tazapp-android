@@ -79,7 +79,8 @@ public class TazReaderApplication extends Application {
                 if (aChildren.startsWith("com.crashlytics") || aChildren.startsWith("Twitter") || aChildren.startsWith(
                         "io.fabric")) FileUtils.deleteQuietly(new File(dir, aChildren));
             }
-            File oldLibImageDir = StorageManager.getInstance(this).getCache("library");
+            File oldLibImageDir = StorageManager.getInstance(this)
+                                                .getCache("library");
             FileUtils.deleteQuietly(oldLibImageDir);
         }
 
@@ -125,6 +126,12 @@ public class TazReaderApplication extends Application {
                    .setDefaultPref(TazSettings.PREFKEY.PAGEINDEXBUTTON, false);
         TazSettings.getInstance(this)
                    .setDefaultPref(TazSettings.PREFKEY.TEXTTOSPEACH, false);
+        TazSettings.getInstance(this)
+                   .setDefaultPref(TazSettings.PREFKEY.ISCHANGEARTICLE, true);
+        TazSettings.getInstance(this)
+                   .setDefaultPref(TazSettings.PREFKEY.ISPAGING, true);
+        TazSettings.getInstance(this)
+                   .setDefaultPref(TazSettings.PREFKEY.ISSCROLLTONEXT, getResources().getBoolean(R.bool.isTablet));
 
     }
 

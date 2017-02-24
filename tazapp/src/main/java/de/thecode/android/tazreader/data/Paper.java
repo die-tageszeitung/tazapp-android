@@ -1040,13 +1040,13 @@ public class Paper {
                         NSDictionary sourceBookCategoryPageArticleDict = (NSDictionary) sourceBookCategoryPageArticle;
                         String key = sourceBookCategoryPageArticleDict.allKeys()[0];
                         Article article = new Article(key, (NSDictionary) sourceBookCategoryPageArticleDict.get(key));
-                        for (Geometry geometry : getGeometries()) {
-                            if (article.getKey()
-                                       .equals(geometry.getLink())) {
-                                //geometry.article = article;
-                                article.geometries.add(geometry);
-                            }
-                        }
+//                        for (Geometry geometry : getGeometries()) {
+//                            if (article.getKey()
+//                                       .equals(geometry.getLink())) {
+//                                //geometry.article = article;
+//                                article.geometries.add(geometry);
+//                            }
+//                        }
                         indexMap.put(article.getKey(), article);
                         articles.add(article);
                     }
@@ -1232,8 +1232,6 @@ public class Paper {
                 private String subtitle;
                 private String onlinelink;
 
-                private List<Geometry> geometries = new ArrayList<>();
-
                 public Article(String key, NSDictionary dict) {
                     this.key = key;
                     this.title = PlistHelper.getString(dict, KEY_TITLE);
@@ -1294,10 +1292,6 @@ public class Paper {
                 @Override
                 public List<IIndexItem> getIndexChilds() {
                     return null;
-                }
-
-                public List<Geometry> getGeometries() {
-                    return geometries;
                 }
 
                 @Override

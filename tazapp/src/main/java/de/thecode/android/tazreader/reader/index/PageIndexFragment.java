@@ -23,15 +23,6 @@ import android.widget.TextView;
 
 import com.artifex.mupdfdemo.MuPDFCore.Cookie;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.io.IOException;
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.List;
-
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.FileCachePDFThumbHelper;
 import de.thecode.android.tazreader.data.Paper;
@@ -44,16 +35,25 @@ import de.thecode.android.tazreader.data.Paper.Plist.Source;
 import de.thecode.android.tazreader.data.Paper.Plist.TopLink;
 import de.thecode.android.tazreader.reader.IReaderCallback;
 import de.thecode.android.tazreader.reader.page.TAZMuPDFCore;
-import de.thecode.android.tazreader.utils.StorageManager;
 import de.thecode.android.tazreader.utils.BaseFragment;
+import de.thecode.android.tazreader.utils.StorageManager;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
 
 public class PageIndexFragment extends BaseFragment {
 
     private static final Logger log = LoggerFactory.getLogger(PageIndexFragment.class);
 
-    List<IIndexItem> index;
-    Paper paper;
-    PageIndexRecylerAdapter adapter;
+    List<IIndexItem>         index;
+    Paper                    paper;
+    PageIndexRecylerAdapter  adapter;
     LruCache<String, Bitmap> mMemoryCache;
 
     RecyclerView mRecyclerView;
@@ -128,11 +128,15 @@ public class PageIndexFragment extends BaseFragment {
 
 
         mThumbnailImageHeight = activity.getResources()
-                                        .getDimensionPixelSize(R.dimen.pageindex_thumbnail_image_height) - (2 * activity.getResources()
-                                                                                                                        .getDimensionPixelSize(R.dimen.pageindex_padding));
+                                        .getDimensionPixelSize(
+                                                R.dimen.pageindex_thumbnail_image_height) - (2 * activity.getResources()
+                                                                                                         .getDimensionPixelSize(
+                                                                                                                 R.dimen.pageindex_padding));
         mThumbnailImageWidth = activity.getResources()
-                                       .getDimensionPixelSize(R.dimen.pageindex_thumbnail_image_width) - (2 * activity.getResources()
-                                                                                                                      .getDimensionPixelSize(R.dimen.pageindex_padding));
+                                       .getDimensionPixelSize(
+                                               R.dimen.pageindex_thumbnail_image_width) - (2 * activity.getResources()
+                                                                                                       .getDimensionPixelSize(
+                                                                                                               R.dimen.pageindex_padding));
 
         mPlaceHolderBitmap = Bitmap.createBitmap(mThumbnailImageWidth, mThumbnailImageHeight, Bitmap.Config.ARGB_8888);
         mPlaceHolderBitmap.eraseColor(getResources().getColor(R.color.pageindex_loadingpage_bitmapbackground));
@@ -168,7 +172,20 @@ public class PageIndexFragment extends BaseFragment {
                     page = (Page) indexItem;
                     break;
                 case ARTICLE:
-                    page = ((Article) indexItem).getPage();
+                    List<Page> pages = ((Article) indexItem).getPage()
+                                                            .getCategory()
+                                                            .getPages();
+                    for (Page aPage : pages) {
+                        for (Geometry aGeometry : aPage.getGeometries()) {
+                            if (aGeometry.getLink()
+                                         .equals(key)) {
+                                page = aPage;
+                                break;
+                            }
+                        }
+                        if (page != null) break;
+                    }
+
                     break;
                 case TOPLINK:
                     page = ((TopLink) indexItem).getPage();
@@ -212,7 +229,8 @@ public class PageIndexFragment extends BaseFragment {
 
     private void makeOverlayBitmap(float x1, float y1, float x2, float y2) {
         try {
-            log.debug("x1: {}, y1: {}, x2: {}, y2: {}, mThumbnailImageWidth: {}, mThumbnailImageHeight: {}", x1, y1, x2, y2, mThumbnailImageWidth, mThumbnailImageHeight);
+            log.debug("x1: {}, y1: {}, x2: {}, y2: {}, mThumbnailImageWidth: {}, mThumbnailImageHeight: {}", x1, y1, x2, y2,
+                      mThumbnailImageWidth, mThumbnailImageHeight);
             mCurrentArticleOverlay = Bitmap.createBitmap(mThumbnailImageWidth, mThumbnailImageHeight, Bitmap.Config.ARGB_8888);
             Canvas canvas = new Canvas(mCurrentArticleOverlay);
             Paint paint = new Paint();
@@ -477,7 +495,8 @@ public class PageIndexFragment extends BaseFragment {
                             .equals(mCurrentKey)) {
                         //((PageViewholder) viewholder).image.setBackgroundColor(getResources().getColor(R.color.pageindex_current_border));
                         ((PageViewholder) viewholder).articelOverlayImage.setVisibility(View.VISIBLE);
-                        if (mCurrentArticleOverlay != null) ((PageViewholder) viewholder).articelOverlayImage.setImageBitmap(mCurrentArticleOverlay);
+                        if (mCurrentArticleOverlay != null)
+                            ((PageViewholder) viewholder).articelOverlayImage.setImageBitmap(mCurrentArticleOverlay);
                         else ((PageViewholder) viewholder).articelOverlayImage.setVisibility(View.GONE);
                     } else {
                         //((PageViewholder) viewholder).image.setBackgroundColor(Color.TRANSPARENT);

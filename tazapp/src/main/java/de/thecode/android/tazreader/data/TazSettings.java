@@ -60,8 +60,11 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
         public static final String USER                      = "user";
         public static final String PASS                      = "pass";
         public static final String USERMIGRATIONNOTIFICATION = "usermigrationnotification";
-        public static final        String SYNCSERVICENEXTRUN        = "syncServiceNextRun";
-        public static final        String DEMOMODE                  = "demoMode";
+        public static final String SYNCSERVICENEXTRUN        = "syncServiceNextRun";
+        public static final String DEMOMODE                  = "demoMode";
+        public static final String ISCHANGEARTICLE           = "isChangeArtikel";
+        public static final String ISPAGING                  = "isPaging";
+        public static final String ISSCROLLTONEXT            = "isScrollToNext";
     }
 
 

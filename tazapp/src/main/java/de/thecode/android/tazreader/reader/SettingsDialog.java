@@ -75,15 +75,33 @@ public class SettingsDialog extends DialogCustomView {
         });
         colorThemeButtonText(THEMES.valueOf(TazSettings.getInstance(getContext()).getPrefString(TazSettings.PREFKEY.THEME, null)));
 
-        SwitchCompat switchPaging = (SwitchCompat) view.findViewById(R.id.switchPaging);
-        switchPaging.setChecked(!isScroll);
-        switchPaging.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+        SwitchCompat switchIsScroll = (SwitchCompat) view.findViewById(R.id.switchIsScroll);
+        switchIsScroll.setChecked(!isScroll);
+        switchIsScroll.setOnCheckedChangeListener(new OnCheckedChangeListener() {
 
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 log.debug("buttonView: {}, isChecked: {}",buttonView, isChecked);
                 if (mCallback != null) mCallback.onConfigurationChange(TazSettings.PREFKEY.ISSCROLL, !isChecked);
                 seekBarColumns.setEnabled(isChecked);
+            }
+        });
+
+        SwitchCompat switchIsPaging = (SwitchCompat) view.findViewById(R.id.switchIsPaging);
+        switchIsPaging.setChecked(TazSettings.getInstance(getContext()).getPrefBoolean(TazSettings.PREFKEY.ISPAGING,false));
+        switchIsPaging.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (mCallback != null) mCallback.onConfigurationChange(TazSettings.PREFKEY.ISPAGING, isChecked);
+            }
+        });
+
+        SwitchCompat switchIsScrollToNext = (SwitchCompat) view.findViewById(R.id.switchIsScrollToNext);
+        switchIsScrollToNext.setChecked(TazSettings.getInstance(getContext()).getPrefBoolean(TazSettings.PREFKEY.ISSCROLLTONEXT,false));
+        switchIsScrollToNext.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (mCallback != null) mCallback.onConfigurationChange(TazSettings.PREFKEY.ISSCROLLTONEXT, isChecked);
             }
         });
 
