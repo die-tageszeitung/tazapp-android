@@ -1,8 +1,6 @@
 package de.thecode.android.tazreader.download;
 
 import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -15,21 +13,22 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import timber.log.Timber;
+
 /**
  * Created by mate on 07.08.2015.
  */
 public class UnzipStream {
 
-    private static final Logger log = LoggerFactory.getLogger(UnzipStream.class);
-
     private InputStream inputStream;
-    private File destinationDir;
-    private boolean deleteDestinationOnFailure;
-    private Progress progress;
+    private File        destinationDir;
+    private boolean     deleteDestinationOnFailure;
+    private Progress    progress;
     List<WeakReference<UnzipStreamProgressListener>> listeners = new ArrayList<>();
     private boolean canceled;
 
-    public UnzipStream(InputStream inputStream, File destinationDir, boolean deleteDestinationOnFailure, Long totalUncompressedSize) {
+    public UnzipStream(InputStream inputStream, File destinationDir, boolean deleteDestinationOnFailure,
+                       Long totalUncompressedSize) {
         //Log.d(destinationDir);
         this.inputStream = inputStream;
         this.destinationDir = destinationDir;
@@ -42,14 +41,13 @@ public class UnzipStream {
     public File start() throws IOException, UnzipCanceledException {
         try {
             ZipInputStream zis = new ZipInputStream(new BufferedInputStream(inputStream));
-            log.trace("... start working with inputstream");
+            Timber.i("... start working with inputstream");
             try {
                 ZipEntry ze;
 
                 while ((ze = zis.getNextEntry()) != null) {
-                    if (canceled)
-                        throw new UnzipCanceledException();
-                    log.debug("... zipentry: {} {}", ze, ze.getSize());
+                    if (canceled) throw new UnzipCanceledException();
+                    Timber.d("... zipentry: %s %d", ze, ze.getSize());
                     if (ze.isDirectory()) {
                         File zipDir = new File(destinationDir, ze.getName());
                         if (dirHelper(zipDir)) {
@@ -66,7 +64,7 @@ public class UnzipStream {
                             notifyListeners(progress);
 
                             FileOutputStream fout = new FileOutputStream(destinationFile);
-                            log.debug("open fileoutputstream for {}",destinationFile);
+                            Timber.d("open fileoutputstream for %s", destinationFile);
                             try {
                                 byte[] buffer = new byte[32 * 1024]; // play with sizes..
                                 int readCount;
@@ -76,7 +74,7 @@ public class UnzipStream {
                                     publishProgress(destinationFile, readCount);
                                 }
                             } finally {
-                                log.debug("closing fileoutputstream");
+                                Timber.d("closing fileoutputstream");
                                 fout.close();
                             }
                         }
@@ -86,9 +84,9 @@ public class UnzipStream {
                 notifyListeners(progress);
 
             } finally {
-                log.trace("... all uncompressed bytes: {}", progress.getBytesSoFar());
+                Timber.d("... all uncompressed bytes: %d", progress.getBytesSoFar());
                 try {
-                    log.debug("closing inputstream");
+                    Timber.d("closing inputstream");
                     zis.close();
                 } catch (IOException ignored) {
 
@@ -102,7 +100,7 @@ public class UnzipStream {
         return destinationDir;
     }
 
-    public void cancel(){
+    public void cancel() {
         canceled = true;
     }
 
@@ -111,16 +109,16 @@ public class UnzipStream {
     }
 
     public void onError(Exception e) throws IOException {
-        log.error("",e);
+        Timber.e(e);
         if (deleteDestinationOnFailure) {
             if (destinationDir.exists()) FileUtils.deleteDirectory(destinationDir);
-                //Utils.deleteDir(destinationDir);
+            //Utils.deleteDir(destinationDir);
         }
         //Log.sendExceptionWithCrashlytics(e);
     }
 
     public void onSuccess() {
-        log.trace("... finished unzipping stream");
+        Timber.i("... finished unzipping stream");
     }
 
     File lastFilePublished;
@@ -129,7 +127,8 @@ public class UnzipStream {
     private void publishProgress(File currentFile, int readCount) {
         progress.setBytesSoFar(progress.getBytesSoFar() + readCount);
         progress.setCurrentFile(currentFile);
-        if (progress.totalUncompressedSize != 0) progress.percentage = (int) ((progress.bytesSoFar * 100) / progress.totalUncompressedSize);
+        if (progress.totalUncompressedSize != 0)
+            progress.percentage = (int) ((progress.bytesSoFar * 100) / progress.totalUncompressedSize);
         if (progress.getPercentage() != lastPercentagePublished || progress.getCurrentFile() != lastFilePublished) {
             lastPercentagePublished = progress.getPercentage();
             lastFilePublished = currentFile;
@@ -195,11 +194,11 @@ public class UnzipStream {
 
     public static class Progress {
         private long totalUncompressedSize = 0;
-        private long bytesSoFar = 0;
+        private long bytesSoFar            = 0;
         private File currentFile;
         private int progressPercentageMax = 100;
-        private int percentage = 0;
-        private int offset = 0;
+        private int percentage            = 0;
+        private int offset                = 0;
 
         public Progress() {
 

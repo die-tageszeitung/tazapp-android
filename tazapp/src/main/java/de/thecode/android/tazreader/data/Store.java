@@ -6,30 +6,27 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.provider.BaseColumns;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import de.thecode.android.tazreader.provider.TazProvider;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import de.thecode.android.tazreader.provider.TazProvider;
+import timber.log.Timber;
 
 public class Store {
 
-    private static final Logger log = LoggerFactory.getLogger(Store.class);
-
-    public static String TABLE_NAME = "STORE";
-    public static final Uri CONTENT_URI = Uri.parse("content://" + TazProvider.AUTHORITY + "/" + TABLE_NAME);
-    public static final String CONTENT_TYPE = "vnd.android.cursor.dir/vnd.taz." + TABLE_NAME;
+    public static       String TABLE_NAME        = "STORE";
+    public static final Uri    CONTENT_URI       = Uri.parse("content://" + TazProvider.AUTHORITY + "/" + TABLE_NAME);
+    public static final String CONTENT_TYPE      = "vnd.android.cursor.dir/vnd.taz." + TABLE_NAME;
     public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/vnd.taz." + TABLE_NAME;
 
     public static final class Columns implements BaseColumns {
 
-        public static final String KEY = "key";
+        public static final String KEY   = "key";
         public static final String VALUE = "value";
     }
 
-    private Long id;
+    private Long   id;
     private String key;
     private String value;
 
@@ -78,7 +75,7 @@ public class Store {
         } finally {
             cursor.close();
         }
-        log.debug("{} {}",key, store);
+        Timber.d("key %s %s", key, store);
         return store;
     }
 
@@ -97,14 +94,13 @@ public class Store {
         } finally {
             cursor.close();
         }
-        log.debug("{} {}",key, result);
         return result;
     }
 
     public static void deleteKey(Context context, String key) {
         int affected = context.getContentResolver()
                               .delete(getUriForKey(key), null, null);
-        log.debug("{} {}",key, affected);
+        Timber.d("key %s %d", key, affected);
     }
 
     public static List<Store> getAllStores(Context context) {
@@ -135,7 +131,7 @@ public class Store {
                                   .update(Store.getUriForKey(key), store.getContentValues(), null, null);
             if (affected > 0) result = true;
         }
-        log.debug("{} {} {}",key, value, result);
+        Timber.d("key %s %s %s", key, value, result);
         return result;
     }
 

@@ -22,8 +22,6 @@ import de.thecode.android.tazreader.sync.AccountHelper;
 import de.thecode.android.tazreader.utils.StorageManager;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -31,9 +29,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class DownloadManager {
+import timber.log.Timber;
 
-    private static final Logger log = LoggerFactory.getLogger(DownloadManager.class);
+public class DownloadManager {
 
     android.app.DownloadManager mDownloadManager;
     Context                     mContext;
@@ -61,7 +59,7 @@ public class DownloadManager {
         if (TazSettings.getInstance(mContext)
                        .isDemoMode() && !paper.isDemo()) throw new DownloadNotAllowedException();
 
-        log.trace("requesting paper download: {}", paper);
+        Timber.i("requesting paper download: %s", paper);
 
         Uri downloadUri = Uri.parse(paper.getLink());
 
@@ -95,7 +93,7 @@ public class DownloadManager {
 
         final long downloadId = mDownloadManager.enqueue(request);
 
-        log.trace("... download requested at android download manager, id: {}", downloadId);
+        Timber.i("... download requested at android download manager, id: %d", downloadId);
 
         //paper.setDownloadprogress(0);
         paper.setDownloadId(downloadId);
@@ -117,7 +115,7 @@ public class DownloadManager {
         //Uri downloadUri = Uri.parse(paper.getResourceUrl());
 
         Resource resource = new Resource(mContext, paper.getResource());
-        log.trace("requesting resource download: {}", resource);
+        Timber.i("requesting resource download: %s", resource);
 
         if (resource.getKey() == null) {
             resource.setKey(paper.getResource());
@@ -158,7 +156,7 @@ public class DownloadManager {
 
             long downloadId = mDownloadManager.enqueue(request);
 
-            log.trace("... download requested at android download manager, id: {}", downloadId);
+            Timber.i("... download requested at android download manager, id: %d", downloadId);
 
             resource.setDownloadId(downloadId);
 
@@ -370,7 +368,7 @@ public class DownloadManager {
 
         @Override
         public void run() {
-            log.trace("starting");
+            Timber.i("starting");
             boolean downloading = true;
             while (downloading && !isInterrupted()) {
                 DownloadState downloadState = new DownloadState(downloadId);
@@ -389,10 +387,10 @@ public class DownloadManager {
                 try {
                     sleep(500);
                 } catch (InterruptedException e) {
-                    log.warn(e.getMessage());
+                    Timber.w(e);
                 }
             }
-            log.trace("finished");
+            Timber.i("finished");
         }
     }
 

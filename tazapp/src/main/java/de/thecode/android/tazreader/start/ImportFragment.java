@@ -19,24 +19,20 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.lang.ref.WeakReference;
-
 import de.mateware.dialog.Dialog;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.importer.ImportActivity;
 import de.thecode.android.tazreader.utils.BaseFragment;
 
+import java.io.File;
+import java.lang.ref.WeakReference;
+
+import timber.log.Timber;
+
 /**
  * A simple {@link Fragment} subclass.
  */
 public class ImportFragment extends BaseFragment implements ImportDataRetainFragment.ImportDataCallback {
-
-
-    private static final Logger log = LoggerFactory.getLogger(ImportFragment.class);
 
     public static final String DIALOG_PERMISSION_WRITE = "DialogPermissionWrite";
     private static int PERMISSION_REQUEST_IMPORT_WRITE = 345;
@@ -57,7 +53,7 @@ public class ImportFragment extends BaseFragment implements ImportDataRetainFrag
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        log.debug("");
+
         callback = new WeakReference<>((IStartCallback) getActivity());
         if (hasCallback()) getCallback().onUpdateDrawer(this);
         dataFragment = ImportDataRetainFragment.findOrCreateRetainFragment(getFragmentManager(), this);
@@ -77,7 +73,7 @@ public class ImportFragment extends BaseFragment implements ImportDataRetainFrag
 
             // Should we show an explanation?
             //            if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-            //                log.debug("Show an explanation to the user");
+            //                Timber.d("Show an explanation to the user");
             //                new Dialog().withPositiveButton().withMessage("Bla Bla Bla").show(getFragmentManager(),DIALOG_PERMISSION_WRITE);
             //
             //
@@ -87,7 +83,7 @@ public class ImportFragment extends BaseFragment implements ImportDataRetainFrag
             //
             //            } else {
             //
-            //                log.debug("No explanation needed, we can request the permission.");
+            //                Timber.d("No explanation needed, we can request the permission.");
             //
             //
             //                // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
@@ -106,7 +102,7 @@ public class ImportFragment extends BaseFragment implements ImportDataRetainFrag
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        log.debug("requestCode: {}, permissions: {}, grantResults: {}", requestCode, permissions, grantResults);
+        Timber.d("requestCode: %s, permissions: %s, grantResults: %s", requestCode, permissions, grantResults);
         isRequestinPermission = false;
 
         if (requestCode == PERMISSION_REQUEST_IMPORT_WRITE) {
@@ -153,13 +149,13 @@ public class ImportFragment extends BaseFragment implements ImportDataRetainFrag
 
 
     private void loadDirectory(File dir) {
-        log.debug("dir: {}", dir);
+        Timber.d("dir: %s", dir);
         dataFragment.setCurrentDir(dir);
         dataFragment.restart();
     }
 
     public void onListClick(ImportDirectoryLoader.ImportFileWrapper ifw) {
-        log.debug("ifw: {}", ifw);
+        Timber.d("ifw: %s", ifw);
         switch (ifw.getType()) {
             case FILE:
                 if (!(ifw.getFile() == null || !ifw.getFile()
@@ -181,7 +177,7 @@ public class ImportFragment extends BaseFragment implements ImportDataRetainFrag
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        log.debug("requestCode: {}, resultCode: {}, data: {}", requestCode, resultCode, data);
+        Timber.d("requestCode: %s, resultCode: %s, data: %s", requestCode, resultCode, data);
         if (requestCode == ImportActivity.REQUEST_CODE_IMPORT_ACTIVITY) {
             dataFragment.restart();
             if (resultCode == Activity.RESULT_OK) {

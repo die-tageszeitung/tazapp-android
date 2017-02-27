@@ -32,8 +32,6 @@ import de.thecode.android.tazreader.start.ScrollToPaperEvent;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -45,14 +43,13 @@ import java.util.Locale;
 import java.util.Set;
 
 import okhttp3.HttpUrl;
+import timber.log.Timber;
 
 /**
  * Created by Mate on 11.02.2017.
  */
 
 public class SyncService extends IntentService {
-
-    private static final Logger log = LoggerFactory.getLogger(SyncService.class);
 
     private static final String PLIST_KEY_ISSUES = "issues";
 
@@ -156,11 +153,11 @@ public class SyncService extends IntentService {
         try {
             if (tomorrowCursor.moveToNext()) {
                 // Ausgabe von morgen ist da
-                log.debug("Ausgabe von morgen veröffentlicht");
+                Timber.d("Ausgabe von morgen veröffentlicht");
                 return new Paper(tomorrowCursor);
             } else {
                 // Ausgabe von morgen ist noch nicht da
-                log.debug("Ausgabe von morgen noch nicht veröffentlicht");
+                Timber.d("Ausgabe von morgen noch nicht veröffentlicht");
             }
         } finally {
             tomorrowCursor.close();
@@ -199,7 +196,7 @@ public class SyncService extends IntentService {
     private void autoDeleteTask() {
         long currentOpenPaperId = TazSettings.getInstance(this)
                                              .getPrefLong(TazSettings.PREFKEY.LASTOPENPAPER, -1L);
-        log.debug("+++++++ TazSettings: Current Paper SyncAdapter View: {}", currentOpenPaperId);
+        Timber.d("+++++++ TazSettings: Current Paper SyncAdapter View: %s", currentOpenPaperId);
 
         int papersToKeep = TazSettings.getInstance(this)
                                       .getPrefInt(TazSettings.PREFKEY.AUTODELETE_VALUE, 0);
@@ -213,7 +210,7 @@ public class SyncService extends IntentService {
                 while (deletePapersCursor.moveToNext()) {
                     if (counter >= papersToKeep) {
                         Paper deletePaper = new Paper(deletePapersCursor);
-                        log.debug("PaperId: {} (currentOpen:{})", deletePaper.getId(), currentOpenPaperId);
+                        Timber.d("PaperId: %s (currentOpen:%s)", deletePaper.getId(), currentOpenPaperId);
                         if (!deletePaper.getId()
                                         .equals(currentOpenPaperId)) {
                             boolean safeToDelete = true;
@@ -259,7 +256,7 @@ public class SyncService extends IntentService {
                 throw new IOException(response.body()
                                               .string());
             } catch (Exception e) {
-                log.error("Fehler:", e);
+                Timber.e(e);
                 retry--;
             }
         }
@@ -320,7 +317,7 @@ public class SyncService extends IntentService {
                 if (cursor.moveToNext()) {
                     Paper oldPaper = new Paper(cursor);
                     if (!newPaper.equals(oldPaper)) {
-                        log.debug("found difference in paper");
+                        Timber.d("found difference in paper");
                         oldPaper.setImage(newPaper.getImage());
                         boolean reloadImage = !new EqualsBuilder().append(oldPaper.getImageHash(), newPaper.getImageHash())
                                                                   .isEquals();
@@ -353,7 +350,7 @@ public class SyncService extends IntentService {
                         //setMoveToPaperAtEnd(oldPaper);
                     }
                 } else {
-                    log.debug("notfound");
+                    Timber.d("notfound");
 
                     long newPaperId = ContentUris.parseId(this.getContentResolver()
                                                               .insert(Paper.CONTENT_URI, newPaper.getContentValues()));
@@ -424,7 +421,7 @@ public class SyncService extends IntentService {
                 moveToPaperAtEnd = paper;
             }
         } catch (ParseException e) {
-            log.error("", e);
+            Timber.e(e);
             moveToPaperAtEnd = paper;
         }
     }

@@ -1,8 +1,5 @@
 package de.thecode.android.tazreader.okhttp3;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.util.Map;
 
@@ -15,8 +12,6 @@ import okhttp3.Response;
  */
 
 public class HeaderInterceptor implements Interceptor {
-
-    private static final Logger log = LoggerFactory.getLogger(HeaderInterceptor.class);
 
     private final Map<String, String> headerMap;
 

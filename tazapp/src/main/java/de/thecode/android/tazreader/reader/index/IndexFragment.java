@@ -35,15 +35,12 @@ import de.thecode.android.tazreader.utils.BaseFragment;
 import de.thecode.android.tazreader.utils.TintHelper;
 import de.thecode.android.tazreader.widget.CustomToolbar;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.List;
 
-public class IndexFragment extends BaseFragment {
+import timber.log.Timber;
 
-    private static final Logger log = LoggerFactory.getLogger(IndexFragment.class);
+public class IndexFragment extends BaseFragment {
 
     private static final String ARGUMENT_BOOKMARKFILTER = "bookmarkfilter";
 
@@ -62,14 +59,14 @@ public class IndexFragment extends BaseFragment {
     IReaderCallback mReaderCallback;
 
     public IndexFragment() {
-        log.trace("");
+
     }
 
 
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        log.trace("");
+
         mReaderCallback = (IReaderCallback) activity;
 
         bookmarkColorNormal = ContextCompat.getColor(activity, R.color.index_bookmark_off);
@@ -85,7 +82,7 @@ public class IndexFragment extends BaseFragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        log.debug("");
+
         View view = inflater.inflate(R.layout.reader_index, container, false);
         toolbar = (CustomToolbar) view.findViewById(R.id.toolbar_article);
         toolbar.setItemColor(ContextCompat.getColor(inflater.getContext(), R.color.toolbar_foreground_color));
@@ -187,7 +184,7 @@ public class IndexFragment extends BaseFragment {
     }
 
     public void init(Paper paper) {
-        log.debug("paper: {}", paper);
+        Timber.d("paper: %s", paper);
         index.clear();
 
         for (Source source : paper.getPlist()
@@ -349,7 +346,7 @@ public class IndexFragment extends BaseFragment {
                     break;
                 }
             }
-            log.debug("key: {} {}", key, result);
+            Timber.d("key: %s %s", key, result);
             return result;
         }
 
@@ -553,7 +550,7 @@ public class IndexFragment extends BaseFragment {
     String mCurrentKey = null;
 
     public void updateCurrentPosition(String key) {
-        log.debug("key: {}", key);
+        Timber.d("key: %s", key);
 
         if (mCurrentKey != null) {
             IIndexItem lastitem = mReaderCallback.getPaper()

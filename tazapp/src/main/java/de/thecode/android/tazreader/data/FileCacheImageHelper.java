@@ -4,9 +4,9 @@ import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import android.os.Build;
 
+import de.thecode.android.tazreader.utils.StorageManager;
+
 import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -15,10 +15,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Locale;
 
-import de.thecode.android.tazreader.utils.StorageManager;
+import timber.log.Timber;
 
 public abstract class FileCacheImageHelper {
-    private static final Logger log = LoggerFactory.getLogger(FileCacheImageHelper.class);
 
     private static final int quality = 80;
 
@@ -36,7 +35,7 @@ public abstract class FileCacheImageHelper {
     }
 
     public boolean save(Bitmap bitmap, String hash, int width, int height) throws IOException {
-        log.debug("bitmap: {}, hash: {}, width: {}, height: {}", bitmap, hash, width, height);
+        Timber.d("bitmap: %s, hash: %s, width: %d, height: %d", bitmap, hash, width, height);
         if (mCacheDir.exists()) {
             File imageFile = new File(mCacheDir, hash + "." + getFileEndingForBitmapCompressFormat());
             if (imageFile.exists())

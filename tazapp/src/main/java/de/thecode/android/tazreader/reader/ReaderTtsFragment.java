@@ -11,9 +11,6 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.lang.ref.WeakReference;
 import java.text.BreakIterator;
 import java.util.ArrayList;
@@ -22,12 +19,12 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import timber.log.Timber;
+
 /**
  * Created by mate on 15.03.2016.
  */
 public class ReaderTtsFragment extends Fragment implements TextToSpeech.OnInitListener {
-
-    private static final Logger log = LoggerFactory.getLogger(ReaderTtsFragment.class);
 
     private static final String TAG = "RetainTtsFragment";
 
@@ -246,25 +243,25 @@ public class ReaderTtsFragment extends Fragment implements TextToSpeech.OnInitLi
     UtteranceProgressListener ttsListener = new UtteranceProgressListener() {
         @Override
         public void onStart(String utteranceId) {
-            log.debug("utteranceId: {}", utteranceId);
+            Timber.d("utteranceId: %s", utteranceId);
             setTtsState(TTS.PLAYING);
         }
 
         @Override
         public void onDone(String utteranceId) {
-            log.debug("utteranceId: {}", utteranceId);
+            Timber.d("utteranceId: %s", utteranceId);
             done(utteranceId);
         }
 
         @Override
         public void onError(String utteranceId) {
-            log.debug("utteranceId: {}", utteranceId);
+            Timber.d("utteranceId: %s", utteranceId);
 
         }
 
         @Override
         public void onError(String utteranceId, int errorCode) {
-            log.debug("utteranceId: {}, errorCode: {}", utteranceId, errorCode);
+            Timber.d("utteranceId: %s, errorCode: %s", utteranceId, errorCode);
 
         }
 
@@ -280,7 +277,7 @@ public class ReaderTtsFragment extends Fragment implements TextToSpeech.OnInitLi
     AudioManager.OnAudioFocusChangeListener audioFocusChangeListener = new AudioManager.OnAudioFocusChangeListener() {
         @Override
         public void onAudioFocusChange(int focusChange) {
-            log.debug("focusChange: {}", focusChange);
+            Timber.d("focusChange: %s", focusChange);
             if (focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT || focusChange == AudioManager.AUDIOFOCUS_LOSS) {
                 if (getTtsState() == TTS.PLAYING) pauseTts();
             }

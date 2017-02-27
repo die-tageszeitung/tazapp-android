@@ -7,9 +7,6 @@ import android.content.Intent;
 
 import de.thecode.android.tazreader.data.TazSettings;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -17,6 +14,8 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.TimeZone;
+
+import timber.log.Timber;
 
 import static java.util.Calendar.DAY_OF_WEEK;
 import static java.util.Calendar.HOUR_OF_DAY;
@@ -27,15 +26,13 @@ import static java.util.Calendar.MINUTE;
  */
 public class SyncHelper {
 
-    private static final Logger log = LoggerFactory.getLogger(SyncHelper.class);
-
     /**
      * Request manual sync.
      *
      * @param context the context
      */
     public static void requestSync(Context context) {
-        log.trace("Requested manual sync");
+        Timber.i("Requested manual sync");
         requestSync(context, null, null);
     }
 
@@ -76,11 +73,11 @@ public class SyncHelper {
         }
 
         cal.setTimeInMillis(System.currentTimeMillis());// set the current time and date for this calendar
-        log.debug("aktuelle Zeit: {}", cal.getTime()
-                                          .toString());
-        log.debug("aktuelle Zeit: {}", cal.getTimeInMillis());
+        Timber.d("aktuelle Zeit: %s", cal.getTime()
+                                         .toString());
+        Timber.d("aktuelle Zeit: %s", cal.getTimeInMillis());
         if (notToday) {
-            log.debug("nicht heute!");
+            Timber.d("nicht heute!");
             cal.add(DAY_OF_WEEK, 1);
             cal.set(HOUR_OF_DAY, 0);
             cal.set(MINUTE, 0);
@@ -101,9 +98,9 @@ public class SyncHelper {
                 cal.add(MINUTE, 1);
             }
         }
-        log.debug("nächste Zeit: {}", cal.getTime()
+        Timber.d("nächste Zeit: %s", cal.getTime()
                                          .toString());
-        log.debug("nächste Zeit: {}", cal.getTimeInMillis());
+        Timber.d("nächste Zeit: %s", cal.getTimeInMillis());
         return cal.getTimeInMillis();
     }
 
@@ -114,7 +111,7 @@ public class SyncHelper {
 
     public static void setAlarmManager(Context context, long runAt) {
 
-        log.debug("next run at {}", new SimpleDateFormat("dd.MM.yyyy HH:mm:ss",Locale.GERMANY).format(new Date(runAt)));
+        Timber.d("next run at %s", new SimpleDateFormat("dd.MM.yyyy HH:mm:ss",Locale.GERMANY).format(new Date(runAt)));
 
         AlarmManager alarm = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 

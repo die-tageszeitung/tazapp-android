@@ -15,20 +15,17 @@ import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.download.DownloadManager;
 import de.thecode.android.tazreader.utils.BaseActivity;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import timber.log.Timber;
+
 /**
  * Created by mate on 16.04.2015.
  */
 public class ImportActivity extends BaseActivity implements DialogButtonListener, ImportWorkerFragment.ImportRetainFragmentCallback {
-
-    private static final Logger log = LoggerFactory.getLogger(ImportActivity.class);
 
     public static final int REQUEST_CODE_IMPORT_ACTIVITY = 29452;
 
@@ -113,7 +110,7 @@ public class ImportActivity extends BaseActivity implements DialogButtonListener
                                 DownloadManager.getInstance(this)
                                                .enquePaper(ContentUris.parseId(downloadUri));
                             } catch (Paper.PaperNotFoundException | DownloadManager.DownloadNotAllowedException | DownloadManager.NotEnoughSpaceException e) {
-                                log.error("", e);
+                                Timber.e(e);
                                 AnalyticsWrapper.getInstance().logException(e);
                             }
                         }
@@ -132,7 +129,6 @@ public class ImportActivity extends BaseActivity implements DialogButtonListener
 
     @Override
     public void onImportRetainFragmentCreate(ImportWorkerFragment importRetainWorkerFragment) {
-        log.debug("");
         //        new DialogIndeterminateProgress().withCancelable(false)
         //                                           .withMessage("Import")
         //                                           .show(getFragmentManager(), DIALOG_WAIT_IMPORT);
@@ -150,7 +146,6 @@ public class ImportActivity extends BaseActivity implements DialogButtonListener
 
     @Override
     public void onFinishedImporting(List<Paper> importedPapers) {
-        log.debug("");
         Uri[] importedPaperUris = new Uri[importedPapers.size()];
         Uri[] downloadPaperUris = new Uri[0];
         int i = 0;
@@ -196,13 +191,12 @@ public class ImportActivity extends BaseActivity implements DialogButtonListener
 
     @Override
     public void onErrorWhileImport(Uri dataUri, Exception e) {
-        log.debug("{} {}", dataUri, e);
+        Timber.w(e,"%s",dataUri);
         showErrorDialog(String.format(getString(R.string.import_error), dataUri, e.getLocalizedMessage()));
     }
 
     @Override
     public void onImportAlreadyExists(Uri dataUri, ImportMetadata metadata, File cacheFile, boolean deleteFile) {
-        log.debug("");
         Bundle bundle = new Bundle();
         bundle.putParcelable(BUNDLE_KEY_METADATA, metadata);
         bundle.putSerializable(BUNDLE_KEY_FILE, cacheFile);

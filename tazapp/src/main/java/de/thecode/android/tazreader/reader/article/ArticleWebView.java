@@ -15,12 +15,9 @@ import android.webkit.WebView;
 
 import de.thecode.android.tazreader.data.TazSettings;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import timber.log.Timber;
 
 public class ArticleWebView extends WebView {
-
-    private static final Logger log = LoggerFactory.getLogger(ArticleWebView.class);
 
     Context mContext;
     boolean isScroll;
@@ -61,7 +58,7 @@ public class ArticleWebView extends WebView {
 
     @Override
     protected void onScrollChanged(int l, int t, int oldl, int oldt) {
-        log.debug("l: {}, t: {}, oldl: {}, oldt: {}",l, t, oldl, oldt);
+        Timber.d("l: %s, t: %s, oldl: %s, oldt: %s",l, t, oldl, oldt);
         checkY = t;
         checkX = l;
         super.onScrollChanged(l, t, oldl, oldt);
@@ -106,7 +103,7 @@ public class ArticleWebView extends WebView {
     };
 
     public void loadUrl(String url) {
-        log.trace("url: {}",url);
+        Timber.i("url: %s", url);
         gestureDetector = new GestureDetector(mContext, simpleOnGestureListener);
         setIsScroll();
         super.loadUrl(url);
@@ -115,7 +112,7 @@ public class ArticleWebView extends WebView {
 
     @Override
     public void loadDataWithBaseURL(String baseUrl, String data, String mimeType, String encoding, String failUrl) {
-        log.trace("baseUrl: {}, data: {}, mimeType: {}, encoding: {}, failUrl: {}",baseUrl, data, mimeType, encoding, failUrl);
+        Timber.i("baseUrl: %s, data: %s, mimeType: %s, encoding: %s, failUrl: %s",baseUrl, data, mimeType, encoding, failUrl);
         gestureDetector = new GestureDetector(mContext, simpleOnGestureListener);
         setIsScroll();
         super.loadDataWithBaseURL(baseUrl, data, mimeType, encoding, failUrl);
@@ -172,7 +169,7 @@ public class ArticleWebView extends WebView {
 
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-            log.debug("e1: {}, e2: {}, velocityX: {}, velocityY: {}",e1, e2, velocityX, velocityY);
+            Timber.d("e1: %s, e2: %s, velocityX: %s, velocityY: %s",e1, e2, velocityX, velocityY);
             boolean result = false;
 
             try {

@@ -8,21 +8,17 @@ import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.utils.BaseFragment;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.lang.ref.WeakReference;
 
 /**
  * Created by mate on 18.12.2014.
  */
 public abstract class AbstractContentFragment extends BaseFragment implements ReaderActivity.ConfigurationChangeListener {
-    private static final Logger log = LoggerFactory.getLogger(AbstractContentFragment.class);
     public Context mContext;
     private WeakReference<IReaderCallback> mCallback;
 
     public AbstractContentFragment() {
-        log.trace("");
+
     }
 
     public abstract void init(Paper paper, String key, String position);

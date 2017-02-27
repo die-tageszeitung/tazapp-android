@@ -48,18 +48,15 @@ import de.thecode.android.tazreader.utils.TintHelper;
 import de.thecode.android.tazreader.widget.PageIndexButton;
 import de.thecode.android.tazreader.widget.ShareButton;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class ArticleFragment extends AbstractContentFragment implements ArticleWebViewCallback {
+import timber.log.Timber;
 
-    private static final Logger log = LoggerFactory.getLogger(ArticleFragment.class);
+public class ArticleFragment extends AbstractContentFragment implements ArticleWebViewCallback {
 
     private static final String JAVASCRIPT_API_NAME = "ANDROIDAPI";
     public static final String ARGUMENT_KEY = "key";
@@ -95,7 +92,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
     @Override
     public void onAttach(Activity activity) {
-        log.trace("");
+
         super.onAttach(activity);
         //mStorage = new StorageManager(mContext);
     }
@@ -103,7 +100,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        log.trace("");
+
     }
 
 
@@ -111,7 +108,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-        log.trace("");
+
 
         View result = inflater.inflate(R.layout.reader_article, container, false);
 
@@ -171,73 +168,73 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        log.trace("");
+
         super.onViewCreated(view, savedInstanceState);
     }
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        log.trace("");
+
         super.onActivityCreated(savedInstanceState);
     }
 
     @Override
     public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
-        log.trace("");
+
         super.onViewStateRestored(savedInstanceState);
     }
 
     @Override
     public void onStart() {
-        log.trace("");
+
         super.onStart();
     }
 
     @Override
     public void onResume() {
-        log.trace("");
+
         super.onResume();
     }
 
     @Override
     public void onPause() {
-        log.trace("");
+
         super.onPause();
     }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        log.trace("");
+
         super.onSaveInstanceState(outState);
     }
 
     @Override
     public void onStop() {
-        log.trace("");
+
         super.onStop();
     }
 
     @Override
     public void onDestroyView() {
-        log.trace("");
+
         super.onDestroyView();
     }
 
     @Override
     public void onDestroy() {
-        log.trace("");
+
         super.onDestroy();
     }
 
     @Override
     public void onDetach() {
-        log.trace("");
+
         super.onDetach();
     }
 
     @Override
     public void init(Paper paper, String key, String position) {
-        log.debug("initialising ArticleFragment {}", key);
+        Timber.d("initialising ArticleFragment %s", key);
         mArticle = paper.getPlist()
                         .getIndexItem(key);
         mStartPosition = position;
@@ -267,34 +264,34 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
     private void onGestureToTazapi(GESTURES gesture, MotionEvent e1) {
         //mOpenGesureResult = true;
-        log.debug("{} {}", mArticle.getKey(), gesture);
+        Timber.d("%s %s", mArticle.getKey(), gesture);
         callTazapi("onGesture", "'" + gesture.name() + "'," + e1.getX() + "," + e1.getY());
     }
 
     @Override
     public void onSwipeLeft(ArticleWebView view, MotionEvent e1, MotionEvent e2) {
-        log.trace("");
+
         mLastGesture = GESTURES.swipeLeft;
         onGestureToTazapi(mLastGesture, e1);
     }
 
     @Override
     public void onSwipeRight(ArticleWebView view, MotionEvent e1, MotionEvent e2) {
-        log.trace("");
+
         mLastGesture = GESTURES.swipeRight;
         onGestureToTazapi(mLastGesture, e1);
     }
 
     @Override
     public void onSwipeTop(ArticleWebView view, MotionEvent e1, MotionEvent e2) {
-        log.trace("");
+
         mLastGesture = GESTURES.swipeUp;
         onGestureToTazapi(mLastGesture, e1);
     }
 
     @Override
     public void onSwipeBottom(ArticleWebView view, MotionEvent e1, MotionEvent e2) {
-        log.trace("");
+
         mLastGesture = GESTURES.swipeDown;
         onGestureToTazapi(mLastGesture, e1);
     }
@@ -309,18 +306,18 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
     @Override
     public void onConfigurationChange(String key, String value) {
-        log.debug("{} {}", key, value);
+        Timber.d("%s %s", key, value);
         callTazapi("onConfigurationChanged", "'" + key + "','" + value + "'");
     }
 
     @Override
     public void onScrollStarted(ArticleWebView view) {
-        log.debug("{} {}", view.getScrollX(), view.getScrollY());
+        Timber.d("%s %s", view.getScrollX(), view.getScrollY());
     }
 
     @Override
     public void onScrollFinished(ArticleWebView view) {
-        log.debug("{} {}", view.getScrollX(), view.getScrollY());
+        Timber.d("%s %s", view.getScrollX(), view.getScrollY());
     }
 
 
@@ -389,19 +386,19 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
             switch (consoleMessage.messageLevel()) {
                 case TIP:
-                    log.info("{} {}", mArticle.getKey(), messagBuilder.toString());
+                    Timber.i("%s %s", mArticle.getKey(), messagBuilder.toString());
                     break;
                 case WARNING:
-                    log.warn("{} {}", mArticle.getKey(), messagBuilder.toString());
+                    Timber.w("%s %s", mArticle.getKey(), messagBuilder.toString());
                     break;
                 case DEBUG:
-                    log.debug("{} {}", mArticle.getKey(), messagBuilder.toString());
+                    Timber.d("%s %s", mArticle.getKey(), messagBuilder.toString());
                     break;
                 case ERROR:
-                    log.error("{} {}", mArticle.getKey(), messagBuilder.toString());
+                    Timber.e("%s %s", mArticle.getKey(), messagBuilder.toString());
                     break;
                 case LOG:
-                    log.trace("{} {}", mArticle.getKey(), messagBuilder.toString());
+                    Timber.i("%s %s", mArticle.getKey(), messagBuilder.toString());
                     break;
             }
             return true;
@@ -409,7 +406,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
         @Override
         public boolean onJsConfirm(WebView view, String url, String message, final JsResult result) {
-            log.debug("{} {} {}", message, url, result.toString());
+            Timber.d("%s %s %s", message, url, result.toString());
 
             return true;
         }
@@ -420,7 +417,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
         @JavascriptInterface
         public void openUrl(final String url) {
-            log.debug("{} {}", mArticle.getKey(), url);
+            Timber.d("%s %s", mArticle.getKey(), url);
             if (url.startsWith("http")) {
                 Intent i = new Intent(Intent.ACTION_VIEW);
                 i.setData(Uri.parse(url));
@@ -448,7 +445,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
         @JavascriptInterface
         public String getValue(String path) {
             String result = Store.getValueForKey(mContext, path);
-            log.debug("{} {} {}", mArticle.getKey(), path, result);
+            Timber.d("%s %s %s", mArticle.getKey(), path, result);
             return result;
         }
 
@@ -467,27 +464,27 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
                                        .update(Store.getUriForKey(path), store.getContentValues(), null, null);
                 if (affected > 0) result = true;
             }
-            log.debug("{} {} {}", mArticle.getKey(), path, value, result);
+            Timber.d("%s %s %s", mArticle.getKey(), path, value, result);
             return result;
         }
 
         @JavascriptInterface
         public String getConfiguration(String name) {
             String result = getConfig(name);
-            log.debug("{} {} {}", mArticle.getKey(), name, result);
+            Timber.d("%s %s %s", mArticle.getKey(), name, result);
             return result;
         }
 
         @JavascriptInterface
         public boolean setConfiguration(String name, String value) {
             boolean result = setConfig(name, value);
-            log.debug("{} {} {}", mArticle.getKey(), name, value, result);
+            Timber.d("%s %s %s", mArticle.getKey(), name, value, result);
             return result;
         }
 
         @JavascriptInterface
         public void pageReady(String percentSeen, final String position, String numberOfPages) {
-            log.debug("{} {} {}", mArticle.getKey(), percentSeen, position, numberOfPages);
+            Timber.d("%s %s %s", mArticle.getKey(), percentSeen, position, numberOfPages);
 
             //fade(1F, 800);
 
@@ -511,17 +508,17 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
         @JavascriptInterface
         public void enableRegionScroll(boolean isOn) {
-            log.debug("{} {}", mArticle.getKey(), isOn);
+            Timber.d("%s %s", mArticle.getKey(), isOn);
         }
 
         @JavascriptInterface
         public void beginRendering() {
-            log.debug(mArticle.getKey());
+            Timber.d(mArticle.getKey());
         }
 
         @JavascriptInterface
         public void nextArticle(final int position) {
-            log.debug("{} {}", mArticle.getKey(), position);
+            Timber.d("%s %s", mArticle.getKey(), position);
             //mAnimationLock = true;
             runOnUiThread(new Runnable() {
 
@@ -552,7 +549,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
         @JavascriptInterface
         public void previousArticle(final int position) {
-            log.debug("{} {}", mArticle.getKey(), position);
+            Timber.d("%s %s", mArticle.getKey(), position);
 
             runOnUiThread(new Runnable() {
 
@@ -594,7 +591,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
         @JavascriptInterface
         public void clearWebCache() {
-            log.debug("");
+
 
         }
     }
@@ -603,12 +600,12 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
         @Override
         public void onLoadResource(WebView view, String url) {
-            log.trace(url);
+            Timber.i(url);
         }
 
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
-            log.trace(url);
+            Timber.i(url);
             if (url != null) {
                 if (url.toLowerCase(Locale.getDefault())
                        .startsWith("http")) {
@@ -631,9 +628,9 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
         @Override
         public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
-            log.error("{} errorCode: {}", mArticle.getKey(), errorCode);
-            log.error("{} description: {}", mArticle.getKey(), description);
-            log.error("{} failingUrl: {}", mArticle.getKey(), failingUrl);
+            Timber.e("%s errorCode: %d", mArticle.getKey(), errorCode);
+            Timber.e("%s description: %s", mArticle.getKey(), description);
+            Timber.e("%s failingUrl: %s", mArticle.getKey(), failingUrl);
             super.onReceivedError(view, errorCode, description, failingUrl);
         }
     }
@@ -683,7 +680,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
     @Override
     public void onTtsStateChanged(ReaderTtsFragment.TTS state) {
-        log.debug("{}", state);
+        Timber.d("%s", state);
     }
 
     private CharSequence getTextToSpeech() {

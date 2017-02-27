@@ -25,15 +25,12 @@ import de.thecode.android.tazreader.reader.index.IIndexItem;
 import de.thecode.android.tazreader.widget.PageIndexButton;
 import de.thecode.android.tazreader.widget.ShareButton;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.List;
 
-public class PagesFragment extends AbstractContentFragment {
+import timber.log.Timber;
 
-    private static final Logger log = LoggerFactory.getLogger(PagesFragment.class);
+public class PagesFragment extends AbstractContentFragment {
 
     TAZReaderView _readerView;
     ShareButton mShareButton;
@@ -53,19 +50,19 @@ public class PagesFragment extends AbstractContentFragment {
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        log.trace("");
+
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        log.trace("");
+
         //setRetainInstance(true);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        log.trace("");
+
         View view = inflater.inflate(R.layout.reader_pagereader, container, false);
         _readerView = (TAZReaderView) view.findViewById(R.id.readerview);
         _readerView.setAdapter(_adapter);
@@ -91,7 +88,7 @@ public class PagesFragment extends AbstractContentFragment {
 
     @Override
     public void init(Paper paper, String key, String postion) {
-        log.debug("paper: {}, key: {}, postion: {}",paper, key, postion);
+        Timber.d("paper: %s, key: %s, postion: %s", paper, key, postion);
         _startKey = key;
         pages = new ArrayList<>();
         for (Source source : paper.getPlist()
@@ -106,11 +103,11 @@ public class PagesFragment extends AbstractContentFragment {
     }
 
     public void setPage(String key) {
-        log.debug("key: {}",key);
+        Timber.d("key: %s",key);
         for (Page page : pages) {
             if (page.getKey()
                     .equals(key)) {
-                log.debug("setting page with key: {}",key);
+                Timber.d("setting page with key: %s",key);
                 _readerView.resetScale();
                 _readerView.setDisplayedViewIndex(pages.indexOf(page));
                 break;
@@ -129,7 +126,7 @@ public class PagesFragment extends AbstractContentFragment {
 
     @Override
     public void onDestroy() {
-       log.debug("");
+
         if (_readerView != null) {
             if (_readerView.mChildViews != null) {
                 for (int i = 0; i < _readerView.mChildViews.size(); i++) {
@@ -156,20 +153,20 @@ public class PagesFragment extends AbstractContentFragment {
 
         @Override
         public Page getItem(int position) {
-            log.debug("position: {}",position);
+            Timber.d("position: %s",position);
             if (pages != null) return pages.get(position);
             return null;
         }
 
         @Override
         public long getItemId(int position) {
-            log.debug("position: {}",position);
+            Timber.d("position: %s",position);
             return position;
         }
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            log.debug("position: {}, convertView: {}, parent: {}",position, convertView, parent);
+            Timber.d("position: %s, convertView: %s, parent: %s",position, convertView, parent);
 
             TAZPageView pageView;
 
@@ -190,6 +187,6 @@ public class PagesFragment extends AbstractContentFragment {
 
     @Override
     public void onTtsStateChanged(ReaderTtsFragment.TTS state) {
-        log.debug("state: {}",state);
+        Timber.d("state: %s",state);
     }
 }

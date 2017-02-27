@@ -10,18 +10,15 @@ import de.thecode.android.tazreader.importer.ImportActivity;
 import de.thecode.android.tazreader.start.StartActivity;
 import de.thecode.android.tazreader.utils.BaseActivity;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.util.List;
+
+import timber.log.Timber;
 
 /**
  * Created by mate on 21.04.2015.
  */
 public class MigrationActivity extends BaseActivity implements MigrationWorkerFragment.MigrationWorkerCallback {
-
-    private static final Logger log = LoggerFactory.getLogger(MigrationActivity.class);
 
     private static final String WORKER_FRAGMENT_TAG = "MigrationWorkerFragment";
     MigrationWorkerFragment workerFragment;
@@ -29,7 +26,7 @@ public class MigrationActivity extends BaseActivity implements MigrationWorkerFr
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        log.debug("");
+
         setContentView(R.layout.activity_migrate);
         workerFragment = MigrationWorkerFragment.findOrCreateWorkerFragment(getSupportFragmentManager(), WORKER_FRAGMENT_TAG,
                                                                             this);
@@ -38,12 +35,12 @@ public class MigrationActivity extends BaseActivity implements MigrationWorkerFr
 
     @Override
     public void onMigrationStart(int toVersionNumber) {
-        log.debug("{}", toVersionNumber);
+        Timber.d("%d", toVersionNumber);
     }
 
     @Override
     public void onMigrationFinished(int toVersionNumber, List<File> importFiles) {
-        log.debug("{}", toVersionNumber);
+        Timber.d("%d", toVersionNumber);
 //        if (toVersionNumber < ??)                                                     For futher Migrations activate this
 //            TazSettings.setPref(this, TazSettings.PREFKEY.PAPERMIGRATEFROM,toVersionNumber);
 //        else
@@ -70,7 +67,7 @@ public class MigrationActivity extends BaseActivity implements MigrationWorkerFr
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        log.debug("");
+
         if (requestCode == ImportActivity.REQUEST_CODE_IMPORT_ACTIVITY) {
             TazSettings.getInstance(this)
                        .setPref(TazSettings.PREFKEY.FORCESYNC, true);
@@ -79,7 +76,7 @@ public class MigrationActivity extends BaseActivity implements MigrationWorkerFr
     }
 
     private void finishActivity() {
-        log.debug("");
+
         Intent startIntent = new Intent(this, StartActivity.class);
         startIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(startIntent);
@@ -87,7 +84,7 @@ public class MigrationActivity extends BaseActivity implements MigrationWorkerFr
 
     @Override
     public void onMigrationError(Exception e) {
-        log.error("", e);
+        Timber.e(e);
     }
 
 

@@ -2,8 +2,9 @@ package de.thecode.android.tazreader.download;
 
 import com.dd.plist.PropertyListFormatException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import de.thecode.android.tazreader.data.Paper;
+import de.thecode.android.tazreader.secure.HashHelper;
+
 import org.xml.sax.SAXException;
 
 import java.io.File;
@@ -15,15 +16,12 @@ import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-import de.thecode.android.tazreader.data.Paper;
-import de.thecode.android.tazreader.secure.HashHelper;
+import timber.log.Timber;
 
 /**
  * Created by mate on 07.08.2015.
  */
 public class UnzipPaper {
-
-    private static final Logger log = LoggerFactory.getLogger(UnzipPaper.class);
 
     private Paper paper;
     private File destinationDir;
@@ -42,7 +40,7 @@ public class UnzipPaper {
         unzipFile.getProgress()
                  .setOffset(50);
         checkCanceled();
-        log.trace("... start parsing plist to check hashvals.");
+        Timber.i("... start parsing plist to check hashvals.");
         if (!destinationDir.exists() || !destinationDir.isDirectory()) throw new FileNotFoundException("Directory not found");
         File plistFile = new File(destinationDir, Paper.CONTENT_PLIST_FILENAME);
         if (!plistFile.exists()) throw new FileNotFoundException("Plist not found");
@@ -64,13 +62,13 @@ public class UnzipPaper {
                         if (!HashHelper.verifyHash(checkFile, entry.getValue(), HashHelper.SHA_1))
                             throw new FileNotFoundException("Wrong hash for file " + checkFile.getName());
                     } catch (NoSuchAlgorithmException e) {
-                        log.warn("",e);
+                        Timber.w(e);
                     }
                 }
             }
-        } else log.warn("No hash values found in Plist");
+        } else Timber.w("No hash values found in Plist");
         checkCanceled();
-        log.trace("... finished");
+        Timber.i("... finished");
         return result;
     }
 

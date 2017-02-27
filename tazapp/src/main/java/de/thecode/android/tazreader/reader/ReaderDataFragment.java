@@ -6,8 +6,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import de.thecode.android.tazreader.data.Paper;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -15,14 +14,12 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
-import de.thecode.android.tazreader.data.Paper;
+import timber.log.Timber;
 
 /**
  * Created by mate on 13.11.2015.
  */
 public class ReaderDataFragment extends Fragment /*implements TextToSpeech.OnInitListener*/ {
-
-    private static final Logger log = LoggerFactory.getLogger(ReaderDataFragment.class);
 
     private static final String TAG = "RetainDataFragment";
 
@@ -140,7 +137,7 @@ public class ReaderDataFragment extends Fragment /*implements TextToSpeech.OnIni
     }
 
     public void setCurrentKey(Context context, String currentKey, String position) {
-        log.debug("{} {} {}", context, currentKey, position);
+        Timber.d("%s %s", context, currentKey, position);
 
         mCurrentKey = currentKey;
         mPosition = position;
@@ -148,7 +145,7 @@ public class ReaderDataFragment extends Fragment /*implements TextToSpeech.OnIni
             _paper.saveStoreValue(context, ReaderActivity.STORE_KEY_CURRENTPOSITION, mCurrentKey);
             _paper.saveStoreValue(context, ReaderActivity.STORE_KEY_POSITION_IN_ARTICLE, position);
         } catch (Exception e) {
-            log.warn("", e);
+            Timber.w(e);
         }
 
         boolean addtobackstack = true;
@@ -158,7 +155,7 @@ public class ReaderDataFragment extends Fragment /*implements TextToSpeech.OnIni
             if (lastBackstack.equals(newBackStack)) addtobackstack = false;
         }
         if (addtobackstack) {
-            log.debug("{} {}", currentKey, position);
+            Timber.d("%s", currentKey, position);
             //Log.d("Adding to backstack", currentKey, position);
             backstack.add(newBackStack);
         }
@@ -179,7 +176,7 @@ public class ReaderDataFragment extends Fragment /*implements TextToSpeech.OnIni
         String position;
 
         public BackStack(String key, String position) {
-            log.debug("key: {}, position: {}", key, position);
+            Timber.d("key: %s", key, position);
             this.key = key;
             this.position = position;
         }

@@ -6,12 +6,9 @@ import android.content.SharedPreferences.Editor;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.secure.Installation;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import timber.log.Timber;
 
 public class AccountHelper {
-
-    private static final Logger log = LoggerFactory.getLogger(AccountHelper.class);
 
     public static final String ACCOUNT_DEMO_USER = "demo";
     public static final String ACCOUNT_DEMO_PASS = "demo";
@@ -34,7 +31,7 @@ public class AccountHelper {
         if (TazSettings.getInstance(context)
                        .getSharedPreferences()
                        .contains("credentialsWorking")) {
-            log.debug("Migration vorhandener Credentials");
+            Timber.d("Migration vorhandener Credentials");
             String user = TazSettings.getInstance(context)
                                      .getOldDecryptedPrefString(TazSettings.PREFKEY.USER, AccountHelper.ACCOUNT_DEMO_USER);
             String pass = TazSettings.getInstance(context)

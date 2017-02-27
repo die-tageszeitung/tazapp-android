@@ -10,20 +10,17 @@ import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.text.TextUtils;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Publication;
 import de.thecode.android.tazreader.data.Resource;
 import de.thecode.android.tazreader.data.Store;
+
+import timber.log.Timber;
 //import de.thecode.android.tazreader.utils.Log;
 
 
 public class TazProvider extends ContentProvider {
-
-    private static final Logger log = LoggerFactory.getLogger(TazProvider.class);
     
     private static final int PAPER_DIR = 1;
     private static final int PAPER_ID = 2;
@@ -217,7 +214,7 @@ public class TazProvider extends ContentProvider {
         {
             Uri contenUri = ContentUris.withAppendedId(uri, rowId);
             getContext().getContentResolver().notifyChange(contenUri, null);
-            log.debug("{}",contenUri);
+            Timber.d("%s", contenUri);
             return contenUri;
         }
 
@@ -274,7 +271,7 @@ public class TazProvider extends ContentProvider {
         }
         if (affected > 0)
             getContext().getContentResolver().notifyChange(uri, null);
-        log.debug("{} {}",affected,uri);
+        Timber.d("%d %s",affected,uri);
         return affected;
     }
 
@@ -317,7 +314,7 @@ public class TazProvider extends ContentProvider {
         if (affected > 0)
             getContext().getContentResolver().notifyChange(uri, null);
 
-        log.debug("{} {}",affected,uri);
+        Timber.d("%d %s",affected,uri);
         
         return affected;
     }

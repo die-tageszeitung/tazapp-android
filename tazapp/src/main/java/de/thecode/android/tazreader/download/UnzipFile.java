@@ -1,8 +1,5 @@
 package de.thecode.android.tazreader.download;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -11,12 +8,12 @@ import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import timber.log.Timber;
+
 /**
  * Created by mate on 07.08.2015.
  */
 public class UnzipFile extends UnzipStream {
-
-    private static final Logger log = LoggerFactory.getLogger(UnzipFile.class);
 
     private File zipFile;
     private boolean deleteSourceOnSuccess;
@@ -29,7 +26,7 @@ public class UnzipFile extends UnzipStream {
 
     @Override
     public File start() throws IOException, UnzipCanceledException {
-        log.trace("... start extracting file", zipFile);
+        Timber.i("... start extracting file %s", zipFile);
         ZipFile zf = new ZipFile(zipFile);
         Enumeration<? extends ZipEntry> e = zf.entries();
         long totalUncompressedSize = 0;
@@ -39,14 +36,14 @@ public class UnzipFile extends UnzipStream {
         }
         zf.close();
         if (totalUncompressedSize > 0) setTotalUncompressedSize(totalUncompressedSize);
-        log.trace("... size uncompressed: " + totalUncompressedSize);
+        Timber.i("... size uncompressed: %d", totalUncompressedSize);
         return super.start();
     }
 
     @Override
     public void onSuccess() {
         super.onSuccess();
-        log.trace("... finished unzipping file");
+        Timber.i("... finished unzipping file");
         StringBuilder logBuilder = new StringBuilder("... should delete source:" + deleteSourceOnSuccess);
         if (deleteSourceOnSuccess) {
             if (zipFile != null) {
@@ -64,7 +61,7 @@ public class UnzipFile extends UnzipStream {
                 logBuilder.append(" - zipfile null");
             }
         }
-        log.trace(logBuilder.toString());
+        Timber.i(logBuilder.toString());
     }
 
     public File getZipFile() {

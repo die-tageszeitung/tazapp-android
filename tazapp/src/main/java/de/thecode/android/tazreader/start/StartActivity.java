@@ -49,8 +49,6 @@ import de.thecode.android.tazreader.widget.CustomToolbar;
 
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.lang.ref.WeakReference;
 import java.text.DateFormatSymbols;
@@ -58,13 +56,13 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
+import timber.log.Timber;
+
 /**
  * Created by mate on 27.01.2015.
  */
 public class StartActivity extends BaseActivity
         implements IStartCallback, DialogButtonListener, DialogDismissListener, DialogCancelListener, DialogAdapterListListener {
-
-    private static final Logger log = LoggerFactory.getLogger(StartActivity.class);
 
     private static final String DIALOG_FIRST                 = "dialogFirst";
     private static final String DIALOG_USER_REENTER          = "dialogUserReenter";
@@ -232,13 +230,13 @@ public class StartActivity extends BaseActivity
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-        log.debug("intent: {}", intent);
+        Timber.d("intent: %s", intent);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        log.debug("requestCode: {}, resultCode: {}, data: {}", requestCode, resultCode, data);
+        Timber.d("requestCode: %s, resultCode: %s, data: %s", requestCode, resultCode, data);
         if (requestCode == ImportActivity.REQUEST_CODE_IMPORT_ACTIVITY) {
             if (resultCode == RESULT_OK) {
 
@@ -263,9 +261,9 @@ public class StartActivity extends BaseActivity
                 ft.commit();
                 getRetainData().addToNavBackstack(item);
             } catch (InstantiationException e) {
-                log.error("", e);
+                Timber.e(e);
             } catch (IllegalAccessException e) {
-                log.error("", e);
+                Timber.e(e);
             }
         }
     }
@@ -441,7 +439,7 @@ public class StartActivity extends BaseActivity
     }
 
     private void showArchiveMonthPicker(int year) {
-        log.debug("year: {}", year);
+        Timber.d("year: %s", year);
         Calendar cal = Calendar.getInstance();
         int currentYear = cal.get(Calendar.YEAR);
         int maxMonth = 11;
@@ -502,7 +500,7 @@ public class StartActivity extends BaseActivity
             Resource paperResource = new Resource(this, openPaper.getResource());
 
             if (paperResource.isDownloaded()) {
-                log.trace("start reader for paper: {}", openPaper);
+                Timber.i("start reader for paper: %s", openPaper);
                 Intent intent = new Intent(this, ReaderActivity.class);
                 intent.putExtra(ReaderActivity.KEY_EXTRA_PAPER_ID, id);
                 startActivity(intent);
@@ -526,7 +524,7 @@ public class StartActivity extends BaseActivity
                 }
             }
         } catch (Paper.PaperNotFoundException e) {
-            log.error("", e);
+            Timber.e(e);
         }
     }
 
@@ -543,7 +541,7 @@ public class StartActivity extends BaseActivity
     }
 
     public void onEventMainThread(PaperDownloadFinishedEvent event) {
-        log.debug("event: {}", event);
+        Timber.d("event: %s", event);
         if (retainDataFragment.useOpenPaperafterDownload) {
             if (event.getPaperId() == retainDataFragment.openPaperIdAfterDownload) {
                 openReader(retainDataFragment.openPaperIdAfterDownload);
@@ -599,8 +597,7 @@ public class StartActivity extends BaseActivity
                         startDownload(json.getLong(i));
                     }
                 } catch (JSONException | Paper.PaperNotFoundException e) {
-                    log.warn("", e);
-
+                    Timber.w(e);
                 }
 
             }
@@ -761,7 +758,7 @@ public class StartActivity extends BaseActivity
 
                 @Override
                 protected void onPostError(Exception exception) {
-                    log.error("", exception);
+                    Timber.e(exception);
 
                     if (hasCallback()) getCallback().toggleWaitDialog(DIALOG_WAIT + "delete");
                 }

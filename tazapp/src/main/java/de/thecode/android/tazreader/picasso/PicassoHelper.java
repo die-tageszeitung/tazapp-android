@@ -8,9 +8,6 @@ import com.squareup.picasso.Picasso;
 import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.okhttp3.OkHttp3Helper;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 
 import okhttp3.Cache;
@@ -21,8 +18,6 @@ import okhttp3.OkHttpClient;
  */
 
 public class PicassoHelper {
-
-    private static final Logger log = LoggerFactory.getLogger(PicassoHelper.class);
 
     private static final int IMAGES_DISK_USAGE_BYTES = 50 * 1024 * 1024;
     private static final String IMAGES_CACHE_DIR = "picasso";

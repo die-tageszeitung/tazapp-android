@@ -9,15 +9,10 @@ import android.view.View;
 
 import de.thecode.android.tazreader.data.TazSettings;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * Created by mate on 03.03.2016.
  */
 public class ScrollAwareFABBehavior extends FloatingActionButton.Behavior {
-
-    private static final Logger log = LoggerFactory.getLogger(ScrollAwareFABBehavior.class);
 
     private TazSettings tazSettings;
 

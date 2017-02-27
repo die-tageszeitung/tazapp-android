@@ -35,8 +35,6 @@ import de.thecode.android.tazreader.utils.StorageManager;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.json.JSONArray;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 import java.io.File;
@@ -57,9 +55,9 @@ import java.util.zip.ZipException;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-public class Paper {
+import timber.log.Timber;
 
-    private static final Logger log = LoggerFactory.getLogger(Paper.class);
+public class Paper {
 
     public static       String TABLE_NAME        = "PAPER";
     public static final Uri    CONTENT_URI       = Uri.parse("content://" + TazProvider.AUTHORITY + "/" + TABLE_NAME);
@@ -566,9 +564,9 @@ public class Paper {
 
     public void parsePlist(InputStream is, boolean parseIndex) throws ZipException, IOException, PropertyListFormatException,
             ParseException, ParserConfigurationException, SAXException {
-        log.trace("Start parsing Plist - parse Index: {}", parseIndex);
+        Timber.i("Start parsing Plist - parse Index: %s", parseIndex);
         plist = new Plist(is, parseIndex);
-        log.trace("Finished parsing Plist {}", this);
+        Timber.i("Finished parsing Plist");
     }
 
 
@@ -1544,7 +1542,8 @@ public class Paper {
     public void delete(Context context) {
         StorageManager storage = StorageManager.getInstance(context);
         storage.deletePaperDir(this);
-        Picasso.with(context).invalidate(getImage());
+        Picasso.with(context)
+               .invalidate(getImage());
         if (isImported() || isKiosk()) {
             context.getContentResolver()
                    .delete(ContentUris.withAppendedId(Paper.CONTENT_URI, getId()), null, null);
@@ -1594,7 +1593,7 @@ public class Paper {
         equalsBuilder.append(bookId, rhs.bookId);
         equalsBuilder.append(isDemo, rhs.isDemo);
         equalsBuilder.append(publicationId, rhs.publicationId);
-        equalsBuilder.append(validUntil,rhs.validUntil);
+        equalsBuilder.append(validUntil, rhs.validUntil);
         return equalsBuilder.isEquals();
     }
 

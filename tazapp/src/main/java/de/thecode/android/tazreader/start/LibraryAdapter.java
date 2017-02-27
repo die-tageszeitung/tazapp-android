@@ -25,19 +25,17 @@ import de.thecode.android.tazreader.download.PaperDownloadFailedEvent;
 import de.thecode.android.tazreader.download.UnzipProgressEvent;
 import de.thecode.android.tazreader.sync.SyncService;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.lang.ref.WeakReference;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.List;
 
+import timber.log.Timber;
+
 /**
  * Created by mate on 10.02.2015.
  */
 public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.ViewHolder> {
-    private static final Logger log = LoggerFactory.getLogger(LibraryAdapter.class);
 
     int                           mCoverImageHeight;
     int                           mCoverImageWidth;
@@ -169,7 +167,7 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
         try {
             notifyItemChanged(getItemPosition(event.getPaperId()));
         } catch (IllegalStateException e) {
-            log.warn("", e);
+            Timber.w(e);
         }
     }
 
@@ -248,7 +246,7 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
         try {
             viewHolder.card.setContentDescription(paper.getDate(DateFormat.LONG));
         } catch (ParseException e) {
-            log.error("", e);
+            Timber.e(e);
         }
 
     }

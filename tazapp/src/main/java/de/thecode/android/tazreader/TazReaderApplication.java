@@ -12,12 +12,12 @@ import de.thecode.android.tazreader.utils.BuildTypeProvider;
 import de.thecode.android.tazreader.utils.StorageManager;
 
 import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 
 import java.io.File;
+
+import timber.log.Timber;
 
 //@ReportsCrashes(
 //        httpMethod = HttpSender.Method.PUT,
@@ -28,7 +28,6 @@ import java.io.File;
 //)
 public class TazReaderApplication extends Application {
 
-    private static final Logger log = LoggerFactory.getLogger(TazReaderApplication.class);
 
     @Override
     protected void attachBaseContext(Context base) {
@@ -41,6 +40,16 @@ public class TazReaderApplication extends Application {
 
         super.onCreate();
 
+        if (BuildConfig.DEBUG) {
+            Timber.plant(new Timber.DebugTree() {
+                @Override
+                protected String createStackElementTag(StackTraceElement element) {
+                    return super.createStackElementTag(
+                            element) + "." + element.getMethodName() + ":" + element.getLineNumber() + "[" + Thread.currentThread()
+                                                                                                                   .getName() + "]";
+                }
+            });
+        }
 
         BuildTypeProvider.installStetho(this);
         PicassoHelper.initPicasso(this);
@@ -49,7 +58,6 @@ public class TazReaderApplication extends Application {
                                                                      .setFontAttrId(R.attr.fontPath)
                                                                      .build());
 
-        log.info("");
 
         // Migration von alter Version
         int lastVersionCode = TazSettings.getInstance(this)

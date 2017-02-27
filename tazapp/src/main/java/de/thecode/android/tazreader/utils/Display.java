@@ -5,14 +5,12 @@ import android.os.Build;
 import android.util.DisplayMetrics;
 import android.view.WindowManager;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import timber.log.Timber;
 
 /**
  * Created by mate on 04.02.2016.
  */
 public class Display {
-    private static final Logger log = LoggerFactory.getLogger(Display.class);
 
     public static double getScreenSizeInch(Context context) {
         DisplayMetrics dm = new DisplayMetrics();
@@ -29,7 +27,7 @@ public class Display {
         double y = Math.pow(dm.heightPixels / dm.ydpi, 2);
         double screenInches = Math.sqrt(x + y);
 
-        log.debug("ScreenSize: {}", screenInches);
+        Timber.d("ScreenSize: %s", screenInches);
         return screenInches;
     }
 }

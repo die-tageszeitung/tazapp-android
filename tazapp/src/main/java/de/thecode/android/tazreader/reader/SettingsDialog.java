@@ -16,12 +16,9 @@ import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.reader.ReaderActivity.THEMES;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import timber.log.Timber;
 
 public class SettingsDialog extends DialogCustomView {
-
-    private static final Logger log = LoggerFactory.getLogger(SettingsDialog.class);
 
     private IReaderCallback mCallback;
     private SeekBar seekBarColumns;
@@ -46,7 +43,7 @@ public class SettingsDialog extends DialogCustomView {
 
             @Override
             public void onClick(View v) {
-                log.debug("v: {}", v);
+                Timber.d("v: %s", v);
                 if (mCallback != null) mCallback.onConfigurationChange(TazSettings.PREFKEY.THEME, THEMES.normal.name());
                 colorThemeButtonText(THEMES.normal);
             }
@@ -57,7 +54,7 @@ public class SettingsDialog extends DialogCustomView {
 
             @Override
             public void onClick(View v) {
-                log.debug("v: {}",v);
+                Timber.d("v: %s",v);
                 mCallback.onConfigurationChange(TazSettings.PREFKEY.THEME, THEMES.sepia.name());
                 colorThemeButtonText(THEMES.sepia);
             }
@@ -68,7 +65,7 @@ public class SettingsDialog extends DialogCustomView {
 
             @Override
             public void onClick(View v) {
-                log.debug("v: {}",v);
+                Timber.d("v: %s",v);
                 mCallback.onConfigurationChange(TazSettings.PREFKEY.THEME, THEMES.night.name());
                 colorThemeButtonText(THEMES.night);
             }
@@ -81,7 +78,7 @@ public class SettingsDialog extends DialogCustomView {
 
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                log.debug("buttonView: {}, isChecked: {}",buttonView, isChecked);
+                Timber.d("buttonView: %s, isChecked: %s",buttonView, isChecked);
                 if (mCallback != null) mCallback.onConfigurationChange(TazSettings.PREFKEY.ISSCROLL, !isChecked);
                 seekBarColumns.setEnabled(isChecked);
             }
@@ -137,7 +134,7 @@ public class SettingsDialog extends DialogCustomView {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 float colValue = ((float) progress) / 10;
                 String colValueString = String.valueOf(colValue);
-                log.debug("color: {}",colValueString);
+                Timber.d("color: %s",colValueString);
                 if (fromUser) {
                     mCallback.onConfigurationChange(TazSettings.PREFKEY.COLSIZE, colValueString);
                 }
@@ -158,7 +155,7 @@ public class SettingsDialog extends DialogCustomView {
 
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                log.debug("seekBar: {}, progress: {}, fromUser: {}",seekBar, progress, fromUser);
+                Timber.d("seekBar: %s, progress: %s, fromUser: %s",seekBar, progress, fromUser);
                 if (fromUser) {
                     mCallback.onConfigurationChange(TazSettings.PREFKEY.FONTSIZE, String.valueOf(progress));
                 }

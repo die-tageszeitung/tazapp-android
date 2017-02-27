@@ -6,15 +6,13 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import timber.log.Timber;
 
 /**
  * Created by mate on 09.02.2015.
  */
 public class AutofitRecyclerView extends RecyclerView {
 
-    private static final Logger log = LoggerFactory.getLogger(AutofitRecyclerView.class);
     private AutoFitGridLayoutManager manager;
     private int columnWidth = -1;
 
@@ -98,7 +96,7 @@ public class AutofitRecyclerView extends RecyclerView {
                 newPosition = position + (int) (completeVisibleRows * spanCount - (spanCount - 1));
                 if (newPosition > getItemCount()) newPosition = getItemCount();
 
-               log.debug("{} {} {} {} {} {} {} {}",position, first, last, dif, spanCount, completeVisibleRows, newPosition, getItemCount());
+               Timber.d("%s %s %s %s %s %s %s %s", position, first, last, dif, spanCount, completeVisibleRows, newPosition, getItemCount());
             }
 
             super.smoothScrollToPosition(recyclerView,state,newPosition);

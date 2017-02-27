@@ -15,17 +15,13 @@ import de.thecode.android.tazreader.secure.HashHelper;
 import de.thecode.android.tazreader.start.StartActivity;
 import de.thecode.android.tazreader.utils.StorageManager;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 
+import timber.log.Timber;
+
 public class DownloadReceiver extends BroadcastReceiver {
-
-    private static final Logger log = LoggerFactory.getLogger(DownloadReceiver.class);
-
 
     //    Context mContext;
     //    ExternalStorage mStorage;
@@ -38,7 +34,7 @@ public class DownloadReceiver extends BroadcastReceiver {
 
         String action = intent.getAction();
 
-        log.trace("DownloadReceiver received intent: {}", intent);
+        Timber.i("DownloadReceiver received intent: %s", intent);
 
         if (android.app.DownloadManager.ACTION_DOWNLOAD_COMPLETE.equals(action)) {
             long downloadId = intent.getLongExtra(android.app.DownloadManager.EXTRA_DOWNLOAD_ID, 0);
@@ -46,7 +42,7 @@ public class DownloadReceiver extends BroadcastReceiver {
             DownloadManager.DownloadState state = downloadHelper.getDownloadState(downloadId);
             boolean firstOccurrenceOfState = downloadHelper.isFirstOccurrenceOfState(state);
             if (!firstOccurrenceOfState) {
-                log.error("DownloadState already received: {}", state);
+                Timber.w("DownloadState already received: %s", state);
                 return;
             }
 
@@ -56,8 +52,7 @@ public class DownloadReceiver extends BroadcastReceiver {
                 while (cursor.moveToNext()) {
                     Paper paper = new Paper(cursor);
                     //DownloadHelper.DownloadState downloadDownloadState = downloadHelper.getDownloadState(downloadId);
-                    log.trace("Download complete for paper: {}", paper);
-                    log.trace("{}", state);
+                    Timber.i("Download complete for paper: %s, %s", paper, state);
                     boolean failed = false;
                     if (state.getStatus() == DownloadManager.DownloadState.STATUS_SUCCESSFUL) {
                         File downloadFile = externalStorage.getDownloadFile(paper);
@@ -65,21 +60,21 @@ public class DownloadReceiver extends BroadcastReceiver {
                             failed = true;
                         } else {
                             if (paper.getLen() != 0 && downloadFile.length() != paper.getLen()) {
-                                log.error("Wrong size of paper download");
+                                Timber.e("Wrong size of paper download");
                                 failed = true;
-                            } else log.trace("... checked correct size of paper download");
+                            } else Timber.i("... checked correct size of paper download");
                             try {
                                 String fileHash = HashHelper.getHash(downloadFile, HashHelper.SHA_1);
                                 if (paper.getFileHash() != null && !paper.getFileHash()
                                                                          .equals(fileHash)) {
-                                    log.error("Wrong paper filehash");
+                                    Timber.e("Wrong paper filehash");
                                     failed = true;
-                                } else log.trace("... checked correct hash of paper download");
+                                } else Timber.i("... checked correct hash of paper download");
                             } catch (NoSuchAlgorithmException e) {
-                                log.warn("",e);
+                                Timber.w(e);
                                 AnalyticsWrapper.getInstance().logException(e);
                             } catch (IOException e) {
-                                log.error("",e);
+                                Timber.e(e);
                                 failed = true;
                             }
                             if (!failed) {
@@ -92,7 +87,7 @@ public class DownloadReceiver extends BroadcastReceiver {
                         failed = true;
                     }
                     if (failed) {
-                        log.error("Download failed");
+                        Timber.e("Download failed");
                         DownloadException exception = new DownloadException(state.getStatusText() + ": " + state.getReasonText());
                         AnalyticsWrapper.getInstance().logException(exception);
                         paper.setDownloadId(0);
@@ -118,8 +113,7 @@ public class DownloadReceiver extends BroadcastReceiver {
 
                     Resource resource = new Resource(cursor);
                     //DownloadHelper.DownloadState downloadDownloadState = downloadHelper.getDownloadState(downloadId);
-                    log.trace("Download complete for resource: {}", resource);
-                    log.trace("{}", state);
+                    Timber.i("Download complete for resource: %s, %s", resource, state);
 
                     boolean failed = false;
                     if (state.getStatus() == DownloadManager.DownloadState.STATUS_SUCCESSFUL) {
@@ -130,21 +124,21 @@ public class DownloadReceiver extends BroadcastReceiver {
                             failed = true;
                         } else {
                             if (resource.getLen() != 0 && downloadFile.length() != resource.getLen()) {
-                                log.error("Wrong size of resource download");
+                                Timber.e("Wrong size of resource download");
                                 failed = true;
-                            } else log.trace("... checked correct size of resource download");
+                            } else Timber.i("... checked correct size of resource download");
                             try {
                                 String fileHash = HashHelper.getHash(downloadFile, HashHelper.SHA_1);
                                 if (resource.getFileHash() != null && !resource.getFileHash()
                                                                                .equals(fileHash)) {
-                                    log.error("Wrong resource filehash");
+                                    Timber.e("Wrong resource filehash");
                                     failed = true;
-                                } else log.trace("... checked correct hash of resource download");
+                                } else Timber.i("... checked correct hash of resource download");
                             } catch (NoSuchAlgorithmException e) {
-                                log.warn("", e);
+                                Timber.w(e);
                                 AnalyticsWrapper.getInstance().logException(e);
                             } catch (IOException e) {
-                                log.error("",e);
+                                Timber.e(e);
                                 failed = true;
                             }
                             if (!failed) {
@@ -157,7 +151,7 @@ public class DownloadReceiver extends BroadcastReceiver {
                         failed = true;
                     }
                     if (failed) {
-                        log.error("Download failed");
+                        Timber.e("Download failed");
                         DownloadException exception = new DownloadException(state.getStatusText() + ": " + state.getReasonText());
                         AnalyticsWrapper.getInstance().logException(exception);
                         resource.setDownloadId(0);

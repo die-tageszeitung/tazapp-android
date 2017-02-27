@@ -11,9 +11,6 @@ import com.scottyab.aescrypt.AESCrypt;
 
 import de.thecode.android.tazreader.secure.SimpleCrypto;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,9 +18,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public final class TazSettings implements SharedPreferences.OnSharedPreferenceChangeListener {
+import timber.log.Timber;
 
-    private static final Logger log = LoggerFactory.getLogger(TazSettings.class);
+public final class TazSettings implements SharedPreferences.OnSharedPreferenceChangeListener {
 
     public static final class PREFKEY {
 
@@ -113,7 +110,7 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
         }
 
         boolean result = prefEdit.commit();
-        log.debug("{} {} {}", key, v, result);
+        Timber.d("key %s %s %s", key, v, result);
         return result;
     }
 
@@ -177,7 +174,7 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
         Editor prefEdit = sharedPreferences.edit();
         prefEdit.remove(key);
         prefEdit.apply();
-        log.debug("{}", key);
+        Timber.d("key %s", key);
     }
 
     public Uri getRingtone() {

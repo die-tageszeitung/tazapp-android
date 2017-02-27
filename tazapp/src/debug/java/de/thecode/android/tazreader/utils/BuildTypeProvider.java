@@ -5,11 +5,9 @@ import android.app.Application;
 import com.facebook.stetho.Stetho;
 import com.facebook.stetho.okhttp3.StethoInterceptor;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
+import timber.log.Timber;
 
 /**
  * Created by mate on 10.05.2016.
@@ -30,10 +28,9 @@ public class BuildTypeProvider {
 
     public static void addLoggingInterceptor(OkHttpClient.Builder builder) {
         HttpLoggingInterceptor logging = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
-            private final Logger log = LoggerFactory.getLogger(BuildTypeProvider.class);
             @Override
             public void log(String message) {
-                log.debug("{}", message);
+                Timber.d("%s", message);
             }
         });
         logging.setLevel(HttpLoggingInterceptor.Level.BODY);

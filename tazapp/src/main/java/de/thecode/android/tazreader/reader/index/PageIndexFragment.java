@@ -38,18 +38,14 @@ import de.thecode.android.tazreader.reader.page.TAZMuPDFCore;
 import de.thecode.android.tazreader.utils.BaseFragment;
 import de.thecode.android.tazreader.utils.StorageManager;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
-import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PageIndexFragment extends BaseFragment {
+import timber.log.Timber;
 
-    private static final Logger log = LoggerFactory.getLogger(PageIndexFragment.class);
+public class PageIndexFragment extends BaseFragment {
 
     List<IIndexItem>         index;
     Paper                    paper;
@@ -75,12 +71,12 @@ public class PageIndexFragment extends BaseFragment {
 
 
     public PageIndexFragment() {
-        log.trace("");
+
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        log.trace("");
+
         super.onCreate(savedInstanceState);
         //setRetainInstance(true);
         final int maxMemory = (int) (Runtime.getRuntime()
@@ -98,7 +94,7 @@ public class PageIndexFragment extends BaseFragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        log.trace("");
+
 
         View view = inflater.inflate(R.layout.reader_pageindex, container, false);
         mRecyclerView = (RecyclerView) view.findViewById(R.id.recycler);
@@ -122,7 +118,7 @@ public class PageIndexFragment extends BaseFragment {
 
     @Override
     public void onAttach(Activity activity) {
-        log.trace("");
+
         super.onAttach(activity);
         mReaderCallback = (IReaderCallback) activity;
 
@@ -144,7 +140,7 @@ public class PageIndexFragment extends BaseFragment {
     }
 
     public void init(Paper paper) {
-        log.debug("initialising PageIndexFragment with paper: {}", paper);
+        Timber.d("initialising PageIndexFragment with paper: %s", paper);
         index = new ArrayList<>();
         for (Source source : paper.getPlist()
                                   .getSources()) {
@@ -161,7 +157,7 @@ public class PageIndexFragment extends BaseFragment {
     }
 
     public void updateCurrentPosition(String key) {
-        log.debug("key: {}", key);
+        Timber.d("key: %s", key);
 
         IIndexItem indexItem = paper.getPlist()
                                     .getIndexItem(key);
@@ -229,7 +225,7 @@ public class PageIndexFragment extends BaseFragment {
 
     private void makeOverlayBitmap(float x1, float y1, float x2, float y2) {
         try {
-            log.debug("x1: {}, y1: {}, x2: {}, y2: {}, mThumbnailImageWidth: {}, mThumbnailImageHeight: {}", x1, y1, x2, y2,
+            Timber.d("x1: %s, y1: %s, x2: %s, y2: %s, mThumbnailImageWidth: %s, mThumbnailImageHeight: %s", x1, y1, x2, y2,
                       mThumbnailImageWidth, mThumbnailImageHeight);
             mCurrentArticleOverlay = Bitmap.createBitmap(mThumbnailImageWidth, mThumbnailImageHeight, Bitmap.Config.ARGB_8888);
             Canvas canvas = new Canvas(mCurrentArticleOverlay);
@@ -345,7 +341,7 @@ public class PageIndexFragment extends BaseFragment {
                 mPdfThumbHelper = new FileCachePDFThumbHelper(StorageManager.getInstance(getActivity()), paper.getFileHash());
             }
             File imageFile = mPdfThumbHelper.getFile(key);
-            log.debug("imagefile {}", imageFile.getName());
+            Timber.d("imagefile %s", imageFile.getName());
             if (imageFile.exists()) {
                 final BitmapFactory.Options options = new BitmapFactory.Options();
                 options.inJustDecodeBounds = true;
@@ -375,10 +371,8 @@ public class PageIndexFragment extends BaseFragment {
 
                     return lq;
 
-                } catch (IOException ex) {
-                    log.error("", ex);
                 } catch (Exception e) {
-                    log.error("", e);
+                    Timber.e(e);
                 }
 
             }
@@ -404,7 +398,7 @@ public class PageIndexFragment extends BaseFragment {
                 inSampleSize *= 2;
             }
         }
-        log.debug("reqWidth: {}, reqHeight: {}, {} {}", reqWidth, reqHeight, width, height);
+        Timber.d("reqWidth: %s, reqHeight: %s, %s %s", reqWidth, reqHeight, width, height);
         return inSampleSize;
     }
 
@@ -424,8 +418,8 @@ public class PageIndexFragment extends BaseFragment {
 
     private Bitmap getBitmapFromMemCache(String key) {
         Bitmap bitmap = mMemoryCache.get(key);
-        if (bitmap == null) log.debug("did not find key: {} in memcache", key);
-        else log.debug("found key: {} in memcache", key);
+        if (bitmap == null) Timber.d("did not find key: %s in memcache", key);
+        else Timber.d("found key: %s in memcache", key);
         return bitmap;
     }
 
@@ -436,7 +430,7 @@ public class PageIndexFragment extends BaseFragment {
     }
 
     public void onItemClick(int position) {
-        log.debug("position: {}", position);
+        Timber.d("position: %s", position);
         IIndexItem item = adapter.getItem(position);
         mReaderCallback.onLoad(item.getKey());
     }
@@ -473,7 +467,7 @@ public class PageIndexFragment extends BaseFragment {
                     break;
                 }
             }
-            log.debug("key: {} {}", key, result);
+            Timber.d("key: %s %s", key, result);
             return result;
         }
 
