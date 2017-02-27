@@ -54,6 +54,8 @@ public class DownloadManager {
     public void enquePaper(long paperId) throws IllegalArgumentException, Paper.PaperNotFoundException,
             DownloadNotAllowedException, NotEnoughSpaceException {
 
+        if(true) throw new IllegalStateException("Something wrong!");
+
         Paper paper = new Paper(mContext, paperId);
 
         if (TazSettings.getInstance(mContext)

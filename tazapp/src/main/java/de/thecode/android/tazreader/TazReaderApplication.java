@@ -11,6 +11,7 @@ import de.thecode.android.tazreader.reader.ReaderActivity;
 import de.thecode.android.tazreader.utils.BuildTypeProvider;
 import de.thecode.android.tazreader.utils.StorageManager;
 
+import org.acra.ACRA;
 import org.apache.commons.io.FileUtils;
 
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
@@ -19,26 +20,20 @@ import java.io.File;
 
 import timber.log.Timber;
 
-//@ReportsCrashes(
-//        httpMethod = HttpSender.Method.PUT,
-//        reportType = HttpSender.Type.JSON,
-//        formUri = BuildConfig.ACRA_FORM_URI,
-//        formUriBasicAuthLogin = BuildConfig.ACRA_FORM_URI_BASIC_AUTH_LOGIN,
-//        formUriBasicAuthPassword = BuildConfig.ACRA_FORM_URI_BASIC_AUTH_PASSWORD
-//)
 public class TazReaderApplication extends Application {
-
 
     @Override
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
-        AnalyticsWrapper.initialize(base, true);
+        AnalyticsWrapper.initializeAcra(this);
     }
 
     @Override
     public void onCreate() {
 
         super.onCreate();
+
+        if (ACRA.isACRASenderServiceProcess()) return;
 
         if (BuildConfig.DEBUG) {
             Timber.plant(new Timber.DebugTree() {
