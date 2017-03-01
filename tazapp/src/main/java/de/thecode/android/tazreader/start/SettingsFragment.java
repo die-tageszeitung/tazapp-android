@@ -44,7 +44,7 @@ public class SettingsFragment extends BaseFragment {
     private TextView autodeleteUnitText;
     private CheckBox pageIndexButtonCheckBox;
     private CheckBox ttsCheckBox;
-
+    private CheckBox acraAlwaysAcceptCheckBox;
 
     public SettingsFragment() {
         // Required empty public constructor
@@ -76,6 +76,7 @@ public class SettingsFragment extends BaseFragment {
         notificationVibrateCheckBox = (CheckBox) view.findViewById(R.id.notificationVibrateCheckBox);
         pageIndexButtonCheckBox = (CheckBox) view.findViewById(R.id.showPageIndexButtonCheckBox);
         ttsCheckBox = (CheckBox) view.findViewById(R.id.ttsCheckBox);
+        acraAlwaysAcceptCheckBox = (CheckBox) view.findViewById(R.id.acraAlwaysAcceptCheckBox);
 
         autoloadCheckBox.setChecked(TazSettings.getInstance(getActivity()).getPrefBoolean(TazSettings.PREFKEY.AUTOLOAD, false));
         autoloadCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -213,6 +214,15 @@ public class SettingsFragment extends BaseFragment {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 TazSettings.getInstance(getActivity()).setPref(TazSettings.PREFKEY.TEXTTOSPEACH, isChecked);
+            }
+        });
+
+        acraAlwaysAcceptCheckBox.setChecked(TazSettings.getInstance(getActivity()).getPrefBoolean(TazSettings.PREFKEY.ACRAALWAYSACCEPT, false));
+        acraAlwaysAcceptCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                TazSettings.getInstance(getActivity()).setPref(TazSettings.PREFKEY.ACRAALWAYSACCEPT, isChecked);
             }
         });
 

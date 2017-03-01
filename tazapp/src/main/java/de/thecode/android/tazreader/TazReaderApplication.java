@@ -20,6 +20,7 @@ import java.io.File;
 
 import timber.log.Timber;
 
+
 public class TazReaderApplication extends Application {
 
     @Override
@@ -134,6 +135,7 @@ public class TazReaderApplication extends Application {
                    .setDefaultPref(TazSettings.PREFKEY.ISPAGING, true);
         TazSettings.getInstance(this)
                    .setDefaultPref(TazSettings.PREFKEY.ISSCROLLTONEXT, getResources().getBoolean(R.bool.isTablet));
+        
 
     }
 

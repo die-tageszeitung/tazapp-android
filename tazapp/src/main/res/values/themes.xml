@@ -27,4 +27,6 @@
         <item name="android:textColor">@color/button_text</item>
         <item name="colorButtonNormal">@color/button_normal</item>
     </style>
+
+    <style name="AcraDialog" parent="Theme.AppCompat.Dialog" />
 </resources>
