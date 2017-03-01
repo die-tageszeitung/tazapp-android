@@ -14,6 +14,7 @@ import android.os.StatFs;
 import de.greenrobot.event.EventBus;
 import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.R;
+import de.thecode.android.tazreader.analytics.AnalyticsWrapper;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Resource;
 import de.thecode.android.tazreader.data.TazSettings;
@@ -54,7 +55,12 @@ public class DownloadManager {
     public void enquePaper(long paperId) throws IllegalArgumentException, Paper.PaperNotFoundException,
             DownloadNotAllowedException, NotEnoughSpaceException {
 
-        if(true) throw new IllegalStateException("Something wrong!");
+        try {
+            if (true) throw new IllegalStateException("Something wrong!");
+        } catch (Exception e) {
+            Timber.e(e);
+            AnalyticsWrapper.getInstance().logException(e);
+        }
 
         Paper paper = new Paper(mContext, paperId);
 

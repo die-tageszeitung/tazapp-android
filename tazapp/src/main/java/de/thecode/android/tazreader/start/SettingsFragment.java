@@ -23,6 +23,8 @@ import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.utils.BaseFragment;
 import de.thecode.android.tazreader.utils.Orientation;
 
+import org.acra.ACRA;
+
 import java.lang.ref.WeakReference;
 
 public class SettingsFragment extends BaseFragment {
@@ -217,12 +219,12 @@ public class SettingsFragment extends BaseFragment {
             }
         });
 
-        acraAlwaysAcceptCheckBox.setChecked(TazSettings.getInstance(getActivity()).getPrefBoolean(TazSettings.PREFKEY.ACRAALWAYSACCEPT, false));
+        acraAlwaysAcceptCheckBox.setChecked(TazSettings.getInstance(getActivity()).getPrefBoolean(ACRA.PREF_ALWAYS_ACCEPT, false));
         acraAlwaysAcceptCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                TazSettings.getInstance(getActivity()).setPref(TazSettings.PREFKEY.ACRAALWAYSACCEPT, isChecked);
+                TazSettings.getInstance(getActivity()).setPref(ACRA.PREF_ALWAYS_ACCEPT, isChecked);
             }
         });
 

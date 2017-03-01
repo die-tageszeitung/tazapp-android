@@ -10,6 +10,7 @@ import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.TextView;
 
+import de.mateware.dialog.Dialog;
 import de.mateware.dialog.LicenceDialog;
 import de.mateware.dialog.licences.Agpl30Licence;
 import de.mateware.dialog.licences.Apache20Licence;
@@ -20,6 +21,8 @@ import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.dialog.LogbackLicence;
 import de.thecode.android.tazreader.utils.BaseFragment;
 
+import org.acra.util.Installation;
+
 import java.lang.ref.WeakReference;
 
 /**
@@ -27,7 +30,8 @@ import java.lang.ref.WeakReference;
  */
 public class ImprintFragment extends BaseFragment {
 
-    private static final String DIALOG_LICENCES = "dialogLicences";
+    private static final String DIALOG_LICENCES        = "dialogLicences";
+    private static final String DIALOG_INSTALLATION_ID = "dialogInstallationId";
 
     private WeakReference<IStartCallback> callback;
 
@@ -52,7 +56,20 @@ public class ImprintFragment extends BaseFragment {
             }
         });
 
+        Button installationIdButton = (Button) view.findViewById(R.id.buttonInstallationId);
+        installationIdButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                new Dialog.Builder().setMessage(Installation.id(getContext()))
+                                    .setPositiveButton()
+                                    .buildSupport()
+                                    .show(getFragmentManager(), DIALOG_INSTALLATION_ID);
+            }
+        });
+
+
         //TextView text = (TextView) view.findViewById(R.id.text);
+
 
         WebView webView = (WebView) view.findViewById(R.id.webView);
         webView.loadUrl("file:///android_asset/imprint.html");
@@ -78,7 +95,7 @@ public class ImprintFragment extends BaseFragment {
                                    .addEntry(new Apache20Licence(getContext(), "Picasso 2 OkHttp 3 Downloader", "Jake Wharton",
                                                                  2016))
                                    .addEntry(new Apache20Licence(getContext(), "AESCrypt-Android", "Scott Alexander-Bown", 2014))
-                                   .addEntry(new Apache20Licence(getContext(),"Snacky","Mate Siede", 2017))
+                                   .addEntry(new Apache20Licence(getContext(), "Snacky", "Mate Siede", 2017))
                                    .addEntry(new MitLicence(getContext(), "dd-plist", "Daniel Dreibrodt", 2016))
                                    .addEntry(new Apache20Licence(getContext(), "Guava", "Google", 2016))
                                    .addEntry(new Apache20Licence(getContext(), "cwac-provider", "Mark Murphy", 2016))

@@ -139,6 +139,12 @@
                     android:resource="@xml/filepaths"/>
         </provider>
 
+        <activity
+                android:name=".analytics.TazCrashDialog"
+                android:excludeFromRecents="true"
+                android:finishOnTaskLaunch="true"
+                android:launchMode="singleInstance" />
+
     </application>
 
 </manifest>

@@ -5,4 +5,5 @@
     Bitte helfen Sie uns, den Fehler zu beseitigen, indem Sie uns die Fehlerdaten zusenden. Dazu müssen Sie nur mit OK bestätigen.</string>
     <string name="crash_dialog_comment_prompt">Sie können zusätzlich ein Kommentar zum Fehler eingeben:</string>
     <string name="crash_dialog_ok_toast">Vielen Dank für Ihre Unterstützung!</string>
+    <string name="crash_dialog_always_accept">Immer senden</string>
 </resources>

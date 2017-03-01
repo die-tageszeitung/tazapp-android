@@ -62,7 +62,6 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
         public static final String ISCHANGEARTICLE           = "isChangeArtikel";
         public static final String ISPAGING                  = "isPaging";
         public static final String ISSCROLLTONEXT            = "isScrollToNext";
-        public static final String ACRAALWAYSACCEPT          = "acra.alwaysaccept";
     }
 
 

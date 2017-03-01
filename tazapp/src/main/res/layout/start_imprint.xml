@@ -1,36 +1,57 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-             xmlns:tools="http://schemas.android.com/tools"
-             android:layout_width="match_parent"
-             android:layout_height="match_parent"
-             android:background="@color/start_fragment_background"
-             tools:context="de.thecode.android.tazreader.start.ImprintFragment">
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/start_fragment_background"
+                tools:context="de.thecode.android.tazreader.start.ImprintFragment">
+
+
+    <Space
+            android:id="@+id/space"
+            android:layout_centerInParent="true"
+            android:layout_width="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_height="wrap_content"/>
+
     <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" android:layout_centerHorizontal="true"
-        android:layout_alignParentBottom="true"
-        android:id="@+id/buttonLicences"
-        android:layout_margin="20dp"
-        android:text="@string/imprint_licenses"/>
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toStartOf="@id/space"
+            android:layout_alignParentBottom="true"
+            android:id="@+id/buttonLicences"
+            android:layout_margin="20dp"
+            android:text="@string/imprint_licenses"
+            android:layout_toLeftOf="@id/space"/>
+
+    <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toEndOf="@id/space"
+            android:layout_alignParentBottom="true"
+            android:id="@+id/buttonInstallationId"
+            android:layout_margin="20dp"
+            android:text="@string/imprint_installation_id"
+            android:layout_toRightOf="@id/space"/>
 
     <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="@string/dummy"
-        android:layout_margin="4dp"
-        android:id="@+id/version"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"/>
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:text="@string/dummy"
+            android:layout_margin="4dp"
+            android:id="@+id/version"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"/>
 
 
-        <WebView
+    <WebView
             android:layout_gravity="center_vertical|center_horizontal"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:id="@+id/webView"
             android:layout_above="@+id/buttonLicences"
-/>
+            />
 
 
 </RelativeLayout>

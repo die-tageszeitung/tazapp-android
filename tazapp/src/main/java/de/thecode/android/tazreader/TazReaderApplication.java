@@ -26,7 +26,7 @@ public class TazReaderApplication extends Application {
     @Override
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
-        AnalyticsWrapper.initializeAcra(this);
+        AnalyticsWrapper.initialize(this);
     }
 
     @Override

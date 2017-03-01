@@ -35,12 +35,12 @@ public class AnalyticsWrapper {
 
 
     private AnalyticsWrapper(Context context) {
-        //TODO init crashlogger framework
+        initializeAcra((Application) context);
     }
 
 
     public void logException(Throwable throwable) {
-
+        ACRA.getErrorReporter().handleSilentException(throwable);
         //TODO log exception
     }
 
@@ -48,7 +48,7 @@ public class AnalyticsWrapper {
         //TODO log data
     }
 
-    public static void initializeAcra(Application application) {
+    private void initializeAcra(Application application) {
 
         try {
             ConfigurationBuilder acraConfigBuilder = new ConfigurationBuilder(application);
@@ -61,11 +61,11 @@ public class AnalyticsWrapper {
                              .setReportingInteractionMode(ReportingInteractionMode.DIALOG)
                              .setResToastText(R.string.crash_toast_text)
                              .setResDialogText(R.string.crash_dialog_text)
-                             .setResDialogIcon(R.drawable.ic_emoticon_dead)
+                             .setResDialogIcon(R.drawable.ic_emoticon_dead_32dp)
                              .setResDialogTitle(R.string.crash_dialog_title)
                              .setResDialogCommentPrompt(R.string.crash_dialog_comment_prompt)
                              .setResDialogOkToast(R.string.crash_dialog_ok_toast)
-                             .setResDialogTheme(R.style.AcraDialog)
+                             .setReportDialogClass(TazCrashDialog.class)
                              .setBuildConfigClass(BuildConfig.class);
 
             final ACRAConfiguration acraConfig = acraConfigBuilder.build();
