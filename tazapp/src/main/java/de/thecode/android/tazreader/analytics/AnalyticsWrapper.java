@@ -43,17 +43,24 @@ public class AnalyticsWrapper {
 
 
     public void logException(Throwable throwable) {
-        ACRA.getErrorReporter()
-            .handleException(throwable);
+        if (ACRA.isInitialised()) {
+            ACRA.getErrorReporter()
+                .handleException(throwable);
+        }
     }
 
     public void logExceptionSilent(Throwable throwable) {
-        ACRA.getErrorReporter()
-            .handleSilentException(throwable);
+        if (ACRA.isInitialised()) {
+            ACRA.getErrorReporter()
+                .handleSilentException(throwable);
+        }
     }
 
     public void logData(String key, String value) {
-        ACRA.getErrorReporter().putCustomData(key,value);
+        if (ACRA.isInitialised()) {
+            ACRA.getErrorReporter()
+                .putCustomData(key, value);
+        }
     }
 
     private void initializeAcra(Application application) {
@@ -74,12 +81,13 @@ public class AnalyticsWrapper {
                              .setResDialogCommentPrompt(R.string.crash_dialog_comment_prompt)
                              .setResDialogOkToast(R.string.crash_dialog_ok_toast)
                              .setReportDialogClass(TazCrashDialog.class)
-                             .setReportField(ReportField.BUILD_CONFIG,false)
-                             .setReportField(ReportField.USER_IP,false);
+                             .setReportField(ReportField.BUILD_CONFIG, false)
+                             .setReportField(ReportField.USER_IP, false);
 
             final ACRAConfiguration acraConfig = acraConfigBuilder.build();
             ACRA.init(application, acraConfig);
-            ACRA.getErrorReporter().setEnabled(!BuildConfig.DEBUG);
+//            ACRA.getErrorReporter()
+//                .setEnabled(!BuildConfig.DEBUG);
         } catch (ACRAConfigurationException e) {
             Timber.e(e, "Cannot build ACRA configuration");
         }
