@@ -8,7 +8,6 @@ import android.database.Cursor;
 import android.net.Uri;
 
 import de.greenrobot.event.EventBus;
-import de.thecode.android.tazreader.analytics.AnalyticsWrapper;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Resource;
 import de.thecode.android.tazreader.secure.HashHelper;
@@ -72,7 +71,6 @@ public class DownloadReceiver extends BroadcastReceiver {
                                 } else Timber.i("... checked correct hash of paper download");
                             } catch (NoSuchAlgorithmException e) {
                                 Timber.w(e);
-                                AnalyticsWrapper.getInstance().logException(e);
                             } catch (IOException e) {
                                 Timber.e(e);
                                 failed = true;
@@ -89,7 +87,7 @@ public class DownloadReceiver extends BroadcastReceiver {
                     if (failed) {
                         Timber.e("Download failed");
                         DownloadException exception = new DownloadException(state.getStatusText() + ": " + state.getReasonText());
-                        AnalyticsWrapper.getInstance().logException(exception);
+                        //AnalyticsWrapper.getInstance().logException(exception);
                         paper.setDownloadId(0);
                         context.getContentResolver()
                                .update(ContentUris.withAppendedId(Paper.CONTENT_URI, paper.getId()), paper.getContentValues(), null, null);
@@ -136,7 +134,7 @@ public class DownloadReceiver extends BroadcastReceiver {
                                 } else Timber.i("... checked correct hash of resource download");
                             } catch (NoSuchAlgorithmException e) {
                                 Timber.w(e);
-                                AnalyticsWrapper.getInstance().logException(e);
+                                //AnalyticsWrapper.getInstance().logException(e);
                             } catch (IOException e) {
                                 Timber.e(e);
                                 failed = true;
@@ -153,7 +151,7 @@ public class DownloadReceiver extends BroadcastReceiver {
                     if (failed) {
                         Timber.e("Download failed");
                         DownloadException exception = new DownloadException(state.getStatusText() + ": " + state.getReasonText());
-                        AnalyticsWrapper.getInstance().logException(exception);
+                        //AnalyticsWrapper.getInstance().logException(exception);
                         resource.setDownloadId(0);
                         context.getContentResolver()
                                .update(Uri.withAppendedPath(Resource.CONTENT_URI, resource.getKey()), resource.getContentValues(), null, null);

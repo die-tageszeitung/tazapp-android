@@ -140,7 +140,7 @@
         </provider>
 
         <activity
-                android:name=".analytics.TazCrashDialog"
+                android:name=".acra.TazCrashDialog"
                 android:excludeFromRecents="true"
                 android:finishOnTaskLaunch="true"
                 android:launchMode="singleInstance" />

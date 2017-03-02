@@ -3,8 +3,10 @@ package de.thecode.android.tazreader;
 import android.app.Application;
 import android.content.Context;
 import android.media.RingtoneManager;
+import android.util.Log;
 
 import de.thecode.android.tazreader.analytics.AnalyticsWrapper;
+import de.thecode.android.tazreader.timber.TazTimberTree;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.picasso.PicassoHelper;
 import de.thecode.android.tazreader.reader.ReaderActivity;
@@ -36,16 +38,7 @@ public class TazReaderApplication extends Application {
 
         if (ACRA.isACRASenderServiceProcess()) return;
 
-        if (BuildConfig.DEBUG) {
-            Timber.plant(new Timber.DebugTree() {
-                @Override
-                protected String createStackElementTag(StackTraceElement element) {
-                    return super.createStackElementTag(
-                            element) + "." + element.getMethodName() + ":" + element.getLineNumber() + "[" + Thread.currentThread()
-                                                                                                                   .getName() + "]";
-                }
-            });
-        }
+        Timber.plant(new TazTimberTree(BuildConfig.DEBUG ? Log.VERBOSE : Log.INFO));
 
         BuildTypeProvider.installStetho(this);
         PicassoHelper.initPicasso(this);
@@ -135,7 +128,6 @@ public class TazReaderApplication extends Application {
                    .setDefaultPref(TazSettings.PREFKEY.ISPAGING, true);
         TazSettings.getInstance(this)
                    .setDefaultPref(TazSettings.PREFKEY.ISSCROLLTONEXT, getResources().getBoolean(R.bool.isTablet));
-        
 
     }
 

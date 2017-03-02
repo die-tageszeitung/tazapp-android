@@ -7,7 +7,6 @@ import android.content.Intent;
 import com.dd.plist.PropertyListFormatException;
 
 import de.greenrobot.event.EventBus;
-import de.thecode.android.tazreader.analytics.AnalyticsWrapper;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.utils.StorageManager;
 
@@ -122,7 +121,7 @@ public class DownloadFinishedPaperService extends IntentService implements Unzip
             Timber.w(exception);
         } else {
             Timber.e(exception);
-            AnalyticsWrapper.getInstance().logException(exception);
+            //AnalyticsWrapper.getInstance().logException(exception);
             NotificationHelper.showDownloadErrorNotification(this, null, paper.getId());
             EventBus.getDefault()
                     .post(new PaperDownloadFailedEvent(paper.getId(), exception));

@@ -5,8 +5,10 @@ import android.content.Context;
 
 import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.R;
+import de.thecode.android.tazreader.acra.TazCrashDialog;
 
 import org.acra.ACRA;
+import org.acra.ReportField;
 import org.acra.ReportingInteractionMode;
 import org.acra.config.ACRAConfiguration;
 import org.acra.config.ACRAConfigurationException;
@@ -35,17 +37,23 @@ public class AnalyticsWrapper {
 
 
     private AnalyticsWrapper(Context context) {
+
         initializeAcra((Application) context);
     }
 
 
     public void logException(Throwable throwable) {
-        ACRA.getErrorReporter().handleSilentException(throwable);
-        //TODO log exception
+        ACRA.getErrorReporter()
+            .handleException(throwable);
+    }
+
+    public void logExceptionSilent(Throwable throwable) {
+        ACRA.getErrorReporter()
+            .handleSilentException(throwable);
     }
 
     public void logData(String key, String value) {
-        //TODO log data
+        ACRA.getErrorReporter().putCustomData(key,value);
     }
 
     private void initializeAcra(Application application) {
@@ -66,10 +74,12 @@ public class AnalyticsWrapper {
                              .setResDialogCommentPrompt(R.string.crash_dialog_comment_prompt)
                              .setResDialogOkToast(R.string.crash_dialog_ok_toast)
                              .setReportDialogClass(TazCrashDialog.class)
-                             .setBuildConfigClass(BuildConfig.class);
+                             .setReportField(ReportField.BUILD_CONFIG,false)
+                             .setReportField(ReportField.USER_IP,false);
 
             final ACRAConfiguration acraConfig = acraConfigBuilder.build();
             ACRA.init(application, acraConfig);
+            ACRA.getErrorReporter().setEnabled(!BuildConfig.DEBUG);
         } catch (ACRAConfigurationException e) {
             Timber.e(e, "Cannot build ACRA configuration");
         }

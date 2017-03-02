@@ -1,4 +1,4 @@
-package de.thecode.android.tazreader.analytics;
+package de.thecode.android.tazreader.acra;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;

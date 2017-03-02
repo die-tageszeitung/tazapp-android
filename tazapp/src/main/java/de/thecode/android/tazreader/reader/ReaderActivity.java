@@ -398,8 +398,8 @@ public class ReaderActivity extends BaseActivity
                     initializeFragments();
                 } else {
                     Timber.e(result.getError());
-                    AnalyticsWrapper.getInstance()
-                                    .logException(result.getError());
+//                    AnalyticsWrapper.getInstance()
+//                                    .logException(result.getError());
                     ReaderActivity.this.finish();
                 }
             }
