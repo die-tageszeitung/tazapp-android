@@ -28,6 +28,7 @@ import de.thecode.android.tazreader.download.NotificationHelper;
 import de.thecode.android.tazreader.okhttp3.OkHttp3Helper;
 import de.thecode.android.tazreader.reader.ReaderActivity;
 import de.thecode.android.tazreader.start.ScrollToPaperEvent;
+import de.thecode.android.tazreader.utils.Connection;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.json.JSONArray;
@@ -110,12 +111,22 @@ public class SyncService extends IntentService {
 
         if (TazSettings.getInstance(this)
                        .getPrefBoolean(TazSettings.PREFKEY.AUTOLOAD, false) && tomorrowPaper != null) {
-            if (!tomorrowPaper.isDownloaded() && !tomorrowPaper.isDownloading()) downloadPaper(tomorrowPaper);
+            boolean connectionCheck = false;
+            if (TazSettings.getInstance(this)
+                           .getPrefBoolean(TazSettings.PREFKEY.AUTOLOAD_WIFI, true)) {
+                if (Connection.getConnectionType(this) >= Connection.CONNECTION_FAST) connectionCheck = true;
+            } else {
+                if (Connection.getConnectionType(this) >= Connection.CONNECTION_MOBILE_ROAMING) connectionCheck = true;
+            }
+            if (connectionCheck) {
+                if (!tomorrowPaper.isDownloaded() && !tomorrowPaper.isDownloading()) downloadPaper(tomorrowPaper);
+            }
         }
 
-        long nextPlannedRunAt = TazSettings.getInstance(this).getSyncServiceNextRun();
+        long nextPlannedRunAt = TazSettings.getInstance(this)
+                                           .getSyncServiceNextRun();
         if (nextPlannedRunAt <= System.currentTimeMillis()) nextPlannedRunAt = Long.MAX_VALUE;
-        minDataValidUntil = Math.min(nextPlannedRunAt,minDataValidUntil);
+        minDataValidUntil = Math.min(nextPlannedRunAt, minDataValidUntil);
 
         SyncHelper.setAlarmManager(this, tomorrowPaper != null, minDataValidUntil);
 
