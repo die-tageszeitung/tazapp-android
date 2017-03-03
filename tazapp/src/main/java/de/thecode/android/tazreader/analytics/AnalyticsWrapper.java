@@ -5,7 +5,7 @@ import android.content.Context;
 
 import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.R;
-import de.thecode.android.tazreader.acra.TazCrashDialog;
+import de.thecode.android.tazreader.acra.NewTazCrashDialog;
 
 import org.acra.ACRA;
 import org.acra.ReportField;
@@ -71,8 +71,6 @@ public class AnalyticsWrapper {
                              .setHttpMethod(HttpSender.Method.PUT)
                              .setReportType(HttpSender.Type.JSON)
                              .setFormUri(BuildConfig.ACRA_FORM_URI)
-                             .setFormUriBasicAuthLogin(BuildConfig.ACRA_FORM_URI_BASIC_AUTH_LOGIN)
-                             .setFormUriBasicAuthPassword(BuildConfig.ACRA_FORM_URI_BASIC_AUTH_PASSWORD)
                              .setReportingInteractionMode(ReportingInteractionMode.DIALOG)
                              .setResToastText(R.string.crash_toast_text)
                              .setResDialogText(R.string.crash_dialog_text)
@@ -80,7 +78,7 @@ public class AnalyticsWrapper {
                              .setResDialogTitle(R.string.crash_dialog_title)
                              .setResDialogCommentPrompt(R.string.crash_dialog_comment_prompt)
                              .setResDialogOkToast(R.string.crash_dialog_ok_toast)
-                             .setReportDialogClass(TazCrashDialog.class)
+                             .setReportDialogClass(NewTazCrashDialog.class)
                              .setReportField(ReportField.BUILD_CONFIG, false)
                              .setReportField(ReportField.USER_IP, false);
 
