@@ -6,6 +6,7 @@ import android.content.Context;
 import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.acra.NewTazCrashDialog;
+import de.thecode.android.tazreader.acra.Okhttp3Sender;
 
 import org.acra.ACRA;
 import org.acra.ReportField;
@@ -80,7 +81,8 @@ public class AnalyticsWrapper {
                              .setResDialogOkToast(R.string.crash_dialog_ok_toast)
                              .setReportDialogClass(NewTazCrashDialog.class)
                              .setReportField(ReportField.BUILD_CONFIG, false)
-                             .setReportField(ReportField.USER_IP, false);
+                             .setReportField(ReportField.USER_IP, false)
+                             .setReportSenderFactoryClasses(Okhttp3Sender.Factory.class);
 
             final ACRAConfiguration acraConfig = acraConfigBuilder.build();
             ACRA.init(application, acraConfig);
