@@ -16,6 +16,7 @@ import org.acra.sender.ReportSenderFactory;
 import org.acra.util.HttpRequest;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
@@ -32,22 +33,23 @@ public class Okhttp3Sender implements ReportSender {
 
 
     private final ACRAConfiguration config;
+    private final OkHttpClient      client;
 
-    private Okhttp3Sender(@NonNull ACRAConfiguration config) {
+    private Okhttp3Sender(@NonNull ACRAConfiguration config, @NonNull OkHttpClient client) {
         this.config = config;
+        this.client = client;
     }
 
     @Override
     public void send(@NonNull Context context, @NonNull CrashReportData report) throws ReportSenderException {
 
-        try {
-            final String login = isNull(config.formUriBasicAuthLogin()) ? null : config.formUriBasicAuthLogin();
-            final String password = isNull(config.formUriBasicAuthPassword()) ? null : config.formUriBasicAuthPassword();
+        String versionCode = report.getProperty(ReportField.APP_VERSION_CODE);
+        report.putNumber(ReportField.APP_VERSION_CODE,Integer.valueOf(versionCode.substring(1,versionCode.length())));
 
+        try {
             HttpUrl url = HttpUrl.parse(config.formUri());
 
-            OkHttpClient.Builder clientBuilder = OkHttp3Helper.getInstance(context)
-                                                              .getOkHttpClientBuilder(login, password);
+
             Request.Builder requestBuilder = new Request.Builder();
 
             // Generate report body depending on requested type
@@ -80,10 +82,16 @@ public class Okhttp3Sender implements ReportSender {
                     throw new UnsupportedOperationException("Unknown method: " + config.httpMethod());
             }
 
-            Response response = clientBuilder.build()
-                                             .newCall(requestBuilder.url(url)
-                                                                    .build())
-                                             .execute();
+            Request request = requestBuilder.url(url)
+                                            .build();
+
+            Response response = client.newCall(request)
+                                      .execute();
+
+            if (!response.isSuccessful()) {
+                throw new IOException(response.code() + " " + response.body()
+                                                                      .string());
+            }
 
         } catch (IOException e) {
             throw new ReportSenderException(
@@ -91,15 +99,26 @@ public class Okhttp3Sender implements ReportSender {
         }
     }
 
-    private boolean isNull(@Nullable String aString) {
-        return aString == null || ACRAConstants.NULL_VALUE.equals(aString);
-    }
 
     public static class Factory implements ReportSenderFactory {
         @NonNull
         @Override
         public ReportSender create(@NonNull Context context, @NonNull ACRAConfiguration config) {
-            return new Okhttp3Sender(config);
+
+            final String login = isNull(config.formUriBasicAuthLogin()) ? null : config.formUriBasicAuthLogin();
+            final String password = isNull(config.formUriBasicAuthPassword()) ? null : config.formUriBasicAuthPassword();
+            OkHttpClient.Builder clientBuilder = OkHttp3Helper.getInstance(context)
+                                                              .getOkHttpClientBuilder(login, password);
+            clientBuilder.connectTimeout(config.connectionTimeout(), TimeUnit.MILLISECONDS)
+                         .readTimeout(config.socketTimeout(), TimeUnit.MILLISECONDS)
+                         .writeTimeout(config.socketTimeout(), TimeUnit.MILLISECONDS);
+
+
+            return new Okhttp3Sender(config, clientBuilder.build());
+        }
+
+        private boolean isNull(@Nullable String aString) {
+            return aString == null || ACRAConstants.NULL_VALUE.equals(aString);
         }
     }
 

@@ -6,10 +6,10 @@ import android.media.RingtoneManager;
 import android.util.Log;
 
 import de.thecode.android.tazreader.analytics.AnalyticsWrapper;
-import de.thecode.android.tazreader.timber.TazTimberTree;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.picasso.PicassoHelper;
 import de.thecode.android.tazreader.reader.ReaderActivity;
+import de.thecode.android.tazreader.timber.TazTimberTree;
 import de.thecode.android.tazreader.utils.BuildTypeProvider;
 import de.thecode.android.tazreader.utils.StorageManager;
 
@@ -28,6 +28,7 @@ public class TazReaderApplication extends Application {
     @Override
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
+        Timber.plant(new TazTimberTree(BuildConfig.DEBUG ? Log.VERBOSE : Log.INFO));
         AnalyticsWrapper.initialize(this);
     }
 
@@ -36,11 +37,10 @@ public class TazReaderApplication extends Application {
 
         super.onCreate();
 
+        BuildTypeProvider.installStetho(this);
+
         if (ACRA.isACRASenderServiceProcess()) return;
 
-        Timber.plant(new TazTimberTree(BuildConfig.DEBUG ? Log.VERBOSE : Log.INFO));
-
-        BuildTypeProvider.installStetho(this);
         PicassoHelper.initPicasso(this);
 
         CalligraphyConfig.initDefault(new CalligraphyConfig.Builder().setDefaultFontPath(getString(R.string.fontRegular))
