@@ -7,33 +7,24 @@ def minSdkVer = 15
 def versionCodeInt = 52
 def versionNamePrefix = "3.0."
 
-def tazBaseUrl = '"https://dl.taz.de"'
-def tazPlist = '"http://dl.taz.de/tpaperIssue.plist"'
-def tazPlistArchiv = '"http://dl.taz.de/tpaperIssue.plist?start=%1$s&end=%2$s"'
-def tazStagingPlist = '"http://dl.taz.de/tpaperIssueTest.plist"'
-def tazStagingPlistArchiv = '"http://dl.taz.de/tpaperIssueTest.plist?start=%1$s&end=%2$s"'
+def tazPlist = '"https://dl.taz.de/tpaperIssue.plist"'
+def tazPlistArchiv = '"https://dl.taz.de/tpaperIssue.plist?start=%1$s&end=%2$s"'
+def tazStagingPlist = '"https://dl.taz.de/tpaperIssueTest.plist"'
+def tazStagingPlistArchiv = '"https://dl.taz.de/tpaperIssueTest.plist?start=%1$s&end=%2$s"'
 def tazAboUrl = '"https://www.taz.de/zeitung/abo/digitales-abo/apaper"'
 def tazCheckLogin = '"https://dl.taz.de/digiAboCheckLogin"'
 def tazResourceUrl = '"https://dl.taz.de/ressourcen"'
 def tazArchiveUrl = '"https://dl.taz.de/tpaperArchiv"'
 
-def lmdBaseUrl = '"https://dl.monde-diplomatique.de"'
-def lmdPlist = '"http://dl.monde-diplomatique.de/tpaperIssue.plist"'
-def lmdPlistArchiv = '"http://dl.monde-diplomatique.de/tpaperIssue.plist?start=%1$s&end=%2$s"'
-def lmdStagingPlist = '"http://dl.monde-diplomatique.de/tpaperIssueTest.plist"'
-def lmdStagingPlistArchiv = '"http://dl.monde-diplomatique.de/tpaperIssueTest.plist?start=%1$s&end=%2$s"'
+def lmdPlist = '"https://dl.monde-diplomatique.de/tpaperIssue.plist"'
+def lmdPlistArchiv = '"https://dl.monde-diplomatique.de/tpaperIssue.plist?start=%1$s&end=%2$s"'
+def lmdStagingPlist = '"https://dl.monde-diplomatique.de/tpaperIssueTest.plist"'
+def lmdStagingPlistArchiv = '"https://dl.monde-diplomatique.de/tpaperIssueTest.plist?start=%1$s&end=%2$s"'
 def lmdAboUrl = '"https://dl.monde-diplomatique.de/zeitung/abo/digitales-abo/apaper"'
 def lmdCheckLogin = '"https://dl.monde-diplomatique.de/digiAboCheckLogin"'
 def lmdResourceUrl = '"https://dl.monde-diplomatique.de/ressourcen"'
 def lmdArchiveUrl = '"https://dl.monde-diplomatique.de/tpaperArchiv"'
 
-def prodPlist = '"tpaperIssue.plist"'
-def testPlist = '"tpaperIssueTest.plist"'
-def checkLogin = '"digiAboCheckLogin"'
-
-def baseUrl = "BASEURL"
-def plist = "PLIST"
-def digiCheckLoginUrl = "CHECKLOGIN"
 def plistUrl = "PLISTURL"
 def plistArchiveUrl = "PLISTARCHIVURL"
 def aboUrl = "ABOURL"
@@ -101,8 +92,6 @@ android {
         targetSdkVersion targetSdkVer
         versionCode versionCodeInt
         versionName versionNamePrefix + versionCode
-        buildConfigField 'String', plist, prodPlist
-        buildConfigField 'String', digiCheckLoginUrl, checkLogin
     }
     packagingOptions {
         exclude 'META-INF/LICENSE.txt'
@@ -121,7 +110,6 @@ android {
         staging {
             versionNameSuffix "_staging"
             applicationIdSuffix ".staging"
-            buildConfigField 'String', plist, testPlist
         }
         release {
             zipAlignEnabled true
@@ -143,7 +131,6 @@ android {
             applicationId "de.thecode.android.tazreader"
             dimension "owner"
             resValue 'string', 'app_name', 'taz.app'
-            buildConfigField 'String', baseUrl, tazBaseUrl
             buildConfigField 'String', plistUrl, tazPlist
             buildConfigField 'String', plistArchiveUrl, tazPlistArchiv
             buildConfigField 'String', aboUrl, tazAboUrl
@@ -155,7 +142,6 @@ android {
             applicationId "de.thecode.lmd"
             dimension "owner"
             resValue 'string', 'app_name', 'LMd'
-            buildConfigField 'String', baseUrl, lmdBaseUrl
             buildConfigField 'String', plistUrl, lmdPlist
             buildConfigField 'String', plistArchiveUrl, lmdPlistArchiv
             buildConfigField 'String', aboUrl, lmdAboUrl
