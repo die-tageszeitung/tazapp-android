@@ -1,6 +1,6 @@
 package de.thecode.android.tazreader.utils;
 
-import android.app.Application;
+import android.content.Context;
 
 import okhttp3.OkHttpClient;
 
@@ -9,7 +9,7 @@ import okhttp3.OkHttpClient;
  */
 public class BuildTypeProvider {
 
-    public static void installStetho(Application application) {
+    public static void installStetho(Context context) {
         //do nothing
     }
 

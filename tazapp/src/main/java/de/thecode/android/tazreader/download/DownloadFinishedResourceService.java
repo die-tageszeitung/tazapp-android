@@ -9,7 +9,6 @@ import android.net.Uri;
 import com.dd.plist.PropertyListFormatException;
 
 import de.greenrobot.event.EventBus;
-import de.thecode.android.tazreader.analytics.AnalyticsWrapper;
 import de.thecode.android.tazreader.data.Resource;
 import de.thecode.android.tazreader.utils.StorageManager;
 
@@ -67,7 +66,7 @@ public class DownloadFinishedResourceService extends IntentService {
         } else {
             getContentResolver().delete(Uri.withAppendedPath(Resource.CONTENT_URI, resource.getKey()), null, null);
             Timber.e(e);
-            AnalyticsWrapper.getInstance().logException(e);
+            //AnalyticsWrapper.getInstance().logException(e);
             EventBus.getDefault()
                     .post(new ResourceDownloadEvent(resource.getKey(), e));
         }

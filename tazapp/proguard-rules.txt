@@ -3,6 +3,9 @@
 #-dontwarn com.google.android.gms.**
 #-dontwarn com.android.volley.toolbox.**
 
+-dontobfuscate
+-optimizations !code/simplification/arithmetic,!field/*,!class/merging/*,!code/allocation/variable
+
 -dontwarn javax.annotation.**
 -dontwarn javax.inject.**
 -dontwarn sun.misc.Unsafe
@@ -22,20 +25,6 @@
 -keepclassmembers class * extends de.greenrobot.event.util.ThrowableFailureEvent {
     public <init>(java.lang.Throwable);
 }
-
-# Fabric.io
--keepattributes SourceFile,LineNumberTable
--keep class com.crashlytics.** { *; }
--dontwarn com.crashlytics.**
-
-# TAZ
--keep class de.thecode.** { *; }
-
-#SLF4J and android-logback
--keep class ch.qos.** { *; }
--keep class org.slf4j.** { *; }
--keepattributes *Annotation*
--dontwarn ch.qos.logback.core.net.*
 
 # support design
 -dontwarn android.support.design.**

@@ -139,6 +139,19 @@
                     android:resource="@xml/filepaths"/>
         </provider>
 
+        <activity
+                android:name=".acra.NewTazCrashDialog"
+                android:excludeFromRecents="true"
+                android:finishOnTaskLaunch="true"
+                android:launchMode="singleInstance" />
+
+        <!--<activity-->
+                <!--android:name=".acra.TazCrashDialog"-->
+                <!--android:excludeFromRecents="true"-->
+                <!--android:finishOnTaskLaunch="true"-->
+                <!--android:theme="@style/AcraDialog"-->
+                <!--android:launchMode="singleInstance" />-->
+
     </application>
 
 </manifest>

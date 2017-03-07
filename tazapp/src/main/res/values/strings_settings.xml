@@ -13,5 +13,8 @@
     <string name="notification_vibrate">Vibration</string>
     <string name="notification_sound_activity_title">Benachrichtigunston auswählen</string>
     <string name="notification_sound_silent">Stumm</string>
+    <string name="header_other">SONSTIGES</string>
+    <string name="acra_alwaysaccept">Fehlerreports automatisch senden</string>
+
 
 </resources>

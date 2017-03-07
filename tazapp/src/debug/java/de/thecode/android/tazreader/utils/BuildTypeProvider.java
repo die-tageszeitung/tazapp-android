@@ -1,6 +1,6 @@
 package de.thecode.android.tazreader.utils;
 
-import android.app.Application;
+import android.content.Context;
 
 import com.facebook.stetho.Stetho;
 import com.facebook.stetho.okhttp3.StethoInterceptor;
@@ -14,11 +14,11 @@ import timber.log.Timber;
  */
 public class BuildTypeProvider {
 
-    public static void installStetho(Application application) {
+    public static void installStetho(Context context) {
         Stetho.initialize(
-                Stetho.newInitializerBuilder(application)
-                      .enableDumpapp(Stetho.defaultDumperPluginsProvider(application))
-                      .enableWebKitInspector(Stetho.defaultInspectorModulesProvider(application))
+                Stetho.newInitializerBuilder(context)
+                      .enableDumpapp(Stetho.defaultDumperPluginsProvider(context))
+                      .enableWebKitInspector(Stetho.defaultInspectorModulesProvider(context))
                       .build());
     }
 

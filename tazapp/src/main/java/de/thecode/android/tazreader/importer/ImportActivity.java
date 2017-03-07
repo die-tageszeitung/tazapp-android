@@ -9,7 +9,6 @@ import android.os.Parcelable;
 import de.mateware.dialog.Dialog;
 import de.mateware.dialog.listener.DialogButtonListener;
 import de.thecode.android.tazreader.R;
-import de.thecode.android.tazreader.analytics.AnalyticsWrapper;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.download.DownloadManager;
@@ -111,7 +110,7 @@ public class ImportActivity extends BaseActivity implements DialogButtonListener
                                                .enquePaper(ContentUris.parseId(downloadUri));
                             } catch (Paper.PaperNotFoundException | DownloadManager.DownloadNotAllowedException | DownloadManager.NotEnoughSpaceException e) {
                                 Timber.e(e);
-                                AnalyticsWrapper.getInstance().logException(e);
+                                //AnalyticsWrapper.getInstance().logException(e);
                             }
                         }
                     }

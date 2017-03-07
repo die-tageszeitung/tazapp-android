@@ -50,7 +50,6 @@ idea {
     }
 }
 
-apply plugin: 'android-sdk-manager'
 apply plugin: 'com.android.application'
 apply plugin: 'com.github.gfx.ribbonizer'
 
@@ -85,7 +84,6 @@ if (overheadPath != null) {
 }
 
 android {
-
 
     sourceSets {
         staging {
@@ -234,7 +232,7 @@ android {
             if (flavor.name.equalsIgnoreCase('lmd')) {
                 variant.setIgnore(true)
             }
-            if (!variant.buildType.name.equals('release')) {
+            if (!variant.buildType.name.equalsIgnoreCase('release')) {
                 if (flavor.dimension.equalsIgnoreCase('abi') && (flavor.name.equalsIgnoreCase('arm') || flavor.name.equalsIgnoreCase('mips'))) {
                     variant.setIgnore(true)
                 }
@@ -246,7 +244,7 @@ android {
     }
 }
 
-def buildConfigAndResStringField(variant, name, value) {
+static def buildConfigAndResStringField(variant, name, value) {
     variant.resValue 'string', name.toLowerCase(), value
     variant.buildConfigField 'String', name, "\"$value\""
 }
@@ -277,7 +275,7 @@ dependencies {
     compile 'com.jakewharton.picasso:picasso2-okhttp3-downloader:1.1.0'
 
     compile 'com.googlecode.plist:dd-plist:1.8'
-    compile 'com.google.guava:guava:18.0'
+    compile 'com.google.guava:guava:20.0'
     compile 'com.commonsware.cwac:provider:0.2.3'
     compile 'de.greenrobot:eventbus:2.4.0'
 
@@ -306,8 +304,9 @@ dependencies {
 
     compile 'com.scottyab:aescrypt:0.0.1'
 
-    compile 'com.github.matecode:Snacky:1.0.1'
-    //compile 'ch.acra:acra:4.9.2'
+    compile 'com.github.matecode:Snacky:1.0.2'
+
+    compile 'ch.acra:acra:4.9.2'
 
 
 }

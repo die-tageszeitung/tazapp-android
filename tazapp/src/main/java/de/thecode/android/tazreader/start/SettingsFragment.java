@@ -23,6 +23,8 @@ import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.utils.BaseFragment;
 import de.thecode.android.tazreader.utils.Orientation;
 
+import org.acra.ACRA;
+
 import java.lang.ref.WeakReference;
 
 public class SettingsFragment extends BaseFragment {
@@ -44,7 +46,7 @@ public class SettingsFragment extends BaseFragment {
     private TextView autodeleteUnitText;
     private CheckBox pageIndexButtonCheckBox;
     private CheckBox ttsCheckBox;
-
+    private CheckBox acraAlwaysAcceptCheckBox;
 
     public SettingsFragment() {
         // Required empty public constructor
@@ -76,6 +78,7 @@ public class SettingsFragment extends BaseFragment {
         notificationVibrateCheckBox = (CheckBox) view.findViewById(R.id.notificationVibrateCheckBox);
         pageIndexButtonCheckBox = (CheckBox) view.findViewById(R.id.showPageIndexButtonCheckBox);
         ttsCheckBox = (CheckBox) view.findViewById(R.id.ttsCheckBox);
+        acraAlwaysAcceptCheckBox = (CheckBox) view.findViewById(R.id.acraAlwaysAcceptCheckBox);
 
         autoloadCheckBox.setChecked(TazSettings.getInstance(getActivity()).getPrefBoolean(TazSettings.PREFKEY.AUTOLOAD, false));
         autoloadCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -213,6 +216,15 @@ public class SettingsFragment extends BaseFragment {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 TazSettings.getInstance(getActivity()).setPref(TazSettings.PREFKEY.TEXTTOSPEACH, isChecked);
+            }
+        });
+
+        acraAlwaysAcceptCheckBox.setChecked(TazSettings.getInstance(getActivity()).getPrefBoolean(ACRA.PREF_ALWAYS_ACCEPT, false));
+        acraAlwaysAcceptCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                TazSettings.getInstance(getActivity()).setPref(ACRA.PREF_ALWAYS_ACCEPT, isChecked);
             }
         });
 

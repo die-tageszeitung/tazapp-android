@@ -62,6 +62,7 @@
     <string name="drawer_header_debug" translatable="false">δ</string>
 
     <string name="imprint_licenses">Lizenzen</string>
+    <string name="imprint_installation_id">Installations ID</string>
 
     <string name="import_parent_directory">Übergeordnetes Verzeichnis</string>
     <string name="import_wait">Lade Verzeichnis…</string>
