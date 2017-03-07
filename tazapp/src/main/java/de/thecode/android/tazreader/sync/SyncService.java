@@ -1,7 +1,5 @@
 package de.thecode.android.tazreader.sync;
 
-import com.google.common.base.Strings;
-
 import android.app.IntentService;
 import android.content.ContentUris;
 import android.content.Intent;
@@ -195,7 +193,7 @@ public class SyncService extends IntentService {
             while (importedPaperCursor.moveToNext()) {
                 Paper importedPaper = new Paper(importedPaperCursor);
 
-                if (Strings.isNullOrEmpty(importedPaper.getImage())) {
+                if (TextUtils.isEmpty(importedPaper.getImage())) {
                     handlePlist(callPlist(importedPaper.getDate(), importedPaper.getDate(), 1));
                 }
             }
@@ -226,7 +224,7 @@ public class SyncService extends IntentService {
                                         .equals(currentOpenPaperId)) {
                             boolean safeToDelete = true;
                             String bookmarksJsonString = deletePaper.getStoreValue(this, ReaderActivity.STORE_KEY_BOOKMARKS);
-                            if (!Strings.isNullOrEmpty(bookmarksJsonString)) {
+                            if (!TextUtils.isEmpty(bookmarksJsonString)) {
                                 try {
                                     JSONArray bookmarks = new JSONArray(bookmarksJsonString);
                                     if (bookmarks.length() > 0) safeToDelete = false;

@@ -1,7 +1,5 @@
 package de.thecode.android.tazreader.download;
 
-import com.google.common.base.Strings;
-
 import android.annotation.SuppressLint;
 import android.app.DownloadManager.Request;
 import android.content.ContentUris;
@@ -10,6 +8,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.StatFs;
+import android.text.TextUtils;
 
 import de.greenrobot.event.EventBus;
 import de.thecode.android.tazreader.BuildConfig;
@@ -103,7 +102,7 @@ public class DownloadManager {
         mContext.getContentResolver()
                 .update(ContentUris.withAppendedId(Paper.CONTENT_URI, paper.getId()), paper.getContentValues(), null, null);
 
-        if (!Strings.isNullOrEmpty(paper.getResource())) {
+        if (!TextUtils.isEmpty(paper.getResource())) {
             enqueResource(paper);
         }
     }
@@ -130,7 +129,7 @@ public class DownloadManager {
             resource.setUrl(paper.getResourceUrl());
 
             Uri downloadUri;
-            if (Strings.isNullOrEmpty(resource.getUrl())) {
+            if (TextUtils.isEmpty(resource.getUrl())) {
                 downloadUri = Uri.parse(BuildConfig.RESOURCEURL)
                                  .buildUpon()
                                  .appendPath(resource.getKey())

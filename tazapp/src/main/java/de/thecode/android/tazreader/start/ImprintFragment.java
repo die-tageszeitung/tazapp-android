@@ -18,7 +18,6 @@ import de.mateware.dialog.licences.BsdLicence;
 import de.mateware.dialog.licences.MitLicence;
 import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.R;
-import de.thecode.android.tazreader.dialog.LogbackLicence;
 import de.thecode.android.tazreader.utils.BaseFragment;
 
 import org.acra.util.Installation;
@@ -97,13 +96,10 @@ public class ImprintFragment extends BaseFragment {
                                    .addEntry(new Apache20Licence(getContext(), "AESCrypt-Android", "Scott Alexander-Bown", 2014))
                                    .addEntry(new Apache20Licence(getContext(), "Snacky", "Mate Siede", 2017))
                                    .addEntry(new MitLicence(getContext(), "dd-plist", "Daniel Dreibrodt", 2016))
-                                   .addEntry(new Apache20Licence(getContext(), "Guava", "Google", 2016))
                                    .addEntry(new Apache20Licence(getContext(), "cwac-provider", "Mark Murphy", 2016))
                                    .addEntry(new Apache20Licence(getContext(), "EventBus", "Markus Junginger, greenrobot", 2014))
-                                   .addEntry(new MitLicence(getContext(), "SLF4J API", "QOS.ch", 2013))
-                                   .addEntry(new LogbackLicence())
                                    .addEntry(new Apache20Licence(getContext(), "Calligraphy", "Christopher Jenkins", 2013))
-                                   .addEntry(new Apache20Licence(getContext(), "Commons Lang, Commons IO",
+                                   .addEntry(new Apache20Licence(getContext(), "Commons IO",
                                                                  "The Apache Software Foundation", 2016))
                                    .addEntry(new Apache20Licence(getContext(), "ViewpagerIndicator", "Jordan Réjaud", 2016))
                                    .addEntry(new Apache20Licence(getContext(), "RecyclerView-FlexibleDivider", "yqritc", 2016))

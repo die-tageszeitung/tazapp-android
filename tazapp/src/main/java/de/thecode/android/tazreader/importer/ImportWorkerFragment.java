@@ -1,14 +1,13 @@
 package de.thecode.android.tazreader.importer;
 
 
-import com.google.common.base.Strings;
-
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
+import android.text.TextUtils;
 
 import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.data.Paper;
@@ -261,7 +260,7 @@ public class ImportWorkerFragment extends BaseFragment {
             paper.setBookId(metadata.getBookId());
             paper.setDate(metadata.getDate());
         }
-        if (!Strings.isNullOrEmpty(metadata.getArchive())) {
+        if (!TextUtils.isEmpty(metadata.getArchive())) {
             paper.setLink(Uri.parse(BuildConfig.ARCHIVEURL)
                              .buildUpon()
                              .appendEncodedPath(metadata.getArchive())

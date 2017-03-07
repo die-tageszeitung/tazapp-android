@@ -1,10 +1,9 @@
 package de.thecode.android.tazreader.download;
 
-import com.google.common.base.Strings;
-
 import android.app.IntentService;
 import android.content.Intent;
 import android.net.Uri;
+import android.text.TextUtils;
 
 import com.dd.plist.PropertyListFormatException;
 
@@ -36,7 +35,7 @@ public class DownloadFinishedResourceService extends IntentService {
     protected void onHandleIntent(Intent intent) {
         String resourceKey = intent.getStringExtra(PARAM_RESOURCE_KEY);
         Timber.i("Start service after downloaded for resource: %s", resourceKey);
-        if (!Strings.isNullOrEmpty(resourceKey)) {
+        if (!TextUtils.isEmpty(resourceKey)) {
             Resource resource = new Resource(this, resourceKey);
             Timber.i("%s",resource);
             if (resource.isDownloading()) {

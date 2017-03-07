@@ -1,11 +1,10 @@
 package de.thecode.android.tazreader.reader.page;
 
-import com.google.common.base.Strings;
-
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -81,7 +80,7 @@ public class PagesFragment extends AbstractContentFragment {
             mPageIndexButton.setVisibility(View.GONE);
 
 
-        if (!Strings.isNullOrEmpty(_startKey)) setPage(_startKey);
+        if (!TextUtils.isEmpty(_startKey)) setPage(_startKey);
 
         return view;
     }

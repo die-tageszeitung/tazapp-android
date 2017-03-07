@@ -1,9 +1,5 @@
 package de.thecode.android.tazreader.reader.article;
 
-import com.google.common.base.Charsets;
-import com.google.common.base.Strings;
-import com.google.common.io.Files;
-
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
@@ -17,6 +13,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.text.Html;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -48,7 +45,10 @@ import de.thecode.android.tazreader.utils.TintHelper;
 import de.thecode.android.tazreader.widget.PageIndexButton;
 import de.thecode.android.tazreader.widget.ShareButton;
 
+import org.apache.commons.io.IOUtils;
+
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Locale;
 import java.util.regex.Matcher;
@@ -651,8 +651,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
         String result = null;
         try {
-
-            result = Files.toString(articleFile, Charsets.UTF_8);
+            result = IOUtils.toString(new FileInputStream(articleFile), "UTF-8");
 
             //            Pattern tazapiPattern = Pattern.compile("(<script.+?src\\s*?=\\s*?(?:\"|'))(res.+?TAZAPI.js)((?:\"|').*?>)", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 
@@ -671,7 +670,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
             e.printStackTrace();
         }
 
-        if (Strings.isNullOrEmpty(result)) result = "Fehler beim Laden des Artikels";
+        if (TextUtils.isEmpty(result)) result = "Fehler beim Laden des Artikels";
 
         return result;
 

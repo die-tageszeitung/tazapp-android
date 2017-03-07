@@ -1,7 +1,5 @@
 package de.thecode.android.tazreader.reader;
 
-import com.google.common.base.Strings;
-
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
@@ -21,6 +19,7 @@ import android.support.v4.content.Loader;
 import android.support.v4.widget.DrawerLayout;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
+import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
 import android.view.KeyEvent;
@@ -381,7 +380,7 @@ public class ReaderActivity extends BaseActivity
                     retainDataFragment.setPaper(paper);
                     String currentKey = paper.getStoreValue(ReaderActivity.this, STORE_KEY_CURRENTPOSITION);
                     String position = paper.getStoreValue(ReaderActivity.this, STORE_KEY_POSITION_IN_ARTICLE);
-                    if (Strings.isNullOrEmpty(currentKey)) {
+                    if (TextUtils.isEmpty(currentKey)) {
                         currentKey = paper.getPlist()
                                           .getSources()
                                           .get(0)
@@ -393,7 +392,7 @@ public class ReaderActivity extends BaseActivity
                                           .get(0)
                                           .getKey();
                     }
-                    if (Strings.isNullOrEmpty(position)) position = "0";
+                    if (TextUtils.isEmpty(position)) position = "0";
                     retainDataFragment.setCurrentKey(ReaderActivity.this, currentKey, position);
                     initializeFragments();
                 } else {

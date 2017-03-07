@@ -1,9 +1,8 @@
 package de.thecode.android.tazreader.reader;
 
-import com.google.common.base.Strings;
-
 import android.content.Context;
 import android.support.v4.content.AsyncTaskLoader;
+import android.text.TextUtils;
 
 import com.dd.plist.PropertyListFormatException;
 
@@ -46,7 +45,7 @@ public class PaperLoader extends AsyncTaskLoader<PaperLoader.PaperLoaderResult> 
             paper.parsePlist(new File(mStorage.getPaperDirectory(paper), Paper.CONTENT_PLIST_FILENAME));
 
             String bookmarkJsonString = paper.getStoreValue(getContext(), ReaderActivity.STORE_KEY_BOOKMARKS);
-            if (!Strings.isNullOrEmpty(bookmarkJsonString)) {
+            if (!TextUtils.isEmpty(bookmarkJsonString)) {
                 JSONArray bookmarksJsonArray = new JSONArray(bookmarkJsonString);
                 for (int i = 0; i < bookmarksJsonArray.length(); i++) {
                     IIndexItem item = paper.getPlist()

@@ -1,8 +1,7 @@
 package de.thecode.android.tazreader.dialog;
 
-import com.google.common.base.Strings;
-
 import android.os.Parcel;
+import android.text.TextUtils;
 
 import de.mateware.dialog.DialogAdapterList;
 
@@ -27,7 +26,7 @@ public class ArchiveEntry extends DialogAdapterList.DialogAdapterListEntry {
     }
 
     public String getName() {
-        if (Strings.isNullOrEmpty(name)) return String.valueOf(number);
+        if (TextUtils.isEmpty(name)) return String.valueOf(number);
         return name;
     }
 

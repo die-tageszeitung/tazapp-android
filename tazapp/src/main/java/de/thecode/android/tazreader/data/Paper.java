@@ -1,7 +1,5 @@
 package de.thecode.android.tazreader.data;
 
-import com.google.common.base.Strings;
-
 import android.content.ComponentName;
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -13,6 +11,7 @@ import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.BaseColumns;
+import android.text.TextUtils;
 
 import com.dd.plist.NSArray;
 import com.dd.plist.NSDictionary;
@@ -610,7 +609,7 @@ public class Paper {
 
     public boolean parseMissingAttributes(boolean overwrite) {
         boolean result = false; //Did you write somthing new?
-        if (Strings.isNullOrEmpty(getResource()) || overwrite) {
+        if (TextUtils.isEmpty(getResource()) || overwrite) {
             setResource(getPlist().getResource());
             result = true;
         }
@@ -658,7 +657,7 @@ public class Paper {
             archiveUrl = PlistHelper.getString(root, KEY_ARCHIVEURL);
             bookId = PlistHelper.getString(root, KEY_BOOKID);
             resource = PlistHelper.getString(root, KEY_RESOURCE);
-            if (!Strings.isNullOrEmpty(resource)) {
+            if (!TextUtils.isEmpty(resource)) {
                 resource = resource.replace(".res", "");
             }
             minVersion = PlistHelper.getString(root, KEY_MINVERSION);
@@ -1294,7 +1293,7 @@ public class Paper {
 
                 @Override
                 public boolean isShareable() {
-                    return !Strings.isNullOrEmpty(onlinelink);
+                    return !TextUtils.isEmpty(onlinelink);
                 }
 
                 @Override
@@ -1302,7 +1301,7 @@ public class Paper {
                     StringBuilder text = new StringBuilder(getPaper().getTitelWithDate(context)).append("\n")
                                                                                                 .append(getTitle())
                                                                                                 .append("\n\n");
-                    if (!Strings.isNullOrEmpty(getSubtitle())) {
+                    if (!TextUtils.isEmpty(getSubtitle())) {
                         text.append(getSubtitle())
                             .append("\n\n");
                     }
