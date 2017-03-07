@@ -32,7 +32,7 @@ public class TazProvider extends ContentProvider {
     private static final int RESOURCE_DIR = 8;
     private static final int RESOURCE_ID = 9;
         
-    public static final String AUTHORITY = BuildConfig.CONTENT_AUTHORITY;
+    public static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".provider";
     private static UriMatcher sUriMatcher;
     
     private DatabaseHelper mDatabaseHelper;

@@ -105,18 +105,18 @@
 
         <receiver android:name=".download.NotificationBroadcastReceiver">
             <intent-filter>
-                <action android:name="de.thecode.tazreader.notificationclicked">
+                <action android:name="${applicationId}.notificationclicked">
                 </action>
             </intent-filter>
             <intent-filter>
-                <action android:name="de.thecode.tazreader.notificationdeleted">
+                <action android:name="${applicationId}.notificationdeleted">
                 </action>
             </intent-filter>
         </receiver>
 
         <provider
                 android:name="de.thecode.android.tazreader.provider.TazProvider"
-                android:authorities="@string/content_authority"
+                android:authorities="${applicationId}.provider"
                 android:exported="false"
                 android:syncable="true"/>
 
@@ -131,7 +131,7 @@
 
         <provider
                 android:name="com.commonsware.cwac.provider.StreamProvider"
-                android:authorities="@string/stream_content_authority"
+                android:authorities="${applicationId}.streamprovider"
                 android:exported="false"
                 android:grantUriPermissions="true">
             <meta-data

@@ -101,9 +101,6 @@ android {
         targetSdkVersion targetSdkVer
         versionCode versionCodeInt
         versionName versionNamePrefix + versionCode
-//        buildConfigField 'String', 'ACRA_FORM_URI', '""'
-//        buildConfigField 'String', 'ACRA_FORM_URI_BASIC_AUTH_LOGIN', '""'
-//        buildConfigField 'String', 'ACRA_FORM_URI_BASIC_AUTH_PASSWORD', '""'
         buildConfigField 'String', plist, prodPlist
         buildConfigField 'String', digiCheckLoginUrl, checkLogin
     }
@@ -241,19 +238,6 @@ android {
                 variant.setIgnore(true)
             }
         }
-    }
-}
-
-static def buildConfigAndResStringField(variant, name, value) {
-    variant.resValue 'string', name.toLowerCase(), value
-    variant.buildConfigField 'String', name, "\"$value\""
-}
-
-afterEvaluate {
-    android.applicationVariants.all { variant ->
-        variant.resValue 'string', 'application_id', variant.applicationId
-        buildConfigAndResStringField variant, "CONTENT_AUTHORITY", variant.applicationId + ".provider"
-        buildConfigAndResStringField variant, "STREAM_CONTENT_AUTHORITY", variant.applicationId + ".streamprovider"
     }
 }
 

@@ -1119,7 +1119,7 @@ public class Paper {
                     String pagePath = pdfFile.getCanonicalPath()
                                              .replace(papersDir.getCanonicalPath(), "papers");
 
-                    Uri contentUri = Uri.parse("content://" + BuildConfig.STREAM_CONTENT_AUTHORITY)
+                    Uri contentUri = Uri.parse("content://" + BuildConfig.APPLICATION_ID + ".streamprovider")
                                         .buildUpon()
                                         .appendEncodedPath(pagePath)
                                         .build();
