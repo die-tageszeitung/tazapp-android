@@ -1,5 +1,7 @@
 package de.thecode.android.tazreader.utils;
 
+import android.content.Context;
+
 import okhttp3.OkHttpClient;
 
 /**
