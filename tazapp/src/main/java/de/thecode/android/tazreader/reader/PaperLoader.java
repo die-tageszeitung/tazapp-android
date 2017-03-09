@@ -1,15 +1,17 @@
 package de.thecode.android.tazreader.reader;
 
-import android.content.AsyncTaskLoader;
 import android.content.Context;
+import android.support.v4.content.AsyncTaskLoader;
+import android.text.TextUtils;
 
 import com.dd.plist.PropertyListFormatException;
-import com.google.common.base.Strings;
+
+import de.thecode.android.tazreader.data.Paper;
+import de.thecode.android.tazreader.reader.index.IIndexItem;
+import de.thecode.android.tazreader.utils.StorageManager;
 
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 import java.io.File;
@@ -18,16 +20,12 @@ import java.text.ParseException;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-import de.thecode.android.tazreader.data.Paper;
-import de.thecode.android.tazreader.reader.index.IIndexItem;
-import de.thecode.android.tazreader.utils.StorageManager;
+import timber.log.Timber;
 
 public class PaperLoader extends AsyncTaskLoader<PaperLoader.PaperLoaderResult> {
 
-    private static final Logger log = LoggerFactory.getLogger(PaperLoader.class);
-
-    StorageManager mStorage;
-    long mPaperId;
+    StorageManager    mStorage;
+    long              mPaperId;
     PaperLoaderResult mData;
 
     public PaperLoader(Context context, long paperId) {
@@ -38,22 +36,20 @@ public class PaperLoader extends AsyncTaskLoader<PaperLoader.PaperLoaderResult> 
 
     @Override
     public PaperLoaderResult loadInBackground() {
-        log.trace("PaperLoader load in Background");
-
         PaperLoaderResult result = new PaperLoaderResult();
 
         try {
             Paper paper = new Paper(getContext(), mPaperId);
-            log.trace("... {}", paper);
             //paper.parsePlist(mStorage.getPaperFile(paper));
 
             paper.parsePlist(new File(mStorage.getPaperDirectory(paper), Paper.CONTENT_PLIST_FILENAME));
 
             String bookmarkJsonString = paper.getStoreValue(getContext(), ReaderActivity.STORE_KEY_BOOKMARKS);
-            if (!Strings.isNullOrEmpty(bookmarkJsonString)){
+            if (!TextUtils.isEmpty(bookmarkJsonString)) {
                 JSONArray bookmarksJsonArray = new JSONArray(bookmarkJsonString);
                 for (int i = 0; i < bookmarksJsonArray.length(); i++) {
-                    IIndexItem item = paper.getPlist().getIndexItem(bookmarksJsonArray.getString(i));
+                    IIndexItem item = paper.getPlist()
+                                           .getIndexItem(bookmarksJsonArray.getString(i));
                     if (item != null) {
                         item.setBookmark(true);
                     }
@@ -63,7 +59,7 @@ public class PaperLoader extends AsyncTaskLoader<PaperLoader.PaperLoaderResult> 
             result.paper = paper;
 
         } catch (IllegalStateException | Paper.PaperNotFoundException | SAXException | ParserConfigurationException | PropertyListFormatException | JSONException | ParseException | IOException e) {
-            log.error("",e);
+            Timber.e(e);
             result.exception = e;
         }
         return result;
@@ -71,7 +67,7 @@ public class PaperLoader extends AsyncTaskLoader<PaperLoader.PaperLoaderResult> 
 
     @Override
     public void deliverResult(PaperLoaderResult data) {
-        log.trace("PaperLoader deliver result");
+        Timber.i("PaperLoader deliver result");
         if (isReset()) {
             // The Loader has been reset; ignore the result and invalidate the data.
             releaseResources(data);
@@ -98,7 +94,7 @@ public class PaperLoader extends AsyncTaskLoader<PaperLoader.PaperLoaderResult> 
 
     @Override
     protected void onStartLoading() {
-        log.trace("PaperLoader onStartLoading");
+        Timber.i("PaperLoader onStartLoading");
         if (mData != null) {
             // Deliver any previously loaded data immediately.
             deliverResult(mData);
@@ -115,7 +111,7 @@ public class PaperLoader extends AsyncTaskLoader<PaperLoader.PaperLoaderResult> 
 
     @Override
     protected void onStopLoading() {
-        log.trace("PaperLoader onStopLoading");
+        Timber.i("PaperLoader onStopLoading");
         // The Loader is in a stopped state, so we should attempt to cancel the
         // current load (if there is one).
         cancelLoad();
@@ -123,7 +119,7 @@ public class PaperLoader extends AsyncTaskLoader<PaperLoader.PaperLoaderResult> 
 
     @Override
     protected void onReset() {
-        log.trace("PaperLoader onReset");
+        Timber.i("PaperLoader onReset");
         // Ensure the loader has been stopped.
         onStopLoading();
 
@@ -136,7 +132,7 @@ public class PaperLoader extends AsyncTaskLoader<PaperLoader.PaperLoaderResult> 
 
     @Override
     public void onCanceled(PaperLoaderResult data) {
-        log.trace("PaperLoader onCanceled");
+        Timber.i("PaperLoader onCanceled");
         // Attempt to cancel the current asynchronous load.
         super.onCanceled(data);
 
@@ -146,13 +142,12 @@ public class PaperLoader extends AsyncTaskLoader<PaperLoader.PaperLoaderResult> 
     }
 
     private void releaseResources(PaperLoaderResult data) {
-        log.trace("");
         // All resources associated with the Loader
         // should be released here.
     }
 
     public class PaperLoaderResult {
-        private Paper paper;
+        private Paper     paper;
         private Exception exception;
 
         public Paper getPaper() {

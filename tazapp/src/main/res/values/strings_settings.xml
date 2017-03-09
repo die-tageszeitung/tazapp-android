@@ -6,12 +6,15 @@
     <string name="autoload_wifi">nur über WIFI automatisch laden</string>
     <string name="autodelete">Alte Ausgaben automatisch löschen</string>
     <string name="autodelete_exp">Es werden nur Ausgaben ohne Bookmarks automatisch gelöscht.</string>
-    <string name="autodelete_days">Tage behalten</string>
+    <string name="autodelete_unit">Ausgaben behalten</string>
     <string name="header_notification">BENACHRICHTIGUNG</string>
     <string name="notification_sound">Benachrichtigungston</string>
     <string name="notification_sound_button">wählen</string>
     <string name="notification_vibrate">Vibration</string>
     <string name="notification_sound_activity_title">Benachrichtigunston auswählen</string>
     <string name="notification_sound_silent">Stumm</string>
+    <string name="header_other">SONSTIGES</string>
+    <string name="acra_alwaysaccept">Fehlerreports automatisch senden</string>
+
 
 </resources>

@@ -24,6 +24,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/theme_normal"
+                android:theme="@style/AppTheme.Button"
                 android:textAppearance="@style/SettingsTextAppearance" />
 
             <Button
@@ -32,6 +33,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/theme_sepia"
+                android:theme="@style/AppTheme.Button"
                 android:textAppearance="@style/SettingsTextAppearance" />
 
             <Button
@@ -39,6 +41,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:theme="@style/AppTheme.Button"
                 android:text="@string/theme_night"
                 android:textAppearance="@style/SettingsTextAppearance" />
         </LinearLayout>
@@ -53,14 +56,34 @@
             app:switchTextAppearance="@style/SettingsTextAppearance" />
 
         <android.support.v7.widget.SwitchCompat
-            android:id="@+id/switchPaging"
+            android:id="@+id/switchIsScroll"
             style="@style/SettingsWidget"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/paging"
+            android:text="@string/isscroll"
 
             android:textAppearance="@style/SettingsTextAppearance"
             app:switchTextAppearance="@style/SettingsTextAppearance" />
+
+        <android.support.v7.widget.SwitchCompat
+                android:id="@+id/switchIsPaging"
+                style="@style/SettingsWidget"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/ispaging"
+
+                android:textAppearance="@style/SettingsTextAppearance"
+                app:switchTextAppearance="@style/SettingsTextAppearance" />
+
+        <android.support.v7.widget.SwitchCompat
+                android:id="@+id/switchIsScrollToNext"
+                style="@style/SettingsWidget"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/isscrolltonext"
+                android:textAppearance="@style/SettingsTextAppearance"
+                app:switchTextAppearance="@style/SettingsTextAppearance" />
+
 
         <LinearLayout
             android:id="@+id/layoutColumns"

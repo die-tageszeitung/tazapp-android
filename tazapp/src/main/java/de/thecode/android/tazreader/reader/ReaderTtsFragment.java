@@ -1,0 +1,304 @@
+package de.thecode.android.tazreader.reader;
+
+
+import android.content.Context;
+import android.media.AudioManager;
+import android.os.Build;
+import android.os.Bundle;
+import android.speech.tts.TextToSpeech;
+import android.speech.tts.UtteranceProgressListener;
+import android.support.annotation.NonNull;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+
+import java.lang.ref.WeakReference;
+import java.text.BreakIterator;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import timber.log.Timber;
+
+/**
+ * Created by mate on 15.03.2016.
+ */
+public class ReaderTtsFragment extends Fragment implements TextToSpeech.OnInitListener {
+
+    private static final String TAG = "RetainTtsFragment";
+
+    public enum TTS {DISABLED, INIT, IDLE, PLAYING, PAUSED}
+
+    public enum TTSERROR {UNKNOWN, LANG_MISSING_DATA, LANG_NOT_SUPPORTED}
+
+    private static final String TTSBREAK = "##TTSBREAK";
+
+    private TextToSpeech tts;
+    private TTS ttsState = TTS.DISABLED;
+    private String utteranceBaseId;
+    private ArrayList<String> sentencesOrder = new ArrayList<>();
+    private ArrayList<String> sentencesOrderOriginal;
+    private HashMap<String, String> sentences = new HashMap<>();
+
+    private WeakReference<ReaderTtsFragmentCallback> callback;
+
+
+    public static ReaderTtsFragment createOrRetainFragment(FragmentManager fm, ReaderTtsFragmentCallback callback) {
+        ReaderTtsFragment fragment = (ReaderTtsFragment) fm.findFragmentByTag(TAG);
+        if (fragment == null) {
+            fragment = new ReaderTtsFragment();
+            fm.beginTransaction()
+              .add(fragment, TAG)
+              .commit();
+        }
+        fragment.setCallback(callback);
+        return fragment;
+    }
+
+    public ReaderTtsFragment() {
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setRetainInstance(true);
+    }
+
+    @Override
+    public void onDestroy() {
+        if (tts != null) {
+            tts.stop();
+            tts.shutdown();
+        }
+        super.onDestroy();
+    }
+
+    public void setCallback(ReaderTtsFragmentCallback callback) {
+        this.callback = new WeakReference<>(callback);
+    }
+
+    private boolean hasCallback() {
+        return callback != null && callback.get() != null;
+    }
+
+    private ReaderTtsFragmentCallback getCallback() {
+        return callback.get();
+    }
+
+    @Override
+    public void onInit(int status) {
+        if (status == TextToSpeech.SUCCESS) {
+            int result = tts.setLanguage(Locale.GERMAN);
+            if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                setTtsState(TTS.DISABLED);
+                if (hasCallback()) {
+                    if (result == TextToSpeech.LANG_MISSING_DATA) getCallback().onTtsInitError(TTSERROR.LANG_MISSING_DATA);
+                    else if (result == TextToSpeech.LANG_NOT_SUPPORTED) getCallback().onTtsInitError(TTSERROR.LANG_NOT_SUPPORTED);
+                }
+                tts.shutdown();
+            } else {
+                tts.setOnUtteranceProgressListener(ttsListener);
+                if (getTtsState() == TTS.INIT) {
+                    startTts();
+                } else {
+                    setTtsState(TTS.IDLE);
+                }
+            }
+        } else {
+            setTtsState(TTS.DISABLED);
+            if (hasCallback()) {
+                getCallback().onTtsInitError(TTSERROR.UNKNOWN);
+            }
+        }
+    }
+
+    public void initTts(Context context, String utteranceBaseId, CharSequence text) {
+        if (getTtsState() == TTS.DISABLED) {
+            setTtsState(TTS.INIT);
+            prepareTts(utteranceBaseId, text);
+            tts = new TextToSpeech(context.getApplicationContext(), this);
+        }
+    }
+
+    private void setTtsState(@NonNull TTS newState) {
+        TTS oldState = ttsState;
+        ttsState = newState;
+        if (!newState.equals(oldState)) {
+            if (hasCallback()) getCallback().onTtsStateChanged(ttsState);
+        }
+    }
+
+    public TTS getTtsState() {
+        return ttsState;
+    }
+
+    public String getUtteranceBaseId() {
+        return utteranceBaseId;
+    }
+
+
+    public void prepareTts(String utteranceBaseId, CharSequence text) {
+
+        this.utteranceBaseId = utteranceBaseId;
+
+        int maxLength = 2000;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            maxLength = TextToSpeech.getMaxSpeechInputLength();
+        }
+
+        String[] paragraphArray = text.toString()
+                                      .split("\\n");
+        int counter = 0;
+
+        if (paragraphArray.length > 0) {
+            for (int i = 0; i < paragraphArray.length; i++) {
+                if (paragraphArray[i].length() > 0) {
+                    BreakIterator breakIterator = BreakIterator.getSentenceInstance(Locale.GERMANY);
+                    breakIterator.setText(paragraphArray[i]);
+                    int start = breakIterator.first();
+
+                    for (int end = breakIterator.next(); end != BreakIterator.DONE; start = end, end = breakIterator.next()) {
+                        String utteranceId = utteranceBaseId + counter;
+                        sentencesOrder.add(utteranceId);
+                        sentences.put(utteranceId, paragraphArray[i].substring(start, end));
+                        counter++;
+                        utteranceId = utteranceBaseId + counter;
+                        sentencesOrder.add(utteranceId);
+                        sentences.put(utteranceId, makeSilenceTag(200));
+                        counter++;
+                    }
+                } else {
+                    String utteranceId = utteranceBaseId + counter;
+                    sentencesOrder.add(utteranceId);
+                    sentences.put(utteranceId, makeSilenceTag(700));
+                    counter++;
+                }
+            }
+        }
+
+        sentencesOrderOriginal = new ArrayList<>(sentencesOrder);
+    }
+
+    private String makeSilenceTag(long millis) {
+        return TTSBREAK + millis;
+    }
+
+    public void startTts() {
+        Pattern p = Pattern.compile("^" + TTSBREAK + "(\\d+)$");
+        for (String utteranceId : sentencesOrder) {
+            String sentence = sentences.get(utteranceId);
+            if (sentence.length() > 0) {
+                Matcher m = p.matcher(sentence);
+                if (m.find()) {
+                    long value = Long.valueOf(m.group(1));
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        tts.playSilentUtterance(value, TextToSpeech.QUEUE_ADD, utteranceId);
+                    } else {
+                        HashMap<String, String> map = new HashMap<>();
+                        map.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, utteranceId);
+                        tts.playSilence(value, TextToSpeech.QUEUE_ADD, map);
+                    }
+                } else {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        tts.speak(sentence, TextToSpeech.QUEUE_ADD, null, utteranceId);
+                    } else {
+                        HashMap<String, String> map = new HashMap<>();
+                        map.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, utteranceId);
+                        tts.speak(sentence, TextToSpeech.QUEUE_ADD, map);
+                    }
+                }
+            }
+        }
+    }
+
+    public void pauseTts() {
+        tts.stop();
+        if (sentencesOrder.size() > 0) {
+            setTtsState(TTS.PAUSED);
+        } else {
+            setTtsState(TTS.IDLE);
+        }
+        if (hasCallback()) getCallback().onTtsStopped();
+    }
+
+    public void stopTts() {
+        if (tts != null && tts.isSpeaking()) tts.stop();
+        setTtsState(TTS.IDLE);
+    }
+
+    public void flushTts() {
+        stopTts();
+        utteranceBaseId = null;
+        sentences.clear();
+        sentencesOrder.clear();
+    }
+
+    public void restartTts() {
+        sentencesOrder = new ArrayList<>(sentencesOrderOriginal);
+        startTts();
+    }
+
+
+    UtteranceProgressListener ttsListener = new UtteranceProgressListener() {
+        @Override
+        public void onStart(String utteranceId) {
+            Timber.d("utteranceId: %s", utteranceId);
+            setTtsState(TTS.PLAYING);
+        }
+
+        @Override
+        public void onDone(String utteranceId) {
+            Timber.d("utteranceId: %s", utteranceId);
+            done(utteranceId);
+        }
+
+        @Override
+        public void onError(String utteranceId) {
+            Timber.d("utteranceId: %s", utteranceId);
+
+        }
+
+        @Override
+        public void onError(String utteranceId, int errorCode) {
+            Timber.d("utteranceId: %s, errorCode: %s", utteranceId, errorCode);
+
+        }
+
+        private void done(String utteranceId) {
+            if (getTtsState() == TTS.PLAYING) sentencesOrder.remove(utteranceId);
+            if (sentencesOrder.size() == 0) {
+                setTtsState(TTS.IDLE);
+                if (hasCallback()) getCallback().onTtsStopped();
+            }
+        }
+    };
+
+    AudioManager.OnAudioFocusChangeListener audioFocusChangeListener = new AudioManager.OnAudioFocusChangeListener() {
+        @Override
+        public void onAudioFocusChange(int focusChange) {
+            Timber.d("focusChange: %s", focusChange);
+            if (focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT || focusChange == AudioManager.AUDIOFOCUS_LOSS) {
+                if (getTtsState() == TTS.PLAYING) pauseTts();
+            }
+        }
+    };
+
+    public AudioManager.OnAudioFocusChangeListener getAudioFocusChangeListener() {
+        return audioFocusChangeListener;
+    }
+
+
+    public interface ReaderTtsFragmentCallback {
+        void onTtsStateChanged(TTS newState);
+
+        void onTtsInitError(TTSERROR error);
+
+
+        //boolean ttsPreparePlayingInActivty();
+
+        void onTtsStopped();
+
+
+    }
+}

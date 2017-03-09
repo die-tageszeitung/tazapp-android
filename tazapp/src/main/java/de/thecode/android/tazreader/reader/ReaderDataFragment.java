@@ -1,41 +1,27 @@
 package de.thecode.android.tazreader.reader;
 
-import android.app.Fragment;
-import android.app.FragmentManager;
+
 import android.content.Context;
-import android.os.Build;
 import android.os.Bundle;
-import android.speech.tts.TextToSpeech;
-import android.speech.tts.UtteranceProgressListener;
-import android.support.annotation.NonNull;
-import android.support.annotation.StringRes;
-import android.text.TextUtils;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 
-import android.widget.Toast;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import de.thecode.android.tazreader.data.Paper;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 
-import de.thecode.android.tazreader.R;
-import de.thecode.android.tazreader.data.Paper;
+import timber.log.Timber;
 
 /**
  * Created by mate on 13.11.2015.
  */
-public class ReaderDataFragment extends Fragment implements TextToSpeech.OnInitListener{
-
-    private static final Logger log = LoggerFactory.getLogger(ReaderDataFragment.class);
+public class ReaderDataFragment extends Fragment /*implements TextToSpeech.OnInitListener*/ {
 
     private static final String TAG = "RetainDataFragment";
-
-    public enum TTS {DISABLED, WAITING, PLAYING}
 
     private Paper _paper;
     private String mCurrentKey;
@@ -44,9 +30,6 @@ public class ReaderDataFragment extends Fragment implements TextToSpeech.OnInitL
 
     private HashMap<String, Integer> articleCollectionOrder = new HashMap<>();
     private HashMap<Integer, String> articleCollectionPositionIndex = new HashMap<>();
-
-    private TextToSpeech tts;
-    private TTS ttsState = TTS.DISABLED;
 
     private WeakReference<ReaderDataFramentCallback> callback;
 
@@ -70,7 +53,7 @@ public class ReaderDataFragment extends Fragment implements TextToSpeech.OnInitL
     }
 
     private boolean hasCallback() {
-        return callback.get() != null;
+        return callback != null && callback.get() != null;
     }
 
     private ReaderDataFramentCallback getCallback() {
@@ -83,43 +66,6 @@ public class ReaderDataFragment extends Fragment implements TextToSpeech.OnInitL
         setRetainInstance(true);
     }
 
-    @Override
-    public void onDestroy() {
-        if (tts != null) {
-            tts.stop();
-            tts.shutdown();
-        }
-        super.onDestroy();
-    }
-
-    @Override
-    public void onInit(int status) {
-        if (status == TextToSpeech.SUCCESS) {
-            int result = tts.setLanguage(Locale.GERMAN);
-            if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
-                setTtsState(TTS.DISABLED);
-            } else {
-                tts.setOnUtteranceProgressListener(ttsListener);
-                setTtsState(TTS.WAITING);
-            }
-        }
-    }
-
-    public void initTts(Context context) {
-        tts = new TextToSpeech(context.getApplicationContext(), this);
-    }
-
-    private void setTtsState(@NonNull TTS newState) {
-        TTS oldState = ttsState;
-        ttsState = newState;
-        if (!newState.equals(oldState)) {
-            if (hasCallback()) getCallback().onTtsStateChanged(ttsState);
-        }
-    }
-
-    public TTS getTtsState() {
-        return ttsState;
-    }
 
     public Paper getPaper() {
         return _paper;
@@ -191,7 +137,7 @@ public class ReaderDataFragment extends Fragment implements TextToSpeech.OnInitL
     }
 
     public void setCurrentKey(Context context, String currentKey, String position) {
-        log.debug("{} {} {}", context, currentKey, position);
+        Timber.d("%s %s", context, currentKey, position);
 
         mCurrentKey = currentKey;
         mPosition = position;
@@ -199,7 +145,7 @@ public class ReaderDataFragment extends Fragment implements TextToSpeech.OnInitL
             _paper.saveStoreValue(context, ReaderActivity.STORE_KEY_CURRENTPOSITION, mCurrentKey);
             _paper.saveStoreValue(context, ReaderActivity.STORE_KEY_POSITION_IN_ARTICLE, position);
         } catch (Exception e) {
-            log.warn("",e);
+            Timber.w(e);
         }
 
         boolean addtobackstack = true;
@@ -209,7 +155,7 @@ public class ReaderDataFragment extends Fragment implements TextToSpeech.OnInitL
             if (lastBackstack.equals(newBackStack)) addtobackstack = false;
         }
         if (addtobackstack) {
-            log.debug("{} {}", currentKey, position);
+            Timber.d("%s", currentKey, position);
             //Log.d("Adding to backstack", currentKey, position);
             backstack.add(newBackStack);
         }
@@ -230,7 +176,7 @@ public class ReaderDataFragment extends Fragment implements TextToSpeech.OnInitL
         String position;
 
         public BackStack(String key, String position) {
-            log.debug("key: {}, position: {}",key, position);
+            Timber.d("key: %s", key, position);
             this.key = key;
             this.position = position;
         }
@@ -278,76 +224,8 @@ public class ReaderDataFragment extends Fragment implements TextToSpeech.OnInitL
         this.filterBookmarks = filterBookmarks;
     }
 
-    public void speak(CharSequence text) {
 
-        switch (ttsState) {
-            case DISABLED:
-                break;
-            case PLAYING:
-                tts.stop();
-                if (hasCallback()) getCallback().showToast(R.string.toast_tts_stopped, Toast.LENGTH_LONG);
-                setTtsState(ReaderDataFragment.TTS.WAITING);
-                break;
-            case WAITING:
-                if (hasCallback()) getCallback().showToast(R.string.toast_tts_started, Toast.LENGTH_LONG);
-                speak(text, false);
-                break;
-        }
-    }
-
-    private void speak(CharSequence text, boolean enqueue){
-        int enqueueType = enqueue ? TextToSpeech.QUEUE_ADD : TextToSpeech.QUEUE_FLUSH;
-
-        int maxLength = 2000;
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN_MR2) {
-            maxLength = TextToSpeech.getMaxSpeechInputLength();
-        }
-
-        CharSequence laterText = null;
-        if (maxLength < text.length()) {
-            String[] textArray = text.toString().split("\\n\\n", 2);
-            text = textArray[0];
-            if (textArray.length > 1)
-                laterText = textArray[1];
-        }
-
-        String utteranceId = String.valueOf(System.currentTimeMillis());
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            tts.speak(text, enqueueType, null, utteranceId);
-        } else {
-            HashMap<String, String> map = new HashMap<>();
-            map.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, utteranceId);
-            tts.speak(text.toString(), enqueueType, map);
-        }
-
-        if (!TextUtils.isEmpty(laterText))
-            speak(laterText,true);
-    }
-
-    UtteranceProgressListener ttsListener = new UtteranceProgressListener() {
-        @Override
-        public void onStart(String utteranceId) {
-            setTtsState(TTS.PLAYING);
-        }
-
-        @Override
-        public void onDone(String utteranceId) {
-            setTtsState(TTS.WAITING);
-        }
-
-        @Override
-        public void onError(String utteranceId) {
-            setTtsState(TTS.WAITING);
-        }
-
-        @Override
-        public void onError(String utteranceId, int errorCode) {
-            setTtsState(TTS.WAITING);
-        }
-    };
 
     public interface ReaderDataFramentCallback {
-        void onTtsStateChanged(TTS newState);
-        void showToast(@StringRes int stringId, int toastLenght);
     }
 }

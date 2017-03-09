@@ -4,64 +4,112 @@
     <style name="reader_index_drawer">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_marginLeft">-48dp</item>
+        <item name="android:background">@color/toolbar_background_color</item>
     </style>
 
-    <style name="TextIndex">
+
+    <style name="reader_pageindex_drawer">
+        <item name="android:background">@color/toolbar_background_color</item>
+    </style>
+
+
+
+
+    <style name="IndexText">
         <item name="android:textSize">20sp</item>
         <item name="android:gravity">center_vertical</item>
     </style>
 
-    <style name="TextIndexSource" parent="@style/TextIndex">
+    <style name="IndexText.Source">
         <item name="android:textColor">@color/index_text_source</item>
+        <item name="fontPath">@string/fontBold</item>
+        <item name="android:textStyle">bold</item>
     </style>
 
-    <style name="TextIndexCategory" parent="@style/TextIndex">
+    <style name="IndexText.Category">
         <item name="android:textColor">@color/index_text_category</item>
     </style>
 
-    <style name="TextIndexPage" parent="@style/TextIndex">
+    <style name="IndexText.Page">
         <item name="android:textColor">@color/index_text_page</item>
+        <item name="fontPath">@string/fontBold</item>
+        <item name="android:textStyle">bold</item>
     </style>
 
-    <style name="TextIndexArticle" parent="@style/TextIndex">
+    <style name="IndexText.Article">
         <item name="android:textColor">@color/index_text_article</item>
         <item name="android:textSize">16sp</item>
+        <item name="fontPath">@string/fontBold</item>
+        <item name="android:textStyle">bold</item>
     </style>
 
-    <style name="TextIndexArticleSub" parent="@style/TextIndexArticle"></style>
+    <style name="IndexText.Article.Sub">
+        <item name="fontPath">@string/fontRegular</item>
+        <item name="android:textStyle">normal</item>
+    </style>
 
-    <style name="TextIndexToplink" parent="@style/TextIndex">
+    <style name="IndexText.Toplink">
         <item name="android:textColor">@color/index_text_toplink</item>
         <item name="android:textSize">16sp</item>
+        <item name="fontPath">@string/fontBold</item>
+        <item name="android:textStyle">bold</item>
     </style>
 
-    <style name="TextPageIndexSource" parent="@style/TextIndexSource"></style>
+    <style name="PageIndexText">
+        <item name="android:textSize">20sp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:layout_gravity">center</item>
+    </style>
 
-    <style name="LayoutIndex">
+    <style name="PageIndexText.Source">
+        <item name="android:textColor">@color/pageindex_text_source</item>
+        <item name="fontPath">@string/fontBold</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+
+
+
+    <style name="Index">
         <item name="android:minHeight">@dimen/index_min_height</item>
+        <item name="android:foreground">?attr/selectableItemBackground</item>
     </style>
 
-    <style name="LayoutIndexSource" parent="@style/LayoutIndex">
+    <style name="Index.Source">
         <item name="android:background">@color/index_background_source</item>
     </style>
 
-    <style name="LayoutIndexCategory" parent="@style/LayoutIndex">
+    <style name="Index.Category">
         <item name="android:background">@color/index_background_category</item>
     </style>
 
-    <style name="LayoutIndexPage" parent="@style/LayoutIndex">
+    <style name="Index.Page">
         <item name="android:background">@color/index_background_page</item>
     </style>
 
-    <style name="LayoutIndexArticle" parent="@style/LayoutIndex">
+    <style name="Index.Article">
         <item name="android:background">@color/index_background_article</item>
     </style>
 
-    <style name="LayoutIndexToplink" parent="@style/LayoutIndex">
+    <style name="Index.Toplink">
         <item name="android:background">@color/index_background_toplink</item>
     </style>
 
-    <style name="LayoutPageIndexSource" parent="@style/LayoutIndexSource"></style>
+    <style name="PageIndex">
+        <item name="android:minHeight">@dimen/index_min_height</item>
+        <item name="android:foreground">?attr/selectableItemBackground</item>
+    </style>
+
+    <style name="PageIndex.Source">
+        <item name="android:background">@color/pageindex_background_source</item>
+    </style>
+
+    <style name="PageIndex.Page">
+
+    </style>
+
+
+
 
     <style name="SettingsTextAppearance">
         <item name="android:textSize">16sp</item>

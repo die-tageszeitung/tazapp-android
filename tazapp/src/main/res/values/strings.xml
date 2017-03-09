@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
-    <string name="app_name" translatable="false">taz.app</string>
     <string name="string_pref_text_user">Nutzername</string>
     <string name="string_pref_text_pass">Passwort</string>
     <string name="string_nopapernopref_button_abo">ePaper-Abo bestellen</string>
     <string name="string_badge_update">Update</string>
     <string name="string_badge_kiosk">Kiosk</string>
     <string name="dialog_yes">Ja</string>
+    <string name="dialog_understood">Verstanden</string>
     <string name="dialog_wifi">WiFi</string>
     <string name="string_titel_seperator">vom</string>
     <string name="ic_action_delete">Löschen</string>
@@ -21,21 +20,24 @@
     <string name="string_deleteAccount_button">Daten löschen</string>
     <string name="string_library_selected">%1$d ausgewählt</string>
     <string name="dialog_error_title">Fehler</string>
+    <string name="dialog_error_unknown">Es ist ein Fehler aufgetreten.</string>
     <string name="dialog_check_credentials">Kontaktiere Server und überprüfe Daten</string>
     <string name="dialog_noconnection">Keine Verbindung zum Internet.</string>
     <string name="dialog_error_no_credentials">Email/Passwort Feld leer</string>
     <string name="dialog_error_credentials_not_allowed">Benutzer ist nicht erlaubt</string>
     <string name="dialog_resources_loading">Ressourcen werden im Moment heruntergeladen, bitte versuchen Sie es in einigen Augenblicken nochmal.</string>
     <string name="dialog_resources_not_found">Ressourcen, die zum Anzeigen der Ausgabe benötigt werden, wurden nicht gefunden. Möchten Sie diese jetzt herunterladen?</string>
+    <string name="dialog_user_reenter">Wir haben die Benutzerdatenspeicherung in unserer App umgestellt. Dadurch werden nun weniger Berechtigungen benötigt, aber leider müssen Sie Ihre Benutzerdaten erneut eingeben.</string>
     <!--<string name="dialog_migration_wait">Migriere Ausgaben für die neue App-Version, bitte warten …\n\nBitte beenden Sie die App während der Migration nicht, um mögliche Fehler zu vermeiden. Vielen Dank.</string>-->
     <!--<string name="dialog_migration_download">%1$d Ausgaben wurden migriert. Möchten Sie die Ausgaben jetzt herunterladen?</string>-->
     <string name="dialog_mobile_download">Sie sind mit dem Mobilfunknetz verbunden.\nBeim Download können zusätzliche Kosten entstehen.</string>
-    <string name="dialog_account_error">Leider ist ein Fehler im Account-Management aufgetreten. Sie haben nicht die nötigen Rechte, um einen Account anzulegen.\nWenn Sie einen eingeschränkten Android-Account auf Ihrem Gerät verwenden, so muss der Hauptuser ebenfalls die taz.app installiert haben.</string>
+    <string name="dialog_account_error">Leider ist ein Fehler im Account-Management aufgetreten. Sie haben nicht die nötigen Rechte, um einen Account anzulegen.\nWenn Sie einen eingeschränkten Android-Account auf Ihrem Gerät verwenden, so muss der Hauptuser ebenfalls die App installiert haben.</string>
     <string name="dialog_downloadmanager_error">Leider ist ein Fehler beim Download aufgetreten. Sie haben wahrscheinlich den DownloadManager deaktiviert. Bitte aktivieren Sie den DownloadManager\n\n1. Android-Einstellungen\n2. Apps (ALLE)\n3. Download Manager\n4. Aktivieren</string>
-    <string name="dialog_first">Sie haben die App zum Lesen der digitalen Ausgabe der taz erfolgreich installiert. Wenn es das erste Mal für Sie ist, tippen Sie im Menü auf \"Hilfe\", um ein wenig Hilfestellung bei Ihren ersten Schritten zu bekommen.\n\nDie Ausgaben werden in Kürze aktualisiert, oder Sie wischen in der Ausgabenansicht nach unten.</string>
-    <string name="dialog_archive_year_title">taz-Archiv - Jahr wählen</string>
-    <string name="dialog_archive_month_title">taz-Archiv - Monat wählen</string>
-    <string name="dialog_error_download">Beim Download \"%1$s\" ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.</string>
+    <string name="dialog_error_download">Beim Download \"%1$s\" ist ein Fehler aufgetreten.</string>
+    <string name="message_resourcedownload_error">einer benötigten Ressource</string>
+    <string name="message_not_enough_space">Nicht genügend Speicherplatz vorhanden.</string>
+    <string name="message_download_not_allowed">Der Download ist nicht gestattet.</string>
+    <string name="message_paper_not_found">Ausgabe nicht gefunden.</string>
     <string name="notification_message_install_finished">Download fertig!</string>
     <string name="notification_content_text_summary">%1$d Ausgaben heruntergeladen</string>
     <string name="notification_error_download_title">Fehler</string>
@@ -60,6 +62,7 @@
     <string name="drawer_header_debug" translatable="false">δ</string>
 
     <string name="imprint_licenses">Lizenzen</string>
+    <string name="imprint_installation_id">Installations ID</string>
 
     <string name="import_parent_directory">Übergeordnetes Verzeichnis</string>
     <string name="import_wait">Lade Verzeichnis…</string>
@@ -83,6 +86,17 @@
     <string name="reader_action_share_open">Öffnen / Teilen</string>
     <string name="reader_action_pageindex">Seitenübersicht</string>
 
-    <string name="toast_tts_started">Sprachausgabe gestartet, zum vorzeitigen Beenden doppelt auf Text tippen.</string>
-    <string name="toast_tts_stopped">Sprachausgabe gestoppt, zum erneuten Abspielen doppelt auf Text tippen.</string>
+    <string name="toast_tts_started">Sprachausgabe gestartet, zum Pausieren doppelt auf Text tippen.</string>
+    <string name="toast_tts_continued">Sprachausgabe fortgesetzt, zum Pausieren doppelt auf Text tippen.</string>
+    <string name="toast_tts_paused">Sprachausgabe pausiert, doppelt auf Text tippen um Fortzusetzen.</string>
+    <string name="toast_tts_action_restart">Neu Starten</string>
+    <string name="toast_tts_volume_warning">\nHinweis: Die Lautstärke ist niedrig!</string>
+
+    <string name="dialog_tts_error">Es ist ein Fehler beim Laden der Sprachausgabe aufgetreten.</string>
+    <string name="dialog_tts_error_lang_missing_data">Die Sprachdaten sind nicht vorhanden.</string>
+    <string name="dialog_tts_error_lang_not_supported">Die Sprache wird nicht unterstützt.</string>
+    <string name="dialog_tts_error_settings">Einstellungen</string>
+
+    <string name="dialog_import_permission_explanation">Die Berechtigung wird benötigt, um den Inhalt Ihres Speichers anzuzeigen.</string>
+
 </resources>

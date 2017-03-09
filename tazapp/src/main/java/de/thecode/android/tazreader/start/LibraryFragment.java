@@ -1,13 +1,15 @@
 package de.thecode.android.tazreader.start;
 
 
-import android.app.Fragment;
-import android.app.LoaderManager;
-import android.content.CursorLoader;
-import android.content.Loader;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.RecyclerView;
@@ -19,37 +21,43 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.melnykov.fab.FloatingActionButton;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.lang.ref.WeakReference;
-
 import de.greenrobot.event.EventBus;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.download.CoverDownloadedEvent;
+import de.thecode.android.tazreader.sync.SyncHelper;
 import de.thecode.android.tazreader.sync.SyncStateChangedEvent;
 import de.thecode.android.tazreader.utils.BaseFragment;
 import de.thecode.android.tazreader.widget.AutofitRecyclerView;
 
+import java.lang.ref.WeakReference;
+
+import timber.log.Timber;
+
 /**
  * A simple {@link Fragment} subclass.
  */
-public class LibraryFragment extends BaseFragment implements LoaderManager.LoaderCallbacks<Cursor>, LibraryAdapter.OnItemClickListener, LibraryAdapter.OnItemLongClickListener {
-    private static final Logger log = LoggerFactory.getLogger(LibraryFragment.class);
+public class LibraryFragment extends BaseFragment
+        implements LoaderManager.LoaderCallbacks<Cursor>, LibraryAdapter.OnItemClickListener,
+        LibraryAdapter.OnItemLongClickListener {
     WeakReference<IStartCallback> callback;
-    LibraryAdapter adapter;
-    SwipeRefreshLayout swipeRefresh;
-    FloatingActionButton fab;
+    LibraryAdapter                adapter;
+    SwipeRefreshLayout            swipeRefresh;
 
     ActionMode actionMode;
 
     boolean isSyncing;
 
-    private AutofitRecyclerView recyclerView;
+    private AutofitRecyclerView  recyclerView;
+    private FloatingActionButton fabArchive;
+
+    private TazSettings.OnPreferenceChangeListener demoModeChangedListener = new TazSettings.OnPreferenceChangeListener() {
+        @Override
+        public void onPreferenceChanged(String key, SharedPreferences preferences) {
+            onDemoModeChanged(preferences.getBoolean(key,true));
+        }
+    };
 
     public LibraryFragment() {
         // Required empty public constructor
@@ -59,7 +67,7 @@ public class LibraryFragment extends BaseFragment implements LoaderManager.Loade
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-        log.trace("");
+
         setHasOptionsMenu(true);
 
         callback = new WeakReference<>((IStartCallback) getActivity());
@@ -67,34 +75,30 @@ public class LibraryFragment extends BaseFragment implements LoaderManager.Loade
         View view = inflater.inflate(R.layout.start_library, container, false);
 
         swipeRefresh = (SwipeRefreshLayout) view.findViewById(R.id.swipeRefreshLayout);
-        swipeRefresh.setColorSchemeResources(R.color.color_primary, R.color.color_primary, R.color.color_primary);
+        swipeRefresh.setColorSchemeResources(R.color.refresh_color_1, R.color.refresh_color_2);
         swipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                log.debug("");
-                if (hasCallback()) getCallback().requestSync(null, null);
+
+                hideFab();
+                SyncHelper.requestSync(getContext());
             }
         });
 
 
         recyclerView = (AutofitRecyclerView) view.findViewById(R.id.recycler);
         recyclerView.setHasFixedSize(true);
-        //recyclerView.setItemAnimator(new DefaultItemAnimator());
-        //recyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 5));
 
         adapter = new LibraryAdapter(getActivity(), null, getCallback());
         adapter.setHasStableIds(true);
 
-
-        fab = (FloatingActionButton) view.findViewById(R.id.fab);
-
-        fab.setOnClickListener(new View.OnClickListener() {
+        fabArchive = (FloatingActionButton) view.findViewById(R.id.fabArchive);
+        fabArchive.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (hasCallback()) getCallback().callArchive();
             }
         });
-        //fab.attachToRecyclerView(recyclerView);
 
         showFab();
 
@@ -102,7 +106,7 @@ public class LibraryFragment extends BaseFragment implements LoaderManager.Loade
         adapter.setOnItemLongClickListener(this);
         recyclerView.setAdapter(adapter);
 
-        recyclerView.setOnScrollListener(new RecyclerView.OnScrollListener() {
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
                 if (newState == RecyclerView.SCROLL_STATE_IDLE) {
@@ -114,18 +118,6 @@ public class LibraryFragment extends BaseFragment implements LoaderManager.Loade
                     }
                 }
 
-            }
-
-            @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                boolean isSignificantDelta = Math.abs(dy) > getResources().getDimensionPixelOffset(com.melnykov.fab.R.dimen.fab_scroll_threshold);
-                if (isSignificantDelta) {
-                    if (dy > 0) {
-                        hideFab();
-                    } else {
-                        showFab();
-                    }
-                }
             }
         });
 
@@ -186,10 +178,12 @@ public class LibraryFragment extends BaseFragment implements LoaderManager.Loade
     @Override
     public void onResume() {
         super.onResume();
-        log.debug("{}",TazSettings.getPrefBoolean(getActivity(), TazSettings.PREFKEY.FORCESYNC, false));
-        if (TazSettings.getPrefBoolean(getActivity(), TazSettings.PREFKEY.FORCESYNC, false)) {
+        Timber.d("%s", TazSettings.getInstance(getActivity())
+                                   .getPrefBoolean(TazSettings.PREFKEY.FORCESYNC, false));
+        if (TazSettings.getInstance(getActivity())
+                       .getPrefBoolean(TazSettings.PREFKEY.FORCESYNC, false)) {
 
-            if (hasCallback()) getCallback().requestSync(null, null);
+            SyncHelper.requestSync(getContext());
         }
     }
 
@@ -203,20 +197,29 @@ public class LibraryFragment extends BaseFragment implements LoaderManager.Loade
     @Override
     public void onStart() {
         super.onStart();
+        TazSettings.getInstance(getContext())
+                   .addOnPreferenceChangeListener(TazSettings.PREFKEY.DEMOMODE, demoModeChangedListener);
         EventBus.getDefault()
                 .registerSticky(this);
     }
 
     @Override
     public void onStop() {
+        TazSettings.getInstance(getContext())
+                   .removeOnPreferenceChangeListener(demoModeChangedListener);
         EventBus.getDefault()
                 .unregister(this);
         super.onStop();
     }
 
+    private void onDemoModeChanged(boolean demoMode) {
+        showFab();
+        getLoaderManager().restartLoader(0, null, this);
+    }
+
     @Override
     public void onDestroyView() {
-        log.debug("");
+
         int firstVisible = recyclerView.findFirstVisibleItemPosition();
         int lastVisible = recyclerView.findLastVisibleItemPosition();
         for (int i = firstVisible; i <= lastVisible; i++) {
@@ -238,19 +241,19 @@ public class LibraryFragment extends BaseFragment implements LoaderManager.Loade
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        log.debug("");
+
         super.onActivityCreated(savedInstanceState);
     }
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
 
-        log.trace("");
+
         StringBuilder selection = new StringBuilder();
         boolean demo = true;
         if (hasCallback()) {
-            demo = !getCallback().getAccountHelper()
-                                 .isAuthenticated();
+            demo = TazSettings.getInstance(getContext())
+                              .isDemoMode();
         }
 
         if (demo) selection.append("(");
@@ -285,19 +288,19 @@ public class LibraryFragment extends BaseFragment implements LoaderManager.Loade
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        log.trace("loader: {}, data: {}",loader, data);
+        Timber.i("loader: %s, data: %s", loader, data);
         adapter.swapCursor(data);
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-        log.debug("loader: {}",loader);
+        Timber.d("loader: %s", loader);
     }
 
 
     public void onEventMainThread(SyncStateChangedEvent event) {
         isSyncing = event.isRunning();
-        log.debug("SyncStateChanged running: {}", isSyncing);
+        Timber.d("SyncStateChanged running: %s", isSyncing);
         if (swipeRefresh.isRefreshing() != event.isRunning()) swipeRefresh.setRefreshing(event.isRunning());
         if (isSyncing) hideFab();
         else showFab();
@@ -307,23 +310,24 @@ public class LibraryFragment extends BaseFragment implements LoaderManager.Loade
 
     public void onEventMainThread(CoverDownloadedEvent event) {
         try {
-            LibraryAdapter.ViewHolder viewHolder = (LibraryAdapter.ViewHolder) recyclerView.findViewHolderForItemId(event.getPaperId());
+            LibraryAdapter.ViewHolder viewHolder = (LibraryAdapter.ViewHolder) recyclerView.findViewHolderForItemId(
+                    event.getPaperId());
             if (viewHolder != null) viewHolder.image.setTag(null);
             adapter.notifyItemChanged(adapter.getItemPosition(event.getPaperId()));
         } catch (IllegalStateException e) {
-            log.warn("",e);
+            Timber.w(e);
         }
     }
 
     public void onEventMainThread(ScrollToPaperEvent event) {
-        log.debug("event: {}",event);
+        Timber.d("event: %s", event);
         if (recyclerView != null && adapter != null) {
             recyclerView.smoothScrollToPosition(adapter.getItemPosition(event.getPaperId()));
         }
     }
 
     public void onEventMainThread(DrawerStateChangedEvent event) {
-        log.debug("event: {}",event.getNewState());
+        Timber.d("event: %s", event.getNewState());
         if (event.getNewState() == DrawerLayout.STATE_IDLE) swipeRefresh.setEnabled(true);
         else swipeRefresh.setEnabled(false);
     }
@@ -331,7 +335,7 @@ public class LibraryFragment extends BaseFragment implements LoaderManager.Loade
 
     @Override
     public void onItemClick(View v, int position, Paper paper) {
-        log.debug("v: {}, position: {}, paper: {}", v, position, paper);
+        Timber.d("v: %s, position: %s, paper: %s", v, position, paper);
         if (actionMode != null) onItemLongClick(v, position, paper);
         else {
             switch (paper.getState()) {
@@ -349,7 +353,7 @@ public class LibraryFragment extends BaseFragment implements LoaderManager.Loade
                     try {
                         if (hasCallback()) getCallback().startDownload(paper.getId());
                     } catch (Paper.PaperNotFoundException e) {
-                        log.error("",e);
+                        Timber.e(e);
                     }
                     break;
 
@@ -362,7 +366,8 @@ public class LibraryFragment extends BaseFragment implements LoaderManager.Loade
     @Override
     public boolean onItemLongClick(View v, int position, Paper paper) {
         setActionMode();
-        log.debug("v: {}, position: {}, paper: {}",v, position, paper);;
+        Timber.d("v: %s, position: %s, paper: %s", v, position, paper);
+        ;
         if (!adapter.isSelected(paper.getId())) selectPaper(paper.getId());
         else deselectPaper(paper.getId());
         return true;
@@ -386,7 +391,7 @@ public class LibraryFragment extends BaseFragment implements LoaderManager.Loade
                 Paper paper = new Paper(getActivity(), paperId);
                 if (hasCallback()) getCallback().startDownload(paper.getId());
             } catch (Paper.PaperNotFoundException e) {
-                log.error("",e);
+                Timber.e(e);
             }
         }
         adapter.deselectAll();
@@ -394,21 +399,18 @@ public class LibraryFragment extends BaseFragment implements LoaderManager.Loade
 
 
     private void showFab() {
-        if (hasCallback() && getCallback().getAccountHelper()
-                                          .isAuthenticated()) {
-            if (fab.getVisibility() == View.GONE) {
-                fab.setVisibility(View.VISIBLE);
+        if (!TazSettings.getInstance(getContext())
+                        .isDemoMode()) {
+            if (!isSyncing) {
+                fabArchive.show();
             }
-            if (!fab.isVisible() && !isSyncing) fab.show(true);
         } else {
-            fab.setVisibility(View.GONE);
+            hideFab();
         }
     }
 
     private void hideFab() {
-        if (fab.isVisible()) {
-            fab.hide(true);
-        }
+        fabArchive.hide();
     }
 
 
@@ -430,7 +432,7 @@ public class LibraryFragment extends BaseFragment implements LoaderManager.Loade
 
         @Override
         public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-            log.debug("mode: {}, menu: {}",mode, menu);
+            Timber.d("mode: %s, menu: %s", mode, menu);
             if (hasCallback()) getCallback().getRetainData()
                                             .setActionMode(true);
             if (hasCallback()) getCallback().enableDrawer(false);
@@ -441,7 +443,7 @@ public class LibraryFragment extends BaseFragment implements LoaderManager.Loade
 
         @Override
         public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-            log.debug("mode: {}, menu: {}",mode, menu);
+            Timber.d("mode: %s, menu: %s", mode, menu);
             menu.clear();
             int countSelected = adapter.getSelected()
                                        .size();
@@ -459,7 +461,7 @@ public class LibraryFragment extends BaseFragment implements LoaderManager.Loade
 
         @Override
         public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-            log.debug("mode: {}, item: {}",mode, item);
+            Timber.d("mode: %s, item: %s", mode, item);
             switch (item.getItemId()) {
                 case R.id.ic_action_download:
                     downloadSelected();
@@ -492,7 +494,7 @@ public class LibraryFragment extends BaseFragment implements LoaderManager.Loade
 
         @Override
         public void onDestroyActionMode(ActionMode mode) {
-            log.debug("mode: {}",mode);
+            Timber.d("mode: %s", mode);
             adapter.deselectAll();
             if (hasCallback()) getCallback().getRetainData()
                                             .setActionMode(false);

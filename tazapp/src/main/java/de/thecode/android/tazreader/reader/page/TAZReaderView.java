@@ -9,16 +9,13 @@ import android.view.View;
 import com.artifex.mupdfdemo.PageView;
 import com.artifex.mupdfdemo.ReaderView;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import de.thecode.android.tazreader.data.Paper.Plist.Page;
 import de.thecode.android.tazreader.reader.IReaderCallback;
 
+import timber.log.Timber;
+
 
 public class TAZReaderView extends ReaderView {
-
-    private static final Logger log = LoggerFactory.getLogger(TAZReaderView.class);
 
     private boolean tapDisabled = false;
     private IReaderCallback mReaderCallback;
@@ -26,19 +23,19 @@ public class TAZReaderView extends ReaderView {
 
     public TAZReaderView(Context context) {
         super(context);
-        log.debug("");
+
         init(context);
     }
 
     public TAZReaderView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        log.debug("");
+
         init(context);
     }
 
     public TAZReaderView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-        log.debug("");
+
         init(context);
     }
 
@@ -48,7 +45,7 @@ public class TAZReaderView extends ReaderView {
 
     @Override
     public boolean onSingleTapUp(MotionEvent e) {
-        log.debug("");
+
         if (!tapDisabled) {
 
             TAZPageView pageView = (TAZPageView) getDisplayedView();
@@ -61,7 +58,7 @@ public class TAZReaderView extends ReaderView {
 
     @Override
     public boolean onDown(MotionEvent e) {
-        log.debug("");
+
         return super.onDown(e);
     }
 
@@ -73,13 +70,13 @@ public class TAZReaderView extends ReaderView {
 
     @Override
     public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-        log.debug("");
+
         return super.onFling(e1, e2, velocityX, velocityY);
     }
 
     @Override
     public boolean onScaleBegin(ScaleGestureDetector detector) {
-        log.debug("");
+
 
         // Disabled showing the buttons until next touch.
         // Not sure why this is needed, but without it
@@ -103,13 +100,13 @@ public class TAZReaderView extends ReaderView {
 
     @Override
     protected void onChildSetup(int i, View v) {
-        log.debug("i: {}, v: {}",i, v);
+        Timber.d("i: %s, v: %s",i, v);
 
     }
 
     @Override
     protected void onMoveToChild(int i) {
-        log.debug("i: {}",i);
+        Timber.d("i: %s",i);
         Page page = (Page) getAdapter().getItem(i);
         mReaderCallback.updateIndexes(page.getKey(), "0");
 
@@ -117,14 +114,14 @@ public class TAZReaderView extends ReaderView {
 
     @Override
     protected void onMoveOffChild(int i) {
-        log.debug("i: {}",i);
+        Timber.d("i: %s", i);
 
     }
 
     @Override
     protected void onSettle(View v) {
 
-        log.debug("v: {}",v);
+        Timber.d("v: %s",v);
         // When the layout has settled ask the page to render
         // in HQ
 
@@ -138,7 +135,7 @@ public class TAZReaderView extends ReaderView {
 
     @Override
     protected void onUnsettle(View v) {
-       log.debug("v: {}",v);
+       Timber.d("v: %s",v);
         // When something changes making the previous settled view
         // no longer appropriate, tell the page to remove HQ
         ((TAZPageView) v).removeHq();
@@ -146,13 +143,13 @@ public class TAZReaderView extends ReaderView {
 
     @Override
     protected void onNotInUse(View v) {
-        log.debug("v: {}",v);
+        Timber.d("v: %s",v);
         ((TAZPageView) v).releaseResources();
     }
 
     @Override
     protected void onScaleChild(View v, Float scale) {
-        log.debug("v: {}, scale: {}",v, scale);
+        Timber.d("v: %s, scale: %s",v, scale);
         ((TAZPageView) v).setScale(scale);
     }
 

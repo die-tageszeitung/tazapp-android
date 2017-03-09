@@ -1,8 +1,8 @@
 package de.thecode.android.tazreader.start;
 
 
-import android.app.Fragment;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -17,25 +17,21 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import de.greenrobot.event.EventBus;
+import de.thecode.android.tazreader.R;
+import de.thecode.android.tazreader.data.TazSettings;
+import de.thecode.android.tazreader.utils.BaseFragment;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.greenrobot.event.EventBus;
-import de.thecode.android.tazreader.BuildConfig;
-import de.thecode.android.tazreader.R;
-import de.thecode.android.tazreader.data.TazSettings;
-import de.thecode.android.tazreader.utils.BaseFragment;
+import timber.log.Timber;
 
 /**
  * A simple {@link Fragment} subclass.
  */
 public class NavigationDrawerFragment extends BaseFragment {
-
-    private static final Logger log = LoggerFactory.getLogger(NavigationDrawerFragment.class);
 
     private static final String KEY_ACTIVE = "active";
     private static final int CLOSE_DRAWER_DELAY = 300;
@@ -64,14 +60,14 @@ public class NavigationDrawerFragment extends BaseFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        log.trace("");
+
 
         startCallback = new WeakReference<>((IStartCallback) getActivity());
 
         if (savedInstanceState != null) mActive = savedInstanceState.getInt(KEY_ACTIVE);
 
 
-        mUserLearnedDrawer = TazSettings.getPrefBoolean(getActivity(), TazSettings.PREFKEY.NAVDRAWERLEARNED, false);
+        mUserLearnedDrawer = TazSettings.getInstance(getActivity()).getPrefBoolean(TazSettings.PREFKEY.NAVDRAWERLEARNED, false);
         if (savedInstanceState != null) mFromSavedInstanceState = true;
         mClickListener = new Item.ClickListener() {
             @Override
@@ -92,7 +88,7 @@ public class NavigationDrawerFragment extends BaseFragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        log.trace("");
+
         View view = inflater.inflate(R.layout.start_navigation, container, false);
         mRecyclerView = (RecyclerView) view.findViewById(R.id.recycler);
         mRecyclerView.setHasFixedSize(true);
@@ -111,7 +107,7 @@ public class NavigationDrawerFragment extends BaseFragment {
 
 
     public void setUp(int drawerId, DrawerLayout drawerLayout, Toolbar toolbar) {
-        log.trace("");
+
         mDrawerContainerView = getActivity().findViewById(drawerId);
         mDrawerLayout = drawerLayout;
         mDrawerToggle = new ActionBarDrawerToggle(getActivity(), drawerLayout, toolbar, R.string.drawer_open, R.string.drawer_close) {
@@ -120,7 +116,7 @@ public class NavigationDrawerFragment extends BaseFragment {
                 super.onDrawerClosed(drawerView);
                 if (!mUserLearnedDrawer) {
                     mUserLearnedDrawer = true;
-                    TazSettings.setPref(getActivity(), TazSettings.PREFKEY.NAVDRAWERLEARNED, true);
+                    TazSettings.getInstance(getActivity()).setPref(TazSettings.PREFKEY.NAVDRAWERLEARNED, true);
                 }
             }
 
@@ -174,7 +170,7 @@ public class NavigationDrawerFragment extends BaseFragment {
 
     public void addItem(Item item) {
         if (items.contains(item)) {
-            log.error("Ignored adding item to Navihgation drawer, can only be added once");
+            Timber.e("Ignored adding item to Navihgation drawer, can only be added once");
             return;
         }
         item.position = items.size();
@@ -214,7 +210,7 @@ public class NavigationDrawerFragment extends BaseFragment {
     }
 
     public void onClick(int position) {
-        log.debug("position: {}",position);
+        Timber.d("position: %s",position);
         //navigationAdapter.setActive(position);
         Item item = navigationAdapter.getItem(position);
         if (item instanceof NavigationItem) {
@@ -233,7 +229,7 @@ public class NavigationDrawerFragment extends BaseFragment {
 
         @Override
         public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            log.trace("");
+
             switch (Item.TYPE.values()[viewType]) {
                 case HEADER:
                     return new HeaderViewHolder(LayoutInflater.from(parent.getContext())
@@ -251,7 +247,7 @@ public class NavigationDrawerFragment extends BaseFragment {
 
         @Override
         public void onBindViewHolder(ViewHolder holder, int position) {
-            log.trace("");
+
 
             switch (items.get(position)
                          .getType()) {
@@ -362,38 +358,25 @@ public class NavigationDrawerFragment extends BaseFragment {
         public void setActive() {
             image.setColorFilter(itemView.getContext()
                                          .getResources()
-                                         .getColor(R.color.index_bookmark_on));
+                                         .getColor(R.color.start_navigation_item_icon_active));
         }
 
         @Override
         public void setInactive() {
             image.setColorFilter(itemView.getContext()
                                          .getResources()
-                                         .getColor(R.color.index_bookmark_off));
+                                         .getColor(R.color.start_navigation_item_icon));
         }
 
     }
 
     private static class HeaderViewHolder extends ViewHolder {
         RelativeLayout layout;
-        TextView text;
 
         public HeaderViewHolder(View itemView) {
             super(itemView, null);
             layout = (RelativeLayout) itemView.findViewById(R.id.layout);
             ViewCompat.setImportantForAccessibility(layout, ViewCompat.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS);
-            text = (TextView) itemView.findViewById(R.id.text);
-            text.setVisibility(View.VISIBLE);
-            if (BuildConfig.VERSION_NAME
-                   .toLowerCase()
-                   .contains("alpha")) text.setText(R.string.drawer_header_alpha);
-            else if (BuildConfig.VERSION_NAME
-                        .toLowerCase()
-                        .contains("beta")) text.setText(R.string.drawer_header_beta);
-            else if (BuildConfig.VERSION_NAME
-                        .toLowerCase()
-                        .contains("debug")) text.setText(R.string.drawer_header_debug);
-            else text.setVisibility(View.GONE);
         }
     }
 

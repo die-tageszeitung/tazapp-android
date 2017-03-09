@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
-    <string name="com.crashlytics.CrashSubmissionPromptTitle">Bericht senden?</string>
-    <string name="com.crashlytics.CrashSubmissionPromptMessage">Die taz.app ist abgestürzt! Das tut uns leid.\n\nBitte helfen Sie uns das Problem zu lösen und senden Sie uns einen Absturzbericht.</string>
-    <string name="com.crashlytics.CrashSubmissionSendTitle">Senden</string>
-    <string name="com.crashlytics.CrashSubmissionAlwaysSendTitle">Immer senden</string>
-    <string name="com.crashlytics.CrashSubmissionCancelTitle" tools:ignore="UnusedResources">Abbrechen</string>
-</resources>

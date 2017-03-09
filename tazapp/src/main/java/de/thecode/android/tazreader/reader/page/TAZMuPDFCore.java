@@ -5,14 +5,11 @@ import android.graphics.PointF;
 
 import com.artifex.mupdfdemo.MuPDFCore;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import timber.log.Timber;
 
 
 public class TAZMuPDFCore extends MuPDFCore {
 
-    private static final Logger log = LoggerFactory.getLogger(TAZMuPDFCore.class);
-    
     PointF pageSize;
     String tag;
     boolean isDestroyed = false;
@@ -35,7 +32,7 @@ public class TAZMuPDFCore extends MuPDFCore {
 
     private void init() {
         isDestroyed = false;
-        log.debug("{}",tag);
+        Timber.d("%s", tag);
         this.countPages();
         pageSize = this.getPageSize(0);
     }
@@ -52,7 +49,7 @@ public class TAZMuPDFCore extends MuPDFCore {
 
     @Override
     public synchronized void onDestroy() {
-        log.debug(tag);
+        Timber.d(tag);
         super.onDestroy();
         isDestroyed = true;
     }

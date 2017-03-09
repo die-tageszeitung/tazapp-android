@@ -1,74 +1,66 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-             xmlns:app="http://schemas.android.com/apk/res-auto"
-             android:layout_width="match_parent"
-             android:layout_height="match_parent"
-             android:foreground="?attr/selectableItemBackground">
+<LinearLayout android:id="@+id/layout"
+              style="@style/Index.Article"
+              xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content">
 
-    <LinearLayout
-        android:id="@+id/layout"
-        style="@style/LayoutIndexArticle"
+
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:layout_weight="1">
 
-        <RelativeLayout
+        <FrameLayout
+            android:id="@+id/bookmarkClickLayout"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true">
+
+            <ImageView
+                android:id="@+id/bookmark"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_gravity="right"
+                android:layout_marginRight="4dp"
+                android:src="@drawable/ic_bookmark_24dp"/>
+        </FrameLayout>
+
+        <LinearLayout
+            android:id="@+id/textLayout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_weight="1">
+            android:layout_centerVertical="true"
+            android:gravity="center_vertical"
+            android:orientation="vertical"
+            android:paddingBottom="4dp"
+            android:paddingLeft="@dimen/index_image"
+            android:paddingRight="20dp"
+            android:paddingTop="4dp">
 
-            <FrameLayout
-                android:id="@+id/bookmarkClickLayout"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_alignParentRight="true"
-                android:layout_alignParentTop="true">
-
-                <ImageView
-                    android:id="@+id/bookmark"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="right"
-                    android:layout_marginRight="8dp"
-                    android:alpha="0.7"
-                    android:src="@drawable/ic_bookmark"/>
-            </FrameLayout>
-
-            <LinearLayout
-                android:id="@+id/textLayout"
+            <TextView
+                android:id="@+id/title"
+                style="@style/IndexText.Article"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_centerVertical="true"
-                android:gravity="center_vertical"
-                android:orientation="vertical"
-                android:paddingBottom="4dp"
-                android:paddingLeft="@dimen/index_image"
-                android:paddingRight="20dp"
-                android:paddingTop="4dp">
+                android:layout_height="wrap_content"
+                android:text="@string/dummy"/>
 
-                <de.thecode.android.tazreader.widget.TypefacedTextView
-                    android:id="@+id/title"
-                    style="@style/TextIndexArticle"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/dummy"
-                    app:typeface="@string/TypefaceTazBold"/>
+            <TextView
+                android:id="@+id/subtitle"
+                style="@style/IndexText.Article.Sub"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/dummy"/>
+        </LinearLayout>
+    </RelativeLayout>
 
-                <de.thecode.android.tazreader.widget.TypefacedTextView
-                    android:id="@+id/subtitle"
-                    style="@style/TextIndexArticleSub"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/dummy"
-                    app:typeface="@string/TypefaceTazRegular"/>
-            </LinearLayout>
-        </RelativeLayout>
+    <View
+        android:id="@+id/currentMarker"
+        android:layout_width="@dimen/index_currentmarker_width"
+        android:layout_height="match_parent"
+        android:layout_weight="0"
+        android:background="@color/index_currentmarker"/>
 
-        <View
-            android:id="@+id/currentMarker"
-            android:layout_width="@dimen/index_currentmarker_width"
-            android:layout_height="match_parent"
-            android:layout_weight="0"
-            android:background="@color/index_currentmarker"/>
-
-    </LinearLayout>
-</FrameLayout>
+</LinearLayout>

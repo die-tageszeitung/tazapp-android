@@ -13,8 +13,7 @@
         android:src="@drawable/ic_navigation_chevron_left"
         android:id="@+id/image"/>
 
-    <de.thecode.android.tazreader.widget.TypefacedTextView
-        app:typeface="@string/TypefaceTazRegular"
+    <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"

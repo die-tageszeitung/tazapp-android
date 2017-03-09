@@ -6,7 +6,7 @@
     </item>
     <item android:id="@android:id/progress">
         <clip android:clipOrientation="vertical" android:gravity="top">
-            <color android:color="@color/TAZLightGrayTransparent" />
+            <color android:color="@color/library_item_progress_overlay" />
         </clip>
     </item>
 

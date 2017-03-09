@@ -5,15 +5,12 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.telephony.TelephonyManager;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import timber.log.Timber;
 
 /**
  * Created by mate on 03.02.2016.
  */
 public class Connection {
-
-    private static final Logger log = LoggerFactory.getLogger(Connection.class);
 
     // Connection ++++++++++++++++++
 
@@ -44,7 +41,7 @@ public class Connection {
                     break;
             }
         }
-        log.trace("ConnectionType {}",result);
+        Timber.i("ConnectionType %s", result);
         return result;
     }
 }

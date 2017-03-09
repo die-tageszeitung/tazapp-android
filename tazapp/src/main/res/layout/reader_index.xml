@@ -4,31 +4,33 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <android.support.v7.widget.Toolbar
+    <de.thecode.android.tazreader.widget.CustomToolbar
         android:id="@+id/toolbar_article"
         android:layout_width="wrap_content"
         android:layout_height="?attr/actionBarSize"
         android:layout_alignParentRight="true"
-        android:background="?attr/colorPrimaryDark"
+        android:layout_alignParentEnd="true"
+        android:background="@color/toolbar_background_color"
+        android:layout_toRightOf="@+id/toolbar2"
+        android:layout_toEndOf="@+id/toolbar2">
 
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar" >
+    </de.thecode.android.tazreader.widget.CustomToolbar>
 
-    </android.support.v7.widget.Toolbar>
-
-    <android.support.v7.widget.Toolbar
+    <de.thecode.android.tazreader.widget.CustomToolbar
         android:id="@+id/toolbar2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
-        android:background="?attr/colorPrimaryDark"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar" >
+        android:layout_alignParentStart="true"
+        android:background="@color/toolbar_background_color">
 
-    </android.support.v7.widget.Toolbar>
+    </de.thecode.android.tazreader.widget.CustomToolbar>
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recycler"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="@color/index_background"
         android:layout_below="@+id/toolbar_article"
         android:scrollbars="vertical" />
 

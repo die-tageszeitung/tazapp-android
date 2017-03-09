@@ -8,16 +8,16 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/logoImage"
-        android:src="@drawable/taz_pfote"
+        android:src="@drawable/logo"
         android:layout_above="@+id/text"
         android:layout_centerHorizontal="true"/>
 
-    <de.thecode.android.tazreader.widget.TypefacedTextView
+    <TextView
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:layout_width="wrap_content"
         android:id="@+id/text"
-        app:typeface="@string/TypefaceTazBold"
-        android:textColor="@color/TAZwhite"
+        fontPath="@string/fontBold"
+        android:textColor="@color/import_text"
         android:layout_margin="16dp"
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true"
@@ -31,12 +31,12 @@
         android:layout_below="@+id/text"
         android:layout_centerHorizontal="true"/>
 
-    <de.thecode.android.tazreader.widget.TypefacedTextView
+    <TextView
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:layout_width="wrap_content"
         android:id="@+id/text2"
-        app:typeface="@string/TypefaceTazBold"
-        android:textColor="@color/TAZwhite"
+        fontPath="@string/fontBold"
+        android:textColor="@color/import_text"
         android:layout_height="wrap_content"
         android:text="@string/migration_wait_text"
         android:layout_below="@+id/progressBar"

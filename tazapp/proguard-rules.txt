@@ -3,6 +3,9 @@
 #-dontwarn com.google.android.gms.**
 #-dontwarn com.android.volley.toolbox.**
 
+-dontobfuscate
+-optimizations !code/simplification/arithmetic,!field/*,!class/merging/*,!code/allocation/variable
+
 -dontwarn javax.annotation.**
 -dontwarn javax.inject.**
 -dontwarn sun.misc.Unsafe
@@ -23,16 +26,49 @@
     public <init>(java.lang.Throwable);
 }
 
-# Fabric.io
--keepattributes SourceFile,LineNumberTable
--keep class com.crashlytics.** { *; }
--dontwarn com.crashlytics.**
+# support design
+-dontwarn android.support.design.**
+-keep class android.support.design.** { *; }
+-keep interface android.support.design.** { *; }
+-keep public class android.support.design.R$* { *; }
 
-# TAZ
--keep class de.thecode.** { *; }
+# The support library contains references to newer platform versions.
+# Don't warn about those in case this app is linking against an older
+# platform version.  We know about them, and they are safe.
+-dontwarn android.support.**
 
-#SLF4J and android-logback
--keep class ch.qos.** { *; }
--keep class org.slf4j.** { *; }
--keepattributes *Annotation*
--dontwarn ch.qos.logback.core.net.*
+
+-keepclassmembers class * {
+    @android.webkit.JavascriptInterface <methods>;
+}
+
+-keepattributes EnclosingMethod
+
+#---
+
+-dontwarn okhttp3.**
+-dontwarn okio.**
+
+### PICASSO
+
+# Checks for OkHttp versions on the classpath to determine Downloader to use.
+-dontnote com.squareup.picasso.Utils
+# Downloader used only when OkHttp 2.x is present on the classpath.
+-dontwarn com.squareup.picasso.OkHttpDownloader
+# Downloader used only when OkHttp 3.x is present on the classpath.
+-dontwarn com.squareup.picasso.OkHttp3Downloader
+
+
+### OKHTTP
+
+# Platform calls Class.forName on types which do not exist on Android to determine platform.
+-dontnote okhttp3.internal.Platform
+-dontnote com.squareup.okhttp.internal.Platform
+
+
+### OKIO
+
+# java.nio.file.* usage which cannot be used at runtime. Animal sniffer annotation.
+-dontwarn okio.Okio
+# JDK 7-only method which is @hide on Android. Animal sniffer annotation.
+-dontwarn okio.DeflaterSink

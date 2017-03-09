@@ -1,11 +1,15 @@
 package de.thecode.android.tazreader.start;
 
 
+import android.Manifest;
 import android.app.Activity;
-import android.app.Fragment;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -15,27 +19,33 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import de.mateware.dialog.Dialog;
+import de.thecode.android.tazreader.R;
+import de.thecode.android.tazreader.importer.ImportActivity;
+import de.thecode.android.tazreader.utils.BaseFragment;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
 
-import de.thecode.android.tazreader.R;
-import de.thecode.android.tazreader.importer.ImportActivity;
-import de.thecode.android.tazreader.utils.BaseFragment;
+import timber.log.Timber;
 
 /**
  * A simple {@link Fragment} subclass.
  */
 public class ImportFragment extends BaseFragment implements ImportDataRetainFragment.ImportDataCallback {
 
-    private static final Logger log = LoggerFactory.getLogger(ImportFragment.class);
+    public static final String DIALOG_PERMISSION_WRITE = "DialogPermissionWrite";
+    private static int PERMISSION_REQUEST_IMPORT_WRITE = 345;
+
+    private static String ARG_IS_SHOWING_EXPLENATION_DIALOG = "argIsShowingED";
+    private static String ARG_IS_REQUESTING_PERMISSION = "argIsReqPerm";
 
     ImportRecyclerAdapter adapter;
 
     private WeakReference<IStartCallback> callback;
     private ImportDataRetainFragment dataFragment;
+    private boolean isShowingExplenationDialog;
+    private boolean isRequestinPermission;
 
     public ImportFragment() {
     }
@@ -43,10 +53,74 @@ public class ImportFragment extends BaseFragment implements ImportDataRetainFrag
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        log.debug("");
+
         callback = new WeakReference<>((IStartCallback) getActivity());
         if (hasCallback()) getCallback().onUpdateDrawer(this);
         dataFragment = ImportDataRetainFragment.findOrCreateRetainFragment(getFragmentManager(), this);
+        isShowingExplenationDialog = savedInstanceState != null && savedInstanceState.getBoolean(ARG_IS_SHOWING_EXPLENATION_DIALOG, false);
+        isRequestinPermission = savedInstanceState != null && savedInstanceState.getBoolean(ARG_IS_REQUESTING_PERMISSION, false);
+        if (!isShowingExplenationDialog && !isRequestinPermission) startWithPermissionCheck();
+    }
+
+    public void startWithPermissionCheck() {
+        isShowingExplenationDialog = false;
+        isRequestinPermission = false;
+        // Here, thisActivity is the current activity
+        if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            isRequestinPermission = true;
+            requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_REQUEST_IMPORT_WRITE);
+            //ActivityCompat.requestPermissions(getActivity(), );
+
+            // Should we show an explanation?
+            //            if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+            //                Timber.d("Show an explanation to the user");
+            //                new Dialog().withPositiveButton().withMessage("Bla Bla Bla").show(getFragmentManager(),DIALOG_PERMISSION_WRITE);
+            //
+            //
+            //                // Show an expanation to the user *asynchronously* -- don't block
+            //                // this thread waiting for the user's response! After the user
+            //                // sees the explanation, try again to request the permission.
+            //
+            //            } else {
+            //
+            //                Timber.d("No explanation needed, we can request the permission.");
+            //
+            //
+            //                // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
+            //                // app-defined int constant. The callback method gets the
+            //                // result of the request.
+            //            }
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putBoolean(ARG_IS_SHOWING_EXPLENATION_DIALOG, isShowingExplenationDialog);
+        outState.putBoolean(ARG_IS_REQUESTING_PERMISSION, isRequestinPermission);
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        Timber.d("requestCode: %s, permissions: %s, grantResults: %s", requestCode, permissions, grantResults);
+        isRequestinPermission = false;
+
+        if (requestCode == PERMISSION_REQUEST_IMPORT_WRITE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                dataFragment.restart();
+            } else {
+                if (shouldShowRequestPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                    isShowingExplenationDialog = true;
+
+                    new Dialog.Builder().setPositiveButton()
+                                        .setNegativeButton()
+                                        .setStyle(R.style.Dialog)
+                                        .setMessage(R.string.dialog_import_permission_explanation)
+                                        .buildSupport()
+                                        .showAllowStateLoss(getFragmentManager(), DIALOG_PERMISSION_WRITE);
+                }
+            }
+        }
     }
 
     private boolean hasCallback() {
@@ -75,31 +149,17 @@ public class ImportFragment extends BaseFragment implements ImportDataRetainFrag
 
 
     private void loadDirectory(File dir) {
-        log.debug("dir: {}",dir);
+        Timber.d("dir: %s", dir);
         dataFragment.setCurrentDir(dir);
         dataFragment.restart();
     }
 
-    //    public void onParentClick() {
-    //        Log.d();
-    //        loadDirectory(dataFragment.getCurrentDir()
-    //                                  .getParentFile());
-    //    }
-    //
-    //    public void onFileClick(ImportDirectoryLoader.ImportFileWrapper ifw, int position) {
-    //        Log.d();
-    //    }
-    //
-    //    public void onDirectoryClick(ImportDirectoryLoader.ImportFileWrapper ifw, int position) {
-    //        Log.d();
-    //        loadDirectory(ifw.getFile());
-    //    }
-
     public void onListClick(ImportDirectoryLoader.ImportFileWrapper ifw) {
-        log.debug("ifw: {}",ifw);
+        Timber.d("ifw: %s", ifw);
         switch (ifw.getType()) {
             case FILE:
-                if (!(ifw.getFile()== null || !ifw.getFile().exists())) {
+                if (!(ifw.getFile() == null || !ifw.getFile()
+                                                   .exists())) {
                     Intent importIntent = new Intent(getActivity(), ImportActivity.class);
                     importIntent.setData(Uri.fromFile(ifw.getFile()));
                     startActivityForResult(importIntent, ImportActivity.REQUEST_CODE_IMPORT_ACTIVITY);
@@ -117,7 +177,7 @@ public class ImportFragment extends BaseFragment implements ImportDataRetainFrag
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        log.debug("requestCode: {}, resultCode: {}, data: {}",requestCode, resultCode, data);
+        Timber.d("requestCode: %s, resultCode: %s, data: %s", requestCode, resultCode, data);
         if (requestCode == ImportActivity.REQUEST_CODE_IMPORT_ACTIVITY) {
             dataFragment.restart();
             if (resultCode == Activity.RESULT_OK) {
@@ -183,13 +243,10 @@ public class ImportFragment extends BaseFragment implements ImportDataRetainFrag
                                                                              .getDetail());
 
 
-
-                    if (ifw.isOverride() || !ifw.isSelectable()){
+                    if (ifw.isOverride() || !ifw.isSelectable()) {
                         holder.image.clearColorFilter();
-                    }
-                    else {
-                        holder.image.setColorFilter(getResources()
-                                .getColor(R.color.color_primary));
+                    } else {
+                        holder.image.setColorFilter(getResources().getColor(R.color.color_primary));
                     }
                 case DIRECTORY:
 

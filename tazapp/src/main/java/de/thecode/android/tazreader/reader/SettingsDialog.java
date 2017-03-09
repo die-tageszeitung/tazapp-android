@@ -1,60 +1,39 @@
 package de.thecode.android.tazreader.reader;
 
-import android.app.Activity;
-import android.app.Dialog;
-import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.SwitchCompat;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import de.mateware.dialog.DialogCustomView;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.TazSettings;
-import de.thecode.android.tazreader.dialog.TcDialogCustomView;
 import de.thecode.android.tazreader.reader.ReaderActivity.THEMES;
 
-public class SettingsDialog extends TcDialogCustomView {
+import timber.log.Timber;
 
-    private static final Logger log = LoggerFactory.getLogger(SettingsDialog.class);
+public class SettingsDialog extends DialogCustomView {
 
-    IReaderCallback mCallback;
-    boolean isScroll;
-    boolean isFullscreen;
-    SeekBar seekBarColumns;
+    private IReaderCallback mCallback;
+    private SeekBar seekBarColumns;
     private Button btnNormal;
     private Button btnSepia;
     private Button btnNight;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-    }
+    public View getView(LayoutInflater inflater, ViewGroup parent) {
 
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        isScroll = TazSettings.getPrefBoolean(activity, TazSettings.PREFKEY.ISSCROLL, false);
-        isFullscreen = TazSettings.getPrefBoolean(activity, TazSettings.PREFKEY.FULLSCREEN, false);
-        mCallback = (IReaderCallback) getActivity();
-    }
+        boolean isScroll = TazSettings.getInstance(getContext()).getPrefBoolean(TazSettings.PREFKEY.ISSCROLL, false);
+        //boolean isFullscreen = TazSettings.getPrefBoolean(getContext(), TazSettings.PREFKEY.FULLSCREEN, false);
+        mCallback = (IReaderCallback) getContext();
 
-    @Override
-    public void onDestroyView() {
-        if (getDialog() != null && getRetainInstance())
-            getDialog().setDismissMessage(null);
-        super.onDestroyView();
-    }
-
-    @Override
-    public View getView(LayoutInflater inflater) {
-        View view = inflater.inflate(R.layout.reader_settings, null);
+        View view = inflater.inflate(R.layout.reader_settings, parent);
 
 
 
@@ -64,8 +43,8 @@ public class SettingsDialog extends TcDialogCustomView {
 
             @Override
             public void onClick(View v) {
-                log.debug("v: {}", v);
-                mCallback.onConfigurationChange(TazSettings.PREFKEY.THEME, THEMES.normal.name());
+                Timber.d("v: %s", v);
+                if (mCallback != null) mCallback.onConfigurationChange(TazSettings.PREFKEY.THEME, THEMES.normal.name());
                 colorThemeButtonText(THEMES.normal);
             }
         });
@@ -75,7 +54,7 @@ public class SettingsDialog extends TcDialogCustomView {
 
             @Override
             public void onClick(View v) {
-                log.debug("v: {}",v);
+                Timber.d("v: %s",v);
                 mCallback.onConfigurationChange(TazSettings.PREFKEY.THEME, THEMES.sepia.name());
                 colorThemeButtonText(THEMES.sepia);
             }
@@ -86,22 +65,40 @@ public class SettingsDialog extends TcDialogCustomView {
 
             @Override
             public void onClick(View v) {
-                log.debug("v: {}",v);
+                Timber.d("v: %s",v);
                 mCallback.onConfigurationChange(TazSettings.PREFKEY.THEME, THEMES.night.name());
                 colorThemeButtonText(THEMES.night);
             }
         });
-        colorThemeButtonText(THEMES.valueOf(TazSettings.getPrefString(getActivity(), TazSettings.PREFKEY.THEME, null)));
+        colorThemeButtonText(THEMES.valueOf(TazSettings.getInstance(getContext()).getPrefString(TazSettings.PREFKEY.THEME, null)));
 
-        SwitchCompat switchPaging = (SwitchCompat) view.findViewById(R.id.switchPaging);
-        switchPaging.setChecked(!isScroll);
-        switchPaging.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+        SwitchCompat switchIsScroll = (SwitchCompat) view.findViewById(R.id.switchIsScroll);
+        switchIsScroll.setChecked(!isScroll);
+        switchIsScroll.setOnCheckedChangeListener(new OnCheckedChangeListener() {
 
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                log.debug("buttonView: {}, isChecked: {}",buttonView, isChecked);
-                mCallback.onConfigurationChange(TazSettings.PREFKEY.ISSCROLL, !isChecked);
+                Timber.d("buttonView: %s, isChecked: %s",buttonView, isChecked);
+                if (mCallback != null) mCallback.onConfigurationChange(TazSettings.PREFKEY.ISSCROLL, !isChecked);
                 seekBarColumns.setEnabled(isChecked);
+            }
+        });
+
+        SwitchCompat switchIsPaging = (SwitchCompat) view.findViewById(R.id.switchIsPaging);
+        switchIsPaging.setChecked(TazSettings.getInstance(getContext()).getPrefBoolean(TazSettings.PREFKEY.ISPAGING,false));
+        switchIsPaging.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (mCallback != null) mCallback.onConfigurationChange(TazSettings.PREFKEY.ISPAGING, isChecked);
+            }
+        });
+
+        SwitchCompat switchIsScrollToNext = (SwitchCompat) view.findViewById(R.id.switchIsScrollToNext);
+        switchIsScrollToNext.setChecked(TazSettings.getInstance(getContext()).getPrefBoolean(TazSettings.PREFKEY.ISSCROLLTONEXT,false));
+        switchIsScrollToNext.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (mCallback != null) mCallback.onConfigurationChange(TazSettings.PREFKEY.ISSCROLLTONEXT, isChecked);
             }
         });
 
@@ -122,7 +119,7 @@ public class SettingsDialog extends TcDialogCustomView {
         seekBarColumns = (SeekBar) view.findViewById(R.id.seekBarColumn);
 
         seekBarColumns.setEnabled(!isScroll);
-        seekBarColumns.setProgress((int) (Float.valueOf(TazSettings.getPrefString(getActivity(), TazSettings.PREFKEY.COLSIZE, "0")) * 10));
+        seekBarColumns.setProgress((int) (Float.valueOf(TazSettings.getInstance(getContext()).getPrefString(TazSettings.PREFKEY.COLSIZE, "0")) * 10));
         seekBarColumns.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
 
             @Override
@@ -137,7 +134,7 @@ public class SettingsDialog extends TcDialogCustomView {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 float colValue = ((float) progress) / 10;
                 String colValueString = String.valueOf(colValue);
-                log.debug("color: {}",colValueString);
+                Timber.d("color: %s",colValueString);
                 if (fromUser) {
                     mCallback.onConfigurationChange(TazSettings.PREFKEY.COLSIZE, colValueString);
                 }
@@ -145,7 +142,7 @@ public class SettingsDialog extends TcDialogCustomView {
         });
 
         SeekBar seekBarFontSize = (SeekBar) view.findViewById(R.id.seekBarFontSize);
-        seekBarFontSize.setProgress(Integer.valueOf(TazSettings.getPrefString(getActivity(), TazSettings.PREFKEY.FONTSIZE, "0")));
+        seekBarFontSize.setProgress(Integer.valueOf(TazSettings.getInstance(getContext()).getPrefString(TazSettings.PREFKEY.FONTSIZE, "0")));
         seekBarFontSize.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
 
             @Override
@@ -158,7 +155,7 @@ public class SettingsDialog extends TcDialogCustomView {
 
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                log.debug("seekBar: {}, progress: {}, fromUser: {}",seekBar, progress, fromUser);
+                Timber.d("seekBar: %s, progress: %s, fromUser: %s",seekBar, progress, fromUser);
                 if (fromUser) {
                     mCallback.onConfigurationChange(TazSettings.PREFKEY.FONTSIZE, String.valueOf(progress));
                 }
@@ -167,29 +164,28 @@ public class SettingsDialog extends TcDialogCustomView {
 
         return view;
     }
-
-    @Override
-    public Dialog onCreateDialog(Bundle savedInstanceState) {
-        Dialog dialog = super.onCreateDialog(savedInstanceState);
-        // dialog.getWindow().requestFeature(Window.FEATURE_NO_TITLE);
-        return dialog;
-    }
-
+    
     private void colorThemeButtonText(THEMES theme) {
         if (theme == null) return;
-        btnNight.setTextColor(getResources().getColor(R.color.reader_settings_button_text));
-        btnNormal.setTextColor(getResources().getColor(R.color.reader_settings_button_text));
-        btnSepia.setTextColor(getResources().getColor(R.color.reader_settings_button_text));
+        btnNight.setTextColor(ContextCompat.getColor(getContext(),R.color.reader_settings_button_text));
+        btnNormal.setTextColor(ContextCompat.getColor(getContext(), R.color.reader_settings_button_text));
+        btnSepia.setTextColor(ContextCompat.getColor(getContext(), R.color.reader_settings_button_text));
         switch (theme) {
             case night:
-                btnNight.setTextColor(getResources().getColor(R.color.reader_settings_button_text_activated));
+                btnNight.setTextColor(ContextCompat.getColor(getContext(), R.color.reader_settings_button_text_activated));
                 break;
             case sepia:
-                btnSepia.setTextColor(getResources().getColor(R.color.reader_settings_button_text_activated));
+                btnSepia.setTextColor(ContextCompat.getColor(getContext(), R.color.reader_settings_button_text_activated));
                 break;
             case normal:
-                btnNormal.setTextColor(getResources().getColor(R.color.reader_settings_button_text_activated));
+                btnNormal.setTextColor(ContextCompat.getColor(getContext(), R.color.reader_settings_button_text_activated));
                 break;
+        }
+    }
+
+    public static class Builder extends AbstractBuilder<Builder,SettingsDialog> {
+        public Builder() {
+            super(SettingsDialog.class);
         }
     }
 

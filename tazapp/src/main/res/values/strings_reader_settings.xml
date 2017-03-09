@@ -3,7 +3,9 @@
 
     <string name="header_fontsize">Schriftgröße</string>
     <string name="header_column">Spaltenbreite</string>
-    <string name="paging">Blättern</string>
+    <string name="isscroll">Blättern</string>
+    <string name="ispaging">Tippen am Rand</string>
+    <string name="isscrolltonext">Weiterscrollen</string>
     <string name="fullscreen">Vollbild</string>
     <string name="header_screen">BILDSCHIRM</string>
     <string name="screen_active">beim lesen aktiv lassen</string>

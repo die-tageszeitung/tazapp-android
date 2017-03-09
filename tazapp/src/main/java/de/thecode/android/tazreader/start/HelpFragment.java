@@ -1,7 +1,7 @@
 package de.thecode.android.tazreader.start;
 
 
-import android.app.Fragment;
+
 import android.os.Bundle;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
@@ -10,7 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
-import com.viewpagerindicator.CirclePageIndicator;
+import com.github.jrejaud.viewpagerindicator2.CirclePageIndicator;
 
 import java.lang.ref.WeakReference;
 

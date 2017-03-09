@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="TypefaceTazBold" translatable="false">fonts/TazWt07-Bold.otf</string>
-    <string name="TypefaceTazRegular" translatable="false">fonts/TazWt05-Regular.otf</string>
-    
-</resources>

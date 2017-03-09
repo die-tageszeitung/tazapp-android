@@ -6,8 +6,8 @@ import com.dd.plist.NSString;
 import com.dd.plist.PropertyListFormatException;
 import com.dd.plist.PropertyListParser;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import de.thecode.android.tazreader.secure.HashHelper;
+
 import org.xml.sax.SAXException;
 
 import java.io.File;
@@ -20,20 +20,18 @@ import java.util.Set;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-import de.thecode.android.tazreader.secure.HashHelper;
+import timber.log.Timber;
 
 /**
  * Created by mate on 07.08.2015.
  */
 public class UnzipResource {
 
-    private static final Logger log = LoggerFactory.getLogger(UnzipResource.class);
-
     private static final String RESOURCE_SHA1_PLIST_FILENAME = "sha1.plist";
-    private static final String KEY_HASHVALS = "HashVals";
+    private static final String KEY_HASHVALS                 = "HashVals";
 
 
-    private File destinationDir;
+    private File      destinationDir;
     private UnzipFile unzipFile;
 
     public UnzipResource(File zipFile, File destinationDir, boolean deleteSourceOnSuccess) throws FileNotFoundException {
@@ -41,12 +39,13 @@ public class UnzipResource {
         this.unzipFile = new UnzipFile(zipFile, destinationDir, deleteSourceOnSuccess, true);
     }
 
-    public File start() throws IOException, ParserConfigurationException, ParseException, SAXException, PropertyListFormatException, UnzipCanceledException {
+    public File start() throws IOException, ParserConfigurationException, ParseException, SAXException,
+            PropertyListFormatException, UnzipCanceledException {
         File result = unzipFile.start();
         File sha1File = new File(destinationDir, RESOURCE_SHA1_PLIST_FILENAME);
         if (!sha1File.exists()) throw new FileNotFoundException("Sha1 File not found");
         try {
-            log.trace("... start parsing sha1 plist to check hashvals for ressources.");
+            Timber.i("... start parsing sha1 plist to check hashvals for ressources.");
             NSDictionary root = (NSDictionary) PropertyListParser.parse(sha1File);
             NSDictionary hashValsDict = (NSDictionary) root.objectForKey(KEY_HASHVALS);
             Set<Map.Entry<String, NSObject>> set = hashValsDict.entrySet();
@@ -58,12 +57,12 @@ public class UnzipResource {
                         if (!HashHelper.verifyHash(checkFile, ((NSString) hashVal.getValue()).getContent(), HashHelper.SHA_1))
                             throw new FileNotFoundException("Wrong hash for file " + checkFile.getName());
                     } catch (NoSuchAlgorithmException e) {
-                        log.warn("",e);
+                        Timber.w(e);
                     }
                 }
             }
         } catch (UnsupportedOperationException e) {
-            log.warn("",e);
+            Timber.w(e);
         }
         return result;
     }

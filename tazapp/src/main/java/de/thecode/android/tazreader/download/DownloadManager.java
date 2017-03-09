@@ -6,12 +6,21 @@ import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
+import android.os.StatFs;
+import android.text.TextUtils;
 
-import com.google.common.base.Strings;
+import de.greenrobot.event.EventBus;
+import de.thecode.android.tazreader.BuildConfig;
+import de.thecode.android.tazreader.R;
+import de.thecode.android.tazreader.data.Paper;
+import de.thecode.android.tazreader.data.Resource;
+import de.thecode.android.tazreader.data.TazSettings;
+import de.thecode.android.tazreader.secure.Base64;
+import de.thecode.android.tazreader.sync.AccountHelper;
+import de.thecode.android.tazreader.utils.StorageManager;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -19,28 +28,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import de.greenrobot.event.EventBus;
-import de.thecode.android.tazreader.R;
-import de.thecode.android.tazreader.data.Paper;
-import de.thecode.android.tazreader.data.Resource;
-import de.thecode.android.tazreader.secure.Base64;
-import de.thecode.android.tazreader.sync.AccountHelper;
-import de.thecode.android.tazreader.sync.AccountHelper.CreateAccountException;
-import de.thecode.android.tazreader.utils.StorageManager;
+import timber.log.Timber;
 
 public class DownloadManager {
 
-    private static final Logger log = LoggerFactory.getLogger(DownloadManager.class);
-
     android.app.DownloadManager mDownloadManager;
-    Context mContext;
-    StorageManager mStorage;
+    Context                     mContext;
+    StorageManager              mStorage;
 
     private static DownloadManager instance;
 
     public static DownloadManager getInstance(Context context) {
-        if (instance == null)
-            instance = new DownloadManager(context.getApplicationContext());
+        if (instance == null) instance = new DownloadManager(context.getApplicationContext());
         return instance;
     }
 
@@ -51,15 +50,15 @@ public class DownloadManager {
     }
 
     @SuppressLint("NewApi")
-    public void enquePaper(long paperId) throws IllegalArgumentException, Paper.PaperNotFoundException, CreateAccountException, DownloadNotAllowedException {
+    public void enquePaper(long paperId) throws IllegalArgumentException, Paper.PaperNotFoundException,
+            DownloadNotAllowedException, NotEnoughSpaceException {
 
         Paper paper = new Paper(mContext, paperId);
-        AccountHelper accountHelper = new AccountHelper(mContext);
 
-        if (!accountHelper.isAuthenticated() && !paper.isDemo())
-            throw new DownloadNotAllowedException();
+        if (TazSettings.getInstance(mContext)
+                       .isDemoMode() && !paper.isDemo()) throw new DownloadNotAllowedException();
 
-        log.trace("requesting paper download: {}", paper);
+        Timber.i("requesting paper download: %s", paper);
 
         Uri downloadUri = Uri.parse(paper.getLink());
 
@@ -72,11 +71,17 @@ public class DownloadManager {
             request = new Request(Uri.parse(httpUrl));
         }
 
-            if (paper.getPublicationId() > 0) {
-                request.addRequestHeader("Authorization", "Basic " + Base64.encodeToString((accountHelper.getUser() + ":" + accountHelper.getPassword()).getBytes(), Base64.NO_WRAP));
-            }
+        if (paper.getPublicationId() > 0) {
+            request.addRequestHeader("Authorization", "Basic " + Base64.encodeToString((AccountHelper.getInstance(mContext)
+                                                                                                     .getUser(
+                                                                                                             AccountHelper.ACCOUNT_DEMO_USER) +
+                    ":" + AccountHelper.getInstance(mContext)
+                                       .getPassword(AccountHelper.ACCOUNT_DEMO_PASS)).getBytes(), Base64.NO_WRAP));
+        }
 
         File destinationFile = mStorage.getDownloadFile(paper);
+
+        assertEnougSpaceForDownload(destinationFile.getParentFile(), calculateBytesNeeded(paper.getLen()));
 
         request.setDestinationUri(Uri.fromFile(destinationFile));
 
@@ -87,7 +92,7 @@ public class DownloadManager {
 
         final long downloadId = mDownloadManager.enqueue(request);
 
-        log.trace("... download requested at android download manager, id: {}", downloadId);
+        Timber.i("... download requested at android download manager, id: %d", downloadId);
 
         //paper.setDownloadprogress(0);
         paper.setDownloadId(downloadId);
@@ -97,19 +102,19 @@ public class DownloadManager {
         mContext.getContentResolver()
                 .update(ContentUris.withAppendedId(Paper.CONTENT_URI, paper.getId()), paper.getContentValues(), null, null);
 
-        if (!Strings.isNullOrEmpty(paper.getResource())) {
+        if (!TextUtils.isEmpty(paper.getResource())) {
             enqueResource(paper);
         }
     }
 
     @SuppressLint("NewApi")
-    public void enqueResource(Paper paper) throws IllegalArgumentException {
+    public void enqueResource(Paper paper) throws IllegalArgumentException, NotEnoughSpaceException {
         //Paper paper = new Paper(mContext, paperId);
 
         //Uri downloadUri = Uri.parse(paper.getResourceUrl());
 
         Resource resource = new Resource(mContext, paper.getResource());
-        log.trace("requesting resource download: {}", resource);
+        Timber.i("requesting resource download: %s", resource);
 
         if (resource.getKey() == null) {
             resource.setKey(paper.getResource());
@@ -124,8 +129,8 @@ public class DownloadManager {
             resource.setUrl(paper.getResourceUrl());
 
             Uri downloadUri;
-            if (Strings.isNullOrEmpty(resource.getUrl())) {
-                downloadUri = Uri.parse(mContext.getString(R.string.resourceUrl))
+            if (TextUtils.isEmpty(resource.getUrl())) {
+                downloadUri = Uri.parse(BuildConfig.RESOURCEURL)
                                  .buildUpon()
                                  .appendPath(resource.getKey())
                                  .build();
@@ -141,6 +146,8 @@ public class DownloadManager {
 
             File destinationFile = mStorage.getDownloadFile(resource);
 
+            assertEnougSpaceForDownload(destinationFile.getParentFile(), calculateBytesNeeded(resource.getLen()));
+
             request.setDestinationUri(Uri.fromFile(destinationFile));
 
             request.setNotificationVisibility(Request.VISIBILITY_VISIBLE);
@@ -148,12 +155,13 @@ public class DownloadManager {
 
             long downloadId = mDownloadManager.enqueue(request);
 
-            log.trace("... download requested at android download manager, id: {}", downloadId);
+            Timber.i("... download requested at android download manager, id: %d", downloadId);
 
             resource.setDownloadId(downloadId);
 
             mContext.getContentResolver()
-                    .update(Uri.withAppendedPath(Resource.CONTENT_URI, resource.getKey()), resource.getContentValues(), null, null);
+                    .update(Uri.withAppendedPath(Resource.CONTENT_URI, resource.getKey()), resource.getContentValues(), null,
+                            null);
         }
 
     }
@@ -161,15 +169,16 @@ public class DownloadManager {
     public void cancelDownload(long downloadId) {
         DownloadState state = getDownloadState(downloadId);
         if (state != null && state.getStatus() != DownloadState.STATUS_SUCCESSFUL) {
-            if (mDownloadManager.remove(downloadId)>0){
+            if (mDownloadManager.remove(downloadId) > 0) {
                 Cursor cursor = mContext.getContentResolver()
-                                       .query(Paper.CONTENT_URI, null, Paper.Columns.DOWNLOADID + " = " + downloadId, null, null);
+                                        .query(Paper.CONTENT_URI, null, Paper.Columns.DOWNLOADID + " = " + downloadId, null,
+                                               null);
                 try {
                     while (cursor.moveToNext()) {
                         Paper removedPaper = new Paper(cursor);
                         removedPaper.delete(mContext);
                     }
-                }finally {
+                } finally {
                     cursor.close();
                 }
 
@@ -218,20 +227,20 @@ public class DownloadManager {
 
 
         public static final int STATUS_SUCCESSFUL = android.app.DownloadManager.STATUS_SUCCESSFUL;
-        public static final int STATUS_FAILED = android.app.DownloadManager.STATUS_FAILED;
-        public static final int STATUS_PAUSED = android.app.DownloadManager.STATUS_PAUSED;
-        public static final int STATUS_PENDING = android.app.DownloadManager.STATUS_PENDING;
-        public static final int STATUS_RUNNING = android.app.DownloadManager.STATUS_RUNNING;
-        public static final int STATUS_NOTFOUND = 0;
+        public static final int STATUS_FAILED     = android.app.DownloadManager.STATUS_FAILED;
+        public static final int STATUS_PAUSED     = android.app.DownloadManager.STATUS_PAUSED;
+        public static final int STATUS_PENDING    = android.app.DownloadManager.STATUS_PENDING;
+        public static final int STATUS_RUNNING    = android.app.DownloadManager.STATUS_RUNNING;
+        public static final int STATUS_NOTFOUND   = 0;
 
-        int mStatus;
-        int mReason;
-        long mBytesTotal;
-        long mBytesDownloaded;
+        int    mStatus;
+        int    mReason;
+        long   mBytesTotal;
+        long   mBytesDownloaded;
         String mUri;
         String mTitle;
         String mDescription;
-        long mDownloadId;
+        long   mDownloadId;
 
         public DownloadState(long downloadId) {
             mDownloadId = downloadId;
@@ -244,7 +253,8 @@ public class DownloadManager {
                 if (cursor != null && cursor.moveToFirst()) {
                     mStatus = cursor.getInt(cursor.getColumnIndex(android.app.DownloadManager.COLUMN_STATUS));
                     mReason = cursor.getInt(cursor.getColumnIndex(android.app.DownloadManager.COLUMN_REASON));
-                    mBytesDownloaded = cursor.getLong(cursor.getColumnIndex(android.app.DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR));
+                    mBytesDownloaded = cursor.getLong(
+                            cursor.getColumnIndex(android.app.DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR));
                     mBytesTotal = cursor.getLong(cursor.getColumnIndex(android.app.DownloadManager.COLUMN_TOTAL_SIZE_BYTES));
                     mUri = cursor.getString(cursor.getColumnIndex(android.app.DownloadManager.COLUMN_URI));
                     mTitle = cursor.getString(cursor.getColumnIndex(android.app.DownloadManager.COLUMN_TITLE));
@@ -304,8 +314,6 @@ public class DownloadManager {
         /**
          * Gibt einen lesbaren Text des Grundes für den DownloadStatus zurück... Dieser ist in /res/values/strings_download.xml
          * hinterlegt und kann im erbenden Projekt überschrieben werden.
-         *
-         * @return
          */
         public String getReasonText() {
             int id = mContext.getResources()
@@ -318,10 +326,8 @@ public class DownloadManager {
         }
 
         /**
-         * Gibt einen lesbaren Text des DownloadStatus zurück... Dieser ist in /res/values/strings_download.xml hinterlegt und kann im
-         * erbenden Projekt überschrieben werden.
-         *
-         * @return
+         * Gibt einen lesbaren Text des DownloadStatus zurück... Dieser ist in /res/values/strings_download.xml hinterlegt und
+         * kann im erbenden Projekt überschrieben werden.
          */
         public String getStatusText() {
             switch (getStatus()) {
@@ -350,7 +356,7 @@ public class DownloadManager {
 
         long downloadId;
         long paperId;
-        int progress;
+        int  progress;
 
         public DownloadProgressThread(long downloadId, long paperId) {
             this.downloadId = downloadId;
@@ -361,7 +367,7 @@ public class DownloadManager {
 
         @Override
         public void run() {
-            log.trace("starting");
+            Timber.i("starting");
             boolean downloading = true;
             while (downloading && !isInterrupted()) {
                 DownloadState downloadState = new DownloadState(downloadId);
@@ -380,12 +386,35 @@ public class DownloadManager {
                 try {
                     sleep(500);
                 } catch (InterruptedException e) {
-                    log.warn(e.getMessage());
+                    Timber.w(e);
                 }
             }
-            log.trace("finished");
+            Timber.i("finished");
         }
     }
+
+    private static long calculateBytesNeeded(long bytesOfDownload) {
+        long oneHundred = 100 * 1024 * 1024;
+        long threeDownloads = bytesOfDownload * 3;
+        long fiveDownloads = bytesOfDownload * 5;
+        if (threeDownloads > oneHundred) {
+            return threeDownloads;
+        } else return Math.min(oneHundred, fiveDownloads);
+    }
+
+    private static void assertEnougSpaceForDownload(File dir, long requested) throws NotEnoughSpaceException {
+        if (requested <= 0) return;
+        StatFs statFs = new StatFs(dir.getAbsolutePath());
+        long available;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            available = statFs.getAvailableBlocksLong() * statFs.getBlockSizeLong();
+        } else {
+            available = (long) statFs.getAvailableBlocks() * (long) statFs.getBlockSize();
+        }
+        if (available < requested) throw new NotEnoughSpaceException(requested, available);
+        return;
+    }
+
 
     public class DownloadNotAllowedException extends Exception {
         public DownloadNotAllowedException() {
@@ -395,5 +424,25 @@ public class DownloadManager {
             super(detailMessage);
         }
     }
+
+    public static class NotEnoughSpaceException extends Exception {
+        final long requestedByte;
+        final long availableByte;
+
+        public NotEnoughSpaceException(long requestedByte, long availableByte) {
+            super();
+            this.requestedByte = requestedByte;
+            this.availableByte = availableByte;
+        }
+
+        public long getRequestedByte() {
+            return requestedByte;
+        }
+
+        public long getAvailableByte() {
+            return availableByte;
+        }
+    }
+
 
 }

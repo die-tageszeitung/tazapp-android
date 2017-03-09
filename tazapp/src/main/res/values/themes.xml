@@ -1,21 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <style name="BaseTheme" parent="Theme.AppCompat.Light.NoActionBar">
+    <style name="BaseTheme" parent="FlavorBaseTheme">
         <item name="colorPrimary">@color/color_primary</item>
         <item name="colorPrimaryDark">@color/color_primary_dark</item>
         <item name="colorAccent">@color/color_accent</item>
-        <item name="android:windowBackground">?attr/colorPrimary</item>
-<!--        <item name="android:windowNoTitle">true</item>
-        <item name="windowActionBar">false</item>     -->
-        <item name="windowActionModeOverlay">true</item>-->
-
-        <!--<item name="android:actionModeBackground">@color/background_material_dark</item>-->
-        <!--<item name="actionBarPopupTheme">@style/ThemeOverlay.AppCompat.Dark</item>-->
-
+        <item name="android:windowBackground">@drawable/splashbackground</item>
+        <item name="windowActionModeOverlay">true</item>
     </style>
 
     <style name="AppTheme" parent="BaseTheme">
+
     </style>
 
+    <style name="AppTheme.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+
+    </style>
+
+    <style name="AppTheme.Toolbar">
+        <item name="colorControlNormal">@color/toolbar_foreground_color</item>
+    </style>
+
+    <style name="AppTheme.Button" parent="@android:style/Widget.Button">
+        <item name="android:textColor">@color/button_text</item>
+        <item name="colorButtonNormal">@color/button_normal</item>
+    </style>
+
+    <style name="AcraDialog" parent="Theme.AppCompat.Light.Dialog" >
+        <item name="colorPrimary">@color/color_primary</item>
+        <item name="colorPrimaryDark">@color/color_primary_dark</item>
+        <item name="colorAccent">@color/color_accent</item>
+    </style>
 </resources>

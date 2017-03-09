@@ -14,17 +14,23 @@
     <dimen name="pageindex_thumbnail_image_height">270dp</dimen>
     <dimen name="pageindex_padding">5dp</dimen>
     <dimen name="pageindex_thumbnail_current_borderwidth">10dp</dimen>
-    
-    
-    
-    <dimen name="reader_bookmark_offset">-12dp</dimen>
+
+
+
+    <dimen name="reader_bookmark_offset_active">-4dp</dimen>
+    <dimen name="reader_bookmark_offset_normal">-16dp</dimen>
     
     <dimen name="index_min_height">48dp</dimen>
     <item name="index_image" type="dimen">@dimen/index_min_height</item>
     <dimen name="index_currentmarker_width">5dp</dimen>
+    <dimen name="index_divider_margin">0dp</dimen>
+    <dimen name="index_divider_size">1dp</dimen>
 
     <dimen name="reader_navdrawer_topmargin">0dp</dimen>
 
     <dimen name="help_padding">24dp</dimen>
 
+    <dimen name="fab_margin">0dp</dimen>
+
+    <bool name="isTablet">false</bool>
 </resources>

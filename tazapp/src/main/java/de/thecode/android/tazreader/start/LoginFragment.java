@@ -1,11 +1,15 @@
 package de.thecode.android.tazreader.start;
 
 
-import android.app.Fragment;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
+import android.support.v4.app.Fragment;
+import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,26 +17,25 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 
-import com.android.volley.AuthFailureError;
-import com.android.volley.Request;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.google.common.base.Strings;
-
-import java.lang.ref.WeakReference;
-import java.util.HashMap;
-import java.util.Map;
-
+import de.mateware.dialog.Dialog;
+import de.mateware.dialog.DialogIndeterminateProgress;
+import de.mateware.snacky.Snacky;
+import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.R;
-import de.thecode.android.tazreader.dialog.TcDialog;
-import de.thecode.android.tazreader.dialog.TcDialogIndeterminateProgress;
-import de.thecode.android.tazreader.secure.Base64;
+import de.thecode.android.tazreader.data.TazSettings;
+import de.thecode.android.tazreader.okhttp3.OkHttp3Helper;
 import de.thecode.android.tazreader.sync.AccountHelper;
 import de.thecode.android.tazreader.utils.BaseFragment;
-import de.thecode.android.tazreader.volley.RequestManager;
-import de.thecode.android.tazreader.volley.TazStringRequest;
+import de.thecode.android.tazreader.utils.RunnableExtended;
 
-import static android.graphics.PorterDuff.Mode.SRC_ATOP;
+import java.io.IOException;
+import java.lang.ref.WeakReference;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.HttpUrl;
+import okhttp3.Response;
+
 
 /**
  * A simple {@link Fragment} subclass.
@@ -41,11 +44,10 @@ public class LoginFragment extends BaseFragment {
 
     public static final String DIALOG_CHECK_CREDENTIALS = "checkCrd";
     public static final String DIALOG_ERROR_CREDENTIALS = "errorCrd";
-    private EditText editUser;
-    private EditText editPass;
-    private Button loginButton;
-    private Button orderButton;
+    private EditText                      editUser;
+    private EditText                      editPass;
     private WeakReference<IStartCallback> callback;
+    private Button                        loginButton;
 
     public LoginFragment() {
         // Required empty public constructor
@@ -66,18 +68,22 @@ public class LoginFragment extends BaseFragment {
 
         View view = inflater.inflate(R.layout.start_login, container, false);
         loginButton = (Button) view.findViewById(R.id.buttonLogin);
-        orderButton = (Button) view.findViewById(R.id.buttonOrder);
+        loginButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                checkLogin();
+            }
+        });
+        Button orderButton = (Button) view.findViewById(R.id.buttonOrder);
         orderButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent i = new Intent(Intent.ACTION_VIEW);
-                i.setData(Uri.parse(getString(R.string.abo_url)));
+                i.setData(Uri.parse(BuildConfig.ABOURL));
                 startActivity(i);
             }
         });
 
-        orderButton.getBackground()
-                   .setColorFilter(getResources().getColor(R.color.start_login_calltoaction_button_background), SRC_ATOP);
         editUser = (EditText) view.findViewById(R.id.editUser);
         editPass = (EditText) view.findViewById(R.id.editPass);
         editPass.setOnKeyListener(new View.OnKeyListener() {
@@ -91,14 +97,10 @@ public class LoginFragment extends BaseFragment {
             }
         });
 
-        if (hasCallback() && getCallback().getAccountHelper()
-                                          .isAuthenticated()) {
-            setUiForLoggedIn();
-            editUser.setText(getCallback().getAccountHelper()
-                                          .getUser());
-            editPass.setText(getCallback().getAccountHelper()
-                                          .getPassword());
-        } else setUiForNotLoggedIn();
+        editUser.setText(AccountHelper.getInstance(getContext())
+                                      .getUser(""));
+        editPass.setText(AccountHelper.getInstance(getContext())
+                                      .getPassword(""));
 
         return view;
     }
@@ -111,127 +113,143 @@ public class LoginFragment extends BaseFragment {
         return callback.get();
     }
 
-    private void blockUi() {
-        new TcDialogIndeterminateProgress().withCancelable(false)
-                                           .withMessage(R.string.dialog_check_credentials)
-                                           .show(getFragmentManager(), DIALOG_CHECK_CREDENTIALS);
-        editUser.setEnabled(false);
-        editPass.setEnabled(false);
+    private void blockUi(boolean block) {
+        editUser.setEnabled(!block);
+        editPass.setEnabled(!block);
+        loginButton.setEnabled(!block);
     }
 
-    private void unblockUi() {
-        editUser.setEnabled(true);
-        editPass.setEnabled(true);
-        TcDialogIndeterminateProgress.dismissDialog(getFragmentManager(), DIALOG_CHECK_CREDENTIALS);
+    private void showWaitingDialog() {
+        new DialogIndeterminateProgress.Builder().setCancelable(false)
+                                                 .setMessage(R.string.dialog_check_credentials)
+                                                 .buildSupport()
+                                                 .show(getFragmentManager(), DIALOG_CHECK_CREDENTIALS);
     }
 
-    private void setUiForLoggedIn() {
-        editUser.setEnabled(false);
-        editPass.setEnabled(false);
-        loginButton.setText(R.string.string_deleteAccount_button);
-        loginButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (hasCallback()) getCallback().getAccountHelper()
-                                                .setUser(AccountHelper.ACCOUNT_DEMO_USER);
-                if (hasCallback()) getCallback().getAccountHelper()
-                                                .setPassword(AccountHelper.ACCOUNT_DEMO_PASS);
-                if (hasCallback()) getCallback().getAccountHelper()
-                                                .setAuthenticated(false);
-                setUiForNotLoggedIn();
-                if (hasCallback()) getCallback().logoutFinished();
-            }
-        });
-        orderButton.setVisibility(View.INVISIBLE);
-    }
-
-    private void setUiForNotLoggedIn() {
-        editUser.setEnabled(true);
-        editPass.setEnabled(true);
-        loginButton.setText(R.string.string_login_button);
-        loginButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                checkLogin();
-            }
-        });
-        orderButton.setVisibility(View.VISIBLE);
+    private void hideWaitingDialog() {
+        DialogIndeterminateProgress.dismissDialog(getFragmentManager(), DIALOG_CHECK_CREDENTIALS);
     }
 
     private void checkLogin() {
-        if (Strings.isNullOrEmpty(editUser.getText()
-                                          .toString()) || Strings.isNullOrEmpty(editPass.getText()
-                                                                                        .toString())) {
-            new TcDialog().withIcon(R.drawable.ic_alerts_and_states_warning)
-                          .withTitle(R.string.dialog_error_title)
-                          .withMessage(R.string.dialog_error_no_credentials)
-                          .withPositiveButton()
-                          .show(getFragmentManager(), DIALOG_ERROR_CREDENTIALS);
+
+        String username = editUser.getText()
+                                  .toString();
+        String password = editPass.getText()
+                                  .toString();
+
+        if (TextUtils.isEmpty(username) || TextUtils.isEmpty(password)) {
+            new Dialog.Builder().setIcon(R.drawable.ic_alerts_and_states_warning)
+                                .setTitle(R.string.dialog_error_title)
+                                .setMessage(R.string.dialog_error_no_credentials)
+                                .setPositiveButton()
+                                .buildSupport()
+                                .show(getFragmentManager(), DIALOG_ERROR_CREDENTIALS);
             return;
         }
-        if (AccountHelper.ACCOUNT_DEMO_USER.equalsIgnoreCase(editUser.getText()
-                                                                     .toString())) {
-            new TcDialog().withIcon(R.drawable.ic_alerts_and_states_warning)
-                          .withTitle(R.string.dialog_error_title)
-                          .withMessage(R.string.dialog_error_credentials_not_allowed)
-                          .withPositiveButton()
-                          .show(getFragmentManager(), DIALOG_ERROR_CREDENTIALS);
+        if (AccountHelper.ACCOUNT_DEMO_USER.equalsIgnoreCase(username)) {
+            new Dialog.Builder().setIcon(R.drawable.ic_alerts_and_states_warning)
+                                .setTitle(R.string.dialog_error_title)
+                                .setMessage(R.string.dialog_error_credentials_not_allowed)
+                                .setPositiveButton()
+                                .buildSupport()
+                                .show(getFragmentManager(), DIALOG_ERROR_CREDENTIALS);
             return;
         }
 
 
-        blockUi();
+        blockUi(true);
+        showWaitingDialog();
 
-        Response.Listener<String> responseListener = new Response.Listener<String>() {
+        Call call = OkHttp3Helper.getInstance(getContext())
+                                 .getCall(HttpUrl.parse(BuildConfig.CHECKLOGINURL), username, password);
 
-            @Override
-            public void onResponse(String response) {
-                unblockUi();
-                if (hasCallback()) getCallback().getAccountHelper()
-                                                .setUser(editUser.getText()
-                                                                 .toString());
-                if (hasCallback()) getCallback().getAccountHelper()
-                                                .setPassword(editPass.getText()
-                                                                     .toString());
-                if (hasCallback()) getCallback().getAccountHelper()
-                                                .setAuthenticated(true);
-                setUiForLoggedIn();
-                if (hasCallback()) getCallback().loginFinished();
-            }
-        };
+        call.enqueue(new LoginCallback(username, password) {
 
-        TazStringRequest.MyStringErrorListener errorListener = new TazStringRequest.MyStringErrorListener() {
+            Handler mainHandler = new Handler(Looper.getMainLooper());
 
             @Override
-            public void onErrorResponse(VolleyError error, final String string) {
-
-                new TcDialog().withIcon(R.drawable.ic_alerts_and_states_warning)
-                              .withTitle(R.string.dialog_error_title)
-                              .withMessage(string)
-                              .withPositiveButton()
-                              .show(getFragmentManager(), DIALOG_ERROR_CREDENTIALS);
-                unblockUi();
-                setUiForNotLoggedIn();
+            public void onResponse(Call call, Response response, String username, String password) throws IOException {
+                if (response.isSuccessful()) {
+                    mainHandler.post(new RunnableExtended(username, password) {
+                        @Override
+                        public void run() {
+                            TazSettings.getInstance(getContext())
+                                       .setDemoMode(false);
+                            AccountHelper.getInstance(getContext())
+                                         .setUser((String) getObject(0), (String) getObject(1));
+                            hideWaitingDialog();
+                            blockUi(false);
+                            if (hasCallback()) getCallback().onSuccessfulCredentialsCheck();
+                            //if (hasCallback()) getCallback().onDemoModeChanged(false);
+                            Snacky.builder()
+                                  .setView(getActivity().findViewById(R.id.content_frame))
+                                  .setDuration(Snacky.LENGTH_SHORT)
+                                  .setText("Nutzerdaten akzeptiert")
+                                  .success()
+                                  .addCallback(new Snackbar.Callback() {
+                                      @Override
+                                      public void onDismissed(Snackbar transientBottomBar, int event) {
+                                      }
+                                  })
+                                  .show();
+                        }
+                    });
+                } else {
+                    onFailure(call, new IOException(response.body()
+                                                            .string()));
+                }
             }
-        };
-
-        TazStringRequest stringRequest = new TazStringRequest(Request.Method.GET, getString(R.string.checkLogin), responseListener, errorListener) {
 
             @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                Map<String, String> headerMap = new HashMap<String, String>();
-                String credentials = editUser.getText()
-                                             .toString() + ":" + editPass.getText()
-                                                                         .toString();
-                String base64EncodedCredentials = Base64.encodeToString(credentials.getBytes(), Base64.NO_WRAP);
-                headerMap.put("Authorization", "Basic " + base64EncodedCredentials);
-                return headerMap;
+            public void onFailure(Call call, IOException e, String username, String password) {
+                mainHandler.post(new RunnableExtended(e) {
+                    @Override
+                    public void run() {
+                        TazSettings.getInstance(getContext())
+                                   .setDemoMode(true);
+                        hideWaitingDialog();
+                        //if (hasCallback()) getCallback().onDemoModeChanged(true);
+                        Snacky.builder()
+                              .setView(getActivity().findViewById(R.id.content_frame))
+                              .setDuration(Snacky.LENGTH_INDEFINITE)
+                              .setText(((Exception) getObject(0)).getMessage())
+                              .setActionText(android.R.string.ok)
+                              .error()
+                              .addCallback(new Snackbar.Callback() {
+                                  @Override
+                                  public void onDismissed(Snackbar transientBottomBar, int event) {
+                                      blockUi(false);
+                                  }
+                              })
+                              .show();
+                    }
+                });
             }
-        };
-
-        RequestManager.getInstance().doRequest().add(stringRequest);
-
+        });
     }
 
+    private static abstract class LoginCallback implements Callback {
 
+        private final String username;
+        private final String password;
+
+        LoginCallback(String username, String password) {
+            this.username = username;
+            this.password = password;
+        }
+
+        @Override
+        public void onResponse(Call call, Response response) throws IOException {
+            onResponse(call, response, username, password);
+        }
+
+        @Override
+        public void onFailure(Call call, IOException e) {
+            onFailure(call, e, username, password);
+        }
+
+        public abstract void onResponse(Call call, Response response, String username, String password) throws IOException;
+
+        public abstract void onFailure(Call call, IOException e, String username, String password);
+    }
 }

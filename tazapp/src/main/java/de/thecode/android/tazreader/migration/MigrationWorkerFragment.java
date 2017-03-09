@@ -1,24 +1,11 @@
 package de.thecode.android.tazreader.migration;
 
-import android.app.FragmentManager;
+
 import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
 import android.os.Bundle;
-
-import org.apache.commons.io.FileUtils;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.List;
+import android.support.v4.app.FragmentManager;
 
 import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.data.Paper;
@@ -29,12 +16,25 @@ import de.thecode.android.tazreader.utils.AsyncTaskWithExecption;
 import de.thecode.android.tazreader.utils.BaseFragment;
 import de.thecode.android.tazreader.utils.StorageManager;
 
+import org.apache.commons.io.FileUtils;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
+
+import timber.log.Timber;
+
 /**
  * Created by mate on 21.04.2015.
  */
 public class MigrationWorkerFragment extends BaseFragment {
 
-    private static final Logger log = LoggerFactory.getLogger(MigrationWorkerFragment.class);
 
     private MigrationWorkerCallback callback;
     Context applicationContext;
@@ -44,7 +44,8 @@ public class MigrationWorkerFragment extends BaseFragment {
     }
 
 
-    public static MigrationWorkerFragment findOrCreateWorkerFragment(FragmentManager fm, String tag, MigrationWorkerCallback callback) {
+    public static MigrationWorkerFragment findOrCreateWorkerFragment(FragmentManager fm, String tag,
+                                                                     MigrationWorkerCallback callback) {
         MigrationWorkerFragment fragment = (MigrationWorkerFragment) fm.findFragmentByTag(tag);
         if (fragment == null) {
             fragment = new MigrationWorkerFragment();
@@ -60,7 +61,7 @@ public class MigrationWorkerFragment extends BaseFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        log.debug("");
+
         setRetainInstance(true);
         applicationContext = getActivity().getApplicationContext();
         checkForMigration();
@@ -70,9 +71,11 @@ public class MigrationWorkerFragment extends BaseFragment {
 
 
     public void checkForMigration() {
-        int migrateFrom = TazSettings.getPrefInt(applicationContext, TazSettings.PREFKEY.PAPERMIGRATEFROM, Integer.parseInt(String.valueOf(BuildConfig.VERSION_CODE)
-                                                                                                                                  .substring(1)));
-        log.debug("{}", migrateFrom);
+        int migrateFrom = TazSettings.getInstance(applicationContext)
+                                     .getPrefInt(TazSettings.PREFKEY.PAPERMIGRATEFROM, Integer.parseInt(
+                                             String.valueOf(BuildConfig.VERSION_CODE)
+                                                   .substring(1)));
+        Timber.d("%d", migrateFrom);
 
         if (migrateFrom < 32) {
             migrateTo32();
@@ -102,7 +105,7 @@ public class MigrationWorkerFragment extends BaseFragment {
 
     public void migrateTo32() {
 
-        log.debug("");
+
         new AsyncTaskWithExecption<Void, Void, List<File>>() {
 
             @Override
@@ -113,26 +116,27 @@ public class MigrationWorkerFragment extends BaseFragment {
             @Override
             public List<File> doInBackgroundWithException(Void... params) throws Exception {
                 List<File> filesToImport = new ArrayList<>();
-                log.info("Migrating to version 32 ...");
+                Timber.i("Migrating to version 32 ...");
 
                 StorageManager storage = StorageManager.getInstance(applicationContext);
 
-                log.info("Deleting old temp dir");
+                Timber.i("Deleting old temp dir");
                 File oldTemp = storage.get("temp");
                 if (oldTemp.exists()) FileUtils.deleteQuietly(oldTemp);//Utils.deleteDir(oldTemp);
-               log.info("...finished");
+                Timber.i("...finished");
 
-                log.info("Deleting Cache");
+                Timber.i("Deleting Cache");
                 if (storage.getCache(null)
-                           .exists()) FileUtils.deleteQuietly(storage.getCache(null));//Utils.deleteDirContent(storage.getCache(null));
-                log.info("...finished");
+                           .exists())
+                    FileUtils.deleteQuietly(storage.getCache(null));//Utils.deleteDirContent(storage.getCache(null));
+                Timber.i("...finished");
 
                 List<Store> storeList = Store.getAllStores(applicationContext);
                 for (Store store : storeList) {
-                    log.info("Migrating Store {}", store.getKey());
+                    Timber.i("Migrating Store %s", store.getKey());
                     if (store.getKey()
                              .endsWith("/" + ReaderActivity.STORE_KEY_BOOKMARKS)) {
-                        log.info("Migrating Bookmarks");
+                        Timber.i("Migrating Bookmarks");
                         try {
                             JSONArray newBookmarksArray = new JSONArray();
                             JSONObject bookmarksJson = new JSONObject(store.getValue());
@@ -145,14 +149,14 @@ public class MigrationWorkerFragment extends BaseFragment {
                                 }
                             }
                             Store.saveValueForKey(applicationContext, store.getKey(), newBookmarksArray.toString());
-                            log.info("...finished");
+                            Timber.i("...finished");
                         } catch (JSONException e) {
-                            log.error("Error during migration, bookmarks will be deleted, sorry");
+                            Timber.e("Error during migration, bookmarks will be deleted, sorry");
                             Store.deleteKey(applicationContext, store.getKey());
                         }
 
                     } else {
-                        log.info("...deleting");
+                        Timber.i("...deleting");
                         Store.deleteKey(applicationContext, store.getKey());
                     }
                 }
@@ -206,7 +210,7 @@ public class MigrationWorkerFragment extends BaseFragment {
                 }
 
                 FileUtils.deleteQuietly(paperDir);//Utils.deleteDir(paperDir);
-                log.info("... migration finished!");
+                Timber.i("... migration finished!");
                 while (callback == null) {
                     //wait for callback before returning
                 }
@@ -215,14 +219,14 @@ public class MigrationWorkerFragment extends BaseFragment {
 
             @Override
             protected void onPostError(Exception exception) {
-                log.error("",exception);
+                Timber.e(exception);
                 if (callback != null) callback.onMigrationError(exception);
             }
 
             @Override
             protected void onPostSuccess(List<File> filesToImport) {
-                log.debug("");
-                TazSettings.setPref(applicationContext, TazSettings.PREFKEY.PAPERMIGRATEFROM, 32);
+
+                TazSettings.getInstance(applicationContext).setPref(TazSettings.PREFKEY.PAPERMIGRATEFROM, 32);
                 if (callback != null) callback.onMigrationFinished(32, filesToImport);
             }
         }.execute();

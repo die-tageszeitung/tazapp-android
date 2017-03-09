@@ -33,21 +33,22 @@ Weitere Infos unter [http://www.taz.de/android](http://www.taz.de/android)
 * Apache Licence, Version 2
     * android-support-v4
     * android-support-v7-appcompat
-    * android-volley
-    * guava
-    * eventbus 
-    * CWAC-Provider
     * android-support-recyclerview
     * android-support-cardview
+    * OkHttp3
+    * Picasso
+    * Picasso 2 OkHttp 3 Downloader
+    * AESCrypt-Android
+    * Snacky
+    * apache commons io
+    * eventbus
+    * CWAC-Provider
     * viewpagerindicator
-    * LeakCanary
-    * apache commons lang
+    * RecyclerView-FlexibleDivider
+    * Calligraphy
 * Affero GNU General Public License, Vversion 3
     * muPdf
 * MIT License
     * dd-plist
-    * SLF4J
 * BSD License
     * Stetho
-* Eclipse Public License - v 1.0
-    * Logback Android

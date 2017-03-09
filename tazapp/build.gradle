@@ -1,3 +1,37 @@
+def supportLibVer = "25.2.0"
+def buildToolsVer = "25.0.1"
+def compileSdkVer = 25
+def targetSdkVer = 25
+def minSdkVer = 15
+
+def versionCodeInt = 52
+def versionNamePrefix = "3.0."
+
+def tazPlist = '"https://dl.taz.de/tpaperIssue.plist"'
+def tazPlistArchiv = '"https://dl.taz.de/tpaperIssue.plist?start=%1$s&end=%2$s"'
+def tazStagingPlist = '"https://dl.taz.de/tpaperIssueTest.plist"'
+def tazStagingPlistArchiv = '"https://dl.taz.de/tpaperIssueTest.plist?start=%1$s&end=%2$s"'
+def tazAboUrl = '"https://www.taz.de/zeitung/abo/digitales-abo/apaper"'
+def tazCheckLogin = '"https://dl.taz.de/digiAboCheckLogin"'
+def tazResourceUrl = '"https://dl.taz.de/ressourcen"'
+def tazArchiveUrl = '"https://dl.taz.de/tpaperArchiv"'
+
+def lmdPlist = '"https://dl.monde-diplomatique.de/tpaperIssue.plist"'
+def lmdPlistArchiv = '"https://dl.monde-diplomatique.de/tpaperIssue.plist?start=%1$s&end=%2$s"'
+def lmdStagingPlist = '"https://dl.monde-diplomatique.de/tpaperIssueTest.plist"'
+def lmdStagingPlistArchiv = '"https://dl.monde-diplomatique.de/tpaperIssueTest.plist?start=%1$s&end=%2$s"'
+def lmdAboUrl = '"https://dl.monde-diplomatique.de/zeitung/abo/digitales-abo/apaper"'
+def lmdCheckLogin = '"https://dl.monde-diplomatique.de/digiAboCheckLogin"'
+def lmdResourceUrl = '"https://dl.monde-diplomatique.de/ressourcen"'
+def lmdArchiveUrl = '"https://dl.monde-diplomatique.de/tpaperArchiv"'
+
+def plistUrl = "PLISTURL"
+def plistArchiveUrl = "PLISTARCHIVURL"
+def aboUrl = "ABOURL"
+def checkLoginUrl = "CHECKLOGINURL"
+def resourceUrl = "RESOURCEURL"
+def archiveUrl = "ARCHIVEURL"
+
 apply plugin: 'idea'
 
 idea {
@@ -7,18 +41,8 @@ idea {
     }
 }
 
-buildscript {
-    repositories {
-        maven { url 'https://maven.fabric.io/public' }
-    }
-
-    dependencies {
-        classpath 'io.fabric.tools:gradle:1.18.0'
-    }
-}
-apply plugin: 'android-sdk-manager'
 apply plugin: 'com.android.application'
-apply plugin: 'io.fabric'
+apply plugin: 'com.github.gfx.ribbonizer'
 
 def overheadPath
 
@@ -51,14 +75,23 @@ if (overheadPath != null) {
 }
 
 android {
-    compileSdkVersion 22
-    buildToolsVersion '23.0.1'
+
+    sourceSets {
+        staging {
+            java {
+                srcDir 'src/debug/java'
+            }
+        }
+    }
+
+    compileSdkVersion compileSdkVer
+    buildToolsVersion buildToolsVer
     defaultConfig {
-        applicationId "de.thecode.android.tazreader"
-        minSdkVersion 15
-        targetSdkVersion 22
-        versionCode 51
-        versionName "3.0." + versionCode
+        resConfigs "en", "de"
+        minSdkVersion minSdkVer
+        targetSdkVersion targetSdkVer
+        versionCode versionCodeInt
+        versionName versionNamePrefix + versionCode
     }
     packagingOptions {
         exclude 'META-INF/LICENSE.txt'
@@ -69,13 +102,19 @@ android {
     }
     buildTypes {
         debug {
-            ext.enableCrashlytics = false
             debuggable true
             versionNameSuffix "_debug"
+            applicationIdSuffix ".debug"
+        }
+        staging.initWith(buildTypes.debug)
+        staging {
+            versionNameSuffix "_staging"
+            applicationIdSuffix ".staging"
         }
         release {
             zipAlignEnabled true
             minifyEnabled true
+            shrinkResources true
             debuggable false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
         }
@@ -85,15 +124,31 @@ android {
     // x86 version number > ARMv7 version number > ARMv5 version number
     // http://ph0b.com/improving-x86-support-of-android-apps-libs-engines/#ArchDependentAPKs
 
-    flavorDimensions /*"owner",*/"abi"
+    flavorDimensions "owner", "abi"
 
     productFlavors {
-//        taz {
-//            dimension "owner"
-//        }
-//        lmd {
-//            dimension "owner"
-//        }
+        taz {
+            applicationId "de.thecode.android.tazreader"
+            dimension "owner"
+            resValue 'string', 'app_name', 'taz.app'
+            buildConfigField 'String', plistUrl, tazPlist
+            buildConfigField 'String', plistArchiveUrl, tazPlistArchiv
+            buildConfigField 'String', aboUrl, tazAboUrl
+            buildConfigField 'String', checkLoginUrl, tazCheckLogin
+            buildConfigField 'String', resourceUrl, tazResourceUrl
+            buildConfigField 'String', archiveUrl, tazArchiveUrl
+        }
+        lmd {
+            applicationId "de.thecode.lmd"
+            dimension "owner"
+            resValue 'string', 'app_name', 'LMd'
+            buildConfigField 'String', plistUrl, lmdPlist
+            buildConfigField 'String', plistArchiveUrl, lmdPlistArchiv
+            buildConfigField 'String', aboUrl, lmdAboUrl
+            buildConfigField 'String', checkLoginUrl, lmdCheckLogin
+            buildConfigField 'String', resourceUrl, lmdResourceUrl
+            buildConfigField 'String', archiveUrl, lmdArchiveUrl
+        }
         x86 {
             dimension "abi"
             versionCode Integer.parseInt("6" + defaultConfig.versionCode)
@@ -133,32 +188,88 @@ android {
             versionName defaultConfig.versionName + "_fat"
         }
     }
+
+    applicationVariants.all { variant ->
+        def appName = variant.mergedFlavor.resValues.get('app_name').getValue()
+        appName = "${appName}"
+        if (!variant.buildType.name.equalsIgnoreCase("release")) {
+            appName += " " + variant.buildType.name.toUpperCase()
+        }
+        variant.resValue 'string', 'app_name', appName
+        if (variant.buildType.name.equalsIgnoreCase("staging")) {
+            variant.getProductFlavors().each { flavor ->
+                if (flavor.name.equalsIgnoreCase('taz')) {
+                    variant.buildConfigField 'String', plistUrl, tazStagingPlist
+                    variant.buildConfigField 'String', plistArchiveUrl, tazStagingPlistArchiv
+                } else if (flavor.name.equalsIgnoreCase('lmd')) {
+                    variant.buildConfigField 'String', plistUrl, lmdStagingPlist
+                    variant.buildConfigField 'String', plistArchiveUrl, lmdStagingPlistArchiv
+                }
+
+            }
+        }
+    }
+
+    variantFilter { variant ->
+        variant.getFlavors().each { flavor ->
+            if (flavor.name.equalsIgnoreCase('lmd')) {
+                variant.setIgnore(true)
+            }
+            if (!variant.buildType.name.equalsIgnoreCase('release')) {
+                if (flavor.dimension.equalsIgnoreCase('abi') && (flavor.name.equalsIgnoreCase('arm') || flavor.name.equalsIgnoreCase('mips'))) {
+                    variant.setIgnore(true)
+                }
+            }
+            if (variant.buildType.name.equalsIgnoreCase('staging') && flavor.dimension.equalsIgnoreCase('owner') && flavor.name.equalsIgnoreCase('lmd')) {
+                variant.setIgnore(true)
+            }
+        }
+    }
 }
 
 repositories {
-    maven { url "https://repo.commonsware.com.s3.amazonaws.com" }
+    maven { url "https://s3.amazonaws.com/repo.commonsware.com" }
     maven { url 'https://maven.fabric.io/public' }
 }
 
 dependencies {
-    compile 'com.mcxiaoke.volley:library:1.0.19'
+    compile "com.android.support:appcompat-v7:$supportLibVer"
+    compile "com.android.support:recyclerview-v7:$supportLibVer"
+    compile "com.android.support:design:$supportLibVer"
+    compile "com.android.support:support-v4:$supportLibVer"
+    compile "com.android.support:cardview-v7:$supportLibVer"
+
+    compile 'com.squareup.okhttp3:okhttp:3.6.0'
+    compile 'com.squareup.okhttp3:logging-interceptor:3.6.0'
+    compile 'com.squareup.picasso:picasso:2.5.2'
+    compile 'com.jakewharton.picasso:picasso2-okhttp3-downloader:1.1.0'
+
     compile 'com.googlecode.plist:dd-plist:1.8'
-    compile 'com.android.support:appcompat-v7:22.2.1'
-    compile 'com.android.support:recyclerview-v7:22.2.1'
-    compile 'com.google.guava:guava:18.0'
     compile 'com.commonsware.cwac:provider:0.2.3'
-    compile 'com.android.support:support-v4:22.2.1'
-    compile 'com.android.support:cardview-v7:22.2.1'
     compile 'de.greenrobot:eventbus:2.4.0'
-    compile 'com.melnykov:floatingactionbutton:1.2.0'
-    compile('com.crashlytics.sdk.android:crashlytics:2.5.2@aar') {
-        transitive = true;
-    }
-    debugCompile 'com.facebook.stetho:stetho:1.0.0'
-    compile 'fr.avianey.com.viewpagerindicator:library:2.4.1@aar'
-    compile 'org.apache.commons:commons-lang3:3.4'
-    compile 'commons-io:commons-io:2.4'
-    compile 'org.slf4j:slf4j-api:1.7.12'
-    compile 'com.github.tony19:logback-android-core:1.1.1-4'
-    compile 'com.github.tony19:logback-android-classic:1.1.1-4'
+
+    debugCompile 'com.facebook.stetho:stetho:1.4.1'
+    debugCompile 'com.facebook.stetho:stetho-js-rhino:1.4.1'
+    debugCompile 'com.facebook.stetho:stetho-okhttp3:1.4.1'
+    stagingCompile 'com.facebook.stetho:stetho:1.4.1'
+    stagingCompile 'com.facebook.stetho:stetho-js-rhino:1.4.1'
+    stagingCompile 'com.facebook.stetho:stetho-okhttp3:1.4.1'
+
+    compile 'com.github.jrejaud:ViewPagerIndicator2:0.0.1'
+    compile 'commons-io:commons-io:2.5'
+
+    compile 'com.jakewharton.timber:timber:4.5.1'
+
+    compile 'uk.co.chrisjenx:calligraphy:2.1.0'
+    compile 'com.yqritc:recyclerview-flexibledivider:1.2.9'
+
+    compile 'com.gitlab.matecode:androiddialog:1.2.29'
+
+    compile 'com.scottyab:aescrypt:0.0.1'
+
+    compile 'com.github.matecode:Snacky:1.0.2'
+
+    compile 'ch.acra:acra:4.9.2'
+
+
 }

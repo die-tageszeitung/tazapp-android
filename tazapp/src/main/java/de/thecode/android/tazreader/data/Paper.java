@@ -11,6 +11,7 @@ import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.BaseColumns;
+import android.text.TextUtils;
 
 import com.dd.plist.NSArray;
 import com.dd.plist.NSDictionary;
@@ -18,12 +19,21 @@ import com.dd.plist.NSObject;
 import com.dd.plist.NSString;
 import com.dd.plist.PropertyListFormatException;
 import com.dd.plist.PropertyListParser;
-import com.google.common.base.Strings;
+import com.squareup.picasso.Picasso;
 
+import de.greenrobot.event.EventBus;
+import de.thecode.android.tazreader.BuildConfig;
+import de.thecode.android.tazreader.R;
+import de.thecode.android.tazreader.data.Paper.Plist.Page.Article;
+import de.thecode.android.tazreader.download.PaperDeletedEvent;
+import de.thecode.android.tazreader.provider.TazProvider;
+import de.thecode.android.tazreader.reader.index.IIndexItem;
+import de.thecode.android.tazreader.utils.PlistHelper;
+import de.thecode.android.tazreader.utils.StorageManager;
+
+import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.json.JSONArray;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 import java.io.File;
@@ -44,91 +54,82 @@ import java.util.zip.ZipException;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-import de.greenrobot.event.EventBus;
-import de.thecode.android.tazreader.R;
-import de.thecode.android.tazreader.data.Paper.Plist.Page.Article;
-import de.thecode.android.tazreader.download.PaperDeletedEvent;
-import de.thecode.android.tazreader.provider.TazProvider;
-import de.thecode.android.tazreader.reader.index.IIndexItem;
-import de.thecode.android.tazreader.utils.PlistHelper;
-import de.thecode.android.tazreader.utils.StorageManager;
+import timber.log.Timber;
 
 public class Paper {
 
-    private static final Logger log = LoggerFactory.getLogger(Paper.class);
-
-    public static String TABLE_NAME = "PAPER";
-    public static final Uri CONTENT_URI = Uri.parse("content://" + TazProvider.AUTHORITY + "/" + TABLE_NAME);
-    public static final String CONTENT_TYPE = "vnd.android.cursor.dir/vnd.taz." + TABLE_NAME;
+    public static       String TABLE_NAME        = "PAPER";
+    public static final Uri    CONTENT_URI       = Uri.parse("content://" + TazProvider.AUTHORITY + "/" + TABLE_NAME);
+    public static final String CONTENT_TYPE      = "vnd.android.cursor.dir/vnd.taz." + TABLE_NAME;
     public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/vnd.taz." + TABLE_NAME;
 
     public static final String CONTENT_PLIST_FILENAME = "content.plist";
 
     public static final class Columns implements BaseColumns {
 
-        public static final String DATE = "date";
-        public static final String IMAGE = "image";
-        public static final String IMAGEHASH = "imageHash";
-        public static final String LINK = "link";
-        public static final String FILEHASH = "fileHash";
-        public static final String LEN = "len";
-        public static final String LASTMODIFIED = "lastModified";
-        public static final String BOOKID = "bookId";
-        public static final String ISDEMO = "isDemo";
+        public static final String DATE             = "date";
+        public static final String IMAGE            = "image";
+        public static final String IMAGEHASH        = "imageHash";
+        public static final String LINK             = "link";
+        public static final String FILEHASH         = "fileHash";
+        public static final String LEN              = "len";
+        public static final String LASTMODIFIED     = "lastModified";
+        public static final String BOOKID           = "bookId";
+        public static final String ISDEMO           = "isDemo";
         // public static final String FILENAME = "filename";
         // public static final String TEMPFILEPATH = "tempfilepath";
         // public static final String TEMPFILENAME = "tempfilename";
-        public static final String HASUPDATE = "hasUpdate";
-        public static final String DOWNLOADID = "downloadId";
+        public static final String HASUPDATE        = "hasUpdate";
+        public static final String DOWNLOADID       = "downloadId";
         //public static final String DOWNLOADPROGRESS = "downloadProgress";
-        public static final String ISDOWNLOADED = "isDownloaded";
-        public static final String KIOSK = "kiosk";
-        public static final String IMPORTED = "imported";
-        public static final String TITLE = "title";
-        public static final String PUBLICATIONID = "publicationId";
-        public static final String RESOURCE = "resource";
+        public static final String ISDOWNLOADED     = "isDownloaded";
+        public static final String KIOSK            = "kiosk";
+        public static final String IMPORTED         = "imported";
+        public static final String TITLE            = "title";
+        public static final String PUBLICATIONID    = "publicationId";
+        public static final String RESOURCE         = "resource";
         public static final String RESOURCEFILEHASH = "resourceFileHash";
-        public static final String RESOURCEURL = "resourceUrl";
-        public static final String RESOURCELEN = "resourceLen";
-        public static final String VALIDUNTIL = "validUntil";
+        public static final String RESOURCEURL      = "resourceUrl";
+        public static final String RESOURCELEN      = "resourceLen";
+        public static final String VALIDUNTIL       = "validUntil";
 
-        public static final String FULL_ID = TABLE_NAME + "." + _ID;
+        public static final String FULL_ID         = TABLE_NAME + "." + _ID;
         public static final String FULL_VALIDUNTIL = TABLE_NAME + "." + VALIDUNTIL;
 
     }
 
-    public final static int NOT_DOWNLOADED = 1;
-    public final static int DOWNLOADED_READABLE = 2;
+    public final static int NOT_DOWNLOADED        = 1;
+    public final static int DOWNLOADED_READABLE   = 2;
     public final static int DOWNLOADED_BUT_UPDATE = 3;
-    public final static int IS_DOWNLOADING = 4;
+    public final static int IS_DOWNLOADING        = 4;
     public final static int NOT_DOWNLOADED_IMPORT = 5;
 
-    private Long id;
-    private String date;
-    private String image;
-    private String imageHash;
-    private String link;
-    private String fileHash;
-    private long len;
-    private long lastModified;
-    private String bookId;
+    private Long    id;
+    private String  date;
+    private String  image;
+    private String  imageHash;
+    private String  link;
+    private String  fileHash;
+    private long    len;
+    private long    lastModified;
+    private String  bookId;
     private boolean isDemo;
     // private String filename;
     // private String tempfilepath;
     // private String tempfilename;
     private boolean hasupdate;
     // private boolean isdownloading;
-    private long downloadId;
+    private long    downloadId;
     //private int downloadprogress;
     private boolean isdownloaded;
     private boolean kiosk;
     private boolean imported;
-    private String title;
-    private Long publicationId;
-    private String resource;
-    private String resourceFileHash;
-    private String resourceUrl;
-    private long resourceLen;
+    private String  title;
+    private Long    publicationId;
+    private String  resource;
+    private String  resourceFileHash;
+    private String  resourceUrl;
+    private long    resourceLen;
 
     private long validUntil;
     //    private File zipFile;
@@ -544,23 +545,27 @@ public class Paper {
 
     private Plist plist;
 
-    public void parsePlist(File file) throws IOException, PropertyListFormatException, ParseException, ParserConfigurationException, SAXException {
+    public void parsePlist(File file) throws IOException, PropertyListFormatException, ParseException,
+            ParserConfigurationException, SAXException {
         parsePlist(file, true);
     }
 
-    public void parsePlist(File file, boolean parseIndex) throws ParserConfigurationException, ParseException, SAXException, PropertyListFormatException, IOException {
+    public void parsePlist(File file, boolean parseIndex) throws ParserConfigurationException, ParseException, SAXException,
+            PropertyListFormatException, IOException {
         FileInputStream fis = new FileInputStream(file);
         parsePlist(fis, parseIndex);
     }
 
-    public void parsePlist(InputStream is) throws ZipException, IOException, PropertyListFormatException, ParseException, ParserConfigurationException, SAXException {
+    public void parsePlist(InputStream is) throws ZipException, IOException, PropertyListFormatException, ParseException,
+            ParserConfigurationException, SAXException {
         parsePlist(is, true);
     }
 
-    public void parsePlist(InputStream is, boolean parseIndex) throws ZipException, IOException, PropertyListFormatException, ParseException, ParserConfigurationException, SAXException {
-        log.trace("Start parsing Plist - parse Index: {}", parseIndex);
+    public void parsePlist(InputStream is, boolean parseIndex) throws ZipException, IOException, PropertyListFormatException,
+            ParseException, ParserConfigurationException, SAXException {
+        Timber.i("Start parsing Plist - parse Index: %s", parseIndex);
         plist = new Plist(is, parseIndex);
-        log.trace("Finished parsing Plist {}", this);
+        Timber.i("Finished parsing Plist");
     }
 
 
@@ -604,7 +609,7 @@ public class Paper {
 
     public boolean parseMissingAttributes(boolean overwrite) {
         boolean result = false; //Did you write somthing new?
-        if (Strings.isNullOrEmpty(getResource()) || overwrite) {
+        if (TextUtils.isEmpty(getResource()) || overwrite) {
             setResource(getPlist().getResource());
             result = true;
         }
@@ -614,28 +619,29 @@ public class Paper {
     public class Plist {
 
         private static final String KEY_ARCHIVEURL = "ArchivUrl";
-        private static final String KEY_BOOKID = "BookId";
-        private static final String KEY_RESOURCE = "ressource";
+        private static final String KEY_BOOKID     = "BookId";
+        private static final String KEY_RESOURCE   = "ressource";
         private static final String KEY_MINVERSION = "MinVersion";
-        private static final String KEY_VERSION = "Version";
-        private static final String KEY_HASHVALS = "HashVals";
-        private static final String KEY_SOURCES = "Quellen";
-        private static final String KEY_TOPLINKS = "TopLinks";
+        private static final String KEY_VERSION    = "Version";
+        private static final String KEY_HASHVALS   = "HashVals";
+        private static final String KEY_SOURCES    = "Quellen";
+        private static final String KEY_TOPLINKS   = "TopLinks";
 
-        private String archiveUrl;
-        private String bookId;
-        private String resource;
-        private String minVersion;
-        private String version;
+        private String              archiveUrl;
+        private String              bookId;
+        private String              resource;
+        private String              minVersion;
+        private String              version;
         private Map<String, String> hashVals;
 
         private NSDictionary root;
 
-        private List<Source> sources;
+        private List<Source>  sources;
         private List<TopLink> toplinks;
         private Map<String, IIndexItem> indexMap = new HashMap<>();
 
-        public Plist(InputStream is, boolean parseIndex) throws IOException, PropertyListFormatException, ParseException, ParserConfigurationException, SAXException {
+        public Plist(InputStream is, boolean parseIndex) throws IOException, PropertyListFormatException, ParseException,
+                ParserConfigurationException, SAXException {
 
 /*            ZipFile zip = new ZipFile(file);
             ZipEntry zipEntry = new ZipEntry("content.plist");
@@ -651,7 +657,7 @@ public class Paper {
             archiveUrl = PlistHelper.getString(root, KEY_ARCHIVEURL);
             bookId = PlistHelper.getString(root, KEY_BOOKID);
             resource = PlistHelper.getString(root, KEY_RESOURCE);
-            if (!Strings.isNullOrEmpty(resource)) {
+            if (!TextUtils.isEmpty(resource)) {
                 resource = resource.replace(".res", "");
             }
             minVersion = PlistHelper.getString(root, KEY_MINVERSION);
@@ -772,8 +778,8 @@ public class Paper {
 
         public class Source extends IndexItemTemplate {
 
-            String key;
-            NSArray array;
+            String     key;
+            NSArray    array;
             List<Book> books;
 
             public Source(String key, NSArray array) {
@@ -848,9 +854,9 @@ public class Paper {
 
         public class Book {
 
-            Source source;
-            String key;
-            NSArray array;
+            Source         source;
+            String         key;
+            NSArray        array;
             List<Category> categories;
 
             public Book(Source source, String key, NSArray array) {
@@ -884,7 +890,8 @@ public class Paper {
             }
 
             public List<Category> getCategories() {
-                if (categories == null) throw new IllegalStateException("Categories not parsed yet, call parseCategeories() before");
+                if (categories == null)
+                    throw new IllegalStateException("Categories not parsed yet, call parseCategeories() before");
                 return categories;
             }
 
@@ -892,10 +899,10 @@ public class Paper {
 
         public class Category extends IndexItemTemplate {
 
-            Book book;
-            String key;
-            String title;
-            NSArray array;
+            Book       book;
+            String     key;
+            String     title;
+            NSArray    array;
             List<Page> pages;
 
             public Category(Book book, String key, NSArray array) {
@@ -975,25 +982,25 @@ public class Paper {
 
         public class Page extends IndexItemTemplate {
 
-            private static final String KEY_GEOMETRY = "geometry";
-            private static final String KEY_PAGINA = "SeitenNummer";
+            private static final String KEY_GEOMETRY    = "geometry";
+            private static final String KEY_PAGINA      = "SeitenNummer";
             private static final String KEY_DEFAULTLINK = "defaultLink";
-            private static final String KEY_ARTICLE = "Artikel";
-            private static final String KEY_RIGHT = "right";
-            private static final String KEY_LEFT = "left";
+            private static final String KEY_ARTICLE     = "Artikel";
+            private static final String KEY_RIGHT       = "right";
+            private static final String KEY_LEFT        = "left";
 
             Category category;
-            String key;
-            String pagina;
-            String defaultLink;
-            String left;
-            String right;
+            String   key;
+            String   pagina;
+            String   defaultLink;
+            String   left;
+            String   right;
 
             NSArray geometryArray;
             NSArray articleArray;
 
             List<Geometry> geometries;
-            List<Article> articles;
+            List<Article>  articles;
 
             public Page(Category category, String key, NSDictionary dict) {
                 this.category = category;
@@ -1030,13 +1037,13 @@ public class Paper {
                         NSDictionary sourceBookCategoryPageArticleDict = (NSDictionary) sourceBookCategoryPageArticle;
                         String key = sourceBookCategoryPageArticleDict.allKeys()[0];
                         Article article = new Article(key, (NSDictionary) sourceBookCategoryPageArticleDict.get(key));
-                        for (Geometry geometry : getGeometries()) {
-                            if (article.getKey()
-                                       .equals(geometry.getLink())) {
-                                //geometry.article = article;
-                                article.geometries.add(geometry);
-                            }
-                        }
+//                        for (Geometry geometry : getGeometries()) {
+//                            if (article.getKey()
+//                                       .equals(geometry.getLink())) {
+//                                //geometry.article = article;
+//                                article.geometries.add(geometry);
+//                            }
+//                        }
                         indexMap.put(article.getKey(), article);
                         articles.add(article);
                     }
@@ -1050,7 +1057,8 @@ public class Paper {
             }
 
             public List<Geometry> getGeometries() {
-                if (geometries == null) throw new IllegalStateException("Geometries not parsed yet, call parseGeometries() before");
+                if (geometries == null)
+                    throw new IllegalStateException("Geometries not parsed yet, call parseGeometries() before");
                 return geometries;
             }
 
@@ -1109,7 +1117,8 @@ public class Paper {
                 try {
                     String pagePath = pdfFile.getCanonicalPath()
                                              .replace(papersDir.getCanonicalPath(), "papers");
-                    Uri contentUri = Uri.parse("content://de.thecode.android.tazreader.streamprovider")
+
+                    Uri contentUri = Uri.parse("content://" + BuildConfig.APPLICATION_ID + ".streamprovider")
                                         .buildUpon()
                                         .appendEncodedPath(pagePath)
                                         .build();
@@ -1153,16 +1162,16 @@ public class Paper {
 
             public class Geometry {
 
-                private static final String KEY_X1 = "x1";
-                private static final String KEY_Y1 = "y1";
-                private static final String KEY_X2 = "x2";
-                private static final String KEY_Y2 = "y2";
+                private static final String KEY_X1   = "x1";
+                private static final String KEY_Y1   = "y1";
+                private static final String KEY_X2   = "x2";
+                private static final String KEY_Y2   = "y2";
                 private static final String KEY_LINK = "link";
 
-                private float x1;
-                private float y1;
-                private float x2;
-                private float y2;
+                private float  x1;
+                private float  y1;
+                private float  x2;
+                private float  y2;
                 private String link;
 
                 //private Article article;
@@ -1211,16 +1220,14 @@ public class Paper {
             public class Article extends IndexItemTemplate //implements ArticleReaderItem
             {
 
-                private static final String KEY_TITLE = "Titel";
-                private static final String KEY_SUBTITLE = "Untertitel";
+                private static final String KEY_TITLE      = "Titel";
+                private static final String KEY_SUBTITLE   = "Untertitel";
                 private static final String KEY_ONLINELINK = "OnlineLink";
 
                 private String key;
                 private String title;
                 private String subtitle;
                 private String onlinelink;
-
-                private List<Geometry> geometries = new ArrayList<>();
 
                 public Article(String key, NSDictionary dict) {
                     this.key = key;
@@ -1284,13 +1291,9 @@ public class Paper {
                     return null;
                 }
 
-                public List<Geometry> getGeometries() {
-                    return geometries;
-                }
-
                 @Override
                 public boolean isShareable() {
-                    return !Strings.isNullOrEmpty(onlinelink);
+                    return !TextUtils.isEmpty(onlinelink);
                 }
 
                 @Override
@@ -1298,7 +1301,7 @@ public class Paper {
                     StringBuilder text = new StringBuilder(getPaper().getTitelWithDate(context)).append("\n")
                                                                                                 .append(getTitle())
                                                                                                 .append("\n\n");
-                    if (!Strings.isNullOrEmpty(getSubtitle())) {
+                    if (!TextUtils.isEmpty(getSubtitle())) {
                         text.append(getSubtitle())
                             .append("\n\n");
                     }
@@ -1370,7 +1373,7 @@ public class Paper {
 
             Type type;
 
-            private boolean bookmarked;
+            private boolean    bookmarked;
             private IIndexItem link;
 
             public abstract String getTitle();
@@ -1538,6 +1541,8 @@ public class Paper {
     public void delete(Context context) {
         StorageManager storage = StorageManager.getInstance(context);
         storage.deletePaperDir(this);
+        Picasso.with(context)
+               .invalidate(getImage());
         if (isImported() || isKiosk()) {
             context.getContentResolver()
                    .delete(ContentUris.withAppendedId(Paper.CONTENT_URI, getId()), null, null);
@@ -1558,6 +1563,37 @@ public class Paper {
     public String toString() {
         //return Log.toString(this, ":", "; ");
         return ToStringBuilder.reflectionToString(this);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (obj == this) {
+            return true;
+        }
+        if (obj.getClass() != getClass()) {
+            return false;
+        }
+        Paper rhs = (Paper) obj;
+        EqualsBuilder equalsBuilder = new EqualsBuilder();
+        equalsBuilder.append(date, rhs.date);
+        equalsBuilder.append(image, rhs.image);
+        equalsBuilder.append(imageHash, rhs.imageHash);
+        equalsBuilder.append(link, rhs.link);
+        equalsBuilder.append(fileHash, rhs.fileHash);
+        equalsBuilder.append(len, rhs.len);
+        equalsBuilder.append(resource, rhs.resource);
+        equalsBuilder.append(resourceFileHash, rhs.resourceFileHash);
+        equalsBuilder.append(resourceLen, rhs.resourceLen);
+        equalsBuilder.append(resourceUrl, rhs.resourceUrl);
+        equalsBuilder.append(lastModified, rhs.lastModified);
+        equalsBuilder.append(bookId, rhs.bookId);
+        equalsBuilder.append(isDemo, rhs.isDemo);
+        equalsBuilder.append(publicationId, rhs.publicationId);
+        equalsBuilder.append(validUntil, rhs.validUntil);
+        return equalsBuilder.isEquals();
     }
 
     public static class PaperNotFoundException extends Exception {

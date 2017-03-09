@@ -6,30 +6,25 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
 
-import com.crashlytics.android.Crashlytics;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import de.mateware.dialog.Dialog;
+import de.mateware.dialog.listener.DialogButtonListener;
+import de.thecode.android.tazreader.R;
+import de.thecode.android.tazreader.data.Paper;
+import de.thecode.android.tazreader.data.TazSettings;
+import de.thecode.android.tazreader.download.DownloadManager;
+import de.thecode.android.tazreader.utils.BaseActivity;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import de.thecode.android.tazreader.R;
-import de.thecode.android.tazreader.data.Paper;
-import de.thecode.android.tazreader.data.TazSettings;
-import de.thecode.android.tazreader.dialog.TcDialog;
-import de.thecode.android.tazreader.download.DownloadManager;
-import de.thecode.android.tazreader.sync.AccountHelper;
-import de.thecode.android.tazreader.utils.BaseActivity;
+import timber.log.Timber;
 
 /**
  * Created by mate on 16.04.2015.
  */
-public class ImportActivity extends BaseActivity implements TcDialog.TcDialogButtonListener, ImportWorkerFragment.ImportRetainFragmentCallback {
-
-    private static final Logger log = LoggerFactory.getLogger(ImportActivity.class);
+public class ImportActivity extends BaseActivity implements DialogButtonListener, ImportWorkerFragment.ImportRetainFragmentCallback {
 
     public static final int REQUEST_CODE_IMPORT_ACTIVITY = 29452;
 
@@ -71,20 +66,21 @@ public class ImportActivity extends BaseActivity implements TcDialog.TcDialogBut
         }
         if (getIntent().getData() != null) data.add(getIntent().getData());
 
-        workerFragment = ImportWorkerFragment.findOrCreateRetainFragment(getFragmentManager(), WORKER_FRAGMENT_TAG, this, data);
+        workerFragment = ImportWorkerFragment.findOrCreateRetainFragment(getSupportFragmentManager(), WORKER_FRAGMENT_TAG, this, data);
     }
 
     public void showErrorDialog(String message) {
-        new TcDialog().withMessage(message)
-                      .withPositiveButton()
-                      .withCancelable(false)
-                      .show(getFragmentManager(), DIALOG_ERROR_IMPORT);
+        new Dialog.Builder().setMessage(message)
+                            .setPositiveButton()
+                            .setCancelable(false)
+                            .buildSupport()
+                            .show(getSupportFragmentManager(), DIALOG_ERROR_IMPORT);
     }
 
 
     @Override
     public void onDialogClick(String tag, Bundle arguments, int which) {
-        if (DIALOG_ERROR_IMPORT.equals(tag) && which == TcDialog.BUTTON_POSITIVE) {
+        if (DIALOG_ERROR_IMPORT.equals(tag) && which == Dialog.BUTTON_POSITIVE) {
             workerFragment.handleNextDataUri();
         } else if (DIALOG_EXISTS_IMPORT.equals(tag)) {
             File cacheFile = (File) arguments.getSerializable(BUNDLE_KEY_FILE);
@@ -92,10 +88,10 @@ public class ImportActivity extends BaseActivity implements TcDialog.TcDialogBut
             Uri dataUri = arguments.getParcelable(BUNDLE_KEY_DATAURI);
             boolean deleteFile = arguments.getBoolean(BUNDLE_KEY_DELETEFILE);
             switch (which) {
-                case TcDialog.BUTTON_POSITIVE:
+                case Dialog.BUTTON_POSITIVE:
                     workerFragment.stepFourStartImport(dataUri, metadata, cacheFile, deleteFile);
                     break;
-                case TcDialog.BUTTON_NEGATIVE:
+                case Dialog.BUTTON_NEGATIVE:
                     workerFragment.onFinished(dataUri, cacheFile, deleteFile);
                     break;
             }
@@ -106,18 +102,19 @@ public class ImportActivity extends BaseActivity implements TcDialog.TcDialogBut
                 downloadUris = Arrays.copyOf(pDownloadUris, pDownloadUris.length, Uri[].class);
             }
             switch (which) {
-                case TcDialog.BUTTON_POSITIVE:
+                case Dialog.BUTTON_POSITIVE:
                     if (downloadUris != null) {
                         for (Uri downloadUri : downloadUris) {
                             try {
-                                DownloadManager.getInstance(this).enquePaper(ContentUris.parseId(downloadUri));
-                            } catch (Paper.PaperNotFoundException | AccountHelper.CreateAccountException | DownloadManager.DownloadNotAllowedException e) {
-                                log.error("",e);
-                                Crashlytics.logException(e);
+                                DownloadManager.getInstance(this)
+                                               .enquePaper(ContentUris.parseId(downloadUri));
+                            } catch (Paper.PaperNotFoundException | DownloadManager.DownloadNotAllowedException | DownloadManager.NotEnoughSpaceException e) {
+                                Timber.e(e);
+                                //AnalyticsWrapper.getInstance().logException(e);
                             }
                         }
                     }
-                case TcDialog.BUTTON_NEGATIVE:
+                case Dialog.BUTTON_NEGATIVE:
                     finishActivity(downloadUris);
                     break;
             }
@@ -131,8 +128,7 @@ public class ImportActivity extends BaseActivity implements TcDialog.TcDialogBut
 
     @Override
     public void onImportRetainFragmentCreate(ImportWorkerFragment importRetainWorkerFragment) {
-        log.debug("");
-        //        new TcDialogIndeterminateProgress().withCancelable(false)
+        //        new DialogIndeterminateProgress().withCancelable(false)
         //                                           .withMessage("Import")
         //                                           .show(getFragmentManager(), DIALOG_WAIT_IMPORT);
         if (getIntent().getExtras() != null) {
@@ -149,7 +145,6 @@ public class ImportActivity extends BaseActivity implements TcDialog.TcDialogBut
 
     @Override
     public void onFinishedImporting(List<Paper> importedPapers) {
-        log.debug("");
         Uri[] importedPaperUris = new Uri[importedPapers.size()];
         Uri[] downloadPaperUris = new Uri[0];
         int i = 0;
@@ -169,12 +164,13 @@ public class ImportActivity extends BaseActivity implements TcDialog.TcDialogBut
             Bundle bundle = new Bundle();
             bundle.putParcelableArray(BUNDLE_KEY_DOWNLOAD_URIS, downloadPaperUris);
             bundle.putParcelableArray(BUNDLE_KEY_RESULT_URIS, importedPaperUris);
-            new TcDialog().withBundle(bundle)
-                          .withMessage(getResources().getQuantityString(R.plurals.import_download, downloadPaperUris.length, downloadPaperUris.length))
-                          .withCancelable(false)
-                          .withPositiveButton(R.string.import_download_positive)
-                          .withNegativeButton(R.string.import_download_negative)
-                          .show(getFragmentManager(), DIALOG_DOWNLOAD);
+            new Dialog.Builder().addBundle(bundle)
+                                .setMessage(getResources().getQuantityString(R.plurals.import_download, downloadPaperUris.length, downloadPaperUris.length))
+                                .setCancelable(false)
+                                .setPositiveButton(R.string.import_download_positive)
+                                .setNegativeButton(R.string.import_download_negative)
+                                .buildSupport()
+                                .show(getSupportFragmentManager(), DIALOG_DOWNLOAD);
         } else {
             finishActivity(importedPaperUris);
         }
@@ -187,30 +183,30 @@ public class ImportActivity extends BaseActivity implements TcDialog.TcDialogBut
         } else {
             resultIntent.putExtra(EXTRA_RESULT_URIS, paperUris);
             setResult(RESULT_OK, resultIntent);
-            TazSettings.setPref(this,TazSettings.PREFKEY.FORCESYNC,true);
+            TazSettings.getInstance(this).setPref(TazSettings.PREFKEY.FORCESYNC, true);
         }
         finish();
     }
 
     @Override
     public void onErrorWhileImport(Uri dataUri, Exception e) {
-        log.debug("{} {}",dataUri, e);
+        Timber.w(e,"%s",dataUri);
         showErrorDialog(String.format(getString(R.string.import_error), dataUri, e.getLocalizedMessage()));
     }
 
     @Override
     public void onImportAlreadyExists(Uri dataUri, ImportMetadata metadata, File cacheFile, boolean deleteFile) {
-        log.debug("");
         Bundle bundle = new Bundle();
         bundle.putParcelable(BUNDLE_KEY_METADATA, metadata);
         bundle.putSerializable(BUNDLE_KEY_FILE, cacheFile);
         bundle.putParcelable(BUNDLE_KEY_DATAURI, dataUri);
         bundle.putBoolean(BUNDLE_KEY_DELETEFILE, deleteFile);
-        new TcDialog().withCancelable(false)
-                      .withPositiveButton()
-                      .withBundle(bundle)
-                      .withNegativeButton()
-                      .withMessage(String.format(getString(R.string.import_already_exists), metadata.getBookId()))
-                      .show(getFragmentManager(), DIALOG_EXISTS_IMPORT);
+        new Dialog.Builder().setCancelable(false)
+                            .setPositiveButton()
+                            .addBundle(bundle)
+                            .setNegativeButton()
+                            .setMessage(String.format(getString(R.string.import_already_exists), metadata.getBookId()))
+                            .buildSupport()
+                            .show(getSupportFragmentManager(), DIALOG_EXISTS_IMPORT);
     }
 }

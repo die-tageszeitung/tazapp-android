@@ -1,49 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest
-    package="de.thecode.android.tazreader"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        package="de.thecode.android.tazreader">
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
-    <uses-permission android:name="android.permission.READ_SYNC_SETTINGS"/>
-    <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS"/>
-    <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS"/>
-    <uses-permission android:name="android.permission.GET_ACCOUNTS"/>
 
     <supports-screens android:anyDensity="true"/>
 
     <application
-        android:name=".TazReaderApplication"
-        android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
-        android:largeHeap="true"
-        android:label="@string/app_name"
-        android:restrictedAccountType="de.thecode.android.tazreader"
-        android:theme="@style/AppTheme">
+            android:name=".TazReaderApplication"
+            android:allowBackup="true"
+            android:backupAgent=".backup.TazBackupHelper"
+            android:icon="@mipmap/ic_launcher"
+            android:largeHeap="true"
+            android:label="@string/app_name"
+            android:theme="@style/AppTheme.NoActionBar">
 
 
         <uses-library
-            android:name="com.sec.android.app.multiwindow"
-            android:required="false"/>
+                android:name="com.sec.android.app.multiwindow"
+                android:required="false"/>
 
         <meta-data
-            android:name="com.samsung.android.sdk.multiwindow.enable"
-            android:value="false"/>
+                android:name="com.samsung.android.sdk.multiwindow.enable"
+                android:value="false"/>
         <meta-data
-            android:name="com.samsung.android.sdk.multiwindow.multiinstance.enable"
-            android:value="false"/>
+                android:name="com.samsung.android.sdk.multiwindow.multiinstance.enable"
+                android:value="false"/>
         <meta-data
-            android:name="com.sec.android.support.multiwindow"
-            android:value="false"/>
+                android:name="com.sec.android.support.multiwindow"
+                android:value="false"/>
 
 
         <activity
-            android:name=".start.StartActivity"
-            android:label="@string/app_name"
-            android:launchMode="singleTop">
+                android:name=".start.StartActivity"
+                android:label="@string/app_name"
+                android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
@@ -59,13 +56,13 @@
                 <category android:name="android.intent.category.BROWSABLE"/>
 
                 <data
-                    android:host="*"
-                    android:mimeType="application/taz+app"
-                    android:scheme="content"/>
+                        android:host="*"
+                        android:mimeType="application/taz+app"
+                        android:scheme="content"/>
                 <data
-                    android:host="*"
-                    android:mimeType="application/taz+app"
-                    android:scheme="file"/>
+                        android:host="*"
+                        android:mimeType="application/taz+app"
+                        android:scheme="file"/>
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
@@ -74,26 +71,29 @@
                 <category android:name="android.intent.category.BROWSABLE"/>
 
                 <data
-                    android:host="*"
-                    android:mimeType="*/*"
-                    android:pathPattern=".*\\.tazandroid"
-                    android:scheme="file"/>
+                        android:host="*"
+                        android:mimeType="*/*"
+                        android:pathPattern=".*\\.tazandroid"
+                        android:scheme="file"/>
                 <data
-                    android:host="*"
-                    android:mimeType="*/*"
-                    android:pathPattern=".*\\.tpaper"
-                    android:scheme="file"/>
+                        android:host="*"
+                        android:mimeType="*/*"
+                        android:pathPattern=".*\\.tpaper"
+                        android:scheme="file"/>
             </intent-filter>
         </activity>
         <activity android:name=".migration.MigrationActivity"/>
         <activity android:name=".reader.HelpActivity"/>
 
         <service
-            android:name=".download.DownloadFinishedResourceService"
-            android:exported="false"/>
+                android:name=".download.DownloadFinishedResourceService"
+                android:exported="false"/>
         <service
-            android:name=".download.DownloadFinishedPaperService"
-            android:exported="false"/>
+                android:name=".download.DownloadFinishedPaperService"
+                android:exported="false"/>
+        <service
+                android:name=".sync.SyncService"
+                android:exported="false"/>
 
         <receiver android:name=".service.TazBootCompleteReceiver">
             <intent-filter>
@@ -102,47 +102,23 @@
                 <category android:name="android.intent.category.HOME"/>
             </intent-filter>
         </receiver>
-        <receiver android:name="de.thecode.android.tazreader.service.TazRequestSyncReceiver">
-        </receiver>
 
         <receiver android:name=".download.NotificationBroadcastReceiver">
             <intent-filter>
-                <action android:name="de.thecode.tazreader.notificationclicked">
+                <action android:name="${applicationId}.notificationclicked">
                 </action>
             </intent-filter>
             <intent-filter>
-                <action android:name="de.thecode.tazreader.notificationdeleted">
+                <action android:name="${applicationId}.notificationdeleted">
                 </action>
             </intent-filter>
         </receiver>
 
-        <service android:name="de.thecode.android.tazreader.sync.AuthenticatorService">
-            <intent-filter>
-                <action android:name="android.accounts.AccountAuthenticator"/>
-            </intent-filter>
-
-            <meta-data
-                android:name="android.accounts.AccountAuthenticator"
-                android:resource="@xml/authenticator"/>
-        </service>
-
         <provider
-            android:name="de.thecode.android.tazreader.provider.TazProvider"
-            android:authorities="de.thecode.android.tazreader.provider"
-            android:exported="false"
-            android:syncable="true"/>
-
-        <service
-            android:name="de.thecode.android.tazreader.sync.SyncService"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.content.SyncAdapter"/>
-            </intent-filter>
-
-            <meta-data
-                android:name="android.content.SyncAdapter"
-                android:resource="@xml/syncadapter"/>
-        </service>
+                android:name="de.thecode.android.tazreader.provider.TazProvider"
+                android:authorities="${applicationId}.provider"
+                android:exported="false"
+                android:syncable="true"/>
 
         <receiver android:name="de.thecode.android.tazreader.download.DownloadReceiver">
             <intent-filter>
@@ -154,14 +130,27 @@
         </receiver>
 
         <provider
-            android:name="com.commonsware.cwac.provider.StreamProvider"
-            android:authorities="de.thecode.android.tazreader.streamprovider"
-            android:exported="false"
-            android:grantUriPermissions="true">
+                android:name="com.commonsware.cwac.provider.StreamProvider"
+                android:authorities="${applicationId}.streamprovider"
+                android:exported="false"
+                android:grantUriPermissions="true">
             <meta-data
-                android:name="com.commonsware.cwac.provider.STREAM_PROVIDER_PATHS"
-                android:resource="@xml/filepaths"/>
+                    android:name="com.commonsware.cwac.provider.STREAM_PROVIDER_PATHS"
+                    android:resource="@xml/filepaths"/>
         </provider>
+
+        <activity
+                android:name=".acra.NewTazCrashDialog"
+                android:excludeFromRecents="true"
+                android:finishOnTaskLaunch="true"
+                android:launchMode="singleInstance" />
+
+        <!--<activity-->
+                <!--android:name=".acra.TazCrashDialog"-->
+                <!--android:excludeFromRecents="true"-->
+                <!--android:finishOnTaskLaunch="true"-->
+                <!--android:theme="@style/AcraDialog"-->
+                <!--android:launchMode="singleInstance" />-->
 
     </application>
 

@@ -1,16 +1,20 @@
 package de.thecode.android.tazreader.importer;
 
-import android.app.FragmentManager;
+
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
+import android.text.TextUtils;
 
-import com.google.common.base.Strings;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import de.thecode.android.tazreader.BuildConfig;
+import de.thecode.android.tazreader.data.Paper;
+import de.thecode.android.tazreader.download.UnzipPaperTask;
+import de.thecode.android.tazreader.utils.AsyncTaskWithExecption;
+import de.thecode.android.tazreader.utils.BaseFragment;
+import de.thecode.android.tazreader.utils.StorageManager;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -21,19 +25,10 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.thecode.android.tazreader.R;
-import de.thecode.android.tazreader.data.Paper;
-import de.thecode.android.tazreader.download.UnzipPaperTask;
-import de.thecode.android.tazreader.utils.AsyncTaskWithExecption;
-import de.thecode.android.tazreader.utils.BaseFragment;
-import de.thecode.android.tazreader.utils.StorageManager;
-
 /**
  * Created by mate on 17.04.2015.
  */
 public class ImportWorkerFragment extends BaseFragment {
-
-    private static final Logger log = LoggerFactory.getLogger(ImportWorkerFragment.class);
 
     private ImportRetainFragmentCallback callback;
     private List<Uri> dataUriStack;
@@ -73,8 +68,6 @@ public class ImportWorkerFragment extends BaseFragment {
 
 
     public void handleNextDataUri() {
-        log.debug("");
-
         //if (dataUriStack != null && currentDataUri != null) dataUriStack.remove(0);
         if (dataUriStack == null || dataUriStack.size() == 0) {
             if (callback != null) callback.onFinishedImporting(importedPaperStack);
@@ -84,8 +77,6 @@ public class ImportWorkerFragment extends BaseFragment {
     }
 
     private void stepOneCopyStream(Uri dataUri) {
-        log.debug("");
-
         if (dataUri.getScheme()
                    .equals(ContentResolver.SCHEME_FILE)) {
             File file = null;
@@ -146,14 +137,11 @@ public class ImportWorkerFragment extends BaseFragment {
 
                 @Override
                 protected void onPostError(Exception exception) {
-                    log.debug("");
                     onError(dataUri, exception, null, true);
                 }
 
                 @Override
                 protected void onPostSuccess(File file) {
-                    log.debug("");
-
                     try {
                         stepTwoCheckType(dataUri, file, true);
                     } catch (IOException e) {
@@ -165,7 +153,7 @@ public class ImportWorkerFragment extends BaseFragment {
     }
 
     private void stepTwoCheckType(Uri dataUri, File file, boolean deleteFile) throws IOException {
-        log.debug("");
+
 
         new AsyncTaskWithExecption<Object, Void, ImportMetadata>() {
 
@@ -175,7 +163,7 @@ public class ImportWorkerFragment extends BaseFragment {
 
             @Override
             public ImportMetadata doInBackgroundWithException(Object... params) throws Exception {
-                log.debug("");
+
                 file = (File) params[0];
                 dataUri = (Uri) params[1];
                 deleteFile = (boolean) params[2];
@@ -184,7 +172,7 @@ public class ImportWorkerFragment extends BaseFragment {
 
             @Override
             protected void onPostError(Exception exception) {
-                log.debug("");
+
 
                 onError(dataUri, exception, file, deleteFile);
             }
@@ -197,7 +185,7 @@ public class ImportWorkerFragment extends BaseFragment {
     }
 
     private void stepThreeCheckDatabase(Uri dataUri, ImportMetadata data, File file, boolean deleteFile) {
-        log.debug("");
+
         if (data != null) {
             try {
                 Paper paper = new Paper(getActivity().getApplicationContext(), data.getBookId());
@@ -222,7 +210,7 @@ public class ImportWorkerFragment extends BaseFragment {
     }
 
     public void stepFourStartImport(Uri dataUri, ImportMetadata data, File file, boolean deleteFile) {
-        log.debug("");
+
         try {
             switch (data.getType()) {
                 case TAZANDROID:
@@ -272,8 +260,8 @@ public class ImportWorkerFragment extends BaseFragment {
             paper.setBookId(metadata.getBookId());
             paper.setDate(metadata.getDate());
         }
-        if (!Strings.isNullOrEmpty(metadata.getArchive())) {
-            paper.setLink(Uri.parse(getString(R.string.archiveUrl))
+        if (!TextUtils.isEmpty(metadata.getArchive())) {
+            paper.setLink(Uri.parse(BuildConfig.ARCHIVEURL)
                              .buildUpon()
                              .appendEncodedPath(metadata.getArchive())
                              .build()

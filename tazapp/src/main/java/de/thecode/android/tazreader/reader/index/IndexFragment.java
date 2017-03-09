@@ -2,10 +2,8 @@ package de.thecode.android.tazreader.reader.index;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.graphics.ColorFilter;
-import android.graphics.LightingColorFilter;
-import android.graphics.Typeface;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -19,11 +17,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.List;
+import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
 
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
@@ -38,22 +32,24 @@ import de.thecode.android.tazreader.reader.IReaderCallback;
 import de.thecode.android.tazreader.reader.ReaderActivity;
 import de.thecode.android.tazreader.reader.SettingsDialog;
 import de.thecode.android.tazreader.utils.BaseFragment;
+import de.thecode.android.tazreader.utils.TintHelper;
+import de.thecode.android.tazreader.widget.CustomToolbar;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import timber.log.Timber;
 
 public class IndexFragment extends BaseFragment {
 
-    private static final Logger log = LoggerFactory.getLogger(IndexFragment.class);
-
     private static final String ARGUMENT_BOOKMARKFILTER = "bookmarkfilter";
 
-    Toolbar toolbar;
+    CustomToolbar toolbar;
     List<IIndexItem> index = new ArrayList<>();
     IndexRecyclerViewAdapter adapter;
 
-    Typeface tazFontRegular;
-    Typeface tazFontBold;
-
-    ColorFilter bookmarkOnFilter;
-    ColorFilter bookmarkOffFilter;
+    int bookmarkColorActive;
+    int bookmarkColorNormal;
 
     boolean mShowSubtitles;
 
@@ -63,21 +59,18 @@ public class IndexFragment extends BaseFragment {
     IReaderCallback mReaderCallback;
 
     public IndexFragment() {
-       log.trace("");
+
     }
 
 
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-log.trace("");
+
         mReaderCallback = (IReaderCallback) activity;
-        tazFontRegular = Typeface.createFromAsset(activity.getAssets(), "fonts/TazWt05-Regular.otf");
-        tazFontBold = Typeface.createFromAsset(activity.getAssets(), "fonts/TazWt07-Bold.otf");
-        bookmarkOffFilter = new LightingColorFilter(activity.getResources()
-                                                            .getColor(R.color.index_bookmark_off), 1);
-        bookmarkOnFilter = new LightingColorFilter(activity.getResources()
-                                                           .getColor(R.color.index_bookmark_on), 1);
+
+        bookmarkColorNormal = ContextCompat.getColor(activity, R.color.index_bookmark_off);
+        bookmarkColorActive = ContextCompat.getColor(activity, R.color.index_bookmark_on);
 
     }
 
@@ -89,9 +82,10 @@ log.trace("");
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        log.debug("");
+
         View view = inflater.inflate(R.layout.reader_index, container, false);
-        toolbar = (Toolbar) view.findViewById(R.id.toolbar_article);
+        toolbar = (CustomToolbar) view.findViewById(R.id.toolbar_article);
+        toolbar.setItemColor(ContextCompat.getColor(inflater.getContext(), R.color.toolbar_foreground_color));
         toolbar.inflateMenu(R.menu.reader_index);
         // Set an OnMenuItemClickListener to handle menu item clicks
         toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
@@ -128,8 +122,9 @@ log.trace("");
             }
         });
 
-        Toolbar toolbar2 = (Toolbar) view.findViewById(R.id.toolbar2);
-        toolbar2.setNavigationIcon(R.drawable.abc_ic_ab_back_mtrl_am_alpha);
+        CustomToolbar toolbar2 = (CustomToolbar) view.findViewById(R.id.toolbar2);
+        toolbar2.setItemColor(ContextCompat.getColor(inflater.getContext(), R.color.toolbar_foreground_color));
+        toolbar2.setNavigationIcon(R.drawable.ic_arrow_back_24dp);
         toolbar2.setNavigationOnClickListener(new View.OnClickListener() {
 
             @Override
@@ -145,8 +140,10 @@ log.trace("");
                 switch (item.getItemId()) {
                     case R.id.toolbar_settings:
                         // mReaderCallback.showSettingsFragment();
-                        new SettingsDialog().withPositiveButton()
-                                            .show(getFragmentManager(), ReaderActivity.TAG_FRAGMENT_DIALOG_SETTING);
+                        new SettingsDialog.Builder().setPositiveButton()
+                                                    .setPadding(0)
+                                                    .buildSupport()
+                                                    .show(getFragmentManager(), ReaderActivity.TAG_FRAGMENT_DIALOG_SETTING);
                         // new SettingsDialogFragment().show(getFragmentManager(), Reader.TAG_FRAGMENT_DIALOG_SETTING);
                         mReaderCallback.closeDrawers();
                         break;
@@ -162,10 +159,14 @@ log.trace("");
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
-        mRecyclerView.addItemDecoration(new DividerItemDecoration(getResources().getDrawable(android.R.drawable.divider_horizontal_dim_dark)));
+        mRecyclerView.addItemDecoration(new HorizontalDividerItemDecoration.Builder(getContext()).colorResId(R.color.index_divider)
+                                                                                                 .sizeResId(R.dimen.index_divider_size)
+                                                                                                 .marginResId(R.dimen.index_divider_margin)
+                                                                                                 .showLastDivider()
+                                                                                                 .build());
         mRecyclerView.setAdapter(adapter);
 
-        setIndexVerbose(TazSettings.getPrefBoolean(getActivity(), TazSettings.PREFKEY.CONTENTVERBOSE, true));
+        setIndexVerbose(TazSettings.getInstance(getActivity()).getPrefBoolean(TazSettings.PREFKEY.CONTENTVERBOSE, true));
 
         return view;
     }
@@ -183,7 +184,7 @@ log.trace("");
     }
 
     public void init(Paper paper) {
-        log.debug("paper: {}",paper);
+        Timber.d("paper: %s", paper);
         index.clear();
 
         for (Source source : paper.getPlist()
@@ -259,7 +260,7 @@ log.trace("");
     public void setIndexVerbose(boolean bool) {
         mShowSubtitles = bool;
         adapter.notifyDataSetChanged();
-        TazSettings.setPref(getActivity(), TazSettings.PREFKEY.CONTENTVERBOSE, bool);
+        TazSettings.getInstance(getActivity()).setPref(TazSettings.PREFKEY.CONTENTVERBOSE, bool);
         Menu menu = toolbar.getMenu();
         MenuItem menuItemFull = menu.findItem(R.id.toolbar_index_full);
         MenuItem menuItemShort = menu.findItem(R.id.toolbar_index_short);
@@ -345,7 +346,7 @@ log.trace("");
                     break;
                 }
             }
-           log.debug("key: {} {}",key,result);
+            Timber.d("key: %s %s", key, result);
             return result;
         }
 
@@ -359,7 +360,8 @@ log.trace("");
             IIndexItem item = positions.get(position);
 
             if (!item.isLink() && item.getKey()
-                                      .equals(mReaderCallback.getCurrentKey())) viewholder.setCurrent(true);
+                                      .equals(mReaderCallback.getCurrentKey()))
+                viewholder.setCurrent(true);
             else viewholder.setCurrent(false);
 
 
@@ -367,14 +369,16 @@ log.trace("");
                 case SOURCE:
                     ((SourceViewholder) viewholder).title.setText(item.getTitle());
                     if (item.areIndexChildsVisible())
-                        ((SourceViewholder) viewholder).image.setImageDrawable(getResources().getDrawable(R.drawable.ic_index_minus));
-                    else ((SourceViewholder) viewholder).image.setImageDrawable(getResources().getDrawable(R.drawable.ic_index_plus));
+                        ((SourceViewholder) viewholder).image.setImageDrawable(ContextCompat.getDrawable(getActivity(), R.drawable.ic_remove_24dp));
+                    else
+                        ((SourceViewholder) viewholder).image.setImageDrawable(ContextCompat.getDrawable(getActivity(), R.drawable.ic_add_24dp));
                     break;
                 case CATEGORY:
                     ((CategoryViewholder) viewholder).title.setText(item.getTitle());
                     if (item.areIndexChildsVisible())
-                        ((CategoryViewholder) viewholder).image.setImageDrawable(getResources().getDrawable(R.drawable.ic_index_minus));
-                    else ((CategoryViewholder) viewholder).image.setImageDrawable(getResources().getDrawable(R.drawable.ic_index_plus));
+                        ((CategoryViewholder) viewholder).image.setImageDrawable(ContextCompat.getDrawable(getActivity(), R.drawable.ic_remove_24dp));
+                    else
+                        ((CategoryViewholder) viewholder).image.setImageDrawable(ContextCompat.getDrawable(getActivity(), R.drawable.ic_add_24dp));
                     break;
                 case PAGE:
                     ((PageViewholder) viewholder).title.setText(item.getTitle());
@@ -390,12 +394,13 @@ log.trace("");
                     }
                     FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) ((ArticleViewholder) viewholder).bookmark.getLayoutParams();
                     if (item.isBookmarked()) {
-                        ((ArticleViewholder) viewholder).bookmark.setColorFilter(bookmarkOnFilter);
-                        layoutParams.topMargin = 0;
-                    } else {
-                        ((ArticleViewholder) viewholder).bookmark.setColorFilter(bookmarkOffFilter);
+                        TintHelper.tintDrawable(((ArticleViewholder) viewholder).bookmark.getDrawable(), bookmarkColorActive);
                         layoutParams.topMargin = getActivity().getResources()
-                                                              .getDimensionPixelOffset(R.dimen.reader_bookmark_offset);
+                                                              .getDimensionPixelOffset(R.dimen.reader_bookmark_offset_active);
+                    } else {
+                        TintHelper.tintDrawable(((ArticleViewholder) viewholder).bookmark.getDrawable(), bookmarkColorNormal);
+                        layoutParams.topMargin = getActivity().getResources()
+                                                              .getDimensionPixelOffset(R.dimen.reader_bookmark_offset_normal);
                     }
                     ((ArticleViewholder) viewholder).bookmark.setLayoutParams(layoutParams);
                     break;
@@ -511,15 +516,14 @@ log.trace("");
 
         public void onClick(View v) {
             if (mClickListener != null) {
-                if (v.getId() == R.id.bookmarkClickLayout) mClickListener.onBookmarkClick(getPosition());
+                if (v.getId() == R.id.bookmarkClickLayout)
+                    mClickListener.onBookmarkClick(getPosition());
                 else {
                     mReaderCallback.closeDrawers();
                     super.onClick(v);
                 }
             }
         }
-
-        ;
 
         ImageView bookmark;
         TextView title;
@@ -546,7 +550,7 @@ log.trace("");
     String mCurrentKey = null;
 
     public void updateCurrentPosition(String key) {
-        log.debug("key: {}",key);
+        Timber.d("key: %s", key);
 
         if (mCurrentKey != null) {
             IIndexItem lastitem = mReaderCallback.getPaper()

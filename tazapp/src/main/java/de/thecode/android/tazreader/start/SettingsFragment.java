@@ -14,16 +14,18 @@ import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
-import android.widget.FrameLayout;
 import android.widget.RadioGroup;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
-
-import java.lang.ref.WeakReference;
 
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.utils.BaseFragment;
 import de.thecode.android.tazreader.utils.Orientation;
+
+import org.acra.ACRA;
+
+import java.lang.ref.WeakReference;
 
 public class SettingsFragment extends BaseFragment {
 
@@ -36,15 +38,15 @@ public class SettingsFragment extends BaseFragment {
     private CheckBox screenActiveCheckBox;
     private CheckBox fullscreenCheckBox;
     private CheckBox autodeleteCheckBox;
-    private EditText autoDeletDaysEditText;
-    private FrameLayout notificationSoundLayout;
+    private EditText autoDeleteEditText;
+    private RelativeLayout notificationSoundLayout;
     private TextView notificationSound;
     private CheckBox notificationVibrateCheckBox;
     private RadioGroup orientationGroup;
-    private TextView autodeleteDaysUnitText;
+    private TextView autodeleteUnitText;
     private CheckBox pageIndexButtonCheckBox;
     private CheckBox ttsCheckBox;
-
+    private CheckBox acraAlwaysAcceptCheckBox;
 
     public SettingsFragment() {
         // Required empty public constructor
@@ -68,51 +70,52 @@ public class SettingsFragment extends BaseFragment {
         screenActiveCheckBox = (CheckBox) view.findViewById(R.id.screenActiveCheckBox);
         //fullscreenCheckBox = (CheckBox) view.findViewById(R.id.fullscreenCheckBox);
         orientationGroup = (RadioGroup) view.findViewById(R.id.orientationGroup);
-        autoDeletDaysEditText = (EditText) view.findViewById(R.id.autodeleteDaysEditText);
+        autoDeleteEditText = (EditText) view.findViewById(R.id.autodeleteEditText);
         autodeleteCheckBox = (CheckBox) view.findViewById(R.id.autoDeleteCheckBox);
-        autodeleteDaysUnitText = (TextView) view.findViewById(R.id.autodeletDaysUnitText);
-        notificationSoundLayout = (FrameLayout) view.findViewById(R.id.notificationSoundLayout);
+        autodeleteUnitText = (TextView) view.findViewById(R.id.autodeleteUnitText);
+        notificationSoundLayout = (RelativeLayout) view.findViewById(R.id.notificationSoundLayout);
         notificationSound = (TextView) view.findViewById(R.id.notificationSound);
         notificationVibrateCheckBox = (CheckBox) view.findViewById(R.id.notificationVibrateCheckBox);
         pageIndexButtonCheckBox = (CheckBox) view.findViewById(R.id.showPageIndexButtonCheckBox);
         ttsCheckBox = (CheckBox) view.findViewById(R.id.ttsCheckBox);
+        acraAlwaysAcceptCheckBox = (CheckBox) view.findViewById(R.id.acraAlwaysAcceptCheckBox);
 
-        autoloadCheckBox.setChecked(TazSettings.getPrefBoolean(getActivity(), TazSettings.PREFKEY.AUTOLOAD, false));
+        autoloadCheckBox.setChecked(TazSettings.getInstance(getActivity()).getPrefBoolean(TazSettings.PREFKEY.AUTOLOAD, false));
         autoloadCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                TazSettings.setPref(getActivity(), TazSettings.PREFKEY.AUTOLOAD, isChecked);
+                TazSettings.getInstance(getActivity()).setPref(TazSettings.PREFKEY.AUTOLOAD, isChecked);
                 autoloadWifiCheckBox.setEnabled(isChecked);
             }
         });
-        autoloadWifiCheckBox.setEnabled(TazSettings.getPrefBoolean(getActivity(), TazSettings.PREFKEY.AUTOLOAD, false));
+        autoloadWifiCheckBox.setEnabled(TazSettings.getInstance(getActivity()).getPrefBoolean(TazSettings.PREFKEY.AUTOLOAD, false));
 
-        autoloadWifiCheckBox.setChecked(TazSettings.getPrefBoolean(getActivity(), TazSettings.PREFKEY.AUTOLOAD_WIFI, false));
+        autoloadWifiCheckBox.setChecked(TazSettings.getInstance(getActivity()).getPrefBoolean(TazSettings.PREFKEY.AUTOLOAD_WIFI, false));
         autoloadWifiCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                TazSettings.setPref(getActivity(), TazSettings.PREFKEY.AUTOLOAD_WIFI, isChecked);
+                TazSettings.getInstance(getActivity()).setPref(TazSettings.PREFKEY.AUTOLOAD_WIFI, isChecked);
             }
         });
 
-        autodeleteCheckBox.setChecked(TazSettings.getPrefBoolean(getActivity(), TazSettings.PREFKEY.AUTODELETE, false));
+        autodeleteCheckBox.setChecked(TazSettings.getInstance(getActivity()).getPrefBoolean(TazSettings.PREFKEY.AUTODELETE, false));
         autodeleteCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                TazSettings.setPref(getActivity(), TazSettings.PREFKEY.AUTODELETE, isChecked);
-                autoDeletDaysEditText.setEnabled(isChecked);
-                autodeleteDaysUnitText.setEnabled(isChecked);
-                TazSettings.setPref(getActivity(), TazSettings.PREFKEY.FORCESYNC, true);
+                TazSettings.getInstance(getActivity()).setPref(TazSettings.PREFKEY.AUTODELETE, isChecked);
+                autoDeleteEditText.setEnabled(isChecked);
+                autodeleteUnitText.setEnabled(isChecked);
+                TazSettings.getInstance(getActivity()).setPref(TazSettings.PREFKEY.FORCESYNC, true);
             }
         });
-        autoDeletDaysEditText.setEnabled(TazSettings.getPrefBoolean(getActivity(), TazSettings.PREFKEY.AUTODELETE, false));
-        autodeleteDaysUnitText.setEnabled(TazSettings.getPrefBoolean(getActivity(), TazSettings.PREFKEY.AUTODELETE, false));
+        autoDeleteEditText.setEnabled(TazSettings.getInstance(getActivity()).getPrefBoolean(TazSettings.PREFKEY.AUTODELETE, false));
+        autodeleteUnitText.setEnabled(TazSettings.getInstance(getActivity()).getPrefBoolean(TazSettings.PREFKEY.AUTODELETE, false));
 
-        autoDeletDaysEditText.setText(String.valueOf(TazSettings.getPrefInt(getActivity(), TazSettings.PREFKEY.AUTODELETE_DAYS, 0)));
-        autoDeletDaysEditText.addTextChangedListener(new TextWatcher() {
+        autoDeleteEditText.setText(String.valueOf(TazSettings.getInstance(getActivity()).getPrefInt(TazSettings.PREFKEY.AUTODELETE_VALUE, 0)));
+        autoDeleteEditText.addTextChangedListener(new TextWatcher() {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
@@ -127,25 +130,25 @@ public class SettingsFragment extends BaseFragment {
 
                 try {
                     int days = Integer.valueOf(s.toString());
-                    TazSettings.setPref(getActivity(), TazSettings.PREFKEY.AUTODELETE_DAYS, days);
-                    TazSettings.setPref(getActivity(), TazSettings.PREFKEY.FORCESYNC, true);
+                    TazSettings.getInstance(getActivity()).setPref(TazSettings.PREFKEY.AUTODELETE_VALUE, days);
+                    TazSettings.getInstance(getActivity()).setPref(TazSettings.PREFKEY.FORCESYNC, true);
                 } catch (NumberFormatException e) {
 
                 }
             }
         });
 
-        screenActiveCheckBox.setChecked(TazSettings.getPrefBoolean(getActivity(), TazSettings.PREFKEY.KEEPSCREEN, false));
+        screenActiveCheckBox.setChecked(TazSettings.getInstance(getActivity()).getPrefBoolean(TazSettings.PREFKEY.KEEPSCREEN, false));
         screenActiveCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                TazSettings.setPref(getActivity(), TazSettings.PREFKEY.KEEPSCREEN, isChecked);
+                TazSettings.getInstance(getActivity()).setPref(TazSettings.PREFKEY.KEEPSCREEN, isChecked);
             }
         });
 
         final String orientationValues[] = getResources().getStringArray(R.array.orientationValue);
-        String currentOrientation = TazSettings.getPrefString(getActivity(), TazSettings.PREFKEY.ORIENTATION, orientationValues[0]);
+        String currentOrientation = TazSettings.getInstance(getActivity()).getPrefString(TazSettings.PREFKEY.ORIENTATION, orientationValues[0]);
         if (currentOrientation.equalsIgnoreCase(orientationValues[0])) orientationGroup.check(R.id.orientationButtonAuto);
         else if (currentOrientation.equalsIgnoreCase(orientationValues[1])) orientationGroup.check(R.id.orientationButtonPort);
         else if (currentOrientation.equalsIgnoreCase(orientationValues[2])) orientationGroup.check(R.id.orientationButtonLand);
@@ -168,7 +171,7 @@ public class SettingsFragment extends BaseFragment {
                         newOrientation = orientationValues[0];
                         break;
                 }
-                TazSettings.setPref(getActivity(), TazSettings.PREFKEY.ORIENTATION, newOrientation);
+                TazSettings.getInstance(getActivity()).setPref(TazSettings.PREFKEY.ORIENTATION, newOrientation);
                 Orientation.setActivityOrientationFromPrefs(getActivity());
             }
         });
@@ -183,36 +186,45 @@ public class SettingsFragment extends BaseFragment {
                 intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, getString(R.string.notification_sound_activity_title));
                 intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, true);
                 intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, true);
-                Uri ringtoneUri = TazSettings.getRingtone(getActivity());
+                Uri ringtoneUri = TazSettings.getInstance(getActivity()).getRingtone();
                 if (ringtoneUri != null) intent.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, ringtoneUri);
                 startActivityForResult(intent, REQUESTCODE_NOTIFICATION_SOUND);
             }
         });
         updateNotificationSoundLayout();
-        notificationVibrateCheckBox.setChecked(TazSettings.getPrefBoolean(getActivity(), TazSettings.PREFKEY.VIBRATE, false));
+        notificationVibrateCheckBox.setChecked(TazSettings.getInstance(getActivity()).getPrefBoolean(TazSettings.PREFKEY.VIBRATE, false));
         notificationVibrateCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                TazSettings.setPref(getActivity(), TazSettings.PREFKEY.VIBRATE, isChecked);
+                TazSettings.getInstance(getActivity()).setPref(TazSettings.PREFKEY.VIBRATE, isChecked);
             }
         });
 
-        pageIndexButtonCheckBox.setChecked(TazSettings.getPrefBoolean(getActivity(), TazSettings.PREFKEY.PAGEINDEXBUTTON, false));
+        pageIndexButtonCheckBox.setChecked(TazSettings.getInstance(getActivity()).getPrefBoolean(TazSettings.PREFKEY.PAGEINDEXBUTTON, false));
         pageIndexButtonCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                TazSettings.setPref(getActivity(), TazSettings.PREFKEY.PAGEINDEXBUTTON, isChecked);
+                TazSettings.getInstance(getActivity()).setPref(TazSettings.PREFKEY.PAGEINDEXBUTTON, isChecked);
             }
         });
 
-        ttsCheckBox.setChecked(TazSettings.getPrefBoolean(getActivity(), TazSettings.PREFKEY.TEXTTOSPEACH, false));
+        ttsCheckBox.setChecked(TazSettings.getInstance(getActivity()).getPrefBoolean(TazSettings.PREFKEY.TEXTTOSPEACH, false));
         ttsCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                TazSettings.setPref(getActivity(), TazSettings.PREFKEY.TEXTTOSPEACH, isChecked);
+                TazSettings.getInstance(getActivity()).setPref(TazSettings.PREFKEY.TEXTTOSPEACH, isChecked);
+            }
+        });
+
+        acraAlwaysAcceptCheckBox.setChecked(TazSettings.getInstance(getActivity()).getPrefBoolean(ACRA.PREF_ALWAYS_ACCEPT, false));
+        acraAlwaysAcceptCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                TazSettings.getInstance(getActivity()).setPref(ACRA.PREF_ALWAYS_ACCEPT, isChecked);
             }
         });
 
@@ -229,7 +241,7 @@ public class SettingsFragment extends BaseFragment {
 
 
     private void updateNotificationSoundLayout() {
-        Uri ringtonUri = TazSettings.getRingtone(getActivity());
+        Uri ringtonUri = TazSettings.getInstance(getActivity()).getRingtone();
         String ringtoneCaption = "unknown";
         if (ringtonUri == null) {
             ringtoneCaption = getString(R.string.notification_sound_silent);
@@ -250,9 +262,9 @@ public class SettingsFragment extends BaseFragment {
                 if (data.hasExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI)) {
                     Uri uri = data.getParcelableExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI);
                     if (uri != null) {
-                        TazSettings.setPref(getActivity(), TazSettings.PREFKEY.RINGTONE, uri.toString());
+                        TazSettings.getInstance(getActivity()).setPref(TazSettings.PREFKEY.RINGTONE, uri.toString());
                     } else {
-                        TazSettings.setPref(getActivity(), TazSettings.PREFKEY.RINGTONE, "");
+                        TazSettings.getInstance(getActivity()).setPref(TazSettings.PREFKEY.RINGTONE, "");
                     }
                     updateNotificationSoundLayout();
                 }

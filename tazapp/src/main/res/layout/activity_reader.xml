@@ -31,7 +31,6 @@
         android:layout_height="match_parent"
         android:layout_gravity="start"
         style="@style/reader_index_drawer"
-        android:background="?attr/colorPrimaryDark"
         android:paddingTop="@dimen/reader_navdrawer_topmargin">
     </FrameLayout>
 
@@ -40,7 +39,7 @@
         android:layout_width="@dimen/pageindex_thumbnail_image_width"
         android:layout_height="match_parent"
         android:layout_gravity="end"
-        android:background="?attr/colorPrimaryDark"
+        style="@style/reader_pageindex_drawer"
         android:paddingTop="@dimen/reader_navdrawer_topmargin"/>
 
 </android.support.v4.widget.DrawerLayout>
