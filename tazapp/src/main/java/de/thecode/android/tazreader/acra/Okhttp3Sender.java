@@ -4,6 +4,7 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.okhttp3.OkHttp3Helper;
 
 import org.acra.ACRAConstants;
@@ -43,8 +44,8 @@ public class Okhttp3Sender implements ReportSender {
     @Override
     public void send(@NonNull Context context, @NonNull CrashReportData report) throws ReportSenderException {
 
-        String versionCode = report.getProperty(ReportField.APP_VERSION_CODE);
-        report.putNumber(ReportField.APP_VERSION_CODE,Integer.valueOf(versionCode.substring(1,versionCode.length())));
+        //Report original version code, not ABI specific one from package
+        report.putNumber(ReportField.APP_VERSION_CODE, BuildConfig.VERSION_CODE);
 
         try {
             HttpUrl url = HttpUrl.parse(config.formUri());

@@ -72,9 +72,7 @@ public class MigrationWorkerFragment extends BaseFragment {
 
     public void checkForMigration() {
         int migrateFrom = TazSettings.getInstance(applicationContext)
-                                     .getPrefInt(TazSettings.PREFKEY.PAPERMIGRATEFROM, Integer.parseInt(
-                                             String.valueOf(BuildConfig.VERSION_CODE)
-                                                   .substring(1)));
+                                     .getPrefInt(TazSettings.PREFKEY.PAPERMIGRATEFROM, BuildConfig.VERSION_CODE);
         Timber.d("%d", migrateFrom);
 
         if (migrateFrom < 32) {

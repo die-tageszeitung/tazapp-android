@@ -1,6 +1,7 @@
 package de.thecode.android.tazreader.start;
 
 
+import android.content.pm.PackageInfo;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -44,9 +45,16 @@ public class ImprintFragment extends BaseFragment {
         callback = new WeakReference<>((IStartCallback) getActivity());
         if (hasCallback()) getCallback().onUpdateDrawer(this);
 
+
+        String versionName = BuildConfig.VERSION_NAME;
+            try {
+                PackageInfo packageInfo = getContext().getPackageManager().getPackageInfo(getContext().getPackageName(), 0);
+                versionName = packageInfo.versionName;
+            } catch (Exception ignored) {
+            }
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.start_imprint, container, false);
-        ((TextView) view.findViewById(R.id.version)).setText(BuildConfig.VERSION_NAME);
+        ((TextView) view.findViewById(R.id.version)).setText(versionName);
         Button licencesButton = (Button) view.findViewById(R.id.buttonLicences);
         licencesButton.setOnClickListener(new View.OnClickListener() {
             @Override
