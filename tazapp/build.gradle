@@ -1,10 +1,10 @@
 def supportLibVer = "25.2.0"
-def buildToolsVer = "25.0.1"
+def buildToolsVer = "25.0.2"
 def compileSdkVer = 25
 def targetSdkVer = 25
 def minSdkVer = 15
 
-def versionCodeInt = 52
+def versionCodeInt = 53
 def versionNamePrefix = "3.0."
 
 def tazPlist = '"https://dl.taz.de/tpaperIssue.plist"'
