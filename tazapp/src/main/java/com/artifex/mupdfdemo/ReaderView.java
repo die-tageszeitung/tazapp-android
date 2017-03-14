@@ -13,10 +13,10 @@ import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.Scroller;
 
+import de.thecode.android.tazreader.R;
+
 import java.util.LinkedList;
 import java.util.NoSuchElementException;
-
-import de.thecode.android.tazreader.R;
 
 public class ReaderView
 		extends AdapterView<Adapter>
@@ -554,6 +554,7 @@ public class ReaderView
 			}
 		}
 
+		requestLayout();
 		return true;
 	}
 
@@ -567,9 +568,40 @@ public class ReaderView
 	}
 
 	@Override
-	protected void onLayout(boolean changed, int left, int top, int right,
-			int bottom) {
+	protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
 		super.onLayout(changed, left, top, right, bottom);
+
+		try {
+			onLayout2(changed, left, top, right, bottom);
+		}
+		catch (java.lang.OutOfMemoryError e) {
+			System.out.println("Out of memory during layout");
+
+			// we might get an out of memory error.
+			// so let's display an alert.
+			// TODO: a better message, in resources.
+
+			if (!memAlert) {
+				memAlert = true;
+				//TODO BETTER
+//				AlertDialog alertDialog = MuPDFActivity.getAlertBuilder().create();
+//				alertDialog.setMessage("Out of memory during layout");
+//				alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+//					new DialogInterface.OnClickListener() {
+//						public void onClick(DialogInterface dialog, int which) {
+//							dialog.dismiss();
+//							memAlert = false;
+//						}
+//					});
+//				alertDialog.show();
+			}
+		}
+	}
+
+	private boolean memAlert = false;
+
+	private void onLayout2(boolean changed, int left, int top, int right,
+			int bottom) {
 
 		// "Edit mode" means when the View is being displayed in the Android GUI editor. (this class
 		// is instantiated in the IDE, so we need to be a bit careful what we do).
@@ -754,6 +786,14 @@ public class ReaderView
 
 	@Override
 	public void setAdapter(Adapter adapter) {
+
+		//  release previous adapter's bitmaps
+		if (null!=mAdapter && adapter!=mAdapter) {
+			if (adapter instanceof MuPDFPageAdapter){
+				((MuPDFPageAdapter) adapter).releaseBitmaps();
+			}
+		}
+
 		mAdapter = adapter;
 
 		requestLayout();
@@ -789,7 +829,7 @@ public class ReaderView
 			params = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
 		}
 		addViewInLayout(v, 0, params, true);
-		mChildViews.append(i, v); // Record the view against it's adapter index
+		mChildViews.append(i, v); // Record the view against its adapter index
 		measureView(v);
 	}
 
@@ -841,7 +881,7 @@ public class ReaderView
 
 	private void postSettle(final View v) {
 		// onSettle and onUnsettle are posted so that the calls
-		// wont be executed until after the system has performed
+		// won't be executed until after the system has performed
 		// layout.
 		post (new Runnable() {
 			public void run () {

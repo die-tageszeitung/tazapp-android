@@ -56,6 +56,7 @@ public class TAZReaderView extends ReaderView {
         return super.onSingleTapUp(e);
     }
 
+
     @Override
     public boolean onDown(MotionEvent e) {
 
