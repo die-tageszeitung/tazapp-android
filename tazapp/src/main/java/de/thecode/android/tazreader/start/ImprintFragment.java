@@ -2,8 +2,10 @@ package de.thecode.android.tazreader.start;
 
 
 import android.content.pm.PackageInfo;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,6 +26,10 @@ import de.thecode.android.tazreader.utils.BaseFragment;
 import org.acra.util.Installation;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
+import java.util.List;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -47,11 +53,22 @@ public class ImprintFragment extends BaseFragment {
 
 
         String versionName = BuildConfig.VERSION_NAME;
-            try {
-                PackageInfo packageInfo = getContext().getPackageManager().getPackageInfo(getContext().getPackageName(), 0);
-                versionName = packageInfo.versionName;
-            } catch (Exception ignored) {
-            }
+        try {
+            PackageInfo packageInfo = getContext().getPackageManager()
+                                                  .getPackageInfo(getContext().getPackageName(), 0);
+            versionName = packageInfo.versionName;
+        } catch (Exception ignored) {
+        }
+        String[] supportedArch;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            supportedArch = Build.SUPPORTED_ABIS;
+        } else {
+            supportedArch = new String[]{Build.CPU_ABI, Build.CPU_ABI2};
+        }
+        List<String> supportedArchList = new ArrayList<>(Arrays.asList(supportedArch));
+        supportedArchList.removeAll(Arrays.asList("", null)); //remove empty
+        supportedArchList = new ArrayList<>(new LinkedHashSet<>(supportedArchList)); //remove duplicate
+        versionName += " (supported ABIs: " + TextUtils.join(", ", supportedArchList) + ")";
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.start_imprint, container, false);
         ((TextView) view.findViewById(R.id.version)).setText(versionName);
@@ -107,8 +124,8 @@ public class ImprintFragment extends BaseFragment {
                                    .addEntry(new Apache20Licence(getContext(), "cwac-provider", "Mark Murphy", 2016))
                                    .addEntry(new Apache20Licence(getContext(), "EventBus", "Markus Junginger, greenrobot", 2014))
                                    .addEntry(new Apache20Licence(getContext(), "Calligraphy", "Christopher Jenkins", 2013))
-                                   .addEntry(new Apache20Licence(getContext(), "Commons IO",
-                                                                 "The Apache Software Foundation", 2016))
+                                   .addEntry(new Apache20Licence(getContext(), "Commons IO", "The Apache Software Foundation",
+                                                                 2016))
                                    .addEntry(new Apache20Licence(getContext(), "ViewpagerIndicator", "Jordan Réjaud", 2016))
                                    .addEntry(new Apache20Licence(getContext(), "RecyclerView-FlexibleDivider", "yqritc", 2016))
                                    .addEntry(new Agpl30Licence(getContext(), "mupdf", "Artifex Software, Inc.", 2015))
