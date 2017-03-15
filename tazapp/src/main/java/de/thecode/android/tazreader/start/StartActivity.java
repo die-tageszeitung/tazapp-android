@@ -20,6 +20,11 @@ import de.greenrobot.event.EventBus;
 import de.mateware.dialog.Dialog;
 import de.mateware.dialog.DialogAdapterList;
 import de.mateware.dialog.DialogIndeterminateProgress;
+import de.mateware.dialog.LicenceDialog;
+import de.mateware.dialog.licences.Agpl30Licence;
+import de.mateware.dialog.licences.Apache20Licence;
+import de.mateware.dialog.licences.BsdLicence;
+import de.mateware.dialog.licences.MitLicence;
 import de.mateware.dialog.listener.DialogAdapterListListener;
 import de.mateware.dialog.listener.DialogButtonListener;
 import de.mateware.dialog.listener.DialogCancelListener;
@@ -77,6 +82,7 @@ public class StartActivity extends BaseActivity
     private static final String DIALOG_ARCHIVE_YEAR          = "dialogArchiveYear";
     private static final String DIALOG_ARCHIVE_MONTH         = "dialogArchiveMonth";
     private static final String DIALOG_WAIT                  = "dialogWait";
+    private static final String DIALOG_LICENCES              = "dialogLicences";
 
     private static final String ARGUMENT_RESOURCE_KEY           = "resourceKey";
     private static final String ARGUMENT_RESOURCE_URL           = "resourceUrl";
@@ -290,8 +296,6 @@ public class StartActivity extends BaseActivity
     }
 
 
-
-
     @Override
     public void onSuccessfulCredentialsCheck() {
         mDrawerFragment.simulateClick(libraryItem, false);
@@ -406,6 +410,28 @@ public class StartActivity extends BaseActivity
                             .setNeutralButton(R.string.dialog_wifi)
                             .buildSupport()
                             .show(getSupportFragmentManager(), DIALOG_DOWNLOAD_MOBILE);
+    }
+
+    private void showLicencesDialog() {
+        new LicenceDialog.Builder().addEntry(
+                new Apache20Licence(this, "Android Support Library", "The Android Open Source Project", 2011))
+                                   .addEntry(new Apache20Licence(this, "OkHttp", "Square, Inc.", 2016))
+                                   .addEntry(new Apache20Licence(this, "Picasso", "Square, Inc.", 2013))
+                                   .addEntry(new Apache20Licence(this, "Picasso 2 OkHttp 3 Downloader", "Jake Wharton", 2016))
+                                   .addEntry(new Apache20Licence(this, "AESCrypt-Android", "Scott Alexander-Bown", 2014))
+                                   .addEntry(new Apache20Licence(this, "Snacky", "Mate Siede", 2017))
+                                   .addEntry(new MitLicence(this, "dd-plist", "Daniel Dreibrodt", 2016))
+                                   .addEntry(new Apache20Licence(this, "cwac-provider", "Mark Murphy", 2016))
+                                   .addEntry(new Apache20Licence(this, "EventBus", "Markus Junginger, greenrobot", 2014))
+                                   .addEntry(new Apache20Licence(this, "Calligraphy", "Christopher Jenkins", 2013))
+                                   .addEntry(new Apache20Licence(this, "Commons IO", "The Apache Software Foundation", 2016))
+                                   .addEntry(new Apache20Licence(this, "ViewpagerIndicator", "Jordan Réjaud", 2016))
+                                   .addEntry(new Apache20Licence(this, "RecyclerView-FlexibleDivider", "yqritc", 2016))
+                                   .addEntry(new Agpl30Licence(this, "mupdf", "Artifex Software, Inc.", 2015))
+                                   .addEntry(new BsdLicence(this, "Stetho", "Facebook, Inc.", 2015))
+                                   .setPositiveButton()
+                                   .buildSupport()
+                                   .show(getSupportFragmentManager(), DIALOG_LICENCES);
     }
 
     private void showAccountErrorDialog() {
@@ -600,6 +626,12 @@ public class StartActivity extends BaseActivity
                     Timber.w(e);
                 }
 
+            }
+        } else if (ImprintFragment.DIALOG_TECHINFO.equals(tag)) {
+            switch (which){
+                case Dialog.BUTTON_NEUTRAL:
+                    showLicencesDialog();
+                    break;
             }
         } else if (DIALOG_DOWNLOAD_MOBILE.equals(tag)) {
             switch (which) {

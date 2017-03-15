@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
+
+    <TextView
+            android:text="@string/dialog_techinfo_version"
+            android:layout_width="match_parent"
+            style="@style/TechInfo.Header"
+            android:layout_height="wrap_content"/>
+
+    <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/TechInfo"
+            android:id="@+id/version"/>
+
+    <TextView
+            android:text="@string/dialog_techinfo_supported_abis"
+            android:layout_width="match_parent"
+            style="@style/TechInfo.Header"
+            android:layout_height="wrap_content"/>
+
+    <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/TechInfo"
+            android:id="@+id/abis"/>
+
+    <TextView
+            android:text="@string/dialog_techinfo_installations_id"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/TechInfo.Header"/>
+
+    <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/installationid"
+            style="@style/TechInfo"/>
+</LinearLayout>

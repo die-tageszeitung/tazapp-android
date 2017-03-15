@@ -62,7 +62,7 @@
     <string name="drawer_header_debug" translatable="false">δ</string>
 
     <string name="imprint_licenses">Lizenzen</string>
-    <string name="imprint_installation_id">Installations ID</string>
+    <string name="imprint_tech_info">Technische Informationen</string>
 
     <string name="import_parent_directory">Übergeordnetes Verzeichnis</string>
     <string name="import_wait">Lade Verzeichnis…</string>
@@ -98,5 +98,8 @@
     <string name="dialog_tts_error_settings">Einstellungen</string>
 
     <string name="dialog_import_permission_explanation">Die Berechtigung wird benötigt, um den Inhalt Ihres Speichers anzuzeigen.</string>
+    <string name="dialog_techinfo_version">Version</string>
+    <string name="dialog_techinfo_supported_abis">Unterstützte ABIs</string>
+    <string name="dialog_techinfo_installations_id">Installations ID</string>
 
 </resources>
