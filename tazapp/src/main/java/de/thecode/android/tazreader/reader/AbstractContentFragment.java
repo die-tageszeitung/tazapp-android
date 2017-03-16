@@ -1,7 +1,6 @@
 package de.thecode.android.tazreader.reader;
 
 
-import android.app.Activity;
 import android.content.Context;
 
 import de.thecode.android.tazreader.data.Paper;
@@ -14,7 +13,6 @@ import java.lang.ref.WeakReference;
  * Created by mate on 18.12.2014.
  */
 public abstract class AbstractContentFragment extends BaseFragment implements ReaderActivity.ConfigurationChangeListener {
-    public Context mContext;
     private WeakReference<IReaderCallback> mCallback;
 
     public AbstractContentFragment() {
@@ -24,11 +22,10 @@ public abstract class AbstractContentFragment extends BaseFragment implements Re
     public abstract void init(Paper paper, String key, String position);
 
     @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        mContext = activity;
-        mCallback = new WeakReference<>((IReaderCallback) activity);
+    public void onAttach(Context context) {
+        mCallback = new WeakReference<>((IReaderCallback) context);
         if (hasCallback()) getCallback().addConfigChangeListener(this);
+        super.onAttach(context);
     }
 
     public boolean hasCallback() {
@@ -43,24 +40,24 @@ public abstract class AbstractContentFragment extends BaseFragment implements Re
     public boolean setConfig(String name, String value) {
         boolean isBoolean = false;
         try {
-            TazSettings.getInstance(mContext).getPrefString(name, null);
+            TazSettings.getInstance(getContext()).getPrefString(name, null);
         } catch (ClassCastException e) {
             isBoolean = true;
         }
 
         if (isBoolean) {
-            return TazSettings.getInstance(mContext).setPref(name, value.equals("on"));
+            return TazSettings.getInstance(getContext()).setPref(name, value.equals("on"));
         } else {
-            return TazSettings.getInstance(mContext).setPref(name, value);
+            return TazSettings.getInstance(getContext()).setPref(name, value);
         }
     }
 
     public String getConfig(String name) {
         StringBuilder result = new StringBuilder();
         try {
-            result.append(TazSettings.getInstance(mContext).getPrefString(name, null));
+            result.append(TazSettings.getInstance(getContext()).getPrefString(name, null));
         } catch (ClassCastException e) {
-            result.append(TazSettings.getInstance(mContext).getPrefBoolean(name, false) ? "on" : "off");
+            result.append(TazSettings.getInstance(getContext()).getPrefBoolean(name, false) ? "on" : "off");
         }
         return result.toString();
     }

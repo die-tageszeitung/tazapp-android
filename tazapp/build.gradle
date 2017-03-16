@@ -3,7 +3,7 @@ def versionMinor = 1
 def versionPatch = 0
 def versionBuild = 0
 
-def supportLibVer = "25.2.0"
+def supportLibVer = "25.3.0"
 def buildToolsVer = "25.0.2"
 def compileSdkVer = 25
 def targetSdkVer = 25

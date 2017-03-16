@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 
 import de.thecode.android.tazreader.R;
+import de.thecode.android.tazreader.analytics.AnalyticsWrapper;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Paper.Plist.Book;
 import de.thecode.android.tazreader.data.Paper.Plist.Category;
@@ -61,13 +62,13 @@ public class PagesFragment extends AbstractContentFragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-
+        AnalyticsWrapper.getInstance().trackBreadcrumb("onCreateView in PagesFragment");
         View view = inflater.inflate(R.layout.reader_pagereader, container, false);
         _readerView = (TAZReaderView) view.findViewById(R.id.readerview);
         _readerView.setAdapter(_adapter);
         mShareButton = (ShareButton) view.findViewById(R.id.share);
         PageIndexButton mPageIndexButton = (PageIndexButton) view.findViewById(R.id.pageindex);
-        if (TazSettings.getInstance(mContext).getPrefBoolean(TazSettings.PREFKEY.PAGEINDEXBUTTON, false)) {
+        if (TazSettings.getInstance(getContext()).getPrefBoolean(TazSettings.PREFKEY.PAGEINDEXBUTTON, false)) {
             mPageIndexButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -87,6 +88,7 @@ public class PagesFragment extends AbstractContentFragment {
 
     @Override
     public void init(Paper paper, String key, String postion) {
+        AnalyticsWrapper.getInstance().trackBreadcrumb("init in PagesFragment");
         Timber.d("paper: %s, key: %s, postion: %s", paper, key, postion);
         _startKey = key;
         pages = new ArrayList<>();

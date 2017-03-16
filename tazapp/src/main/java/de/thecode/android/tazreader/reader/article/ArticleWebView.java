@@ -53,12 +53,13 @@ public class ArticleWebView extends WebView {
     }
 
     private void setIsScroll() {
-        isScroll = TazSettings.getInstance(mContext).getPrefBoolean(TazSettings.PREFKEY.ISSCROLL, false);
+        isScroll = TazSettings.getInstance(mContext)
+                              .getPrefBoolean(TazSettings.PREFKEY.ISSCROLL, false);
     }
 
     @Override
     protected void onScrollChanged(int l, int t, int oldl, int oldt) {
-        Timber.d("l: %s, t: %s, oldl: %s, oldt: %s",l, t, oldl, oldt);
+        Timber.d("l: %s, t: %s, oldl: %s, oldt: %s", l, t, oldl, oldt);
         checkY = t;
         checkX = l;
         super.onScrollChanged(l, t, oldl, oldt);
@@ -78,11 +79,11 @@ public class ArticleWebView extends WebView {
         scrollAnimation.start();
     }
 
-    boolean isAlreadyChecking = false;
-    int lastCheckedY = 0;
-    int lastCheckedX = 0;
-    int checkY = 0;
-    int checkX = 0;
+    boolean  isAlreadyChecking     = false;
+    int      lastCheckedY          = 0;
+    int      lastCheckedX          = 0;
+    int      checkY                = 0;
+    int      checkX                = 0;
     Runnable scrollStopCheckerTask = new Runnable() {
 
         @Override
@@ -112,7 +113,7 @@ public class ArticleWebView extends WebView {
 
     @Override
     public void loadDataWithBaseURL(String baseUrl, String data, String mimeType, String encoding, String failUrl) {
-        Timber.i("baseUrl: %s, data: %s, mimeType: %s, encoding: %s, failUrl: %s",baseUrl, data, mimeType, encoding, failUrl);
+        Timber.i("baseUrl: %s, data: %s, mimeType: %s, encoding: %s, failUrl: %s", baseUrl, data, mimeType, encoding, failUrl);
         gestureDetector = new GestureDetector(mContext, simpleOnGestureListener);
         setIsScroll();
         super.loadDataWithBaseURL(baseUrl, data, mimeType, encoding, failUrl);
@@ -120,8 +121,9 @@ public class ArticleWebView extends WebView {
 
     @Override
     public boolean onTouchEvent(MotionEvent ev) {
-        if (!mScrolling) return gestureDetector.onTouchEvent(ev) || super.onTouchEvent(ev);
-        else return super.onTouchEvent(ev);
+        if (!mScrolling && gestureDetector != null) {
+            return gestureDetector.onTouchEvent(ev) || super.onTouchEvent(ev);
+        } else return super.onTouchEvent(ev);
 
     }
 
@@ -162,14 +164,13 @@ public class ArticleWebView extends WebView {
 
         @Override
         public boolean onDoubleTap(MotionEvent e) {
-            if (mCallback!= null)
-                return mCallback.onDoubleTap(e);
+            if (mCallback != null) return mCallback.onDoubleTap(e);
             return super.onDoubleTap(e);
         }
 
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-            Timber.d("e1: %s, e2: %s, velocityX: %s, velocityY: %s",e1, e2, velocityX, velocityY);
+            Timber.d("e1: %s, e2: %s, velocityX: %s, velocityY: %s", e1, e2, velocityX, velocityY);
             boolean result = false;
 
             try {
