@@ -37,7 +37,7 @@ public class ReaderView
 	private static final boolean HORIZONTAL_SCROLLING = true;
 
 	private Adapter           mAdapter;
-	private int               mCurrent;    // Adapter's index for the current view
+	public int               mCurrent;    // Adapter's index for the current view
 	private boolean           mResetLayout;
 	public final SparseArray<View>
 				  mChildViews = new SparseArray<View>(3);
@@ -45,15 +45,15 @@ public class ReaderView
 					       // but with more sensible indexing
 	private final LinkedList<View>
 				  mViewCache = new LinkedList<View>();
-	private boolean           mUserInteracting;  // Whether the user is interacting
-	private boolean           mScaling;    // Whether the user is currently pinch zooming
+	public boolean mUserInteracting;  // Whether the user is interacting
+	public boolean mScaling;    // Whether the user is currently pinch zooming
 	public  float             mScale     = 1.0f;
-	private int               mXScroll;    // Scroll amounts recorded from events.
-	private int               mYScroll;    // and then accounted for in onLayout
+	public int               mXScroll;    // Scroll amounts recorded from events.
+	public int               mYScroll;    // and then accounted for in onLayout
 	private boolean           mReflow = false;
 	private boolean           mReflowChanged = false;
 	private final GestureDetector
-				  mGestureDetector;
+						   mGestureDetector;
 	private final ScaleGestureDetector
 				  mScaleGestureDetector;
 	private final Scroller    mScroller;
@@ -879,7 +879,7 @@ public class ReaderView
 				         Math.min(Math.max(0,bounds.top),bounds.bottom));
 	}
 
-	private void postSettle(final View v) {
+	public void postSettle(final View v) {
 		// onSettle and onUnsettle are posted so that the calls
 		// won't be executed until after the system has performed
 		// layout.
