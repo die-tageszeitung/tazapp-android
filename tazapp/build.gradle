@@ -191,7 +191,7 @@ android {
     }
 
     // Map for the version code that gives each ABI a value.
-    def abiCodes = ['universal':1,'armeabi': 2, 'armeabi-v7a': 3, 'arm64-v8a':4, 'mips': 7, 'mips64': 8, 'x86': 10, 'x86_64': 11].withDefault {1}
+    def abiCodes = ['universal':0,'armeabi': 1, 'armeabi-v7a': 2, 'arm64-v8a':3, 'mips': 4, 'mips64': 5, 'x86': 6, 'x86_64': 7].withDefault {0}
 
     applicationVariants.all { variant ->
         variant.outputs.each { output ->
