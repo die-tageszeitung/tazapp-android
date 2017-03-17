@@ -14,6 +14,7 @@ import com.artifex.mupdfdemo.PageView;
 import com.artifex.mupdfdemo.ReaderView;
 
 import de.thecode.android.tazreader.data.Paper.Plist.Page;
+import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.reader.IReaderCallback;
 
 import java.lang.ref.WeakReference;
@@ -145,51 +146,54 @@ public class TAZReaderView extends ReaderView implements GestureDetector.OnDoubl
     @Override
     public boolean onSingleTapConfirmed(MotionEvent e) {
         if (!tapDisabled) {
-            TAZPageView pageView = (TAZPageView) getDisplayedView();
-            pageView.passClickEvent(e.getX(), e.getY());
+            if (TazSettings.getInstance(getContext()).getPrefBoolean(TazSettings.PREFKEY.PAGETAPTOARTICLE,true)) {
+                TAZPageView pageView = (TAZPageView) getDisplayedView();
+                pageView.passClickEvent(e.getX(), e.getY());
+            }
         }
-        return false;
+        return true;
     }
 
     @Override
     public boolean onDoubleTap(MotionEvent e) {
+        if (TazSettings.getInstance(getContext()).getPrefBoolean(TazSettings.PREFKEY.PAGEDOUBLETAPZOOM,true)) {
 
-        ValueAnimator animator = ValueAnimator.ofFloat(mScale, mScale > 2F ? 1F : 4F);
-        animator.setDuration(500);
-        View v = mChildViews.get(mCurrent);
-        animator.addUpdateListener(new ZoomAnimatorListener(v, e) {
-            @Override
-            public void onAnimationUpdate(float newScale, View v, MotionEvent e) {
-                float previousScale = mScale;
-                mScale = newScale;
-                float factor = mScale / previousScale;
-                if (v != null) {
-                    // Work out the focus point relative to the view top left
-                    int viewFocusX = (int) e.getX() - (v.getLeft() + mXScroll);
-                    int viewFocusY = (int) e.getY() - (v.getTop() + mYScroll);
-                    // Scroll to maintain the focus point
-                    mXScroll += viewFocusX - viewFocusX * factor;
-                    mYScroll += viewFocusY - viewFocusY * factor;
-                    requestLayout();
+            ValueAnimator animator = ValueAnimator.ofFloat(mScale, mScale > 2F ? 1F : 4F);
+            animator.setDuration(500);
+            View v = mChildViews.get(mCurrent);
+            animator.addUpdateListener(new ZoomAnimatorListener(v, e) {
+                @Override
+                public void onAnimationUpdate(float newScale, View v, MotionEvent e) {
+                    float previousScale = mScale;
+                    mScale = newScale;
+                    float factor = mScale / previousScale;
+                    if (v != null) {
+                        // Work out the focus point relative to the view top left
+                        int viewFocusX = (int) e.getX() - (v.getLeft() + mXScroll);
+                        int viewFocusY = (int) e.getY() - (v.getTop() + mYScroll);
+                        // Scroll to maintain the focus point
+                        mXScroll += viewFocusX - viewFocusX * factor;
+                        mYScroll += viewFocusY - viewFocusY * factor;
+                        requestLayout();
+                    }
                 }
-            }
-        });
-        animator.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationStart(Animator animation) {
-                onScaleBegin(null);
-            }
+            });
+            animator.addListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationStart(Animator animation) {
+                    onScaleBegin(null);
+                }
 
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                onScaleEnd(null);
-                View v = mChildViews.get(mCurrent);
-                postSettle(v);
-            }
-        });
-        animator.start();
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    onScaleEnd(null);
+                    View v = mChildViews.get(mCurrent);
+                    postSettle(v);
+                }
+            });
+            animator.start();
 
-
+        }
         return true;
     }
 
