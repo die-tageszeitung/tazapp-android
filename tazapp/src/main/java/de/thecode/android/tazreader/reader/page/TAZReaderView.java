@@ -208,8 +208,6 @@ public class TAZReaderView extends ReaderView implements GestureDetector.OnDoubl
 
     @Override
     public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-        Timber.i("ONSCROLL %f %f %b %b %b",distanceX,distanceY,mUserInteracting,mScaling,mScrolling);
-
         if (distanceX > minDistance || distanceY > minDistance || distanceX < -minDistance || distanceY < -minDistance) {
             mScrolling = true;
         }
