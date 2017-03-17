@@ -127,6 +127,10 @@ public class TazReaderApplication extends Application {
                    .setDefaultPref(TazSettings.PREFKEY.ISPAGING, true);
         TazSettings.getInstance(this)
                    .setDefaultPref(TazSettings.PREFKEY.ISSCROLLTONEXT, getResources().getBoolean(R.bool.isTablet));
+        TazSettings.getInstance(this)
+                   .setDefaultPref(TazSettings.PREFKEY.PAGETAPTOARTICLE, true);
+        TazSettings.getInstance(this)
+                   .setDefaultPref(TazSettings.PREFKEY.PAGEDOUBLETAPZOOM, true);
 
     }
 
