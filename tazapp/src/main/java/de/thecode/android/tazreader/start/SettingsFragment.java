@@ -33,20 +33,11 @@ public class SettingsFragment extends BaseFragment {
 
     WeakReference<IStartCallback> callback;
 
-    private CheckBox autoloadCheckBox;
     private CheckBox autoloadWifiCheckBox;
-    private CheckBox screenActiveCheckBox;
     private CheckBox fullscreenCheckBox;
-    private CheckBox autodeleteCheckBox;
     private EditText autoDeleteEditText;
-    private RelativeLayout notificationSoundLayout;
     private TextView notificationSound;
-    private CheckBox notificationVibrateCheckBox;
-    private RadioGroup orientationGroup;
     private TextView autodeleteUnitText;
-    private CheckBox pageIndexButtonCheckBox;
-    private CheckBox ttsCheckBox;
-    private CheckBox acraAlwaysAcceptCheckBox;
 
     public SettingsFragment() {
         // Required empty public constructor
@@ -65,20 +56,22 @@ public class SettingsFragment extends BaseFragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.start_settings, container, false);
 
-        autoloadCheckBox = (CheckBox) view.findViewById(R.id.autoLoadCheckBox);
+        CheckBox autoloadCheckBox = (CheckBox) view.findViewById(R.id.autoLoadCheckBox);
         autoloadWifiCheckBox = (CheckBox) view.findViewById(R.id.autoLoadWifiCheckBox);
-        screenActiveCheckBox = (CheckBox) view.findViewById(R.id.screenActiveCheckBox);
+        CheckBox screenActiveCheckBox = (CheckBox) view.findViewById(R.id.screenActiveCheckBox);
         //fullscreenCheckBox = (CheckBox) view.findViewById(R.id.fullscreenCheckBox);
-        orientationGroup = (RadioGroup) view.findViewById(R.id.orientationGroup);
+        RadioGroup orientationGroup = (RadioGroup) view.findViewById(R.id.orientationGroup);
         autoDeleteEditText = (EditText) view.findViewById(R.id.autodeleteEditText);
-        autodeleteCheckBox = (CheckBox) view.findViewById(R.id.autoDeleteCheckBox);
+        CheckBox autodeleteCheckBox = (CheckBox) view.findViewById(R.id.autoDeleteCheckBox);
         autodeleteUnitText = (TextView) view.findViewById(R.id.autodeleteUnitText);
-        notificationSoundLayout = (RelativeLayout) view.findViewById(R.id.notificationSoundLayout);
+        RelativeLayout notificationSoundLayout = (RelativeLayout) view.findViewById(R.id.notificationSoundLayout);
         notificationSound = (TextView) view.findViewById(R.id.notificationSound);
-        notificationVibrateCheckBox = (CheckBox) view.findViewById(R.id.notificationVibrateCheckBox);
-        pageIndexButtonCheckBox = (CheckBox) view.findViewById(R.id.showPageIndexButtonCheckBox);
-        ttsCheckBox = (CheckBox) view.findViewById(R.id.ttsCheckBox);
-        acraAlwaysAcceptCheckBox = (CheckBox) view.findViewById(R.id.acraAlwaysAcceptCheckBox);
+        CheckBox notificationVibrateCheckBox = (CheckBox) view.findViewById(R.id.notificationVibrateCheckBox);
+        CheckBox pageIndexButtonCheckBox = (CheckBox) view.findViewById(R.id.showPageIndexButtonCheckBox);
+        CheckBox ttsCheckBox = (CheckBox) view.findViewById(R.id.ttsCheckBox);
+        CheckBox acraAlwaysAcceptCheckBox = (CheckBox) view.findViewById(R.id.acraAlwaysAcceptCheckBox);
+        CheckBox pageTapToArticleCheckBox = (CheckBox) view.findViewById(R.id.tapForArticleCheckBox);
+        CheckBox pageDoubleTapZoomCheckBox = (CheckBox) view.findViewById(R.id.doubleTapForZoomCheckBox);
 
         autoloadCheckBox.setChecked(TazSettings.getInstance(getActivity()).getPrefBoolean(TazSettings.PREFKEY.AUTOLOAD, false));
         autoloadCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -227,6 +220,25 @@ public class SettingsFragment extends BaseFragment {
                 TazSettings.getInstance(getActivity()).setPref(ACRA.PREF_ALWAYS_ACCEPT, isChecked);
             }
         });
+
+        pageTapToArticleCheckBox.setChecked(TazSettings.getInstance(getActivity()).getPrefBoolean(TazSettings.PREFKEY.PAGETAPTOARTICLE, false));
+        pageTapToArticleCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                TazSettings.getInstance(getActivity()).setPref(TazSettings.PREFKEY.PAGETAPTOARTICLE, isChecked);
+            }
+        });
+
+        pageDoubleTapZoomCheckBox.setChecked(TazSettings.getInstance(getActivity()).getPrefBoolean(TazSettings.PREFKEY.PAGEDOUBLETAPZOOM, false));
+        pageDoubleTapZoomCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                TazSettings.getInstance(getActivity()).setPref(TazSettings.PREFKEY.PAGEDOUBLETAPZOOM, isChecked);
+            }
+        });
+
 
         return view;
     }

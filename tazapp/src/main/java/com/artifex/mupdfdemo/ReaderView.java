@@ -13,10 +13,10 @@ import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.Scroller;
 
+import de.thecode.android.tazreader.R;
+
 import java.util.LinkedList;
 import java.util.NoSuchElementException;
-
-import de.thecode.android.tazreader.R;
 
 public class ReaderView
 		extends AdapterView<Adapter>
@@ -37,7 +37,7 @@ public class ReaderView
 	private static final boolean HORIZONTAL_SCROLLING = true;
 
 	private Adapter           mAdapter;
-	private int               mCurrent;    // Adapter's index for the current view
+	public int               mCurrent;    // Adapter's index for the current view
 	private boolean           mResetLayout;
 	public final SparseArray<View>
 				  mChildViews = new SparseArray<View>(3);
@@ -45,15 +45,15 @@ public class ReaderView
 					       // but with more sensible indexing
 	private final LinkedList<View>
 				  mViewCache = new LinkedList<View>();
-	private boolean           mUserInteracting;  // Whether the user is interacting
-	private boolean           mScaling;    // Whether the user is currently pinch zooming
+	private boolean mUserInteracting;  // Whether the user is interacting
+	private boolean mScaling;    // Whether the user is currently pinch zooming
 	public  float             mScale     = 1.0f;
-	private int               mXScroll;    // Scroll amounts recorded from events.
-	private int               mYScroll;    // and then accounted for in onLayout
+	public int               mXScroll;    // Scroll amounts recorded from events.
+	public int               mYScroll;    // and then accounted for in onLayout
 	private boolean           mReflow = false;
 	private boolean           mReflowChanged = false;
 	private final GestureDetector
-				  mGestureDetector;
+						   mGestureDetector;
 	private final ScaleGestureDetector
 				  mScaleGestureDetector;
 	private final Scroller    mScroller;
@@ -554,6 +554,7 @@ public class ReaderView
 			}
 		}
 
+		requestLayout();
 		return true;
 	}
 
@@ -567,9 +568,40 @@ public class ReaderView
 	}
 
 	@Override
-	protected void onLayout(boolean changed, int left, int top, int right,
-			int bottom) {
+	protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
 		super.onLayout(changed, left, top, right, bottom);
+
+		try {
+			onLayout2(changed, left, top, right, bottom);
+		}
+		catch (java.lang.OutOfMemoryError e) {
+			System.out.println("Out of memory during layout");
+
+			// we might get an out of memory error.
+			// so let's display an alert.
+			// TODO: a better message, in resources.
+
+			if (!memAlert) {
+				memAlert = true;
+				//TODO BETTER
+//				AlertDialog alertDialog = MuPDFActivity.getAlertBuilder().create();
+//				alertDialog.setMessage("Out of memory during layout");
+//				alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+//					new DialogInterface.OnClickListener() {
+//						public void onClick(DialogInterface dialog, int which) {
+//							dialog.dismiss();
+//							memAlert = false;
+//						}
+//					});
+//				alertDialog.show();
+			}
+		}
+	}
+
+	private boolean memAlert = false;
+
+	private void onLayout2(boolean changed, int left, int top, int right,
+			int bottom) {
 
 		// "Edit mode" means when the View is being displayed in the Android GUI editor. (this class
 		// is instantiated in the IDE, so we need to be a bit careful what we do).
@@ -754,6 +786,14 @@ public class ReaderView
 
 	@Override
 	public void setAdapter(Adapter adapter) {
+
+		//  release previous adapter's bitmaps
+		if (null!=mAdapter && adapter!=mAdapter) {
+			if (adapter instanceof MuPDFPageAdapter){
+				((MuPDFPageAdapter) adapter).releaseBitmaps();
+			}
+		}
+
 		mAdapter = adapter;
 
 		requestLayout();
@@ -789,7 +829,7 @@ public class ReaderView
 			params = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
 		}
 		addViewInLayout(v, 0, params, true);
-		mChildViews.append(i, v); // Record the view against it's adapter index
+		mChildViews.append(i, v); // Record the view against its adapter index
 		measureView(v);
 	}
 
@@ -839,9 +879,9 @@ public class ReaderView
 				         Math.min(Math.max(0,bounds.top),bounds.bottom));
 	}
 
-	private void postSettle(final View v) {
+	public void postSettle(final View v) {
 		// onSettle and onUnsettle are posted so that the calls
-		// wont be executed until after the system has performed
+		// won't be executed until after the system has performed
 		// layout.
 		post (new Runnable() {
 			public void run () {

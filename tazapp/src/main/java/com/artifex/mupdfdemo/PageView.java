@@ -1,5 +1,8 @@
 package com.artifex.mupdfdemo;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
@@ -17,9 +20,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
-
-import java.util.ArrayList;
-import java.util.Iterator;
 
 // Make our ImageViews opaque to optimize redraw
 class OpaqueImageView extends ImageView {
@@ -144,12 +144,12 @@ public abstract class PageView extends ViewGroup {
 	private void reinit() {
 		// Cancel pending render task
 		if (mDrawEntire != null) {
-			mDrawEntire.cancelAndWait();
+			mDrawEntire.cancel();
 			mDrawEntire = null;
 		}
 
 		if (mDrawPatch != null) {
-			mDrawPatch.cancelAndWait();
+			mDrawPatch.cancel();
 			mDrawPatch = null;
 		}
 
@@ -200,9 +200,14 @@ public abstract class PageView extends ViewGroup {
 
 	public void releaseBitmaps() {
 		reinit();
-		mEntireBm.recycle();
-		mPatchBm.recycle();
+
+		// recycle bitmaps before releasing them.
+
+		if (mEntireBm!=null)
+			mEntireBm.recycle();
 		mEntireBm = null;
+		if (mPatchBm!=null)
+			mPatchBm.recycle();
 		mPatchBm = null;
 	}
 
@@ -223,7 +228,7 @@ public abstract class PageView extends ViewGroup {
 	public void setPage(int page, PointF size) {
 		// Cancel pending render task
 		if (mDrawEntire != null) {
-			mDrawEntire.cancelAndWait();
+			mDrawEntire.cancel();
 			mDrawEntire = null;
 		}
 
@@ -597,7 +602,7 @@ public abstract class PageView extends ViewGroup {
 
 			// Stop the drawing of previous patch if still going
 			if (mDrawPatch != null) {
-				mDrawPatch.cancelAndWait();
+				mDrawPatch.cancel();
 				mDrawPatch = null;
 			}
 
@@ -641,12 +646,12 @@ public abstract class PageView extends ViewGroup {
 	public void update() {
 		// Cancel pending render task
 		if (mDrawEntire != null) {
-			mDrawEntire.cancelAndWait();
+			mDrawEntire.cancel();
 			mDrawEntire = null;
 		}
 
 		if (mDrawPatch != null) {
-			mDrawPatch.cancelAndWait();
+			mDrawPatch.cancel();
 			mDrawPatch = null;
 		}
 
@@ -668,7 +673,7 @@ public abstract class PageView extends ViewGroup {
 	public void removeHq() {
 			// Stop the drawing of the patch if still going
 			if (mDrawPatch != null) {
-				mDrawPatch.cancelAndWait();
+				mDrawPatch.cancel();
 				mDrawPatch = null;
 			}
 

@@ -34,7 +34,7 @@ public class TopLinkFragment extends ArticleFragment {
     public void onSwipeRight(ArticleWebView view, MotionEvent e1, MotionEvent e2) {
 
         String position = "0";
-        if (!TazSettings.getInstance(mContext).getPrefBoolean(TazSettings.PREFKEY.ISSCROLL, false)) position = "EOF";
+        if (!TazSettings.getInstance(getContext()).getPrefBoolean(TazSettings.PREFKEY.ISSCROLL, false)) position = "EOF";
         if (hasCallback()) getCallback().onLoadPrevArticle(DIRECTIONS.LEFT, position);
     }
 

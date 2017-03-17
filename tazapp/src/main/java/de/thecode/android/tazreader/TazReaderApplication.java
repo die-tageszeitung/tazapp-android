@@ -82,8 +82,7 @@ public class TazReaderApplication extends Application {
 
         // MIGRATION BEENDET, setzten der aktuellen Version
         TazSettings.getInstance(this)
-                   .setPref(TazSettings.PREFKEY.LASTVERSION, Integer.parseInt(String.valueOf(BuildConfig.VERSION_CODE)
-                                                                                    .substring(1)));
+                   .setPref(TazSettings.PREFKEY.LASTVERSION, BuildConfig.VERSION_CODE);
 
         TazSettings.getInstance(this)
                    .setPref(TazSettings.PREFKEY.ISFOOT, false);
@@ -128,6 +127,10 @@ public class TazReaderApplication extends Application {
                    .setDefaultPref(TazSettings.PREFKEY.ISPAGING, true);
         TazSettings.getInstance(this)
                    .setDefaultPref(TazSettings.PREFKEY.ISSCROLLTONEXT, getResources().getBoolean(R.bool.isTablet));
+        TazSettings.getInstance(this)
+                   .setDefaultPref(TazSettings.PREFKEY.PAGETAPTOARTICLE, true);
+        TazSettings.getInstance(this)
+                   .setDefaultPref(TazSettings.PREFKEY.PAGEDOUBLETAPZOOM, true);
 
     }
 

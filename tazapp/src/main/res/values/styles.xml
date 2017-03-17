@@ -102,4 +102,14 @@
         <item name="android:background">@color/settings_divider</item>
     </style>
 
+    <style name="TechInfo">
+        <item name="android:textSize">16sp</item>
+        <item name="android:layout_marginBottom">6dp</item>
+    </style>
+
+    <style name="TechInfo.Header">
+        <item name="android:layout_marginBottom">2dp</item>
+        <item name="android:textSize">18sp</item>
+    </style>
+
 </resources>

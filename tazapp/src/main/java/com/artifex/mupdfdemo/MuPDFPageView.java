@@ -1,5 +1,11 @@
 package com.artifex.mupdfdemo;
 
+import java.util.ArrayList;
+
+import de.thecode.android.tazreader.R;
+
+import com.artifex.mupdfdemo.MuPDFCore.Cookie;
+
 import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.content.ClipData;
@@ -17,11 +23,7 @@ import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 
-import java.util.ArrayList;
-
-import de.thecode.android.tazreader.R;
-
-/* This enum should be kept in line with the cooresponding C enum in mupdf.c */
+/* This enum should be kept in line with the corresponding C enum in mupdf.c */
 enum SignatureState {
 	NoSupport,
 	Unsigned,
@@ -612,7 +614,7 @@ public class MuPDFPageView extends PageView implements MuPDFView {
 		mLoadAnnotations = new AsyncTask<Void,Void,Annotation[]> () {
 			@Override
 			protected Annotation[] doInBackground(Void... params) {
-				return mCore.getAnnoations(mPageNumber);
+				return mCore.getAnnotations(mPageNumber);
 			}
 
 			@Override

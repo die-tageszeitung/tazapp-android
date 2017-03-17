@@ -68,7 +68,8 @@ public class MuPDFReaderView extends ReaderView {
 
 		if (mMode == Mode.Viewing && !tapDisabled) {
 			MuPDFView pageView = (MuPDFView) getDisplayedView();
-			Hit item = pageView.passClickEvent(e.getX(), e.getY());
+			Hit item = pageView != null ? pageView.passClickEvent(e.getX(), e.getY()) : null;
+			if (item != null)
 			onHit(item);
 			if (item == Hit.Nothing) {
 				if (mLinksEnabled && pageView != null

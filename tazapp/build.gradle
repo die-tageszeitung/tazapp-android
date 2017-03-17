@@ -1,11 +1,13 @@
-def supportLibVer = "25.2.0"
-def buildToolsVer = "25.0.1"
+def versionMajor = 3
+def versionMinor = 1
+def versionPatch = 0
+def versionBuild = 0
+
+def supportLibVer = "25.3.0"
+def buildToolsVer = "25.0.2"
 def compileSdkVer = 25
 def targetSdkVer = 25
 def minSdkVer = 15
-
-def versionCodeInt = 52
-def versionNamePrefix = "3.0."
 
 def tazPlist = '"https://dl.taz.de/tpaperIssue.plist"'
 def tazPlistArchiv = '"https://dl.taz.de/tpaperIssue.plist?start=%1$s&end=%2$s"'
@@ -74,6 +76,12 @@ if (overheadPath != null) {
     logger.error('overheadpath not set')
 }
 
+
+
+
+import com.android.build.OutputFile
+
+
 android {
 
     sourceSets {
@@ -90,8 +98,25 @@ android {
         resConfigs "en", "de"
         minSdkVersion minSdkVer
         targetSdkVersion targetSdkVer
-        versionCode versionCodeInt
-        versionName versionNamePrefix + versionCode
+        versionCode versionMajor * 1000 + versionMinor * 100 + versionPatch * 10 + versionBuild
+        versionName "${versionMajor}.${versionMinor}.${versionPatch}"
+    }
+    splits {
+        abi {
+            // Enables building multiple APKs per ABI.
+            enable true
+
+            // By default all ABIs are included, so use reset() and include to specify that we only
+            // want APKs for x86, armeabi-v7a, and mips.
+            // Resets the list of ABIs that Gradle should create APKs for to none.
+            reset()
+            // Specifies a list of ABIs that Gradle should create APKs for.
+            include "x86", "x86_64", "armeabi-v7a", "arm64-v8a"
+
+            // Specifies that we do not want to also generate a universal APK that includes all ABIs.
+            universalApk true
+
+        }
     }
     packagingOptions {
         exclude 'META-INF/LICENSE.txt'
@@ -103,12 +128,12 @@ android {
     buildTypes {
         debug {
             debuggable true
-            versionNameSuffix "_debug"
+            versionNameSuffix " Debug"
             applicationIdSuffix ".debug"
         }
         staging.initWith(buildTypes.debug)
         staging {
-            versionNameSuffix "_staging"
+            versionNameSuffix " Staging"
             applicationIdSuffix ".staging"
         }
         release {
@@ -120,16 +145,10 @@ android {
         }
     }
 
-    // If you want the right .apk to be served, there is only one rule to follow here:
-    // x86 version number > ARMv7 version number > ARMv5 version number
-    // http://ph0b.com/improving-x86-support-of-android-apps-libs-engines/#ArchDependentAPKs
-
-    flavorDimensions "owner", "abi"
 
     productFlavors {
         taz {
             applicationId "de.thecode.android.tazreader"
-            dimension "owner"
             resValue 'string', 'app_name', 'taz.app'
             buildConfigField 'String', plistUrl, tazPlist
             buildConfigField 'String', plistArchiveUrl, tazPlistArchiv
@@ -140,7 +159,6 @@ android {
         }
         lmd {
             applicationId "de.thecode.lmd"
-            dimension "owner"
             resValue 'string', 'app_name', 'LMd'
             buildConfigField 'String', plistUrl, lmdPlist
             buildConfigField 'String', plistArchiveUrl, lmdPlistArchiv
@@ -148,44 +166,6 @@ android {
             buildConfigField 'String', checkLoginUrl, lmdCheckLogin
             buildConfigField 'String', resourceUrl, lmdResourceUrl
             buildConfigField 'String', archiveUrl, lmdArchiveUrl
-        }
-        x86 {
-            dimension "abi"
-            versionCode Integer.parseInt("6" + defaultConfig.versionCode)
-            versionName defaultConfig.versionName + "_x86"
-
-            ndk {
-                abiFilter "x86"
-            }
-        }
-        mips {
-            dimension "abi"
-            versionCode Integer.parseInt("4" + defaultConfig.versionCode)
-            versionName defaultConfig.versionName + "_mips"
-            ndk {
-                abiFilter "mips"
-            }
-        }
-        armv7 {
-            dimension "abi"
-            versionCode Integer.parseInt("2" + defaultConfig.versionCode)
-            versionName defaultConfig.versionName + "_armv7"
-            ndk {
-                abiFilter "armeabi-v7a"
-            }
-        }
-        arm {
-            dimension "abi"
-            versionCode Integer.parseInt("1" + defaultConfig.versionCode)
-            versionName defaultConfig.versionName + "_arm"
-            ndk {
-                abiFilter "armeabi"
-            }
-        }
-        fat {
-            dimension "abi"
-            versionCode Integer.parseInt("9" + defaultConfig.versionCode)
-            versionName defaultConfig.versionName + "_fat"
         }
     }
 
@@ -210,17 +190,20 @@ android {
         }
     }
 
+    // Map for the version code that gives each ABI a value.
+    def abiCodes = ['universal':0,'armeabi': 1, 'armeabi-v7a': 2, 'arm64-v8a':3, 'mips': 4, 'mips64': 5, 'x86': 6, 'x86_64': 7].withDefault {0}
+
+    applicationVariants.all { variant ->
+        variant.outputs.each { output ->
+            def baseAbiVersionCode = abiCodes.get(output.getFilter(OutputFile.ABI))
+            output.versionCodeOverride = baseAbiVersionCode * 100000 + variant.versionCode;
+            output.versionNameOverride = variant.versionName + " " + abiCodes.find{it.value == baseAbiVersionCode}.key
+        }
+    }
+
     variantFilter { variant ->
         variant.getFlavors().each { flavor ->
             if (flavor.name.equalsIgnoreCase('lmd')) {
-                variant.setIgnore(true)
-            }
-            if (!variant.buildType.name.equalsIgnoreCase('release')) {
-                if (flavor.dimension.equalsIgnoreCase('abi') && (flavor.name.equalsIgnoreCase('arm') || flavor.name.equalsIgnoreCase('mips'))) {
-                    variant.setIgnore(true)
-                }
-            }
-            if (variant.buildType.name.equalsIgnoreCase('staging') && flavor.dimension.equalsIgnoreCase('owner') && flavor.name.equalsIgnoreCase('lmd')) {
                 variant.setIgnore(true)
             }
         }

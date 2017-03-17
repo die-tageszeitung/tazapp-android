@@ -1,7 +1,11 @@
 package de.thecode.android.tazreader.reader.page;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.util.AttributeSet;
+import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
@@ -10,16 +14,19 @@ import com.artifex.mupdfdemo.PageView;
 import com.artifex.mupdfdemo.ReaderView;
 
 import de.thecode.android.tazreader.data.Paper.Plist.Page;
+import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.reader.IReaderCallback;
+
+import java.lang.ref.WeakReference;
 
 import timber.log.Timber;
 
 
-public class TAZReaderView extends ReaderView {
+public class TAZReaderView extends ReaderView implements GestureDetector.OnDoubleTapListener {
 
     private boolean tapDisabled = false;
     private IReaderCallback mReaderCallback;
-
+    private boolean mScrolling;
 
     public TAZReaderView(Context context) {
         super(context);
@@ -44,37 +51,6 @@ public class TAZReaderView extends ReaderView {
     }
 
     @Override
-    public boolean onSingleTapUp(MotionEvent e) {
-
-        if (!tapDisabled) {
-
-            TAZPageView pageView = (TAZPageView) getDisplayedView();
-            pageView.passClickEvent(e.getX(), e.getY());
-
-        }
-
-        return super.onSingleTapUp(e);
-    }
-
-    @Override
-    public boolean onDown(MotionEvent e) {
-
-        return super.onDown(e);
-    }
-
-    @Override
-    public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-        //Log.v(); to much
-        return super.onScroll(e1, e2, distanceX, distanceY);
-    }
-
-    @Override
-    public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-
-        return super.onFling(e1, e2, velocityX, velocityY);
-    }
-
-    @Override
     public boolean onScaleBegin(ScaleGestureDetector detector) {
 
 
@@ -93,6 +69,9 @@ public class TAZReaderView extends ReaderView {
         if ((event.getAction() & event.getActionMasked()) == MotionEvent.ACTION_DOWN) {
             tapDisabled = false;
         }
+        if ((event.getAction() & event.getActionMasked()) == MotionEvent.ACTION_UP) {
+            if (mScrolling) mScrolling = false;
+        }
 
         return super.onTouchEvent(event);
     }
@@ -100,13 +79,13 @@ public class TAZReaderView extends ReaderView {
 
     @Override
     protected void onChildSetup(int i, View v) {
-        Timber.d("i: %s, v: %s",i, v);
+        Timber.d("i: %s, v: %s", i, v);
 
     }
 
     @Override
     protected void onMoveToChild(int i) {
-        Timber.d("i: %s",i);
+        Timber.d("i: %s", i);
         Page page = (Page) getAdapter().getItem(i);
         mReaderCallback.updateIndexes(page.getKey(), "0");
 
@@ -121,12 +100,12 @@ public class TAZReaderView extends ReaderView {
     @Override
     protected void onSettle(View v) {
 
-        Timber.d("v: %s",v);
+        Timber.d("v: %s", v);
         // When the layout has settled ask the page to render
         // in HQ
 
         if (v instanceof TAZPageView) {
-            if (((TAZPageView)v).mCore != null) {
+            if (((TAZPageView) v).mCore != null) {
                 if (((TAZPageView) v).mCore.isDestroyed) return;
             }
         }
@@ -135,7 +114,7 @@ public class TAZReaderView extends ReaderView {
 
     @Override
     protected void onUnsettle(View v) {
-       Timber.d("v: %s",v);
+        Timber.d("v: %s", v);
         // When something changes making the previous settled view
         // no longer appropriate, tell the page to remove HQ
         ((TAZPageView) v).removeHq();
@@ -143,13 +122,13 @@ public class TAZReaderView extends ReaderView {
 
     @Override
     protected void onNotInUse(View v) {
-        Timber.d("v: %s",v);
+        Timber.d("v: %s", v);
         ((TAZPageView) v).releaseResources();
     }
 
     @Override
     protected void onScaleChild(View v, Float scale) {
-        Timber.d("v: %s, scale: %s",v, scale);
+        Timber.d("v: %s, scale: %s", v, scale);
         ((TAZPageView) v).setScale(scale);
     }
 
@@ -164,4 +143,95 @@ public class TAZReaderView extends ReaderView {
     }
 
 
+    @Override
+    public boolean onSingleTapConfirmed(MotionEvent e) {
+        if (!tapDisabled) {
+            if (TazSettings.getInstance(getContext()).getPrefBoolean(TazSettings.PREFKEY.PAGETAPTOARTICLE,true)) {
+                TAZPageView pageView = (TAZPageView) getDisplayedView();
+                pageView.passClickEvent(e.getX(), e.getY());
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public boolean onDoubleTap(MotionEvent e) {
+        if (TazSettings.getInstance(getContext()).getPrefBoolean(TazSettings.PREFKEY.PAGEDOUBLETAPZOOM,true)) {
+
+            ValueAnimator animator = ValueAnimator.ofFloat(mScale, mScale > 2F ? 1F : 4F);
+            animator.setDuration(500);
+            View v = mChildViews.get(mCurrent);
+            animator.addUpdateListener(new ZoomAnimatorListener(v, e) {
+                @Override
+                public void onAnimationUpdate(float newScale, View v, MotionEvent e) {
+                    float previousScale = mScale;
+                    mScale = newScale;
+                    float factor = mScale / previousScale;
+                    if (v != null) {
+                        // Work out the focus point relative to the view top left
+                        int viewFocusX = (int) e.getX() - (v.getLeft() + mXScroll);
+                        int viewFocusY = (int) e.getY() - (v.getTop() + mYScroll);
+                        // Scroll to maintain the focus point
+                        mXScroll += viewFocusX - viewFocusX * factor;
+                        mYScroll += viewFocusY - viewFocusY * factor;
+                        requestLayout();
+                    }
+                }
+            });
+            animator.addListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationStart(Animator animation) {
+                    onScaleBegin(null);
+                }
+
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    onScaleEnd(null);
+                    View v = mChildViews.get(mCurrent);
+                    postSettle(v);
+                }
+            });
+            animator.start();
+
+        }
+        return true;
+    }
+
+
+
+    @Override
+    public boolean onDoubleTapEvent(MotionEvent e) {
+        return false;
+    }
+
+    private float minDistance = 10F;
+
+    @Override
+    public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+        if (distanceX > minDistance || distanceY > minDistance || distanceX < -minDistance || distanceY < -minDistance) {
+            mScrolling = true;
+        }
+        if (mScrolling) {
+            return super.onScroll(e1, e2, distanceX, distanceY);
+        }
+        return false;
+    }
+
+    private abstract static class ZoomAnimatorListener implements ValueAnimator.AnimatorUpdateListener {
+
+        final WeakReference<View> viewWeakReference;
+        final MotionEvent         event;
+
+        private ZoomAnimatorListener(View view, MotionEvent event) {
+            this.viewWeakReference = new WeakReference<>(view);
+            this.event = event;
+        }
+
+        @Override
+        public void onAnimationUpdate(ValueAnimator animation) {
+            onAnimationUpdate((float) animation.getAnimatedValue(), viewWeakReference.get(), event);
+        }
+
+        public abstract void onAnimationUpdate(float newScale, View view, MotionEvent event);
+    }
 }

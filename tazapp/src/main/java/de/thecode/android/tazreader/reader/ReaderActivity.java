@@ -59,7 +59,7 @@ import timber.log.Timber;
 public class ReaderActivity extends BaseActivity
         implements LoaderManager.LoaderCallbacks<PaperLoader.PaperLoaderResult>, IReaderCallback, DialogButtonListener,
         DialogDismissListener, ReaderDataFragment.ReaderDataFramentCallback, ReaderTtsFragment.ReaderTtsFragmentCallback {
-    
+
     private AudioManager audioManager;
 
     public static enum THEMES {
@@ -195,25 +195,25 @@ public class ReaderActivity extends BaseActivity
     @Override
     protected void onRestart() {
         super.onRestart();
-        
+
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        
+
     }
 
     @Override
     protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-        
+
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        
+
         if (TazSettings.getInstance(this)
                        .getPrefBoolean(TazSettings.PREFKEY.KEEPSCREEN, false)) {
             Timber.i("Bildschirm bleibt an!");
@@ -238,7 +238,7 @@ public class ReaderActivity extends BaseActivity
     }
 
     private void loadIndexFragment() {
-        
+
         mIndexFragment = (IndexFragment) mFragmentManager.findFragmentByTag(TAG_FRAGMENT_INDEX);
         if (mIndexFragment == null) {
             Timber.i("Did not find IndexFragment, create one ...");
@@ -252,7 +252,7 @@ public class ReaderActivity extends BaseActivity
     }
 
     private void loadPageIndexFragment() {
-        
+
         mPageIndexFragment = (PageIndexFragment) mFragmentManager.findFragmentByTag(TAG_FRAGMENT_PAGEINDEX);
         if (mPageIndexFragment == null) {
             Timber.i("Did not find PageIndexFragment, create one ...");
@@ -265,7 +265,7 @@ public class ReaderActivity extends BaseActivity
     }
 
     private void loadContentFragment(String key, String position) {
-        
+
         IIndexItem indexItem = retainDataFragment.getPaper()
                                                  .getPlist()
                                                  .getIndexItem(key);
@@ -290,7 +290,7 @@ public class ReaderActivity extends BaseActivity
     }
 
     private void loadArticleFragment(IIndexItem indexItem, DIRECTIONS direction, String position) {
-        
+
 
         FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
 
@@ -331,7 +331,8 @@ public class ReaderActivity extends BaseActivity
     }
 
     private void loadPagesFragment(IIndexItem indexItem) {
-        
+        AnalyticsWrapper.getInstance()
+                        .trackBreadcrumb("loadPagesFragment...");
         if (indexItem.getType() == IIndexItem.Type.PAGE) {
             boolean needInit = false;
             if (mContentFragment == null) {
@@ -345,21 +346,24 @@ public class ReaderActivity extends BaseActivity
                 fragmentTransaction.commitAllowingStateLoss();
                 needInit = true;
             }
-            if (needInit) mContentFragment.init(retainDataFragment.getPaper(), indexItem.getKey(), "");
-            else ((PagesFragment) mContentFragment).setPage(indexItem.getKey());
+            if (needInit) {
+                AnalyticsWrapper.getInstance()
+                                .trackBreadcrumb("...with init of Fragment");
+                mContentFragment.init(retainDataFragment.getPaper(), indexItem.getKey(), "");
+            } else ((PagesFragment) mContentFragment).setPage(indexItem.getKey());
         }
     }
 
     @Override
     public Loader<PaperLoader.PaperLoaderResult> onCreateLoader(int arg0, Bundle arg1) {
-        
+
         mLoadingProgress.setVisibility(View.VISIBLE);
         return new PaperLoader(this, paperId);
     }
 
     @Override
     public void onLoadFinished(Loader<PaperLoader.PaperLoaderResult> loader, final PaperLoader.PaperLoaderResult result) {
-        
+
         this.runOnUiThread(new Runnable() {
 
             @Override
@@ -407,12 +411,12 @@ public class ReaderActivity extends BaseActivity
 
     @Override
     public void onLoaderReset(Loader<PaperLoader.PaperLoaderResult> arg0) {
-        
+
     }
 
     @Override
     public boolean onLoadPrevArticle(DIRECTIONS fromDirection, String position) {
-        
+
         int prevPosition = retainDataFragment.getArticleCollectionOrderPosition(retainDataFragment.getCurrentKey()) - 1;
 
         if (retainDataFragment.isFilterBookmarks()) {
@@ -436,7 +440,7 @@ public class ReaderActivity extends BaseActivity
 
     @Override
     public boolean onLoadNextArticle(DIRECTIONS fromDirection, String position) {
-        
+
         int nextPositiion = retainDataFragment.getArticleCollectionOrderPosition(retainDataFragment.getCurrentKey()) + 1;
 
         if (retainDataFragment.isFilterBookmarks()) {
@@ -729,13 +733,14 @@ public class ReaderActivity extends BaseActivity
                         showTtsSnackbar(makeTtsPlayingSpan(getString(R.string.toast_tts_started)));
                         break;
                     case PAUSED:
-                        showTtsSnackbar(makeTtsPlayingSpan(getString(R.string.toast_tts_continued)), getString(R.string.toast_tts_action_restart), new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                retainTtsFragment.stopTts();
-                                retainTtsFragment.restartTts();
-                            }
-                        });
+                        showTtsSnackbar(makeTtsPlayingSpan(getString(R.string.toast_tts_continued)),
+                                        getString(R.string.toast_tts_action_restart), new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+                                        retainTtsFragment.stopTts();
+                                        retainTtsFragment.restartTts();
+                                    }
+                                });
                 }
                 return true;
 
@@ -769,15 +774,16 @@ public class ReaderActivity extends BaseActivity
     public void onTtsStopped() {
         audioManager.abandonAudioFocus(retainTtsFragment.getAudioFocusChangeListener());
         if (retainTtsFragment.getTtsState() == ReaderTtsFragment.TTS.PAUSED) {
-            showTtsSnackbar(getString(R.string.toast_tts_paused), getString(R.string.toast_tts_action_restart), new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    retainTtsFragment.stopTts();
-                    if (ttsPreparePlayingInActivty()) {
-                        retainTtsFragment.restartTts();
-                    }
-                }
-            });
+            showTtsSnackbar(getString(R.string.toast_tts_paused), getString(R.string.toast_tts_action_restart),
+                            new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    retainTtsFragment.stopTts();
+                                    if (ttsPreparePlayingInActivty()) {
+                                        retainTtsFragment.restartTts();
+                                    }
+                                }
+                            });
         }
 
     }

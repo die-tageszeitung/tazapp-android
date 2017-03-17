@@ -50,4 +50,8 @@ public class AnalyticsWrapper {
         }
     }
 
+    public void trackBreadcrumb(String event) {
+        logData("Event at " + System.currentTimeMillis(), event);
+    }
+
 }
