@@ -98,7 +98,7 @@ android {
         resConfigs "en", "de"
         minSdkVersion minSdkVer
         targetSdkVersion targetSdkVer
-        versionCode versionMajor * 10000 + versionMinor * 1000 + versionPatch * 100 + versionBuild
+        versionCode versionMajor * 1000 + versionMinor * 100 + versionPatch * 10 + versionBuild
         versionName "${versionMajor}.${versionMinor}.${versionPatch}"
     }
     splits {
@@ -196,7 +196,7 @@ android {
     applicationVariants.all { variant ->
         variant.outputs.each { output ->
             def baseAbiVersionCode = abiCodes.get(output.getFilter(OutputFile.ABI))
-            output.versionCodeOverride = baseAbiVersionCode * 1000000 + variant.versionCode;
+            output.versionCodeOverride = baseAbiVersionCode * 100000 + variant.versionCode;
             output.versionNameOverride = variant.versionName + " " + abiCodes.find{it.value == baseAbiVersionCode}.key
         }
     }
