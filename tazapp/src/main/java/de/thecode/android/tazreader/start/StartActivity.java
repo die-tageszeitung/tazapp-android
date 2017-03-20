@@ -15,6 +15,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.LruCache;
+import android.view.MotionEvent;
 
 import de.greenrobot.event.EventBus;
 import de.mateware.dialog.Dialog;
@@ -54,6 +55,8 @@ import de.thecode.android.tazreader.widget.CustomToolbar;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+
+import uk.co.samuelwall.materialtaptargetprompt.MaterialTapTargetPrompt;
 
 import java.lang.ref.WeakReference;
 import java.text.DateFormatSymbols;
@@ -231,6 +234,70 @@ public class StartActivity extends BaseActivity
 
         if (TazSettings.getInstance(this)
                        .getSyncServiceNextRun() == 0) SyncHelper.requestSync(this);
+
+        startTutorial();
+
+    }
+
+    public void startTutorial() {
+        if (!TazSettings.getInstance(this)
+                        .isTutorialStepFinished("WELCOME")) {
+            new MaterialTapTargetPrompt.Builder(this, R.style.MaterialTapTargetPromptTheme).setTarget(toolbar.getChildAt(0))
+                                                                                           .setPrimaryText(
+                                                                                                   "Willkommen bei der taz.app")
+                                                                                           .setSecondaryText(
+                                                                                                   "Wir zeigen Ihnen, wie es geht")
+                                                                                           .setFocalColourAlpha(0)
+                                                                                           .setIdleAnimationEnabled(false)
+                                                                                           .setOnHidePromptListener(
+                                                                                                   new MaterialTapTargetPrompt.OnHidePromptListener() {
+                                                                                                       @Override
+                                                                                                       public void onHidePrompt(
+                                                                                                               MotionEvent event,
+                                                                                                               boolean tappedTarget) {
+
+                                                                                                       }
+
+                                                                                                       @Override
+                                                                                                       public void onHidePromptComplete() {
+                                                                                                           TazSettings.getInstance(
+                                                                                                                   StartActivity.this)
+                                                                                                                      .setTutorialStepFinished(
+                                                                                                                              "WELCOME");
+                                                                                                           startTutorial();
+                                                                                                       }
+                                                                                                   })
+                                                                                           .show();
+        } else if (!TazSettings.getInstance(this)
+                               .isTutorialStepFinished("MAINMENU")) {
+            new MaterialTapTargetPrompt.Builder(this, R.style.MaterialTapTargetPromptTheme).setTarget(toolbar.getChildAt(1))
+                                                                                           .setPrimaryText("Hauptmenü öffnen")
+                                                                                           .setSecondaryText(
+                                                                                                   "Abodaten eingeben, Einstellungen vornehmen und mehr")
+                                                                                           .setOnHidePromptListener(
+                                                                                                   new MaterialTapTargetPrompt.OnHidePromptListener() {
+                                                                                                       @Override
+                                                                                                       public void onHidePrompt(
+                                                                                                               MotionEvent event,
+                                                                                                               boolean tappedTarget) {
+
+                                                                                                       }
+
+                                                                                                       @Override
+                                                                                                       public void onHidePromptComplete() {
+                                                                                                           TazSettings.getInstance(
+                                                                                                                   StartActivity.this)
+                                                                                                                      .setTutorialStepFinished(
+                                                                                                                              "MAINMENU");
+                                                                                                           try {
+                                                                                                               ((LibraryFragment) getSupportFragmentManager().findFragmentById(
+                                                                                                                       R.id.content_frame)).startTutorial();
+                                                                                                           } catch (ClassCastException ignored) {
+                                                                                                           }
+                                                                                                       }
+                                                                                                   })
+                                                                                           .show();
+        }
     }
 
     @Override
@@ -628,7 +695,7 @@ public class StartActivity extends BaseActivity
 
             }
         } else if (ImprintFragment.DIALOG_TECHINFO.equals(tag)) {
-            switch (which){
+            switch (which) {
                 case Dialog.BUTTON_NEUTRAL:
                     showLicencesDialog();
                     break;
@@ -714,6 +781,7 @@ public class StartActivity extends BaseActivity
         private boolean useOpenPaperafterDownload    = true;
         List<NavigationDrawerFragment.NavigationItem> navBackstack = new ArrayList<>();
         WeakReference<IStartCallback> callback;
+        boolean navigationDrawerOpen = false;
 
         public RetainDataFragment() {
         }

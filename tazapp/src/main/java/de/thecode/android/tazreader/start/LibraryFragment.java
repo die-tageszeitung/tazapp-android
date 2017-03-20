@@ -4,7 +4,6 @@ package de.thecode.android.tazreader.start;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
@@ -18,6 +17,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -30,6 +30,8 @@ import de.thecode.android.tazreader.sync.SyncHelper;
 import de.thecode.android.tazreader.sync.SyncStateChangedEvent;
 import de.thecode.android.tazreader.utils.BaseFragment;
 import de.thecode.android.tazreader.widget.AutofitRecyclerView;
+
+import uk.co.samuelwall.materialtaptargetprompt.MaterialTapTargetPrompt;
 
 import java.lang.ref.WeakReference;
 
@@ -55,7 +57,7 @@ public class LibraryFragment extends BaseFragment
     private TazSettings.OnPreferenceChangeListener demoModeChangedListener = new TazSettings.OnPreferenceChangeListener() {
         @Override
         public void onPreferenceChanged(String key, SharedPreferences preferences) {
-            onDemoModeChanged(preferences.getBoolean(key,true));
+            onDemoModeChanged(preferences.getBoolean(key, true));
         }
     };
 
@@ -121,6 +123,17 @@ public class LibraryFragment extends BaseFragment
             }
         });
 
+        recyclerView.addOnChildAttachStateChangeListener(new RecyclerView.OnChildAttachStateChangeListener() {
+            @Override
+            public void onChildViewAttachedToWindow(View view) {
+                startTutorial();
+            }
+
+            @Override
+            public void onChildViewDetachedFromWindow(View view) {
+            }
+        });
+
 
         if (hasCallback()) getCallback().onUpdateDrawer(this);
         getLoaderManager().initLoader(0, null, this);
@@ -179,7 +192,7 @@ public class LibraryFragment extends BaseFragment
     public void onResume() {
         super.onResume();
         Timber.d("%s", TazSettings.getInstance(getActivity())
-                                   .getPrefBoolean(TazSettings.PREFKEY.FORCESYNC, false));
+                                  .getPrefBoolean(TazSettings.PREFKEY.FORCESYNC, false));
         if (TazSettings.getInstance(getActivity())
                        .getPrefBoolean(TazSettings.PREFKEY.FORCESYNC, false)) {
 
@@ -239,11 +252,29 @@ public class LibraryFragment extends BaseFragment
         super.onDestroy();
     }
 
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-
-        super.onActivityCreated(savedInstanceState);
-    }
+//    @Override
+//    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+//        super.onActivityCreated(savedInstanceState);
+//        new MaterialTapTargetPrompt.Builder(getActivity())
+//                .setTarget(getActivity().findViewById(R.id.fab))
+//                .setPrimaryText("Send your first email")
+//                .setSecondaryText("Tap the envelop to start composing your first email")
+//                .setOnHidePromptListener(new MaterialTapTargetPrompt.OnHidePromptListener()
+//                {
+//                    @Override
+//                    public void onHidePrompt(MotionEvent event, boolean tappedTarget)
+//                    {
+//                        //Do something such as storing a value so that this prompt is never shown again
+//                    }
+//
+//                    @Override
+//                    public void onHidePromptComplete()
+//                    {
+//
+//                    }
+//                })
+//                .show();
+//    }
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
@@ -426,6 +457,52 @@ public class LibraryFragment extends BaseFragment
     public void deselectPaper(long paperId) {
         if (adapter != null) adapter.deselect(paperId);
         if (actionMode != null) actionMode.invalidate();
+    }
+
+    public void startTutorial() {
+        if (!TazSettings.getInstance(getActivity())
+                        .isTutorialStepFinished("PAPER") && TazSettings.getInstance(getActivity())
+                                                                       .isTutorialStepFinished("MAINMENU")) {
+            if (recyclerView.getLayoutManager()
+                            .getChildCount() > 2) {
+                View view1 = recyclerView.getLayoutManager()
+                                        .findViewByPosition(0);
+                View view2 = recyclerView.getLayoutManager()
+                                         .findViewByPosition(2);
+                if (view1 != null && view2!= null) {
+                    LibraryAdapter.ViewHolder viewHolder1 = (LibraryAdapter.ViewHolder) recyclerView.getChildViewHolder(view1);
+                    LibraryAdapter.ViewHolder viewHolder2 = (LibraryAdapter.ViewHolder) recyclerView.getChildViewHolder(view2);
+                    new MaterialTapTargetPrompt.Builder(getActivity(), R.style.MaterialTapTargetPromptTheme).setTarget(
+                            viewHolder1.card)
+
+                                                                                                            .setPrimaryText(
+                                                                                                                    "Die Ausgaben")
+                                                                                                            .setSecondaryText(
+                                                                                                                    "Klicken zum herunterladen\nLange klicken für weiter Aktionen")
+                                                                                                            .setOnHidePromptListener(
+                                                                                                                    new MaterialTapTargetPrompt.OnHidePromptListener() {
+                                                                                                                        @Override
+                                                                                                                        public void onHidePrompt(
+                                                                                                                                MotionEvent event,
+                                                                                                                                boolean tappedTarget) {
+
+                                                                                                                        }
+
+                                                                                                                        @Override
+                                                                                                                        public void onHidePromptComplete() {
+                                                                                                                            TazSettings.getInstance(
+                                                                                                                                    getContext())
+                                                                                                                                       .setTutorialStepFinished(
+                                                                                                                                               "PAPER");
+
+                                                                                                                        }
+                                                                                                                    })
+                                                                                                            .show();
+                }
+            }
+        } else {
+
+        }
     }
 
     class ActionModeCallback implements ActionMode.Callback {

@@ -19,7 +19,6 @@ import android.widget.TextView;
 
 import de.greenrobot.event.EventBus;
 import de.thecode.android.tazreader.R;
-import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.utils.BaseFragment;
 
 import java.lang.ref.WeakReference;
@@ -39,8 +38,8 @@ public class NavigationDrawerFragment extends BaseFragment {
     private ActionBarDrawerToggle mDrawerToggle;
     private DrawerLayout mDrawerLayout;
 
-    private boolean mUserLearnedDrawer;
-    private boolean mFromSavedInstanceState;
+    //private boolean mUserLearnedDrawer;
+//    private boolean mFromSavedInstanceState;
     private View mDrawerContainerView;
     private RecyclerView mRecyclerView;
 
@@ -67,8 +66,8 @@ public class NavigationDrawerFragment extends BaseFragment {
         if (savedInstanceState != null) mActive = savedInstanceState.getInt(KEY_ACTIVE);
 
 
-        mUserLearnedDrawer = TazSettings.getInstance(getActivity()).getPrefBoolean(TazSettings.PREFKEY.NAVDRAWERLEARNED, false);
-        if (savedInstanceState != null) mFromSavedInstanceState = true;
+        //mUserLearnedDrawer = TazSettings.getInstance(getActivity()).getPrefBoolean(TazSettings.PREFKEY.NAVDRAWERLEARNED, false);
+        //if (savedInstanceState != null) mFromSavedInstanceState = true;
         mClickListener = new Item.ClickListener() {
             @Override
             public void onItemClick(int position) {
@@ -114,15 +113,17 @@ public class NavigationDrawerFragment extends BaseFragment {
             @Override
             public void onDrawerOpened(View drawerView) {
                 super.onDrawerClosed(drawerView);
-                if (!mUserLearnedDrawer) {
-                    mUserLearnedDrawer = true;
-                    TazSettings.getInstance(getActivity()).setPref(TazSettings.PREFKEY.NAVDRAWERLEARNED, true);
-                }
+                ((StartActivity) getActivity()).getRetainData().navigationDrawerOpen = false;
+//                if (!mUserLearnedDrawer) {
+//                    mUserLearnedDrawer = true;
+//                    TazSettings.getInstance(getActivity()).setPref(TazSettings.PREFKEY.NAVDRAWERLEARNED, true);
+//                }
             }
 
             @Override
             public void onDrawerClosed(View drawerView) {
                 super.onDrawerClosed(drawerView);
+                ((StartActivity) getActivity()).getRetainData().navigationDrawerOpen = false;
             }
 
             @Override
@@ -132,10 +133,10 @@ public class NavigationDrawerFragment extends BaseFragment {
                         .post(new DrawerStateChangedEvent(newState));
             }
         };
-        if (!mUserLearnedDrawer && !mFromSavedInstanceState) {
-            mDrawerLayout.openDrawer(mDrawerContainerView);
-        }
-        mDrawerLayout.setDrawerListener(mDrawerToggle);
+//        if (!mUserLearnedDrawer && !mFromSavedInstanceState) {
+//            mDrawerLayout.openDrawer(mDrawerContainerView);
+//        }
+        mDrawerLayout.addDrawerListener(mDrawerToggle);
         mDrawerLayout.post(new Runnable() {
             @Override
             public void run() {
