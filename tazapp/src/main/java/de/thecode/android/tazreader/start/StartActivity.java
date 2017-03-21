@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
@@ -14,8 +15,11 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.util.DisplayMetrics;
 import android.util.LruCache;
-import android.view.MotionEvent;
+
+import com.getkeepsafe.taptargetview.TapTarget;
+import com.getkeepsafe.taptargetview.TapTargetView;
 
 import de.greenrobot.event.EventBus;
 import de.mateware.dialog.Dialog;
@@ -47,6 +51,7 @@ import de.thecode.android.tazreader.importer.ImportActivity;
 import de.thecode.android.tazreader.migration.MigrationActivity;
 import de.thecode.android.tazreader.reader.ReaderActivity;
 import de.thecode.android.tazreader.sync.SyncHelper;
+import de.thecode.android.tazreader.tutorial.TutorialHelper;
 import de.thecode.android.tazreader.utils.BaseActivity;
 import de.thecode.android.tazreader.utils.BaseFragment;
 import de.thecode.android.tazreader.utils.Connection;
@@ -55,8 +60,6 @@ import de.thecode.android.tazreader.widget.CustomToolbar;
 
 import org.json.JSONArray;
 import org.json.JSONException;
-
-import uk.co.samuelwall.materialtaptargetprompt.MaterialTapTargetPrompt;
 
 import java.lang.ref.WeakReference;
 import java.text.DateFormatSymbols;
@@ -174,24 +177,29 @@ public class StartActivity extends BaseActivity
         if (getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         updateTitle();
 
-        mDrawerFragment = (NavigationDrawerFragment) getSupportFragmentManager().findFragmentById(
-                R.id.fragment_navigation_drawer);
+        mDrawerFragment = (NavigationDrawerFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_navigation_drawer);
         mDrawerFragment.setUp(R.id.fragment_navigation_drawer, (DrawerLayout) findViewById(R.id.drawer_layout), toolbar);
 
-        userItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_account), R.drawable.ic_account,
+        userItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_account),
+                                                               R.drawable.ic_account,
                                                                LoginFragment.class);
-        importItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_import), R.drawable.ic_file_folder,
+        importItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_import),
+                                                                 R.drawable.ic_file_folder,
                                                                  ImportFragment.class);
         importItem.setAccessibilty(false);
-        libraryItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_library), R.drawable.ic_library,
+        libraryItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_library),
+                                                                  R.drawable.ic_library,
                                                                   LibraryFragment.class);
-        settingsItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_settings), R.drawable.ic_settings,
+        settingsItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_settings),
+                                                                   R.drawable.ic_settings,
                                                                    SettingsFragment.class);
         settingsItem.setAccessibilty(false);
-        helpItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_help), R.drawable.ic_help,
+        helpItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_help),
+                                                               R.drawable.ic_help,
                                                                HelpFragment.class);
         helpItem.setAccessibilty(false);
-        imprintItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_imprint), R.drawable.ic_imprint,
+        imprintItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_imprint),
+                                                                  R.drawable.ic_imprint,
                                                                   ImprintFragment.class);
 
 
@@ -242,61 +250,43 @@ public class StartActivity extends BaseActivity
     public void startTutorial() {
         if (!TazSettings.getInstance(this)
                         .isTutorialStepFinished("WELCOME")) {
-            new MaterialTapTargetPrompt.Builder(this, R.style.MaterialTapTargetPromptTheme).setTarget(toolbar.getChildAt(0))
-                                                                                           .setPrimaryText(
-                                                                                                   "Willkommen bei der taz.app")
-                                                                                           .setSecondaryText(
-                                                                                                   "Wir zeigen Ihnen, wie es geht")
-                                                                                           .setFocalColourAlpha(0)
-                                                                                           .setIdleAnimationEnabled(false)
-                                                                                           .setOnHidePromptListener(
-                                                                                                   new MaterialTapTargetPrompt.OnHidePromptListener() {
-                                                                                                       @Override
-                                                                                                       public void onHidePrompt(
-                                                                                                               MotionEvent event,
-                                                                                                               boolean tappedTarget) {
+            DisplayMetrics metrics = new DisplayMetrics();
+            getWindowManager().getDefaultDisplay()
+                              .getMetrics(metrics);
 
-                                                                                                       }
+            TutorialHelper.show(this,
+                                TapTarget.forBounds(new Rect(metrics.widthPixels / 2,
+                                                             (int) (metrics.heightPixels / 1.5),
+                                                             metrics.widthPixels / 2,
+                                                             (int) (metrics.heightPixels / 1.5)),
+                                                    "Willkommen bei der taz.app",
+                                                    "Danke dass Sie die taz.app installiert haben.\nIch helfe Ihnen sich zurecht zu finden.")
+                                         .targetRadius(0),
+                                new TutorialHelper.TapTargetListener() {
+                                    @Override
+                                    public void onTargetCancel(TapTargetView view) {
+                                        super.onTargetCancel(view);
+                                        TazSettings.getInstance(StartActivity.this)
+                                                   .setTutorialStepFinished("WELCOME");
+                                        startTutorial();
+                                    }
+                                });
 
-                                                                                                       @Override
-                                                                                                       public void onHidePromptComplete() {
-                                                                                                           TazSettings.getInstance(
-                                                                                                                   StartActivity.this)
-                                                                                                                      .setTutorialStepFinished(
-                                                                                                                              "WELCOME");
-                                                                                                           startTutorial();
-                                                                                                       }
-                                                                                                   })
-                                                                                           .show();
         } else if (!TazSettings.getInstance(this)
                                .isTutorialStepFinished("MAINMENU")) {
-            new MaterialTapTargetPrompt.Builder(this, R.style.MaterialTapTargetPromptTheme).setTarget(toolbar.getChildAt(1))
-                                                                                           .setPrimaryText("Hauptmenü öffnen")
-                                                                                           .setSecondaryText(
-                                                                                                   "Abodaten eingeben, Einstellungen vornehmen und mehr")
-                                                                                           .setOnHidePromptListener(
-                                                                                                   new MaterialTapTargetPrompt.OnHidePromptListener() {
-                                                                                                       @Override
-                                                                                                       public void onHidePrompt(
-                                                                                                               MotionEvent event,
-                                                                                                               boolean tappedTarget) {
+            TutorialHelper.show(this,
+                                TapTarget.forToolbarNavigationIcon(toolbar,
+                                                                   "Menü",
+                                                                   "Im Menü finden Sie die alle wichtigen Bereiche der App, z.B. die Eingabe Ihrer Abodaten oder die Einstellungen."),
+                                new TutorialHelper.TapTargetListener() {
+                                    @Override
+                                    public void onTargetCancel(TapTargetView view) {
+                                        super.onTargetCancel(view);
+                                        TazSettings.getInstance(StartActivity.this)
+                                                   .setTutorialStepFinished("MAINMENU");
+                                    }
+                                });
 
-                                                                                                       }
-
-                                                                                                       @Override
-                                                                                                       public void onHidePromptComplete() {
-                                                                                                           TazSettings.getInstance(
-                                                                                                                   StartActivity.this)
-                                                                                                                      .setTutorialStepFinished(
-                                                                                                                              "MAINMENU");
-                                                                                                           try {
-                                                                                                               ((LibraryFragment) getSupportFragmentManager().findFragmentById(
-                                                                                                                       R.id.content_frame)).startTutorial();
-                                                                                                           } catch (ClassCastException ignored) {
-                                                                                                           }
-                                                                                                       }
-                                                                                                   })
-                                                                                           .show();
         }
     }
 
@@ -480,8 +470,10 @@ public class StartActivity extends BaseActivity
     }
 
     private void showLicencesDialog() {
-        new LicenceDialog.Builder().addEntry(
-                new Apache20Licence(this, "Android Support Library", "The Android Open Source Project", 2011))
+        new LicenceDialog.Builder().addEntry(new Apache20Licence(this,
+                                                                 "Android Support Library",
+                                                                 "The Android Open Source Project",
+                                                                 2011))
                                    .addEntry(new Apache20Licence(this, "OkHttp", "Square, Inc.", 2016))
                                    .addEntry(new Apache20Licence(this, "Picasso", "Square, Inc.", 2013))
                                    .addEntry(new Apache20Licence(this, "Picasso 2 OkHttp 3 Downloader", "Jake Wharton", 2016))
@@ -611,7 +603,8 @@ public class StartActivity extends BaseActivity
                             retainDataFragment.openPaperWaitingForRessource = id;
                         } catch (DownloadManager.NotEnoughSpaceException e) {
                             showDownloadErrorDialog(getString(R.string.message_resourcedownload_error),
-                                                    getString(R.string.message_not_enough_space), e);
+                                                    getString(R.string.message_not_enough_space),
+                                                    e);
                         }
 
                 }

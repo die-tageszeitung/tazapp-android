@@ -17,7 +17,6 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -30,8 +29,6 @@ import de.thecode.android.tazreader.sync.SyncHelper;
 import de.thecode.android.tazreader.sync.SyncStateChangedEvent;
 import de.thecode.android.tazreader.utils.BaseFragment;
 import de.thecode.android.tazreader.widget.AutofitRecyclerView;
-
-import uk.co.samuelwall.materialtaptargetprompt.MaterialTapTargetPrompt;
 
 import java.lang.ref.WeakReference;
 
@@ -472,32 +469,6 @@ public class LibraryFragment extends BaseFragment
                 if (view1 != null && view2!= null) {
                     LibraryAdapter.ViewHolder viewHolder1 = (LibraryAdapter.ViewHolder) recyclerView.getChildViewHolder(view1);
                     LibraryAdapter.ViewHolder viewHolder2 = (LibraryAdapter.ViewHolder) recyclerView.getChildViewHolder(view2);
-                    new MaterialTapTargetPrompt.Builder(getActivity(), R.style.MaterialTapTargetPromptTheme).setTarget(
-                            viewHolder1.card)
-
-                                                                                                            .setPrimaryText(
-                                                                                                                    "Die Ausgaben")
-                                                                                                            .setSecondaryText(
-                                                                                                                    "Klicken zum herunterladen\nLange klicken für weiter Aktionen")
-                                                                                                            .setOnHidePromptListener(
-                                                                                                                    new MaterialTapTargetPrompt.OnHidePromptListener() {
-                                                                                                                        @Override
-                                                                                                                        public void onHidePrompt(
-                                                                                                                                MotionEvent event,
-                                                                                                                                boolean tappedTarget) {
-
-                                                                                                                        }
-
-                                                                                                                        @Override
-                                                                                                                        public void onHidePromptComplete() {
-                                                                                                                            TazSettings.getInstance(
-                                                                                                                                    getContext())
-                                                                                                                                       .setTutorialStepFinished(
-                                                                                                                                               "PAPER");
-
-                                                                                                                        }
-                                                                                                                    })
-                                                                                                            .show();
                 }
             }
         } else {

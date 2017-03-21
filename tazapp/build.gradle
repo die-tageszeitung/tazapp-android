@@ -1,7 +1,7 @@
 def versionMajor = 3
 def versionMinor = 2
 def versionPatch = 0
-def versionBuild = 0
+def versionBuild = 1
 
 def supportLibVer = "25.3.0"
 def buildToolsVer = "25.0.2"
@@ -254,7 +254,7 @@ dependencies {
 
     compile 'ch.acra:acra:4.9.2'
 
-    compile 'uk.co.samuelwall:material-tap-target-prompt:1.9.3'
+    compile 'com.getkeepsafe.taptargetview:taptargetview:1.8.0'
 
 
 }

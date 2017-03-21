@@ -72,6 +72,8 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
     private static TazSettings       instance;
     private        SharedPreferences sharedPreferences;
 
+    private Set<String> tutorialStepsFinished;
+
     public static synchronized TazSettings getInstance(Context context) {
         if (instance == null) instance = new TazSettings(context.getApplicationContext());
         return instance;
@@ -223,14 +225,16 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
     }
 
     public boolean isTutorialStepFinished(String tag) {
-        Set<String> finishedSet = sharedPreferences.getStringSet(PREFKEY.FINISHEDDTUTORIALSTEPS, new HashSet<String>());
-        return finishedSet.contains(tag);
+        if (tutorialStepsFinished == null)
+            tutorialStepsFinished = sharedPreferences.getStringSet(PREFKEY.FINISHEDDTUTORIALSTEPS, new HashSet<String>());
+        return tutorialStepsFinished.contains(tag);
     }
 
     public void setTutorialStepFinished(String tag) {
-        Set<String> finishedSet = sharedPreferences.getStringSet(PREFKEY.FINISHEDDTUTORIALSTEPS, new HashSet<String>());
-        finishedSet.add(tag);
-        sharedPreferences.edit().putStringSet(PREFKEY.FINISHEDDTUTORIALSTEPS,finishedSet).apply();
+        tutorialStepsFinished.add(tag);
+        sharedPreferences.edit()
+                         .putStringSet(PREFKEY.FINISHEDDTUTORIALSTEPS, tutorialStepsFinished)
+                         .apply();
     }
 
     private Map<String, List<OnPreferenceChangeListener>> changeListeners = new HashMap<>();
