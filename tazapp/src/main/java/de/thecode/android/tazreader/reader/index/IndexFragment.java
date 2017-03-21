@@ -54,7 +54,7 @@ public class IndexFragment extends BaseFragment {
     boolean mShowSubtitles;
 
     IIndexViewHolderClicks mClickListener;
-    RecyclerView mRecyclerView;
+    RecyclerView           mRecyclerView;
 
     IReaderCallback mReaderCallback;
 
@@ -159,14 +159,16 @@ public class IndexFragment extends BaseFragment {
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
-        mRecyclerView.addItemDecoration(new HorizontalDividerItemDecoration.Builder(getContext()).colorResId(R.color.index_divider)
-                                                                                                 .sizeResId(R.dimen.index_divider_size)
-                                                                                                 .marginResId(R.dimen.index_divider_margin)
-                                                                                                 .showLastDivider()
-                                                                                                 .build());
+        mRecyclerView.addItemDecoration(
+                new HorizontalDividerItemDecoration.Builder(getContext()).colorResId(R.color.index_divider)
+                                                                         .sizeResId(R.dimen.index_divider_size)
+                                                                         .marginResId(R.dimen.index_divider_margin)
+                                                                         .showLastDivider()
+                                                                         .build());
         mRecyclerView.setAdapter(adapter);
 
-        setIndexVerbose(TazSettings.getInstance(getActivity()).getPrefBoolean(TazSettings.PREFKEY.CONTENTVERBOSE, true));
+        setIndexVerbose(TazSettings.getInstance(getActivity())
+                                   .getPrefBoolean(TazSettings.PREFKEY.CONTENTVERBOSE, true));
 
         return view;
     }
@@ -189,11 +191,17 @@ public class IndexFragment extends BaseFragment {
 
         for (Source source : paper.getPlist()
                                   .getSources()) {
-            index.add(source);
+            //index.add(source);
             for (Book book : source.getBooks()) {
                 for (Category category : book.getCategories()) {
                     index.add(category);
-                    if (category.hasIndexChilds()) index.addAll(category.getIndexChilds());
+                    if (category.hasIndexChilds()) {
+                        for (IIndexItem categoryChild : category.getIndexChilds()) {
+                            if (categoryChild.getType() != IIndexItem.Type.PAGE) {
+                                index.add(categoryChild);
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -260,7 +268,8 @@ public class IndexFragment extends BaseFragment {
     public void setIndexVerbose(boolean bool) {
         mShowSubtitles = bool;
         adapter.notifyDataSetChanged();
-        TazSettings.getInstance(getActivity()).setPref(TazSettings.PREFKEY.CONTENTVERBOSE, bool);
+        TazSettings.getInstance(getActivity())
+                   .setPref(TazSettings.PREFKEY.CONTENTVERBOSE, bool);
         Menu menu = toolbar.getMenu();
         MenuItem menuItemFull = menu.findItem(R.id.toolbar_index_full);
         MenuItem menuItemShort = menu.findItem(R.id.toolbar_index_short);
@@ -360,25 +369,24 @@ public class IndexFragment extends BaseFragment {
             IIndexItem item = positions.get(position);
 
             if (!item.isLink() && item.getKey()
-                                      .equals(mReaderCallback.getCurrentKey()))
-                viewholder.setCurrent(true);
+                                      .equals(mReaderCallback.getCurrentKey())) viewholder.setCurrent(true);
             else viewholder.setCurrent(false);
 
 
             switch (IIndexItem.Type.values()[viewholder.getItemViewType()]) {
                 case SOURCE:
                     ((SourceViewholder) viewholder).title.setText(item.getTitle());
-                    if (item.areIndexChildsVisible())
-                        ((SourceViewholder) viewholder).image.setImageDrawable(ContextCompat.getDrawable(getActivity(), R.drawable.ic_remove_24dp));
-                    else
-                        ((SourceViewholder) viewholder).image.setImageDrawable(ContextCompat.getDrawable(getActivity(), R.drawable.ic_add_24dp));
+                    if (item.areIndexChildsVisible()) ((SourceViewholder) viewholder).image.setImageDrawable(
+                            ContextCompat.getDrawable(getActivity(), R.drawable.ic_remove_24dp));
+                    else ((SourceViewholder) viewholder).image.setImageDrawable(
+                            ContextCompat.getDrawable(getActivity(), R.drawable.ic_add_24dp));
                     break;
                 case CATEGORY:
                     ((CategoryViewholder) viewholder).title.setText(item.getTitle());
-                    if (item.areIndexChildsVisible())
-                        ((CategoryViewholder) viewholder).image.setImageDrawable(ContextCompat.getDrawable(getActivity(), R.drawable.ic_remove_24dp));
-                    else
-                        ((CategoryViewholder) viewholder).image.setImageDrawable(ContextCompat.getDrawable(getActivity(), R.drawable.ic_add_24dp));
+                    if (item.areIndexChildsVisible()) ((CategoryViewholder) viewholder).image.setImageDrawable(
+                            ContextCompat.getDrawable(getActivity(), R.drawable.ic_remove_24dp));
+                    else ((CategoryViewholder) viewholder).image.setImageDrawable(
+                            ContextCompat.getDrawable(getActivity(), R.drawable.ic_add_24dp));
                     break;
                 case PAGE:
                     ((PageViewholder) viewholder).title.setText(item.getTitle());
@@ -472,7 +480,7 @@ public class IndexFragment extends BaseFragment {
         }
 
         ImageView image;
-        TextView title;
+        TextView  title;
     }
 
     private class CategoryViewholder extends Viewholder {
@@ -485,7 +493,7 @@ public class IndexFragment extends BaseFragment {
         }
 
         ImageView image;
-        TextView title;
+        TextView  title;
     }
 
     private class PageViewholder extends Viewholder {
@@ -516,8 +524,7 @@ public class IndexFragment extends BaseFragment {
 
         public void onClick(View v) {
             if (mClickListener != null) {
-                if (v.getId() == R.id.bookmarkClickLayout)
-                    mClickListener.onBookmarkClick(getPosition());
+                if (v.getId() == R.id.bookmarkClickLayout) mClickListener.onBookmarkClick(getPosition());
                 else {
                     mReaderCallback.closeDrawers();
                     super.onClick(v);
@@ -526,8 +533,8 @@ public class IndexFragment extends BaseFragment {
         }
 
         ImageView bookmark;
-        TextView title;
-        TextView subtitle;
+        TextView  title;
+        TextView  subtitle;
 
     }
 
