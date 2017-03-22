@@ -254,7 +254,7 @@ dependencies {
 
     compile 'ch.acra:acra:4.9.2'
 
-    compile 'com.getkeepsafe.taptargetview:taptargetview:1.8.0'
+    compile 'com.github.KeepSafe:TapTargetView:-SNAPSHOT'
 
 
 }

@@ -26,6 +26,7 @@ public class TutorialHelper {
                  .titleTextColor(R.color.mtt_primaryTextColour)
                  .descriptionTextColor(R.color.mtt_secondaryTextColour)
                  .transparentTarget(true)
+                 .drawShadow(true)
                  .outerCircleColor(R.color.mtt_backgroundColour);
         return tapTarget;
     }
