@@ -36,22 +36,25 @@ import de.thecode.android.tazreader.utils.TintHelper;
 import de.thecode.android.tazreader.widget.CustomToolbar;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import timber.log.Timber;
 
 public class IndexFragment extends BaseFragment {
 
-    private static final String ARGUMENT_BOOKMARKFILTER = "bookmarkfilter";
+    private static final String ARGUMENT_CURRENTKEY = "currentIndexKey";
 
     CustomToolbar toolbar;
-    List<IIndexItem> index = new ArrayList<>();
+    Map<String, IIndexItem> index = new LinkedHashMap<>();
     IndexRecyclerViewAdapter adapter;
 
     int bookmarkColorActive;
     int bookmarkColorNormal;
 
     boolean mShowSubtitles;
+    String mCurrentKey = null;
 
     IIndexViewHolderClicks mClickListener;
     RecyclerView           mRecyclerView;
@@ -78,6 +81,32 @@ public class IndexFragment extends BaseFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         adapter = new IndexRecyclerViewAdapter();
+        adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+            @Override
+            public void onChanged() {
+                adapter.rebuildPositions();
+            }
+
+            @Override
+            public void onItemRangeChanged(int positionStart, int itemCount) {
+                adapter.rebuildPositions();
+            }
+
+            @Override
+            public void onItemRangeInserted(int positionStart, int itemCount) {
+                adapter.rebuildPositions();
+            }
+
+            @Override
+            public void onItemRangeRemoved(int positionStart, int itemCount) {
+                adapter.rebuildPositions();
+            }
+
+            @Override
+            public void onItemRangeMoved(int fromPosition, int toPosition, int itemCount) {
+                adapter.rebuildPositions();
+            }
+        });
     }
 
     @Override
@@ -95,17 +124,21 @@ public class IndexFragment extends BaseFragment {
                 switch (item.getItemId()) {
                     case R.id.toolbar_bookmark_off:
                         setFilterBookmarksToolbarItems(false);
-                        adapter.buildPositions();
+                        adapter.notifyDataSetChanged();
                         break;
                     case R.id.toolbar_bookmark_on:
                         setFilterBookmarksToolbarItems(true);
-                        adapter.buildPositions();
+                        adapter.notifyDataSetChanged();
                         break;
                     case R.id.toolbar_expand:
-                        adapter.expand();
+                        TazSettings.getInstance(getContext())
+                                   .setIndexAlwaysExpanded(true);
+                        expandAll(true);
                         break;
                     case R.id.toolbar_collapse:
-                        adapter.collapse();
+                        TazSettings.getInstance(getContext())
+                                   .setIndexAlwaysExpanded(false);
+                        expandAll(false);
                         break;
                     case R.id.toolbar_index_short:
                         setIndexVerbose(false);
@@ -159,13 +192,17 @@ public class IndexFragment extends BaseFragment {
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
-        mRecyclerView.addItemDecoration(
-                new HorizontalDividerItemDecoration.Builder(getContext()).colorResId(R.color.index_divider)
-                                                                         .sizeResId(R.dimen.index_divider_size)
-                                                                         .marginResId(R.dimen.index_divider_margin)
-                                                                         .showLastDivider()
-                                                                         .build());
+        mRecyclerView.addItemDecoration(new HorizontalDividerItemDecoration.Builder(getContext()).colorResId(R.color.index_divider)
+                                                                                                 .sizeResId(R.dimen.index_divider_size)
+                                                                                                 .marginResId(R.dimen.index_divider_margin)
+                                                                                                 .showLastDivider()
+                                                                                                 .build());
         mRecyclerView.setAdapter(adapter);
+        if (savedInstanceState == null) expandAll(TazSettings.getInstance(getContext())
+                                                             .isIndexAlwaysExpanded());
+        else {
+            mCurrentKey = savedInstanceState.getString(ARGUMENT_CURRENTKEY);
+        }
 
         setIndexVerbose(TazSettings.getInstance(getActivity())
                                    .getPrefBoolean(TazSettings.PREFKEY.CONTENTVERBOSE, true));
@@ -173,15 +210,25 @@ public class IndexFragment extends BaseFragment {
         return view;
     }
 
+    private void expandAll(boolean expand) {
+        for (Map.Entry<String, IIndexItem> entry : index.entrySet()) {
+            entry.getValue()
+                 .setIndexChildsVisible(expand);
+        }
+        if (adapter != null) {
+            adapter.notifyDataSetChanged();
+        }
+    }
+
     @Override
     public void onStart() {
         super.onStart();
-        adapter.buildPositions();
+        //adapter.rebuildPositions();
     }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        outState.putBoolean(ARGUMENT_BOOKMARKFILTER, mReaderCallback.isFilterBookmarks());
+        outState.putString(ARGUMENT_CURRENTKEY, mCurrentKey);
         super.onSaveInstanceState(outState);
     }
 
@@ -194,12 +241,10 @@ public class IndexFragment extends BaseFragment {
             //index.add(source);
             for (Book book : source.getBooks()) {
                 for (Category category : book.getCategories()) {
-                    index.add(category);
+                    index.put(category.getKey(), category);
                     if (category.hasIndexChilds()) {
                         for (IIndexItem categoryChild : category.getIndexChilds()) {
-                            if (categoryChild.getType() != IIndexItem.Type.PAGE) {
-                                index.add(categoryChild);
-                            }
+                            index.put(categoryChild.getKey(), categoryChild);
                         }
                     }
                 }
@@ -208,7 +253,7 @@ public class IndexFragment extends BaseFragment {
 
         for (TopLink toplink : paper.getPlist()
                                     .getToplinks()) {
-            index.add(toplink);
+            index.put("toplink_" + toplink.getKey(), toplink);
         }
         mClickListener = new IIndexViewHolderClicks() {
 
@@ -227,8 +272,14 @@ public class IndexFragment extends BaseFragment {
 
     private void onItemClick(int position) {
         IIndexItem item = adapter.getItem(position);
+        boolean areIndexChildsVisible = item.areIndexChildsVisible();
         item.setIndexChildsVisible(!item.areIndexChildsVisible());
-        adapter.buildPositions();
+        adapter.notifyItemChanged(position);
+        if (areIndexChildsVisible) {
+            adapter.notifyItemRangeRemoved(position + 1, item.getIndexChildCount());
+        } else {
+            adapter.notifyItemRangeInserted(position + 1, item.getIndexChildCount());
+        }
         mReaderCallback.onLoad(item.getKey());
     }
 
@@ -242,8 +293,8 @@ public class IndexFragment extends BaseFragment {
 
     public void onBookmarkChange(String key) {
         if (mReaderCallback.isFilterBookmarks()) {
+            //adapter.rebuildPositions();
             adapter.notifyDataSetChanged();
-            adapter.buildPositions();
         } else {
             IIndexItem item = mReaderCallback.getPaper()
                                              .getPlist()
@@ -279,7 +330,7 @@ public class IndexFragment extends BaseFragment {
 
     private class IndexRecyclerViewAdapter extends RecyclerView.Adapter<Viewholder> {
 
-        List<IIndexItem> positions = new ArrayList<>();
+        List<String> positions = new ArrayList<>();
         //        HashMap<String,Integer> itemPositions = new HashMap<>();
         //        HashMap<Integer,String> itemOrder = new HashMap<>();
 
@@ -288,85 +339,66 @@ public class IndexFragment extends BaseFragment {
 
         }
 
-        void buildPositions() {
+
+        void rebuildPositions() {
             positions.clear();
             boolean filter = false;
             //Workaround
             if (mReaderCallback != null) filter = mReaderCallback.isFilterBookmarks();
             if (index != null) {
                 if (!filter) {
-                    for (IIndexItem indexItem : index) {
-                        if (indexItem.isVisible()) positions.add(indexItem);
+                    for (Map.Entry<String, IIndexItem> entry : index.entrySet()) {
+                        if (entry.getValue()
+                                 .isVisible()) positions.add(entry.getKey());
                     }
                 } else {
-                    for (IIndexItem indexItem : index) {
-                        if (indexItem.isVisible()) {
-                            if (indexItem.isBookmarked()) positions.add(indexItem);
-                            else if (indexItem.hasBookmarkedChilds()) positions.add(indexItem);
+                    for (Map.Entry<String, IIndexItem> entry : index.entrySet()) {
+                        if (entry.getValue()
+                                 .isVisible()) {
+                            if (entry.getValue()
+                                     .isBookmarked()) positions.add(entry.getKey());
+                            else if (entry.getValue()
+                                          .hasBookmarkedChilds()) positions.add(entry.getKey());
                         }
                     }
                 }
             }
-            notifyDataSetChanged();
         }
 
-        public void expand() {
-            for (IIndexItem indexItem : index) {
-                indexItem.setIndexChildsVisible(true);
-            }
-            buildPositions();
-        }
-
-        public void collapse() {
-            mRecyclerView.stopScroll();
-            for (IIndexItem indexItem : index) {
-                indexItem.setIndexChildsVisible(false);
-            }
-            buildPositions();
-        }
 
         @Override
         public int getItemViewType(int position) {
-            return positions.get(position)
-                            .getType()
-                            .ordinal();
+            return index.get(positions.get(position))
+                        .getType()
+                        .ordinal();
         }
 
         @Override
         public int getItemCount() {
-            int count = 0;
-            if (positions != null) count = positions.size();
-            return count;
+            if (positions != null) {
+                return positions.size();
+            }
+            return 0;
         }
 
         public IIndexItem getItem(int position) {
             // Log.v();
-            if (positions != null) return positions.get(position);
+            if (index != null && positions != null) return index.get(positions.get(position));
             return null;
         }
 
         public int getPosition(String key) {
-
-            int result = -1;
-            for (IIndexItem indexItem : positions) {
-                if (indexItem.getKey()
-                             .equals(key)) {
-                    result = positions.indexOf(indexItem);
-                    break;
-                }
-            }
-            Timber.d("key: %s %s", key, result);
-            return result;
+            return positions.indexOf(key);
         }
 
         public int getPosition(IIndexItem item) {
-            return positions.indexOf(item);
+            return getPosition(item.getKey());
         }
 
         @SuppressWarnings("incomplete-switch")
         @Override
         public void onBindViewHolder(Viewholder viewholder, int position) {
-            IIndexItem item = positions.get(position);
+            IIndexItem item = index.get(positions.get(position));
 
             if (!item.isLink() && item.getKey()
                                       .equals(mReaderCallback.getCurrentKey())) viewholder.setCurrent(true);
@@ -376,17 +408,19 @@ public class IndexFragment extends BaseFragment {
             switch (IIndexItem.Type.values()[viewholder.getItemViewType()]) {
                 case SOURCE:
                     ((SourceViewholder) viewholder).title.setText(item.getTitle());
-                    if (item.areIndexChildsVisible()) ((SourceViewholder) viewholder).image.setImageDrawable(
-                            ContextCompat.getDrawable(getActivity(), R.drawable.ic_remove_24dp));
-                    else ((SourceViewholder) viewholder).image.setImageDrawable(
-                            ContextCompat.getDrawable(getActivity(), R.drawable.ic_add_24dp));
+                    if (item.areIndexChildsVisible())
+                        ((SourceViewholder) viewholder).image.setImageDrawable(ContextCompat.getDrawable(getActivity(),
+                                                                                                         R.drawable.ic_remove_24dp));
+                    else ((SourceViewholder) viewholder).image.setImageDrawable(ContextCompat.getDrawable(getActivity(),
+                                                                                                          R.drawable.ic_add_24dp));
                     break;
                 case CATEGORY:
                     ((CategoryViewholder) viewholder).title.setText(item.getTitle());
-                    if (item.areIndexChildsVisible()) ((CategoryViewholder) viewholder).image.setImageDrawable(
-                            ContextCompat.getDrawable(getActivity(), R.drawable.ic_remove_24dp));
-                    else ((CategoryViewholder) viewholder).image.setImageDrawable(
-                            ContextCompat.getDrawable(getActivity(), R.drawable.ic_add_24dp));
+                    if (item.areIndexChildsVisible())
+                        ((CategoryViewholder) viewholder).image.setImageDrawable(ContextCompat.getDrawable(getActivity(),
+                                                                                                           R.drawable.ic_remove_24dp));
+                    else ((CategoryViewholder) viewholder).image.setImageDrawable(ContextCompat.getDrawable(getActivity(),
+                                                                                                            R.drawable.ic_add_24dp));
                     break;
                 case PAGE:
                     ((PageViewholder) viewholder).title.setText(item.getTitle());
@@ -519,7 +553,8 @@ public class IndexFragment extends BaseFragment {
             title = (TextView) itemView.findViewById(R.id.title);
             subtitle = (TextView) itemView.findViewById(R.id.subtitle);
             bookmark = (ImageView) itemView.findViewById(R.id.bookmark);
-            ((FrameLayout) itemView.findViewById(R.id.bookmarkClickLayout)).setOnClickListener(this);
+            itemView.findViewById(R.id.bookmarkClickLayout)
+                    .setOnClickListener(this);
         }
 
         public void onClick(View v) {
@@ -554,32 +589,50 @@ public class IndexFragment extends BaseFragment {
         TextView title;
     }
 
-    String mCurrentKey = null;
+
 
     public void updateCurrentPosition(String key) {
         Timber.d("key: %s", key);
-
+        IIndexItem lastitem = null;
         if (mCurrentKey != null) {
-            IIndexItem lastitem = mReaderCallback.getPaper()
-                                                 .getPlist()
-                                                 .getIndexItem(mCurrentKey);
+            lastitem = index.get(mCurrentKey);
             if (lastitem != null) {
                 int where = adapter.getPosition(lastitem);
-                adapter.notifyItemChanged(where);
+                if (where != -1) {
+                    adapter.notifyItemChanged(where);
+                }
             }
         }
 
-        IIndexItem item = mReaderCallback.getPaper()
-                                         .getPlist()
-                                         .getIndexItem(key);
-
+        IIndexItem item = index.get(key);
         if (item != null) {
             int where = adapter.getPosition(item);
-            if (where != -1 && mRecyclerView != null) {
-                mRecyclerView.scrollToPosition(where);
-                adapter.notifyItemChanged(where);
+            if (mRecyclerView != null) {
+                if (item.getIndexParent() != null && lastitem != null && !item.getIndexParent()
+                                                                              .equals(lastitem.getIndexParent())) {
+                    if (lastitem.getIndexParent()
+                                .areIndexChildsVisible()) {
+                        if (!TazSettings.getInstance(getContext())
+                                        .isIndexAlwaysExpanded()) {
+                            expandAll(false);
+                            updateCurrentPosition(key);
+                            return;
+                        }
+                    }
+                }
+                if (where != -1) {
+                    if (!key.equals(mCurrentKey)) {
+                        mRecyclerView.scrollToPosition(where);
+                        adapter.notifyItemChanged(where);
+                    }
+                } else {
+                    onItemClick(adapter.getPosition(item.getIndexParent()));
+                    updateCurrentPosition(key);
+                }
             }
+
         }
+
 
         mCurrentKey = key;
 

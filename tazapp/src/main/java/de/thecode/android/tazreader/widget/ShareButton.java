@@ -1,15 +1,13 @@
 package de.thecode.android.tazreader.widget;
 
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
+import android.support.v7.widget.AppCompatImageView;
 import android.util.AttributeSet;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.Toast;
 
 import de.thecode.android.tazreader.R;
@@ -17,7 +15,7 @@ import de.thecode.android.tazreader.R;
 /**
  * Created by mate on 22.01.2015.
  */
-public class ShareButton extends ImageView implements View.OnClickListener, View.OnLongClickListener {
+public class ShareButton extends AppCompatImageView implements View.OnClickListener, View.OnLongClickListener {
 
     int colorNormal;
     int colorPressed;
@@ -38,12 +36,6 @@ public class ShareButton extends ImageView implements View.OnClickListener, View
 
     public ShareButton(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        init(context);
-    }
-
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public ShareButton(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-        super(context, attrs, defStyleAttr, defStyleRes);
         init(context);
     }
 
@@ -98,9 +90,8 @@ public class ShareButton extends ImageView implements View.OnClickListener, View
     }
 
     public interface ShareButtonCallback {
-        public Intent getShareIntent(Context context);
-
-        public boolean isShareable();
+        Intent getShareIntent(Context context);
+        boolean isShareable();
     }
 
     private void tintDrawable(int color) {
