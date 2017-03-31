@@ -85,6 +85,7 @@
     <string name="reader_action_share">Teilen</string>
     <string name="reader_action_share_open">Öffnen / Teilen</string>
     <string name="reader_action_pageindex">Seitenübersicht</string>
+    <string name="reader_action_index">Inhaltsverzeichnis</string>
 
     <string name="toast_tts_started">Sprachausgabe gestartet, zum Pausieren doppelt auf Text tippen.</string>
     <string name="toast_tts_continued">Sprachausgabe fortgesetzt, zum Pausieren doppelt auf Text tippen.</string>

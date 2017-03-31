@@ -48,9 +48,10 @@ public class StorageManager {
 
     public File getCache(String subDir) {
         File result = mContext.getExternalCacheDir();
-        if (subDir != null) result = new File(result, subDir);
-        if (result != null) //noinspection ResultOfMethodCallIgnored
+        if (result != null) {
+            if (subDir != null) result = new File(result, subDir);
             result.mkdirs();
+        }
         return result;
     }
 
@@ -77,7 +78,9 @@ public class StorageManager {
     }
 
     private File getDownloadFile(String key) {
-        return new File(getDownloadCache(), key);
+        File downloadCache = getDownloadCache();
+        if (downloadCache != null) return new File(getDownloadCache(), key);
+        return null;
     }
 
     public File getPaperDirectory(Paper paper) {

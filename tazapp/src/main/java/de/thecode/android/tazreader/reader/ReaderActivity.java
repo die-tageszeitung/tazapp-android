@@ -534,6 +534,11 @@ public class ReaderActivity extends BaseActivity
         mDrawerLayout.openDrawer(mDrawerLayoutPageIndex);
     }
 
+    public void openIndexDrawer() {
+        mDrawerLayout.openDrawer(mDrawerLayoutIndex);
+    }
+
+
     public void togglePageIndexDrawer() {
         if (mDrawerLayout.isDrawerOpen(mDrawerLayoutPageIndex)) {
             mDrawerLayout.closeDrawer(mDrawerLayoutPageIndex);

@@ -15,6 +15,17 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"/>
+
+    <de.thecode.android.tazreader.widget.ReaderButton
+            android:id="@+id/index"
+            android:src="@drawable/ic_menu_black_24dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:paddingBottom="18dp"
+            />
     
     <LinearLayout
 
@@ -45,8 +56,9 @@
 
             android:paddingBottom="18dp"
             />
-        <de.thecode.android.tazreader.widget.PageIndexButton
+        <de.thecode.android.tazreader.widget.ReaderButton
             android:id="@+id/pageindex"
+            android:src="@drawable/ic_apps_24dp"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:paddingBottom="18dp"

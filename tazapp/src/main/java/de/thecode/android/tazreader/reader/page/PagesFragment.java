@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.Toast;
 
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.analytics.AnalyticsWrapper;
@@ -22,7 +23,7 @@ import de.thecode.android.tazreader.reader.AbstractContentFragment;
 import de.thecode.android.tazreader.reader.ReaderActivity;
 import de.thecode.android.tazreader.reader.ReaderTtsFragment;
 import de.thecode.android.tazreader.reader.index.IIndexItem;
-import de.thecode.android.tazreader.widget.PageIndexButton;
+import de.thecode.android.tazreader.widget.ReaderButton;
 import de.thecode.android.tazreader.widget.ShareButton;
 
 import java.util.ArrayList;
@@ -33,7 +34,7 @@ import timber.log.Timber;
 public class PagesFragment extends AbstractContentFragment {
 
     TAZReaderView _readerView;
-    ShareButton mShareButton;
+    ShareButton   mShareButton;
 
     TazReaderViewAdaper _adapter;
 
@@ -62,13 +63,15 @@ public class PagesFragment extends AbstractContentFragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        AnalyticsWrapper.getInstance().trackBreadcrumb("onCreateView in PagesFragment");
+        AnalyticsWrapper.getInstance()
+                        .trackBreadcrumb("onCreateView in PagesFragment");
         View view = inflater.inflate(R.layout.reader_pagereader, container, false);
         _readerView = (TAZReaderView) view.findViewById(R.id.readerview);
         _readerView.setAdapter(_adapter);
         mShareButton = (ShareButton) view.findViewById(R.id.share);
-        PageIndexButton mPageIndexButton = (PageIndexButton) view.findViewById(R.id.pageindex);
-        if (TazSettings.getInstance(getContext()).getPrefBoolean(TazSettings.PREFKEY.PAGEINDEXBUTTON, false)) {
+        ReaderButton mPageIndexButton = (ReaderButton) view.findViewById(R.id.pageindex);
+        if (TazSettings.getInstance(getContext())
+                       .getPrefBoolean(TazSettings.PREFKEY.PAGEINDEXBUTTON, false)) {
             mPageIndexButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -77,8 +80,37 @@ public class PagesFragment extends AbstractContentFragment {
                     }
                 }
             });
-        } else
-            mPageIndexButton.setVisibility(View.GONE);
+            mPageIndexButton.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    Toast.makeText(v.getContext(), R.string.reader_action_pageindex, Toast.LENGTH_LONG)
+                         .show();
+                    return true;
+                }
+            });
+        } else mPageIndexButton.setVisibility(View.GONE);
+
+        ReaderButton mIndexButton = (ReaderButton) view.findViewById(R.id.index);
+        if (TazSettings.getInstance(getContext())
+                       .getPrefBoolean(TazSettings.PREFKEY.PAGEINDEXBUTTON, false)) {
+            mIndexButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (getActivity() instanceof ReaderActivity) {
+                        ((ReaderActivity) getActivity()).openIndexDrawer();
+                    }
+                }
+            });
+            mIndexButton.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    Toast.makeText(v.getContext(), R.string.reader_action_index, Toast.LENGTH_LONG)
+                         .show();
+                    return true;
+                }
+            });
+        } else mIndexButton.setVisibility(View.GONE);
+
 
 
         if (!TextUtils.isEmpty(_startKey)) setPage(_startKey);
@@ -88,7 +120,8 @@ public class PagesFragment extends AbstractContentFragment {
 
     @Override
     public void init(Paper paper, String key, String postion) {
-        AnalyticsWrapper.getInstance().trackBreadcrumb("init in PagesFragment");
+        AnalyticsWrapper.getInstance()
+                        .trackBreadcrumb("init in PagesFragment");
         Timber.d("paper: %s, key: %s, postion: %s", paper, key, postion);
         _startKey = key;
         pages = new ArrayList<>();
@@ -104,11 +137,11 @@ public class PagesFragment extends AbstractContentFragment {
     }
 
     public void setPage(String key) {
-        Timber.d("key: %s",key);
+        Timber.d("key: %s", key);
         for (Page page : pages) {
             if (page.getKey()
                     .equals(key)) {
-                Timber.d("setting page with key: %s",key);
+                Timber.d("setting page with key: %s", key);
                 _readerView.resetScale();
                 _readerView.setDisplayedViewIndex(pages.indexOf(page));
                 break;
@@ -154,20 +187,20 @@ public class PagesFragment extends AbstractContentFragment {
 
         @Override
         public Page getItem(int position) {
-            Timber.d("position: %s",position);
+            Timber.d("position: %s", position);
             if (pages != null) return pages.get(position);
             return null;
         }
 
         @Override
         public long getItemId(int position) {
-            Timber.d("position: %s",position);
+            Timber.d("position: %s", position);
             return position;
         }
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            Timber.d("position: %s, convertView: %s, parent: %s",position, convertView, parent);
+            Timber.d("position: %s, convertView: %s, parent: %s", position, convertView, parent);
 
             TAZPageView pageView;
 
@@ -188,6 +221,6 @@ public class PagesFragment extends AbstractContentFragment {
 
     @Override
     public void onTtsStateChanged(ReaderTtsFragment.TTS state) {
-        Timber.d("state: %s",state);
+        Timber.d("state: %s", state);
     }
 }

@@ -53,6 +53,7 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
         public static final  String PAPERNOTIFICATIONIDS      = "paperNotificationIds";
         public static final  String ISSOCIAL                  = "isSocial";
         public static final  String PAGEINDEXBUTTON           = "pageIndexButton";
+        public static final  String INDEXBUTTON               = "indexButton";
         public static final  String TEXTTOSPEACH              = "textToSpeech";
         public static final  String USER                      = "user";
         public static final  String PASS                      = "pass";
@@ -229,6 +230,14 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
         sharedPreferences.edit()
                          .putBoolean(PREFKEY.INDEXALWAYSEXPANDED, isAlwaysExpanded)
                          .apply();
+    }
+
+    public boolean isIndexButton() {
+        return sharedPreferences.getBoolean(PREFKEY.INDEXBUTTON, false);
+    }
+
+    public void setIndexButton(boolean show) {
+        sharedPreferences.edit().putBoolean(PREFKEY.INDEXBUTTON, show).apply();
     }
 
     private Map<String, List<OnPreferenceChangeListener>> changeListeners = new HashMap<>();
