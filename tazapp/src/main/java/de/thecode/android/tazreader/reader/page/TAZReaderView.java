@@ -13,6 +13,7 @@ import android.view.View;
 import com.artifex.mupdfdemo.PageView;
 import com.artifex.mupdfdemo.ReaderView;
 
+import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper.Plist.Page;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.reader.IReaderCallback;
@@ -27,6 +28,7 @@ public class TAZReaderView extends ReaderView implements GestureDetector.OnDoubl
     private boolean tapDisabled = false;
     private IReaderCallback mReaderCallback;
     private boolean mScrolling;
+    private int tapPageMargin;
 
     public TAZReaderView(Context context) {
         super(context);
@@ -48,6 +50,7 @@ public class TAZReaderView extends ReaderView implements GestureDetector.OnDoubl
 
     private void init(Context context) {
         if (!isInEditMode()) mReaderCallback = (IReaderCallback) context;
+        tapPageMargin = context.getResources().getDimensionPixelSize(R.dimen.reader_page_tapmargin);
     }
 
     @Override
@@ -146,9 +149,15 @@ public class TAZReaderView extends ReaderView implements GestureDetector.OnDoubl
     @Override
     public boolean onSingleTapConfirmed(MotionEvent e) {
         if (!tapDisabled) {
-            if (TazSettings.getInstance(getContext()).getPrefBoolean(TazSettings.PREFKEY.PAGETAPTOARTICLE,true)) {
+            if (e.getX() < tapPageMargin) {
+                super.moveToPrevious();
+            } else if (e.getX() > super.getWidth() - tapPageMargin) {
+                super.moveToNext();
+            } else if (TazSettings.getInstance(getContext()).getPrefBoolean(TazSettings.PREFKEY.PAGETAPTOARTICLE,true)) {
                 TAZPageView pageView = (TAZPageView) getDisplayedView();
                 pageView.passClickEvent(e.getX(), e.getY());
+            } else {
+
             }
         }
         return true;
@@ -215,6 +224,15 @@ public class TAZReaderView extends ReaderView implements GestureDetector.OnDoubl
             return super.onScroll(e1, e2, distanceX, distanceY);
         }
         return false;
+    }
+
+    private static final int SWIPE_MIN_DISTANCE = 120;
+
+    @Override
+    public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+        if (Math.abs(e1.getX()-e2.getX()) < SWIPE_MIN_DISTANCE && Math.abs(e1.getY()-e2.getY()) < SWIPE_MIN_DISTANCE)
+            return false;
+        return super.onFling(e1, e2, velocityX, velocityY);
     }
 
     private abstract static class ZoomAnimatorListener implements ValueAnimator.AnimatorUpdateListener {
