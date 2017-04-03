@@ -148,17 +148,17 @@ public class ReaderDataFragment extends Fragment /*implements TextToSpeech.OnIni
             Timber.w(e);
         }
 
-        boolean addtobackstack = true;
-        BackStack newBackStack = new BackStack(currentKey, position);
-        if (backstack.size() > 0) {
-            BackStack lastBackstack = backstack.get(backstack.size() - 1);
-            if (lastBackstack.equals(newBackStack)) addtobackstack = false;
-        }
-        if (addtobackstack) {
-            Timber.d("%s", currentKey, position);
-            //Log.d("Adding to backstack", currentKey, position);
-            backstack.add(newBackStack);
-        }
+//        boolean addtobackstack = true;
+//        BackStack newBackStack = new BackStack(currentKey, position);
+//        if (backstack.size() > 0) {
+//            BackStack lastBackstack = backstack.get(backstack.size() - 1);
+//            if (lastBackstack.equals(newBackStack)) addtobackstack = false;
+//        }
+//        if (addtobackstack) {
+//            Timber.d("%s", currentKey, position);
+//            //Log.d("Adding to backstack", currentKey, position);
+//            backstack.add(newBackStack);
+//        }
     }
 
     public String getCurrentKey() {
@@ -169,51 +169,51 @@ public class ReaderDataFragment extends Fragment /*implements TextToSpeech.OnIni
         return mPosition;
     }
 
-    ArrayList<BackStack> backstack = new ArrayList<>();
+//    ArrayList<BackStack> backstack = new ArrayList<>();
 
-    public class BackStack {
-        String key;
-        String position;
+//    public class BackStack {
+//        String key;
+//        String position;
+//
+//        public BackStack(String key, String position) {
+//            Timber.d("key: %s", key, position);
+//            this.key = key;
+//            this.position = position;
+//        }
+//
+//        public String getKey() {
+//            return key;
+//        }
+//
+//        public String getPosition() {
+//            return position;
+//        }
+//
+//        @Override
+//        public boolean equals(Object other) {
+//            if (other instanceof BackStack) {
+//                BackStack otherBS = (BackStack) other;
+//                boolean keyCompare = false;
+//                boolean positionCompare = false;
+//
+//                if (key == null && otherBS.key == null) keyCompare = true;
+//                else if (key != null) {
+//                    if (key.equals(otherBS.key)) keyCompare = true;
+//                }
+//                if (position == null && otherBS.position == null) positionCompare = true;
+//                else if (position != null) {
+//                    if (position.equals(otherBS.position)) positionCompare = true;
+//                }
+//                if (keyCompare && positionCompare) return true;
+//
+//            }
+//            return false;
+//        }
+//    }
 
-        public BackStack(String key, String position) {
-            Timber.d("key: %s", key, position);
-            this.key = key;
-            this.position = position;
-        }
-
-        public String getKey() {
-            return key;
-        }
-
-        public String getPosition() {
-            return position;
-        }
-
-        @Override
-        public boolean equals(Object other) {
-            if (other instanceof BackStack) {
-                BackStack otherBS = (BackStack) other;
-                boolean keyCompare = false;
-                boolean positionCompare = false;
-
-                if (key == null && otherBS.key == null) keyCompare = true;
-                else if (key != null) {
-                    if (key.equals(otherBS.key)) keyCompare = true;
-                }
-                if (position == null && otherBS.position == null) positionCompare = true;
-                else if (position != null) {
-                    if (position.equals(otherBS.position)) positionCompare = true;
-                }
-                if (keyCompare && positionCompare) return true;
-
-            }
-            return false;
-        }
-    }
-
-    public ArrayList<BackStack> getBackstack() {
-        return backstack;
-    }
+//    public ArrayList<BackStack> getBackstack() {
+//        return backstack;
+//    }
 
 
     public boolean isFilterBookmarks() {

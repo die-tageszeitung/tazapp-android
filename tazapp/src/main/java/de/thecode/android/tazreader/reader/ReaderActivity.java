@@ -623,22 +623,30 @@ public class ReaderActivity extends BaseActivity
 
     @Override
     public void onBackPressed() {
-        if (retainDataFragment != null && retainDataFragment.getBackstack() != null && retainDataFragment.getBackstack()
-                                                                                                         .size() > 1) {
-            ReaderDataFragment.BackStack loadBackStack = retainDataFragment.getBackstack()
-                                                                           .get(retainDataFragment.getBackstack()
-                                                                                                  .size() - 2);
-            retainDataFragment.getBackstack()
-                              .remove(retainDataFragment.getBackstack()
-                                                        .size() - 1);
-            retainDataFragment.getBackstack()
-                              .remove(retainDataFragment.getBackstack()
-                                                        .size() - 1);
-            loadContentFragment(loadBackStack.getKey(), loadBackStack.getPosition());
-        } else {
-            super.onBackPressed();
+//        if (retainDataFragment != null && retainDataFragment.getBackstack() != null && retainDataFragment.getBackstack()
+//                                                                                                         .size() > 1) {
+//            ReaderDataFragment.BackStack loadBackStack = retainDataFragment.getBackstack()
+//                                                                           .get(retainDataFragment.getBackstack()
+//                                                                                                  .size() - 2);
+//            retainDataFragment.getBackstack()
+//                              .remove(retainDataFragment.getBackstack()
+//                                                        .size() - 1);
+//            retainDataFragment.getBackstack()
+//                              .remove(retainDataFragment.getBackstack()
+//                                                        .size() - 1);
+//            loadContentFragment(loadBackStack.getKey(), loadBackStack.getPosition());
+//        } else {
+//            super.onBackPressed();
+//        }
+        Timber.i("");
+        if (retainDataFragment != null && retainDataFragment.getCurrentKey() != null) {
+            IIndexItem currentItem = retainDataFragment.getPaper().getPlist().getIndexItem(retainDataFragment.getCurrentKey());
+            if (currentItem instanceof Paper.Plist.Page.Article){
+                onLoad(((Paper.Plist.Page.Article) currentItem).getPage().getKey());
+                return;
+            }
         }
-
+        super.onBackPressed();
     }
 
     @Override
