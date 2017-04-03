@@ -73,6 +73,7 @@ public class SettingsFragment extends BaseFragment {
         CheckBox acraAlwaysAcceptCheckBox = (CheckBox) view.findViewById(R.id.acraAlwaysAcceptCheckBox);
         CheckBox pageTapToArticleCheckBox = (CheckBox) view.findViewById(R.id.tapForArticleCheckBox);
         CheckBox pageDoubleTapZoomCheckBox = (CheckBox) view.findViewById(R.id.doubleTapForZoomCheckBox);
+        CheckBox pageTapToTurnCheckBox = (CheckBox) view.findViewById(R.id.tapToTurnPageCheckbox);
 
         autoloadCheckBox.setChecked(TazSettings.getInstance(getActivity()).getPrefBoolean(TazSettings.PREFKEY.AUTOLOAD, false));
         autoloadCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -248,6 +249,15 @@ public class SettingsFragment extends BaseFragment {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 TazSettings.getInstance(getActivity()).setPref(TazSettings.PREFKEY.PAGEDOUBLETAPZOOM, isChecked);
+            }
+        });
+
+        pageTapToTurnCheckBox.setChecked(TazSettings.getInstance(getActivity()).isTapBorderToTurnPage());
+        pageTapToTurnCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                TazSettings.getInstance(getActivity()).setTapBorderToTurnPage(isChecked);
             }
         });
 

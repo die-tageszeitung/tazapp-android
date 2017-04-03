@@ -27,8 +27,8 @@ public class TAZReaderView extends ReaderView implements GestureDetector.OnDoubl
 
     private boolean tapDisabled = false;
     private IReaderCallback mReaderCallback;
-    private boolean mScrolling;
-    private int tapPageMargin;
+    private boolean         mScrolling;
+    private int             tapPageMargin;
 
     public TAZReaderView(Context context) {
         super(context);
@@ -50,7 +50,8 @@ public class TAZReaderView extends ReaderView implements GestureDetector.OnDoubl
 
     private void init(Context context) {
         if (!isInEditMode()) mReaderCallback = (IReaderCallback) context;
-        tapPageMargin = context.getResources().getDimensionPixelSize(R.dimen.reader_page_tapmargin);
+        tapPageMargin = context.getResources()
+                               .getDimensionPixelSize(R.dimen.reader_page_tapmargin);
     }
 
     @Override
@@ -149,11 +150,14 @@ public class TAZReaderView extends ReaderView implements GestureDetector.OnDoubl
     @Override
     public boolean onSingleTapConfirmed(MotionEvent e) {
         if (!tapDisabled) {
-            if (e.getX() < tapPageMargin) {
-                super.moveToPrevious();
-            } else if (e.getX() > super.getWidth() - tapPageMargin) {
-                super.moveToNext();
-            } else if (TazSettings.getInstance(getContext()).getPrefBoolean(TazSettings.PREFKEY.PAGETAPTOARTICLE,true)) {
+            boolean tapToTurnPage = TazSettings.getInstance(getContext())
+                                               .isTapBorderToTurnPage();
+            if (e.getX() < tapPageMargin && tapToTurnPage) {
+                smartMoveBackwards();
+            } else if (e.getX() > super.getWidth() - tapPageMargin && tapToTurnPage) {
+                smartMoveForwards();
+            } else if (TazSettings.getInstance(getContext())
+                                  .getPrefBoolean(TazSettings.PREFKEY.PAGETAPTOARTICLE, true)) {
                 TAZPageView pageView = (TAZPageView) getDisplayedView();
                 pageView.passClickEvent(e.getX(), e.getY());
             } else {
@@ -165,7 +169,8 @@ public class TAZReaderView extends ReaderView implements GestureDetector.OnDoubl
 
     @Override
     public boolean onDoubleTap(MotionEvent e) {
-        if (TazSettings.getInstance(getContext()).getPrefBoolean(TazSettings.PREFKEY.PAGEDOUBLETAPZOOM,true)) {
+        if (TazSettings.getInstance(getContext())
+                       .getPrefBoolean(TazSettings.PREFKEY.PAGEDOUBLETAPZOOM, true)) {
 
             ValueAnimator animator = ValueAnimator.ofFloat(mScale, mScale > 2F ? 1F : 4F);
             animator.setDuration(500);
@@ -207,17 +212,16 @@ public class TAZReaderView extends ReaderView implements GestureDetector.OnDoubl
     }
 
 
-
     @Override
     public boolean onDoubleTapEvent(MotionEvent e) {
         return false;
     }
 
-    private float minDistance = 10F;
+    private static final float SCROLL_MIN_DISTANCE = 10F;
 
     @Override
     public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-        if (distanceX > minDistance || distanceY > minDistance || distanceX < -minDistance || distanceY < -minDistance) {
+        if (Math.abs(distanceX) > SCROLL_MIN_DISTANCE || Math.abs(distanceY) > SCROLL_MIN_DISTANCE) {
             mScrolling = true;
         }
         if (mScrolling) {
@@ -230,10 +234,63 @@ public class TAZReaderView extends ReaderView implements GestureDetector.OnDoubl
 
     @Override
     public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-        if (Math.abs(e1.getX()-e2.getX()) < SWIPE_MIN_DISTANCE && Math.abs(e1.getY()-e2.getY()) < SWIPE_MIN_DISTANCE)
+        if (Math.abs(e1.getX() - e2.getX()) < SWIPE_MIN_DISTANCE && Math.abs(e1.getY() - e2.getY()) < SWIPE_MIN_DISTANCE)
             return false;
         return super.onFling(e1, e2, velocityX, velocityY);
     }
+
+    private static final int BORDER_NOT_RECOGNIZED_OFFSET = 50;
+
+    public void smartMoveForwards() {
+        View v = mChildViews.get(mCurrent);
+        if (v == null) return;
+        // screenWidth/Height are the actual width/height of the screen. e.g. 480/800
+        int screenWidth = getWidth();
+        // We might be mid scroll; we want to calculate where we scroll to based on
+        // where this scroll would end, not where we are now (to allow for people
+        // bashing 'forwards' very fast.
+        int remainingX = mScroller.getFinalX() - mScroller.getCurrX();
+        // right/bottom is in terms of pixels within the scaled document; e.g. 1000
+        int right = screenWidth - (v.getLeft() + mXScroll + remainingX);
+        // docWidth/Height are the width/height of the scaled document e.g. 2000x3000
+        int docWidth = v.getMeasuredWidth();
+        int xOffset;
+        if (right >= docWidth - (BORDER_NOT_RECOGNIZED_OFFSET*mScale)) {
+            moveToNext();
+            return;
+        } else {
+            xOffset = Math.min(docWidth - right, screenWidth);
+        }
+        mScrollerLastX = mScrollerLastY = 0;
+        mScroller.startScroll(0, 0, remainingX - xOffset, 0, 400);
+        mStepper.prod();
+    }
+
+    public void smartMoveBackwards() {
+        View v = mChildViews.get(mCurrent);
+        if (v == null) return;
+        // screenWidth/Height are the actual width/height of the screen. e.g. 480/800
+        int screenWidth = getWidth();
+        // We might be mid scroll; we want to calculate where we scroll to based on
+        // where this scroll would end, not where we are now (to allow for people
+        // bashing 'forwards' very fast.
+        int remainingX = mScroller.getFinalX() - mScroller.getCurrX();
+        // right/bottom is in terms of pixels within the scaled document; e.g. 1000
+        int left  = -(v.getLeft() + mXScroll + remainingX);
+        // docWidth/Height are the width/height of the scaled document e.g. 2000x3000
+        int docWidth = v.getMeasuredWidth();
+        int xOffset;
+        if (left <= BORDER_NOT_RECOGNIZED_OFFSET*mScale) {
+            moveToPrevious();
+            return;
+        } else {
+            xOffset = -Math.min(left, screenWidth);
+        }
+        mScrollerLastX = mScrollerLastY = 0;
+        mScroller.startScroll(0, 0, remainingX - xOffset, 0, 400);
+        mStepper.prod();
+    }
+
 
     private abstract static class ZoomAnimatorListener implements ValueAnimator.AnimatorUpdateListener {
 

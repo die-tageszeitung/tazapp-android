@@ -64,7 +64,8 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
         public static final  String ISPAGING                  = "isPaging";
         public static final  String ISSCROLLTONEXT            = "isScrollToNext";
         public static final  String PAGETAPTOARTICLE          = "pageTapToArticle";
-        public static final  String PAGEDOUBLETAPZOOM         = " pageDoubleTapZoom";
+        public static final  String PAGEDOUBLETAPZOOM         = "pageDoubleTapZoom";
+        public static final  String PAGETAPBORDERTOTURN       = "pageTapBorderToTurn";
         private static final String INDEXALWAYSEXPANDED       = "indexAlwaysExpanded";
     }
 
@@ -232,12 +233,24 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
                          .apply();
     }
 
+    public boolean isTapBorderToTurnPage() {
+        return sharedPreferences.getBoolean(PREFKEY.PAGETAPBORDERTOTURN, true);
+    }
+
+    public void setTapBorderToTurnPage(boolean tapToTurn) {
+        sharedPreferences.edit()
+                         .putBoolean(PREFKEY.PAGETAPBORDERTOTURN, tapToTurn)
+                         .apply();
+    }
+
     public boolean isIndexButton() {
         return sharedPreferences.getBoolean(PREFKEY.INDEXBUTTON, false);
     }
 
     public void setIndexButton(boolean show) {
-        sharedPreferences.edit().putBoolean(PREFKEY.INDEXBUTTON, show).apply();
+        sharedPreferences.edit()
+                         .putBoolean(PREFKEY.INDEXBUTTON, show)
+                         .apply();
     }
 
     private Map<String, List<OnPreferenceChangeListener>> changeListeners = new HashMap<>();
