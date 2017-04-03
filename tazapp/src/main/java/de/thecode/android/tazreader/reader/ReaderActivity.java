@@ -14,6 +14,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.LoaderManager;
+import android.support.v4.app.NavUtils;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.DrawerLayout;
@@ -646,7 +647,7 @@ public class ReaderActivity extends BaseActivity
                 return;
             }
         }
-        super.onBackPressed();
+        NavUtils.navigateUpFromSameTask(this);
     }
 
     @Override

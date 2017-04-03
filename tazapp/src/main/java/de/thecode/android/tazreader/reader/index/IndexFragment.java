@@ -3,6 +3,7 @@ package de.thecode.android.tazreader.reader.index;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.NavUtils;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
@@ -161,10 +162,9 @@ public class IndexFragment extends BaseFragment {
         toolbar2.setItemColor(ContextCompat.getColor(inflater.getContext(), R.color.toolbar_foreground_color));
         toolbar2.setNavigationIcon(R.drawable.ic_arrow_back_24dp);
         toolbar2.setNavigationOnClickListener(new View.OnClickListener() {
-
             @Override
             public void onClick(View v) {
-                getActivity().finish();
+                NavUtils.navigateUpFromSameTask(getActivity());
             }
         });
         toolbar2.inflateMenu(R.menu.reader_index_main);
