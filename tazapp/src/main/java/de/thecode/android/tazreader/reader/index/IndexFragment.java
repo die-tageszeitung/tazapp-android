@@ -35,6 +35,8 @@ import de.thecode.android.tazreader.utils.BaseFragment;
 import de.thecode.android.tazreader.utils.TintHelper;
 import de.thecode.android.tazreader.widget.CustomToolbar;
 
+import org.mightyfrog.widget.CenteringRecyclerView;
+
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -54,10 +56,10 @@ public class IndexFragment extends BaseFragment {
     int bookmarkColorNormal;
 
     boolean mShowSubtitles;
-    String mCurrentKey = null;
+    String currentlyMarkedInIndexKey = null;
 
     IIndexViewHolderClicks mClickListener;
-    RecyclerView           mRecyclerView;
+    CenteringRecyclerView  mRecyclerView;
 
     IReaderCallback mReaderCallback;
 
@@ -188,7 +190,7 @@ public class IndexFragment extends BaseFragment {
 
         setFilterBookmarksToolbarItems(mReaderCallback.isFilterBookmarks());
 
-        mRecyclerView = (RecyclerView) view.findViewById(R.id.recycler);
+        mRecyclerView = (CenteringRecyclerView) view.findViewById(R.id.recycler);
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
@@ -201,7 +203,7 @@ public class IndexFragment extends BaseFragment {
         if (savedInstanceState == null) expandAll(TazSettings.getInstance(getContext())
                                                              .isIndexAlwaysExpanded());
         else {
-            mCurrentKey = savedInstanceState.getString(ARGUMENT_CURRENTKEY);
+            currentlyMarkedInIndexKey = savedInstanceState.getString(ARGUMENT_CURRENTKEY);
         }
 
         setIndexVerbose(TazSettings.getInstance(getActivity())
@@ -228,7 +230,7 @@ public class IndexFragment extends BaseFragment {
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        outState.putString(ARGUMENT_CURRENTKEY, mCurrentKey);
+        outState.putString(ARGUMENT_CURRENTKEY, currentlyMarkedInIndexKey);
         super.onSaveInstanceState(outState);
     }
 
@@ -590,12 +592,17 @@ public class IndexFragment extends BaseFragment {
     }
 
 
-
     public void updateCurrentPosition(String key) {
         Timber.d("key: %s", key);
-        IIndexItem lastitem = null;
-        if (mCurrentKey != null) {
-            lastitem = index.get(mCurrentKey);
+
+
+        boolean alwaysExpanded = TazSettings.getInstance(getContext())
+                                            .isIndexAlwaysExpanded();
+
+
+        if (currentlyMarkedInIndexKey != null) {
+            if (currentlyMarkedInIndexKey.equals(key)) return;
+            IIndexItem lastitem = index.get(currentlyMarkedInIndexKey);
             if (lastitem != null) {
                 int where = adapter.getPosition(lastitem);
                 if (where != -1) {
@@ -604,37 +611,38 @@ public class IndexFragment extends BaseFragment {
             }
         }
 
-        IIndexItem item = index.get(key);
-        if (item != null) {
-            int where = adapter.getPosition(item);
-            if (mRecyclerView != null) {
-                if (item.getIndexParent() != null && lastitem != null && !item.getIndexParent()
-                                                                              .equals(lastitem.getIndexParent())) {
-                    if (lastitem.getIndexParent()
-                                .areIndexChildsVisible()) {
-                        if (!TazSettings.getInstance(getContext())
-                                        .isIndexAlwaysExpanded()) {
-                            expandAll(false);
-                            updateCurrentPosition(key);
-                            return;
-                        }
-                    }
-                }
-                if (where != -1) {
-                    if (!key.equals(mCurrentKey)) {
-                        mRecyclerView.scrollToPosition(where);
-                        adapter.notifyItemChanged(where);
-                    }
-                } else {
-                    onItemClick(adapter.getPosition(item.getIndexParent()));
-                    updateCurrentPosition(key);
-                }
-            }
-
+        if (!alwaysExpanded) {
+            expandAll(false);
         }
 
+        IIndexItem item = mReaderCallback.getPaper()
+                                         .getPlist()
+                                         .getIndexItem(key);
+        int where = adapter.getPosition(item);
 
-        mCurrentKey = key;
+        if (where != -1) {
+            adapter.notifyItemChanged(where);
+            mRecyclerView.center(where);
+        } else {
+            IIndexItem parent = item.getIndexParent();
+            if (!parent.areIndexChildsVisible()) {
+                int parentWhere = adapter.getPosition(parent);
+                onItemClick(parentWhere);
+            }
+            if (item.getType() != IIndexItem.Type.PAGE) {
+                where = adapter.getPosition(item);
+                if (where != -1) {
+                    adapter.notifyItemChanged(where);
+                    mRecyclerView.center(where);
+                }
+
+            } else {
+                where = adapter.getPosition(parent);
+                if (where != -1) mRecyclerView.head(where);
+            }
+        }
+
+        currentlyMarkedInIndexKey = key;
 
     }
 

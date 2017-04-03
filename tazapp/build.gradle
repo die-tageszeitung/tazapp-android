@@ -254,6 +254,5 @@ dependencies {
 
     compile 'ch.acra:acra:4.9.2'
 
-
-    compile 'com.android.support.constraint:constraint-layout:1.0.2'
+    compile 'org.mightyfrog.centeringrecyclerview:centeringrecyclerview:1.1.6'
 }
