@@ -56,10 +56,10 @@ public class ReaderView
 						   mGestureDetector;
 	private final ScaleGestureDetector
 				  mScaleGestureDetector;
-	private final Scroller    mScroller;
-	private final Stepper     mStepper;
-	private int               mScrollerLastX;
-	private int               mScrollerLastY;
+	public final Scroller    mScroller;
+	public final Stepper     mStepper;
+	public int               mScrollerLastX;
+	public int               mScrollerLastY;
 	private float		  mLastScaleFocusX;
 	private float		  mLastScaleFocusY;
 

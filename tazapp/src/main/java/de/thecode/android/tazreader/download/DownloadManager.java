@@ -72,14 +72,18 @@ public class DownloadManager {
         }
 
         if (paper.getPublicationId() > 0) {
-            request.addRequestHeader("Authorization", "Basic " + Base64.encodeToString((AccountHelper.getInstance(mContext)
-                                                                                                     .getUser(
-                                                                                                             AccountHelper.ACCOUNT_DEMO_USER) +
-                    ":" + AccountHelper.getInstance(mContext)
-                                       .getPassword(AccountHelper.ACCOUNT_DEMO_PASS)).getBytes(), Base64.NO_WRAP));
+            request.addRequestHeader("Authorization",
+                                     "Basic " + Base64.encodeToString((AccountHelper.getInstance(mContext)
+                                                                                    .getUser(AccountHelper.ACCOUNT_DEMO_USER) + ":" + AccountHelper.getInstance(
+                                             mContext)
+                                                                                                                                                   .getPassword(
+                                                                                                                                                           AccountHelper.ACCOUNT_DEMO_PASS)).getBytes(),
+                                                                      Base64.NO_WRAP));
         }
 
         File destinationFile = mStorage.getDownloadFile(paper);
+
+        if (destinationFile == null) throw new DownloadNotAllowedException("Fehler beim Ermitteln des Downloadverzeichnisses.");
 
         assertEnougSpaceForDownload(destinationFile.getParentFile(), calculateBytesNeeded(paper.getLen()));
 
@@ -160,7 +164,9 @@ public class DownloadManager {
             resource.setDownloadId(downloadId);
 
             mContext.getContentResolver()
-                    .update(Uri.withAppendedPath(Resource.CONTENT_URI, resource.getKey()), resource.getContentValues(), null,
+                    .update(Uri.withAppendedPath(Resource.CONTENT_URI, resource.getKey()),
+                            resource.getContentValues(),
+                            null,
                             null);
         }
 
@@ -171,7 +177,10 @@ public class DownloadManager {
         if (state != null && state.getStatus() != DownloadState.STATUS_SUCCESSFUL) {
             if (mDownloadManager.remove(downloadId) > 0) {
                 Cursor cursor = mContext.getContentResolver()
-                                        .query(Paper.CONTENT_URI, null, Paper.Columns.DOWNLOADID + " = " + downloadId, null,
+                                        .query(Paper.CONTENT_URI,
+                                               null,
+                                               Paper.Columns.DOWNLOADID + " = " + downloadId,
+                                               null,
                                                null);
                 try {
                     while (cursor.moveToNext()) {
@@ -253,8 +262,7 @@ public class DownloadManager {
                 if (cursor != null && cursor.moveToFirst()) {
                     mStatus = cursor.getInt(cursor.getColumnIndex(android.app.DownloadManager.COLUMN_STATUS));
                     mReason = cursor.getInt(cursor.getColumnIndex(android.app.DownloadManager.COLUMN_REASON));
-                    mBytesDownloaded = cursor.getLong(
-                            cursor.getColumnIndex(android.app.DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR));
+                    mBytesDownloaded = cursor.getLong(cursor.getColumnIndex(android.app.DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR));
                     mBytesTotal = cursor.getLong(cursor.getColumnIndex(android.app.DownloadManager.COLUMN_TOTAL_SIZE_BYTES));
                     mUri = cursor.getString(cursor.getColumnIndex(android.app.DownloadManager.COLUMN_URI));
                     mTitle = cursor.getString(cursor.getColumnIndex(android.app.DownloadManager.COLUMN_TITLE));

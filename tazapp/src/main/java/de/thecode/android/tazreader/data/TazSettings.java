@@ -24,46 +24,49 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
 
     public static final class PREFKEY {
 
-        public static final String FONTSIZE                  = "fontsize";
-        public static final String COLSIZE                   = "colsize";
-        public static final String THEME                     = "theme";
-        public static final String ISFOOT                    = "isFoot";
-        public static final String FULLSCREEN                = "FullScreen";
-        public static final String AUTOLOAD                  = "autoload";
-        public static final String AUTOLOAD_WIFI             = "autoload_wifi";
-        public static final String AUTODELETE                = "autodelete";
-        public static final String AUTODELETE_VALUE          = "autodeleteDays";
-        public static final String LASTAUTOLOAD              = "lastautoload";
-        public static final String CONTENTVERBOSE            = "ContentVerbose";
-        public static final String KEEPSCREEN                = "KeepScreen";
-        public static final String ORIENTATION               = "Orientation";
-        public static final String LASTACTIVITY              = "lastActivity";
-        public static final String LASTOPENPAPER             = "lastOpenPaper";
-        public static final String LASTVERSION               = "lastVersion";
-        public static final String FISRTSTART                = "firstStart";
+        public static final  String FONTSIZE                  = "fontsize";
+        public static final  String COLSIZE                   = "colsize";
+        public static final  String THEME                     = "theme";
+        public static final  String ISFOOT                    = "isFoot";
+        public static final  String FULLSCREEN                = "FullScreen";
+        public static final  String AUTOLOAD                  = "autoload";
+        public static final  String AUTOLOAD_WIFI             = "autoload_wifi";
+        public static final  String AUTODELETE                = "autodelete";
+        public static final  String AUTODELETE_VALUE          = "autodeleteDays";
+        public static final  String LASTAUTOLOAD              = "lastautoload";
+        public static final  String CONTENTVERBOSE            = "ContentVerbose";
+        public static final  String KEEPSCREEN                = "KeepScreen";
+        public static final  String ORIENTATION               = "Orientation";
+        public static final  String LASTACTIVITY              = "lastActivity";
+        public static final  String LASTOPENPAPER             = "lastOpenPaper";
+        public static final  String LASTVERSION               = "lastVersion";
+        public static final  String FISRTSTART                = "firstStart";
         //        public static final String PAGING = "paging";
-        public static final String ISSCROLL                  = "isScroll";
-        public static final String RINGTONE                  = "ringtone";
-        public static final String VIBRATE                   = "vibrate";
-        public static final String NAVDRAWERLEARNED          = "navdrawerlearned";
-        public static final String FORCESYNC                 = "forcesync";
-        public static final String PAPERMIGRATEFROM          = "paperMigrateFrom";
+        public static final  String ISSCROLL                  = "isScroll";
+        public static final  String RINGTONE                  = "ringtone";
+        public static final  String VIBRATE                   = "vibrate";
+        public static final  String NAVDRAWERLEARNED          = "navdrawerlearned";
+        public static final  String FORCESYNC                 = "forcesync";
+        public static final  String PAPERMIGRATEFROM          = "paperMigrateFrom";
         //        public static final String PAPERMIGRATERUNNING = "paperMigrateRunning";
-        public static final String PAPERMIGRATEDIDS          = "paperMigratedIds";
-        public static final String PAPERNOTIFICATIONIDS      = "paperNotificationIds";
-        public static final String ISSOCIAL                  = "isSocial";
-        public static final String PAGEINDEXBUTTON           = "pageIndexButton";
-        public static final String TEXTTOSPEACH              = "textToSpeech";
-        public static final String USER                      = "user";
-        public static final String PASS                      = "pass";
-        public static final String USERMIGRATIONNOTIFICATION = "usermigrationnotification";
-        public static final String SYNCSERVICENEXTRUN        = "syncServiceNextRun";
-        public static final String DEMOMODE                  = "demoMode";
-        public static final String ISCHANGEARTICLE           = "isChangeArtikel";
-        public static final String ISPAGING                  = "isPaging";
-        public static final String ISSCROLLTONEXT            = "isScrollToNext";
-        public static final String PAGETAPTOARTICLE          = "pageTapToArticle";
-        public static final String PAGEDOUBLETAPZOOM         = " pageDoubleTapZoom";
+        public static final  String PAPERMIGRATEDIDS          = "paperMigratedIds";
+        public static final  String PAPERNOTIFICATIONIDS      = "paperNotificationIds";
+        public static final  String ISSOCIAL                  = "isSocial";
+        public static final  String PAGEINDEXBUTTON           = "pageIndexButton";
+        public static final  String INDEXBUTTON               = "indexButton";
+        public static final  String TEXTTOSPEACH              = "textToSpeech";
+        public static final  String USER                      = "user";
+        public static final  String PASS                      = "pass";
+        public static final  String USERMIGRATIONNOTIFICATION = "usermigrationnotification";
+        public static final  String SYNCSERVICENEXTRUN        = "syncServiceNextRun";
+        public static final  String DEMOMODE                  = "demoMode";
+        public static final  String ISCHANGEARTICLE           = "isChangeArtikel";
+        public static final  String ISPAGING                  = "isPaging";
+        public static final  String ISSCROLLTONEXT            = "isScrollToNext";
+        public static final  String PAGETAPTOARTICLE          = "pageTapToArticle";
+        public static final  String PAGEDOUBLETAPZOOM         = "pageDoubleTapZoom";
+        public static final  String PAGETAPBORDERTOTURN       = "pageTapBorderToTurn";
+        private static final String INDEXALWAYSEXPANDED       = "indexAlwaysExpanded";
     }
 
 
@@ -217,6 +220,36 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
     public void setDemoMode(boolean demoMode) {
         sharedPreferences.edit()
                          .putBoolean(PREFKEY.DEMOMODE, demoMode)
+                         .apply();
+    }
+
+    public boolean isIndexAlwaysExpanded() {
+        return sharedPreferences.getBoolean(PREFKEY.INDEXALWAYSEXPANDED, false);
+    }
+
+    public void setIndexAlwaysExpanded(boolean isAlwaysExpanded) {
+        sharedPreferences.edit()
+                         .putBoolean(PREFKEY.INDEXALWAYSEXPANDED, isAlwaysExpanded)
+                         .apply();
+    }
+
+    public boolean isTapBorderToTurnPage() {
+        return sharedPreferences.getBoolean(PREFKEY.PAGETAPBORDERTOTURN, true);
+    }
+
+    public void setTapBorderToTurnPage(boolean tapToTurn) {
+        sharedPreferences.edit()
+                         .putBoolean(PREFKEY.PAGETAPBORDERTOTURN, tapToTurn)
+                         .apply();
+    }
+
+    public boolean isIndexButton() {
+        return sharedPreferences.getBoolean(PREFKEY.INDEXBUTTON, false);
+    }
+
+    public void setIndexButton(boolean show) {
+        sharedPreferences.edit()
+                         .putBoolean(PREFKEY.INDEXBUTTON, show)
                          .apply();
     }
 

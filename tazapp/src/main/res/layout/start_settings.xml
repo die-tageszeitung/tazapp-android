@@ -163,6 +163,41 @@
             </RelativeLayout>
             <View style="@style/SettingsDivider"/>
 
+            <TextView
+                    style="@style/SettingsHeadline"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/header_read"
+                    fontPath="@string/fontBold"/>
+
+            <CheckBox
+                    android:id="@+id/showIndexButtonCheckBox"
+                    style="@style/SettingsCheckbox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/index_button"
+                    android:checked="false"/>
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/index_button_exp"
+                    style="@style/SettingsNote"/>
+
+
+            <CheckBox
+                    android:id="@+id/showPageIndexButtonCheckBox"
+                    style="@style/SettingsCheckbox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/pageindex_button"
+                    android:checked="false"/>
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/pageindex_button_exp"
+                    style="@style/SettingsNote"/>
+
+            <View style="@style/SettingsDivider"/>
 
             <TextView
                 style="@style/SettingsHeadline"
@@ -170,6 +205,14 @@
                 android:layout_height="wrap_content"
                 android:text="@string/header_read_page"
                 fontPath="@string/fontBold"/>
+
+            <CheckBox
+                    android:id="@+id/tapToTurnPageCheckbox"
+                    style="@style/SettingsCheckbox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/tap_to_turn_page"
+                    android:checked="false"/>
 
             <CheckBox
                 android:id="@+id/tapForArticleCheckBox"
@@ -204,20 +247,6 @@
                     android:layout_height="wrap_content"
                     android:text="@string/texttospeach"
                     android:checked="false"/>
-
-
-            <CheckBox
-                    android:id="@+id/showPageIndexButtonCheckBox"
-                    style="@style/SettingsCheckbox"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/pageindex_button"
-                    android:checked="false"/>
-            <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/pageindex_button_exp"
-                    style="@style/SettingsNote"/>
 
             <View style="@style/SettingsDivider"/>
 

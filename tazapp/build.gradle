@@ -1,9 +1,9 @@
 def versionMajor = 3
-def versionMinor = 1
+def versionMinor = 2
 def versionPatch = 0
 def versionBuild = 0
 
-def supportLibVer = "25.3.0"
+def supportLibVer = "25.3.1"
 def buildToolsVer = "25.0.2"
 def compileSdkVer = 25
 def targetSdkVer = 25
@@ -254,5 +254,5 @@ dependencies {
 
     compile 'ch.acra:acra:4.9.2'
 
-
+    compile 'org.mightyfrog.centeringrecyclerview:centeringrecyclerview:1.1.6'
 }

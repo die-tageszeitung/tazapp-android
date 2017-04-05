@@ -46,6 +46,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -76,12 +77,8 @@ public class Paper {
         public static final String LASTMODIFIED     = "lastModified";
         public static final String BOOKID           = "bookId";
         public static final String ISDEMO           = "isDemo";
-        // public static final String FILENAME = "filename";
-        // public static final String TEMPFILEPATH = "tempfilepath";
-        // public static final String TEMPFILENAME = "tempfilename";
         public static final String HASUPDATE        = "hasUpdate";
         public static final String DOWNLOADID       = "downloadId";
-        //public static final String DOWNLOADPROGRESS = "downloadProgress";
         public static final String ISDOWNLOADED     = "isDownloaded";
         public static final String KIOSK            = "kiosk";
         public static final String IMPORTED         = "imported";
@@ -92,10 +89,7 @@ public class Paper {
         public static final String RESOURCEURL      = "resourceUrl";
         public static final String RESOURCELEN      = "resourceLen";
         public static final String VALIDUNTIL       = "validUntil";
-
-        public static final String FULL_ID         = TABLE_NAME + "." + _ID;
-        public static final String FULL_VALIDUNTIL = TABLE_NAME + "." + VALIDUNTIL;
-
+        public static final String FULL_VALIDUNTIL  = TABLE_NAME + "." + VALIDUNTIL;
     }
 
     public final static int NOT_DOWNLOADED        = 1;
@@ -114,13 +108,8 @@ public class Paper {
     private long    lastModified;
     private String  bookId;
     private boolean isDemo;
-    // private String filename;
-    // private String tempfilepath;
-    // private String tempfilename;
     private boolean hasupdate;
-    // private boolean isdownloading;
     private long    downloadId;
-    //private int downloadprogress;
     private boolean isdownloaded;
     private boolean kiosk;
     private boolean imported;
@@ -130,11 +119,8 @@ public class Paper {
     private String  resourceFileHash;
     private String  resourceUrl;
     private long    resourceLen;
-
-    private long validUntil;
-    //    private File zipFile;
-
-    int progress = 0;
+    private long    validUntil;
+    private int progress = 0;
 
     public Paper() {
     }
@@ -418,53 +404,13 @@ public class Paper {
         this.hasupdate = hasupdate;
     }
 
-    //    public void setDownloadprogress(int downloadprogress) {
-    //        this.downloadprogress = downloadprogress;
-    //    }
-
-    // public void setIsdownloading(boolean isdownloading) {
-    // this.isdownloading = isdownloading;
-    // }
-
     public void setIsdownloaded(boolean isdownloaded) {
         this.isdownloaded = isdownloaded;
     }
 
-    // public File getFile() {
-    // if (filename == null) {
-    // setFilename(System.currentTimeMillis() + ".tazandroid");
-    // return getFile();
-    // } else
-    // return new File(Utils.PAPER_DIR, filename);
-    // }
-
-    // public File getTempFile() {
-    // if (tempfilename == null) {
-    // setTempfilename(System.currentTimeMillis() + ".temp");
-    // return getTempFile();
-    // } else {
-    // if (tempfilepath == null)
-    // return new File(Utils.TEMP_DIR, tempfilename);
-    // else
-    // return new File(tempfilepath + "/" + tempfilename);
-    // }
-    // }
-
     public void setBookId(String bookId) {
         this.bookId = bookId;
     }
-
-    //    public void setFilename(String filename) {
-    //        this.filename = filename;
-    //    }
-
-    // public void setTempfilename(String tempfilename) {
-    // this.tempfilename = tempfilename;
-    // }
-    //
-    // public void setTempfilepath(String tempfilepath) {
-    // this.tempfilepath = tempfilepath;
-    // }
 
     public void setImported(boolean imported) {
         this.imported = imported;
@@ -473,10 +419,6 @@ public class Paper {
     public void setKiosk(boolean kiosk) {
         this.kiosk = kiosk;
     }
-
-    //    public int getDownloadprogress() {
-    //        return downloadprogress;
-    //    }
 
     public String getTitle() {
         if (title == null) return "";
@@ -574,39 +516,6 @@ public class Paper {
         return plist;
     }
 
-    //    public void parseSources()
-    //    {
-    //        if (plist == null)
-    //            throw new IllegalStateException("No Plist parsed. Call parsePlist() before!");
-    //        plist.parseSources();
-    //    }
-
-
-    //    public void loadPdfCores(Context context) throws Exception {
-    //        ZipFile file = new ZipFile(zipFile);
-    //        if (sources != null)
-    //        {
-    //            for (Source source : sources) {
-    //                if (source.books != null)
-    //                {
-    //                    for (Book book : source.books) {
-    //                        if (book.categories != null) {
-    //                            for (Category category : book.categories) {
-    //                                if (category.pages != null) {
-    //                                    for (Page page : category.pages) {
-    //                                        page.loadPdfCore(context, file);
-    //                                    }
-    //                                }
-    //                            }
-    //                        }
-    //                    }
-    //                }
-    //            }
-    //        }
-    //        file.close();
-    //    }
-
-
     public boolean parseMissingAttributes(boolean overwrite) {
         boolean result = false; //Did you write somthing new?
         if (TextUtils.isEmpty(getResource()) || overwrite) {
@@ -638,17 +547,10 @@ public class Paper {
 
         private List<Source>  sources;
         private List<TopLink> toplinks;
-        private Map<String, IIndexItem> indexMap = new HashMap<>();
+        private Map<String, IIndexItem> indexMap = new LinkedHashMap<>();
 
         public Plist(InputStream is, boolean parseIndex) throws IOException, PropertyListFormatException, ParseException,
                 ParserConfigurationException, SAXException {
-
-/*            ZipFile zip = new ZipFile(file);
-            ZipEntry zipEntry = new ZipEntry("content.plist");
-
-            root = (NSDictionary) PropertyListParser.parse(zip.getInputStream(zipEntry));
-
-            zip.close();*/
 
             root = (NSDictionary) PropertyListParser.parse(is);
 
@@ -693,8 +595,8 @@ public class Paper {
                         NSDictionary sourceDict = (NSDictionary) sourceObject;
                         String key = sourceDict.allKeys()[0];
                         Source source = new Source(key, (NSArray) sourceDict.objectForKey(key));
-                        source.parseBooks();
                         indexMap.put(source.getKey(), source);
+                        source.parseBooks();
                         sources.add(source);
                     }
                 }
@@ -874,8 +776,8 @@ public class Paper {
                         NSDictionary sourceBookCategoryDict = (NSDictionary) sourceBookCategory;
                         String key = sourceBookCategoryDict.allKeys()[0];
                         Category category = new Category(this, key, (NSArray) sourceBookCategoryDict.objectForKey(key));
-                        category.parsePages();
                         indexMap.put(category.getKey(), category);
+                        category.parsePages();
                         categories.add(category);
                     }
                 }
@@ -909,7 +811,8 @@ public class Paper {
                 this.book = book;
 
                 //Da Key nicht einzigartig in PList
-                this.key = book.getKey() + "_" + key;
+                this.key = book.getKey() + "_" + key + "_" + book.getCategories()
+                                                                 .size();
                 this.title = key;
 
                 this.array = array;
@@ -928,6 +831,9 @@ public class Paper {
                         String key = sourceBookCategoryPageDict.allKeys()[0];
                         Page page = new Page(this, key, (NSDictionary) sourceBookCategoryPageDict.objectForKey(key));
                         indexMap.put(page.getKey(), page);
+                        for (Article article : page.getArticles()) {
+                            indexMap.put(article.getKey(), article);
+                        }
                         pages.add(page);
                     }
                 }
@@ -970,7 +876,7 @@ public class Paper {
                 List<IIndexItem> resultList = new ArrayList<>();
                 if (hasIndexChilds()) {
                     for (Page page : getPages()) {
-                        resultList.add(page);
+                        //resultList.add(page);
                         resultList.addAll(page.getArticles());
                     }
                     return resultList;
@@ -1044,7 +950,6 @@ public class Paper {
 //                                article.geometries.add(geometry);
 //                            }
 //                        }
-                        indexMap.put(article.getKey(), article);
                         articles.add(article);
                     }
                 }
@@ -1433,6 +1338,11 @@ public class Paper {
                     else type = Type.UNKNOWN;
                 }
                 return type;
+            }
+
+            public int getIndexChildCount() {
+                if (!hasIndexChilds()) return 0;
+                return getIndexChilds().size();
             }
 
             public Paper getPaper() {

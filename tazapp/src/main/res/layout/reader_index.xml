@@ -26,7 +26,7 @@
 
     </de.thecode.android.tazreader.widget.CustomToolbar>
 
-    <android.support.v7.widget.RecyclerView
+    <org.mightyfrog.widget.CenteringRecyclerView
         android:id="@+id/recycler"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

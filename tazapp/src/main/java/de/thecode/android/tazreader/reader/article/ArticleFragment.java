@@ -41,7 +41,7 @@ import de.thecode.android.tazreader.reader.article.ArticleWebView.ArticleWebView
 import de.thecode.android.tazreader.reader.index.IIndexItem;
 import de.thecode.android.tazreader.utils.StorageManager;
 import de.thecode.android.tazreader.utils.TintHelper;
-import de.thecode.android.tazreader.widget.PageIndexButton;
+import de.thecode.android.tazreader.widget.ReaderButton;
 import de.thecode.android.tazreader.widget.ShareButton;
 
 import org.apache.commons.io.IOUtils;
@@ -70,7 +70,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
     ProgressBar mProgressBar;
     FrameLayout mBookmarkClickLayout;
     ShareButton mShareButton;
-    PageIndexButton mPageIndexButton;
+
 
     Handler mUiThreadHandler;
     boolean mIndexUpdated;
@@ -123,8 +123,10 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
         }
 
         mShareButton = (ShareButton) result.findViewById(R.id.share);
-        mPageIndexButton = (PageIndexButton) result.findViewById(R.id.pageindex);
-        if (TazSettings.getInstance(getContext()).getPrefBoolean(TazSettings.PREFKEY.PAGEINDEXBUTTON, false)) {
+
+        ReaderButton mPageIndexButton = (ReaderButton) result.findViewById(R.id.pageindex);
+        if (TazSettings.getInstance(getContext())
+                       .getPrefBoolean(TazSettings.PREFKEY.PAGEINDEXBUTTON, false)) {
             mPageIndexButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -133,7 +135,36 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
                     }
                 }
             });
+            mPageIndexButton.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    Toast.makeText(v.getContext(), R.string.reader_action_pageindex, Toast.LENGTH_LONG)
+                         .show();
+                    return true;
+                }
+            });
         } else mPageIndexButton.setVisibility(View.GONE);
+
+        ReaderButton mIndexButton = (ReaderButton) result.findViewById(R.id.index);
+        if (TazSettings.getInstance(getContext())
+                       .isIndexButton()) {
+            mIndexButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (getActivity() instanceof ReaderActivity) {
+                        ((ReaderActivity) getActivity()).openIndexDrawer();
+                    }
+                }
+            });
+            mIndexButton.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    Toast.makeText(v.getContext(), R.string.reader_action_index, Toast.LENGTH_LONG)
+                         .show();
+                    return true;
+                }
+            });
+        } else mIndexButton.setVisibility(View.GONE);
 
         //ttsActive = TazSettings.getPrefBoolean(getContext(), TazSettings.PREFKEY.TEXTTOSPEACH, false);
 

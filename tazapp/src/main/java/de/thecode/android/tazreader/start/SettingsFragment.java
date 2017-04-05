@@ -68,10 +68,12 @@ public class SettingsFragment extends BaseFragment {
         notificationSound = (TextView) view.findViewById(R.id.notificationSound);
         CheckBox notificationVibrateCheckBox = (CheckBox) view.findViewById(R.id.notificationVibrateCheckBox);
         CheckBox pageIndexButtonCheckBox = (CheckBox) view.findViewById(R.id.showPageIndexButtonCheckBox);
+        CheckBox indexButtonCheckBox = (CheckBox) view.findViewById(R.id.showIndexButtonCheckBox);
         CheckBox ttsCheckBox = (CheckBox) view.findViewById(R.id.ttsCheckBox);
         CheckBox acraAlwaysAcceptCheckBox = (CheckBox) view.findViewById(R.id.acraAlwaysAcceptCheckBox);
         CheckBox pageTapToArticleCheckBox = (CheckBox) view.findViewById(R.id.tapForArticleCheckBox);
         CheckBox pageDoubleTapZoomCheckBox = (CheckBox) view.findViewById(R.id.doubleTapForZoomCheckBox);
+        CheckBox pageTapToTurnCheckBox = (CheckBox) view.findViewById(R.id.tapToTurnPageCheckbox);
 
         autoloadCheckBox.setChecked(TazSettings.getInstance(getActivity()).getPrefBoolean(TazSettings.PREFKEY.AUTOLOAD, false));
         autoloadCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -194,6 +196,15 @@ public class SettingsFragment extends BaseFragment {
             }
         });
 
+        indexButtonCheckBox.setChecked(TazSettings.getInstance(getActivity()).isIndexButton());
+        indexButtonCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                TazSettings.getInstance(getActivity()).setIndexButton(isChecked);
+            }
+        });
+
         pageIndexButtonCheckBox.setChecked(TazSettings.getInstance(getActivity()).getPrefBoolean(TazSettings.PREFKEY.PAGEINDEXBUTTON, false));
         pageIndexButtonCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 
@@ -202,6 +213,8 @@ public class SettingsFragment extends BaseFragment {
                 TazSettings.getInstance(getActivity()).setPref(TazSettings.PREFKEY.PAGEINDEXBUTTON, isChecked);
             }
         });
+
+
 
         ttsCheckBox.setChecked(TazSettings.getInstance(getActivity()).getPrefBoolean(TazSettings.PREFKEY.TEXTTOSPEACH, false));
         ttsCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -236,6 +249,15 @@ public class SettingsFragment extends BaseFragment {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 TazSettings.getInstance(getActivity()).setPref(TazSettings.PREFKEY.PAGEDOUBLETAPZOOM, isChecked);
+            }
+        });
+
+        pageTapToTurnCheckBox.setChecked(TazSettings.getInstance(getActivity()).isTapBorderToTurnPage());
+        pageTapToTurnCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                TazSettings.getInstance(getActivity()).setTapBorderToTurnPage(isChecked);
             }
         });
 
