@@ -643,7 +643,7 @@ public class ReaderActivity extends BaseActivity
         if (retainDataFragment != null && retainDataFragment.getCurrentKey() != null) {
             IIndexItem currentItem = retainDataFragment.getPaper().getPlist().getIndexItem(retainDataFragment.getCurrentKey());
             if (currentItem instanceof Paper.Plist.Page.Article){
-                onLoad(((Paper.Plist.Page.Article) currentItem).getPage().getKey());
+                onLoad(((Paper.Plist.Page.Article) currentItem).getRealPage().getKey());
                 return;
             }
         }

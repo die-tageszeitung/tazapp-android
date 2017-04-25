@@ -168,20 +168,7 @@ public class PageIndexFragment extends BaseFragment {
                     page = (Page) indexItem;
                     break;
                 case ARTICLE:
-                    List<Page> pages = ((Article) indexItem).getPage()
-                                                            .getCategory()
-                                                            .getPages();
-                    for (Page aPage : pages) {
-                        for (Geometry aGeometry : aPage.getGeometries()) {
-                            if (aGeometry.getLink()
-                                         .equals(key)) {
-                                page = aPage;
-                                break;
-                            }
-                        }
-                        if (page != null) break;
-                    }
-
+                    page = ((Article) indexItem).getRealPage();
                     break;
                 case TOPLINK:
                     page = ((TopLink) indexItem).getPage();

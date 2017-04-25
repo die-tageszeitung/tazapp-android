@@ -585,7 +585,7 @@ public class Paper {
             }
         }
 
-        public void parseSources() {
+        private void parseSources() {
             sources = new ArrayList<>();
             if (root.containsKey(KEY_SOURCES)) {
                 NSObject[] sourcesArray = ((NSArray) root.objectForKey(KEY_SOURCES)).getArray();
@@ -603,7 +603,7 @@ public class Paper {
             }
         }
 
-        public void parseToplinks() {
+        private void parseToplinks() {
             toplinks = new ArrayList<>();
             if (root.containsKey(KEY_TOPLINKS)) {
 
@@ -693,7 +693,7 @@ public class Paper {
                 return key;
             }
 
-            public void parseBooks() {
+            private void parseBooks() {
                 books = new ArrayList<>();
                 NSObject[] sourceBooks = array.getArray();
                 if (sourceBooks != null) {
@@ -767,7 +767,7 @@ public class Paper {
                 this.array = array;
             }
 
-            public void parseCategories() {
+            private void parseCategories() {
                 categories = new ArrayList<>();
 
                 NSObject[] sourceBookCategories = array.getArray();
@@ -778,6 +778,7 @@ public class Paper {
                         Category category = new Category(this, key, (NSArray) sourceBookCategoryDict.objectForKey(key));
                         indexMap.put(category.getKey(), category);
                         category.parsePages();
+                        category.parseRealPagesForArticles();
                         categories.add(category);
                     }
                 }
@@ -822,7 +823,7 @@ public class Paper {
                 return book;
             }
 
-            public void parsePages() {
+            private void parsePages() {
                 pages = new ArrayList<>();
                 NSObject[] sourceBookCategoryPages = array.getArray();
                 if (sourceBookCategoryPages != null) {
@@ -838,6 +839,26 @@ public class Paper {
                     }
                 }
             }
+
+            private void parseRealPagesForArticles() {
+                List<Article> allArticlesFromCategory = new ArrayList<>();
+                for (Page aPage : getPages()) {
+                    allArticlesFromCategory.addAll(aPage.getArticles());
+                }
+                for (Article aArticle : allArticlesFromCategory) {
+                    for (Page aPage : getPages()) {
+                        for (Page.Geometry aGeometry : aPage.getGeometries()) {
+                            if (aGeometry.getLink()
+                                         .equals(aArticle.getKey())) {
+                                aArticle.setRealPage(aPage);
+                                break;
+                            }
+                        }
+                        if (aArticle.getRealPage() != null) break;
+                    }
+                }
+            }
+
 
             @Override
             public String getTitle() {
@@ -924,7 +945,7 @@ public class Paper {
 
             }
 
-            public void parseGeometries() {
+            private void parseGeometries() {
                 geometries = new ArrayList<>();
                 NSObject[] sourceBookCategoryPageGeometries = geometryArray.getArray();
                 if (sourceBookCategoryPageGeometries != null) {
@@ -935,7 +956,7 @@ public class Paper {
                 }
             }
 
-            public void parseArticles() {
+            private void parseArticles() {
                 articles = new ArrayList<>();
                 NSObject[] sourceBookCategoryPageArticles = articleArray.getArray();
                 if (sourceBookCategoryPageArticles != null) {
@@ -969,9 +990,7 @@ public class Paper {
 
             @Override
             public String getTitle() {
-                return new StringBuilder(category.getTitle()).append(" ")
-                                                             .append(pagina)
-                                                             .toString();
+                return category.getTitle() + " " + pagina;
             }
 
 
@@ -1133,6 +1152,7 @@ public class Paper {
                 private String title;
                 private String subtitle;
                 private String onlinelink;
+                private Page   realPage;
 
                 public Article(String key, NSDictionary dict) {
                     this.key = key;
@@ -1146,7 +1166,7 @@ public class Paper {
                 }
 
                 public String getTitle() {
-                    if (title == null || "".equals(title)) return getPage().getTitle();
+                    if (title == null || "".equals(title)) return getRealPage().getTitle();
                     return title;
                 }
 
@@ -1156,6 +1176,18 @@ public class Paper {
 
                 public String getOnlinelink() {
                     return onlinelink;
+                }
+
+                public Category getCategory() {
+                    return category;
+                }
+
+                public Page getRealPage() {
+                    return realPage;
+                }
+
+                public void setRealPage(Page realPage) {
+                    this.realPage = realPage;
                 }
 
                 public Page getPage() {

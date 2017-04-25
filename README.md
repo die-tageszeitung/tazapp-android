@@ -43,6 +43,7 @@ Weitere Infos unter [http://www.taz.de/android](http://www.taz.de/android)
     * apache commons io
     * eventbus
     * CWAC-Provider
+    * Centering Recycler View (Android)
     * viewpagerindicator
     * RecyclerView-FlexibleDivider
     * Calligraphy

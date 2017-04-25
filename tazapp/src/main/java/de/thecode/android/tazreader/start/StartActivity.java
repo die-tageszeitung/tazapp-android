@@ -422,6 +422,7 @@ public class StartActivity extends BaseActivity
                                    .addEntry(new Apache20Licence(this, "Snacky", "Mate Siede", 2017))
                                    .addEntry(new MitLicence(this, "dd-plist", "Daniel Dreibrodt", 2016))
                                    .addEntry(new Apache20Licence(this, "cwac-provider", "Mark Murphy", 2016))
+                                   .addEntry(new Apache20Licence(this, "Centering Recycler View", "Shigehiro Soejima", 2015))
                                    .addEntry(new Apache20Licence(this, "EventBus", "Markus Junginger, greenrobot", 2014))
                                    .addEntry(new Apache20Licence(this, "Calligraphy", "Christopher Jenkins", 2013))
                                    .addEntry(new Apache20Licence(this, "Commons IO", "The Apache Software Foundation", 2016))
