@@ -1,6 +1,6 @@
 def versionMajor = 3
 def versionMinor = 2
-def versionPatch = 0
+def versionPatch = 2
 def versionBuild = 0
 
 def supportLibVer = "25.3.1"
@@ -100,6 +100,11 @@ android {
         targetSdkVersion targetSdkVer
         versionCode versionMajor * 1000 + versionMinor * 100 + versionPatch * 10 + versionBuild
         versionName "${versionMajor}.${versionMinor}.${versionPatch}"
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments = [ eventBusIndex : 'de.thecode.android.tazreader.eventbus.EventBusIndex' ]
+            }
+        }
     }
     splits {
         abi {
@@ -229,7 +234,9 @@ dependencies {
 
     compile 'com.googlecode.plist:dd-plist:1.8'
     compile 'com.commonsware.cwac:provider:0.2.3'
-    compile 'de.greenrobot:eventbus:2.4.0'
+
+    compile 'org.greenrobot:eventbus:3.0.0'
+    annotationProcessor 'org.greenrobot:eventbus-annotation-processor:3.0.1'
 
     debugCompile 'com.facebook.stetho:stetho:1.4.1'
     debugCompile 'com.facebook.stetho:stetho-js-rhino:1.4.1'

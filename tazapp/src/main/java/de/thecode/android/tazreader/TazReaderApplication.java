@@ -7,6 +7,7 @@ import android.util.Log;
 
 import de.thecode.android.tazreader.analytics.AnalyticsWrapper;
 import de.thecode.android.tazreader.data.TazSettings;
+import de.thecode.android.tazreader.eventbus.EventBusIndex;
 import de.thecode.android.tazreader.picasso.PicassoHelper;
 import de.thecode.android.tazreader.reader.ReaderActivity;
 import de.thecode.android.tazreader.timber.TazTimberTree;
@@ -15,6 +16,7 @@ import de.thecode.android.tazreader.utils.StorageManager;
 
 import org.acra.ACRA;
 import org.apache.commons.io.FileUtils;
+import org.greenrobot.eventbus.EventBus;
 
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 
@@ -40,6 +42,8 @@ public class TazReaderApplication extends Application {
         BuildTypeProvider.installStetho(this);
 
         if (ACRA.isACRASenderServiceProcess()) return;
+
+        EventBus.builder().addIndex(new EventBusIndex()).installDefaultEventBus();
 
         PicassoHelper.initPicasso(this);
 

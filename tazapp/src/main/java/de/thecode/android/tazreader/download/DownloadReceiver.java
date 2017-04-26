@@ -7,12 +7,13 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 
-import de.greenrobot.event.EventBus;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Resource;
 import de.thecode.android.tazreader.secure.HashHelper;
 import de.thecode.android.tazreader.start.StartActivity;
 import de.thecode.android.tazreader.utils.StorageManager;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.io.File;
 import java.io.IOException;

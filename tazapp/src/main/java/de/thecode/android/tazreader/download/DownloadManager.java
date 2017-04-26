@@ -10,7 +10,6 @@ import android.os.Build;
 import android.os.StatFs;
 import android.text.TextUtils;
 
-import de.greenrobot.event.EventBus;
 import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
@@ -21,6 +20,7 @@ import de.thecode.android.tazreader.sync.AccountHelper;
 import de.thecode.android.tazreader.utils.StorageManager;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.greenrobot.eventbus.EventBus;
 
 import java.io.File;
 import java.util.ArrayList;

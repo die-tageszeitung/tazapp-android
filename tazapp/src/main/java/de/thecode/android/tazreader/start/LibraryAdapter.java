@@ -16,7 +16,6 @@ import android.widget.TextView;
 import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 
-import de.greenrobot.event.EventBus;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.download.DownloadManager;
@@ -24,6 +23,10 @@ import de.thecode.android.tazreader.download.DownloadProgressEvent;
 import de.thecode.android.tazreader.download.PaperDownloadFailedEvent;
 import de.thecode.android.tazreader.download.UnzipProgressEvent;
 import de.thecode.android.tazreader.sync.SyncService;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.lang.ref.WeakReference;
 import java.text.DateFormat;
@@ -162,8 +165,8 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
         this.mClickListener = null;
     }
 
-
-    public void onEventMainThread(PaperDownloadFailedEvent event) {
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onPaperDownloadFailed(PaperDownloadFailedEvent event) {
         try {
             notifyItemChanged(getItemPosition(event.getPaperId()));
         } catch (IllegalStateException e) {
@@ -438,7 +441,7 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
 //        }
 //    }
 
-    class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener {
+    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener {
 
         CardView    card;
         TextView    date;
@@ -519,7 +522,8 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
             setProgress(((value * 50) / 100) + 50);
         }
 
-        public void onEventMainThread(DownloadProgressEvent event) {
+        @Subscribe(threadMode = ThreadMode.MAIN)
+        public void onDownloadProgress(DownloadProgressEvent event) {
             if (_paper != null) {
                 if (_paper.getId() == event.getPaperId()) {
                     setDownloadProgress(event.getProgress());
@@ -527,16 +531,14 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
             }
         }
 
-        public void onEventMainThread(UnzipProgressEvent event) {
+        @Subscribe(threadMode = ThreadMode.MAIN)
+        public void onUnzipProgress(UnzipProgressEvent event) {
             if (_paper != null) {
                 if (_paper.getId() == event.getPaperId()) {
                     setUnzipProgress(event.getProgress());
                 }
             }
-
         }
-
-
     }
 
     public interface OnItemClickListener {

@@ -7,10 +7,10 @@ import android.text.TextUtils;
 
 import com.dd.plist.PropertyListFormatException;
 
-import de.greenrobot.event.EventBus;
 import de.thecode.android.tazreader.data.Resource;
 import de.thecode.android.tazreader.utils.StorageManager;
 
+import org.greenrobot.eventbus.EventBus;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
