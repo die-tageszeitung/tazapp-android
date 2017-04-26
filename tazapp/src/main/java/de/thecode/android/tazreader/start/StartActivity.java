@@ -16,7 +16,6 @@ import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.LruCache;
 
-import de.greenrobot.event.EventBus;
 import de.mateware.dialog.Dialog;
 import de.mateware.dialog.DialogAdapterList;
 import de.mateware.dialog.DialogIndeterminateProgress;
@@ -52,6 +51,9 @@ import de.thecode.android.tazreader.utils.Connection;
 import de.thecode.android.tazreader.utils.Orientation;
 import de.thecode.android.tazreader.widget.CustomToolbar;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 import org.json.JSONArray;
 import org.json.JSONException;
 
@@ -567,7 +569,8 @@ public class StartActivity extends BaseActivity
         }
     }
 
-    public void onEventMainThread(PaperDownloadFinishedEvent event) {
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onPaperDownloadFinished(PaperDownloadFinishedEvent event) {
         Timber.d("event: %s", event);
         if (retainDataFragment.useOpenPaperafterDownload) {
             if (event.getPaperId() == retainDataFragment.openPaperIdAfterDownload) {
@@ -576,7 +579,8 @@ public class StartActivity extends BaseActivity
         }
     }
 
-    public void onEventMainThread(PaperDownloadFailedEvent event) {
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onPaperDownloadFailed(PaperDownloadFailedEvent event) {
         try {
             Paper paper = new Paper(this, event.getPaperId());
             showDownloadErrorDialog(paper.getTitelWithDate(this), null, event.getException());
@@ -586,7 +590,8 @@ public class StartActivity extends BaseActivity
         }
     }
 
-    public void onEventMainThread(ResourceDownloadEvent event) {
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onResourceDownload(ResourceDownloadEvent event) {
         if (retainDataFragment.openPaperWaitingForRessource != -1) {
             try {
                 Paper waitingPaper = new Paper(this, retainDataFragment.openPaperWaitingForRessource);

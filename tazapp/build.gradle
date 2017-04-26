@@ -229,7 +229,7 @@ dependencies {
 
     compile 'com.googlecode.plist:dd-plist:1.8'
     compile 'com.commonsware.cwac:provider:0.2.3'
-    compile 'de.greenrobot:eventbus:2.4.0'
+    compile 'org.greenrobot:eventbus:3.0.0'
 
     debugCompile 'com.facebook.stetho:stetho:1.4.1'
     debugCompile 'com.facebook.stetho:stetho-js-rhino:1.4.1'

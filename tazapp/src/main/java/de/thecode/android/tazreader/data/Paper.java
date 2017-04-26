@@ -21,7 +21,6 @@ import com.dd.plist.PropertyListFormatException;
 import com.dd.plist.PropertyListParser;
 import com.squareup.picasso.Picasso;
 
-import de.greenrobot.event.EventBus;
 import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper.Plist.Page.Article;
@@ -33,6 +32,7 @@ import de.thecode.android.tazreader.utils.StorageManager;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.greenrobot.eventbus.EventBus;
 import org.json.JSONArray;
 import org.xml.sax.SAXException;
 
@@ -121,6 +121,10 @@ public class Paper {
     private long    resourceLen;
     private long    validUntil;
     private int progress = 0;
+
+    private Map<String, Integer> articleCollectionOrder;
+    private Map<Integer, String> articleCollectionPositionIndex;
+
 
     public Paper() {
     }
@@ -485,6 +489,26 @@ public class Paper {
         return resourceLen;
     }
 
+    public int getArticleCollectionOrderPosition(String key) {
+        return articleCollectionOrder.get(key);
+    }
+
+    public int getArticleCollectionSize() {
+        return articleCollectionOrder.size();
+    }
+
+    public String getArticleCollectionOrderKey(int postion) {
+        return articleCollectionPositionIndex.get(postion);
+    }
+
+    public void setArticleCollectionOrder(Map<String, Integer> articleCollectionOrder) {
+        this.articleCollectionOrder = articleCollectionOrder;
+    }
+
+    public void setArticleCollectionPositionIndex(Map<Integer, String> articleCollectionPositionIndex) {
+        this.articleCollectionPositionIndex = articleCollectionPositionIndex;
+    }
+
     private Plist plist;
 
     public void parsePlist(File file) throws IOException, PropertyListFormatException, ParseException,
@@ -672,6 +696,18 @@ public class Paper {
 
         public List<TopLink> getToplinks() {
             return toplinks;
+        }
+
+        public ArrayList<Page> getAllPages() {
+            ArrayList<Page> result = new ArrayList<>();
+            for (Source aSource : getSources()) {
+                for (Book aBook : aSource.getBooks()) {
+                    for (Category aCategory : aBook.getCategories()) {
+                        result.addAll(aCategory.getPages());
+                    }
+                }
+            }
+            return result;
         }
 
         public IIndexItem getIndexItem(String key) {

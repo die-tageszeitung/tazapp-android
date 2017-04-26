@@ -14,7 +14,6 @@ import com.dd.plist.PropertyListParser;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
-import de.greenrobot.event.EventBus;
 import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
@@ -29,6 +28,7 @@ import de.thecode.android.tazreader.start.ScrollToPaperEvent;
 import de.thecode.android.tazreader.utils.Connection;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.greenrobot.eventbus.EventBus;
 import org.json.JSONArray;
 import org.json.JSONException;
 

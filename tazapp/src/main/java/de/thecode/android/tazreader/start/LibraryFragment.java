@@ -21,7 +21,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
-import de.greenrobot.event.EventBus;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.TazSettings;
@@ -30,6 +29,10 @@ import de.thecode.android.tazreader.sync.SyncHelper;
 import de.thecode.android.tazreader.sync.SyncStateChangedEvent;
 import de.thecode.android.tazreader.utils.BaseFragment;
 import de.thecode.android.tazreader.widget.AutofitRecyclerView;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.lang.ref.WeakReference;
 
@@ -200,7 +203,7 @@ public class LibraryFragment extends BaseFragment
         TazSettings.getInstance(getContext())
                    .addOnPreferenceChangeListener(TazSettings.PREFKEY.DEMOMODE, demoModeChangedListener);
         EventBus.getDefault()
-                .registerSticky(this);
+                .register(this);
     }
 
     @Override
@@ -298,17 +301,17 @@ public class LibraryFragment extends BaseFragment
     }
 
 
-    public void onEventMainThread(SyncStateChangedEvent event) {
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+    public void onSyncStateChanged(SyncStateChangedEvent event) {
         isSyncing = event.isRunning();
         Timber.d("SyncStateChanged running: %s", isSyncing);
         if (swipeRefresh.isRefreshing() != event.isRunning()) swipeRefresh.setRefreshing(event.isRunning());
         if (isSyncing) hideFab();
         else showFab();
-
-
     }
 
-    public void onEventMainThread(CoverDownloadedEvent event) {
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onCoverDowloaded(CoverDownloadedEvent event) {
         try {
             LibraryAdapter.ViewHolder viewHolder = (LibraryAdapter.ViewHolder) recyclerView.findViewHolderForItemId(
                     event.getPaperId());
@@ -319,14 +322,16 @@ public class LibraryFragment extends BaseFragment
         }
     }
 
-    public void onEventMainThread(ScrollToPaperEvent event) {
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onScrollToPaper(ScrollToPaperEvent event) {
         Timber.d("event: %s", event);
         if (recyclerView != null && adapter != null) {
             recyclerView.smoothScrollToPosition(adapter.getItemPosition(event.getPaperId()));
         }
     }
 
-    public void onEventMainThread(DrawerStateChangedEvent event) {
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onDrawerStateChanged(DrawerStateChangedEvent event) {
         Timber.d("event: %s", event.getNewState());
         if (event.getNewState() == DrawerLayout.STATE_IDLE) swipeRefresh.setEnabled(true);
         else swipeRefresh.setEnabled(false);
