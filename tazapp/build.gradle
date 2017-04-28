@@ -1,7 +1,7 @@
 def versionMajor = 3
 def versionMinor = 2
 def versionPatch = 3
-def versionBuild = 0
+def versionBuild = 2
 
 def supportLibVer = "25.3.1"
 def buildToolsVer = "25.0.2"
@@ -45,6 +45,7 @@ idea {
 
 apply plugin: 'com.android.application'
 apply plugin: 'com.github.gfx.ribbonizer'
+apply plugin: 'com.github.triplet.play'
 
 def overheadPath
 
