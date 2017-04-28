@@ -1,6 +1,6 @@
 def versionMajor = 3
 def versionMinor = 2
-def versionPatch = 2
+def versionPatch = 3
 def versionBuild = 0
 
 def supportLibVer = "25.3.1"
@@ -258,6 +258,7 @@ dependencies {
     compile 'com.scottyab:aescrypt:0.0.1'
 
     compile 'com.github.matecode:Snacky:1.0.2'
+    compile 'com.github.matecode:DataFragment:1.0.1'
 
     compile 'ch.acra:acra:4.9.2'
 

@@ -9,8 +9,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.support.annotation.NonNull;
-
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.NavUtils;
@@ -58,8 +56,7 @@ import timber.log.Timber;
 
 @SuppressLint("RtlHardcoded")
 public class ReaderActivity extends BaseActivity
-        implements IReaderCallback, DialogButtonListener, DialogDismissListener, ReaderDataFragment.ReaderDataFramentCallback,
-        ReaderTtsFragment.ReaderTtsFragmentCallback {
+        implements IReaderCallback, DialogButtonListener, DialogDismissListener, ReaderTtsFragment.ReaderTtsFragmentCallback {
 
     private AudioManager audioManager;
 
@@ -90,9 +87,6 @@ public class ReaderActivity extends BaseActivity
     public static final  String STORE_KEY_CURRENTPOSITION     = "currentPosition";
     public static final  String STORE_KEY_POSITION_IN_ARTICLE = "positionInArticle";
 
-    private long    paperId;
-    private boolean loadPaperAsync;
-
     DrawerLayout mDrawerLayout;
     View         mDrawerLayoutIndex;
     View         mDrawerLayoutPageIndex;
@@ -118,6 +112,7 @@ public class ReaderActivity extends BaseActivity
 
         mStorage = StorageManager.getInstance(this);
 
+        long paperId;
         if (!getIntent().hasExtra(KEY_EXTRA_PAPER_ID))
             throw new IllegalStateException("Activity Reader has to be called with extra PaperId");
         else paperId = getIntent().getLongExtra(KEY_EXTRA_PAPER_ID, -1);
@@ -144,32 +139,25 @@ public class ReaderActivity extends BaseActivity
         mDrawerLayoutIndex = findViewById(R.id.left_drawer);
         mContentFrame = (FrameLayout) findViewById(R.id.content_frame);
 
-
         mFragmentManager = getSupportFragmentManager();
 
 
-        retainDataFragment = ReaderDataFragment.findRetainFragment(getSupportFragmentManager());
+        retainDataFragment = ReaderDataFragment.retainDataFragment(getSupportFragmentManager(),ReaderDataFragment.class);
         if (retainDataFragment != null) {
-            retainDataFragment.setCallback(this);
             Timber.i("Found data fragment");
             if (retainDataFragment.isPaperLoaded()) {
                 onPaperLoadFinished(new PaperLoadedEvent());
             }
         } else {
             Timber.i("Did not find data fragment, initialising loading");
-            loadPaperAsync = true;
-            retainDataFragment = ReaderDataFragment.createRetainFragment(getSupportFragmentManager());
-            retainDataFragment.setCallback(this);
+            retainDataFragment = ReaderDataFragment.createDataFragment(getSupportFragmentManager(),ReaderDataFragment.class);
+            retainDataFragment.loadPaper(paperId);
         }
 
         audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        retainTtsFragment = ReaderTtsFragment.createOrRetainFragment(getSupportFragmentManager(), this);
+        retainTtsFragment = ReaderTtsFragment.createOrRetainDataFragment(getSupportFragmentManager(),ReaderTtsFragment.class);
+        retainTtsFragment.setCallback(this);
         if (retainTtsFragment.getTtsState() == ReaderTtsFragment.TTS.PLAYING) ttsPreparePlayingInActivty();
-    }
-
-    @Override
-    public void onDataFragmentAttached(Fragment fragment) {
-        if (loadPaperAsync) retainDataFragment.loadPaper(paperId);
     }
 
     @Override
@@ -210,7 +198,6 @@ public class ReaderActivity extends BaseActivity
             Timber.i("Bildschirm bleibt nicht an!");
             getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
-        //setImmersiveMode();
     }
 
     @Override
