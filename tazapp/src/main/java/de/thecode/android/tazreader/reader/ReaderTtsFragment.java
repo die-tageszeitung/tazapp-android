@@ -8,8 +8,8 @@ import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
 import android.support.annotation.NonNull;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
+
+import de.mateware.datafragment.DataFragmentBase;
 
 import java.lang.ref.WeakReference;
 import java.text.BreakIterator;
@@ -24,9 +24,7 @@ import timber.log.Timber;
 /**
  * Created by mate on 15.03.2016.
  */
-public class ReaderTtsFragment extends Fragment implements TextToSpeech.OnInitListener {
-
-    private static final String TAG = "RetainTtsFragment";
+public class ReaderTtsFragment extends DataFragmentBase implements TextToSpeech.OnInitListener {
 
     public enum TTS {DISABLED, INIT, IDLE, PLAYING, PAUSED}
 
@@ -43,21 +41,6 @@ public class ReaderTtsFragment extends Fragment implements TextToSpeech.OnInitLi
 
     private WeakReference<ReaderTtsFragmentCallback> callback;
 
-
-    public static ReaderTtsFragment createOrRetainFragment(FragmentManager fm, ReaderTtsFragmentCallback callback) {
-        ReaderTtsFragment fragment = (ReaderTtsFragment) fm.findFragmentByTag(TAG);
-        if (fragment == null) {
-            fragment = new ReaderTtsFragment();
-            fm.beginTransaction()
-              .add(fragment, TAG)
-              .commit();
-        }
-        fragment.setCallback(callback);
-        return fragment;
-    }
-
-    public ReaderTtsFragment() {
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
