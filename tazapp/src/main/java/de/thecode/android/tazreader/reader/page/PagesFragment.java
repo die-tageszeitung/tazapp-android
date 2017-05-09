@@ -1,9 +1,10 @@
 package de.thecode.android.tazreader.reader.page;
 
-import android.app.Activity;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -47,17 +48,11 @@ public class PagesFragment extends AbstractContentFragment {
         super();
     }
 
-
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        AnalyticsWrapper.getInstance()
+                        .trackBreadcrumb("onCreate in PagesFragment");
         //setRetainInstance(true);
     }
 
@@ -116,6 +111,20 @@ public class PagesFragment extends AbstractContentFragment {
         if (!TextUtils.isEmpty(_startKey)) setPage(_startKey);
 
         return view;
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        AnalyticsWrapper.getInstance()
+                        .trackBreadcrumb("onActivityCreated in PagesFragment");
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        AnalyticsWrapper.getInstance()
+                        .trackBreadcrumb("onAttach in PagesFragment");
     }
 
     @Override
