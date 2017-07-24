@@ -167,23 +167,9 @@ public class ReaderActivity extends BaseActivity
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
-        EventBus.getDefault()
-                .register(this);
-    }
-
-    @Override
     protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
 
-    }
-
-    @Override
-    protected void onStop() {
-        EventBus.getDefault()
-                .unregister(this);
-        super.onStop();
     }
 
     @Override

@@ -51,7 +51,6 @@ import de.thecode.android.tazreader.utils.Connection;
 import de.thecode.android.tazreader.utils.Orientation;
 import de.thecode.android.tazreader.widget.CustomToolbar;
 
-import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.json.JSONArray;
@@ -115,16 +114,12 @@ public class StartActivity extends BaseActivity
         super.onStart();
         TazSettings.getInstance(this)
                    .addOnPreferenceChangeListener(TazSettings.PREFKEY.DEMOMODE, demoModeChanged);
-        EventBus.getDefault()
-                .register(this);
     }
 
     @Override
     public void onStop() {
         TazSettings.getInstance(this)
                    .removeOnPreferenceChangeListener(demoModeChanged);
-        EventBus.getDefault()
-                .unregister(this);
         super.onStop();
     }
 
@@ -233,12 +228,7 @@ public class StartActivity extends BaseActivity
 
         if (TazSettings.getInstance(this)
                        .getSyncServiceNextRun() == 0) SyncHelper.requestSync(this);
-    }
 
-    @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-        Timber.d("intent: %s", intent);
     }
 
     @Override
@@ -291,6 +281,8 @@ public class StartActivity extends BaseActivity
             super.onBackPressed();
         }
     }
+
+
 
     @Override
     public RetainDataFragment getRetainData() {

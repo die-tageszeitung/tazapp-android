@@ -5,6 +5,7 @@ def versionBuild = 2
 
 def supportLibVer = "25.3.1"
 def buildToolsVer = "25.0.2"
+def firebaseVer = "11.0.2"
 def compileSdkVer = 25
 def targetSdkVer = 25
 def minSdkVer = 15
@@ -264,6 +265,8 @@ dependencies {
     compile 'ch.acra:acra:4.9.2'
 
     compile 'org.mightyfrog.centeringrecyclerview:centeringrecyclerview:1.1.6'
+
+    compile "com.google.firebase:firebase-messaging:$firebaseVer"
 }
 
 apply plugin: 'com.google.gms.google-services'

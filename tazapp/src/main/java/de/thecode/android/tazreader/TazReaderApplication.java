@@ -136,6 +136,8 @@ public class TazReaderApplication extends Application {
         TazSettings.getInstance(this)
                    .setDefaultPref(TazSettings.PREFKEY.PAGEDOUBLETAPZOOM, true);
 
+        //Timber.d("Token: %s", FirebaseInstanceId.getInstance().getToken());
+
     }
 
 }
