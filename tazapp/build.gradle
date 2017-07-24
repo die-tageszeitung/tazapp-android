@@ -265,3 +265,5 @@ dependencies {
 
     compile 'org.mightyfrog.centeringrecyclerview:centeringrecyclerview:1.1.6'
 }
+
+apply plugin: 'com.google.gms.google-services'
