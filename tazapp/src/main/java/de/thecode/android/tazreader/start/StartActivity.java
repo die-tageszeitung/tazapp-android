@@ -3,7 +3,6 @@ package de.thecode.android.tazreader.start;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
@@ -102,10 +101,10 @@ public class StartActivity extends BaseActivity
     NavigationDrawerFragment.NavigationItem imprintItem;
     NavigationDrawerFragment.NavigationItem importItem;
 
-    TazSettings.OnPreferenceChangeListener demoModeChanged = new TazSettings.OnPreferenceChangeListener() {
+    TazSettings.OnPreferenceChangeListener demoModeChanged = new TazSettings.OnPreferenceChangeListener<Boolean>() {
         @Override
-        public void onPreferenceChanged(String key, SharedPreferences preferences) {
-            onDemoModeChanged(preferences.getBoolean(key, true));
+        public void onPreferenceChanged(Boolean value) {
+            onDemoModeChanged(value);
         }
     };
 

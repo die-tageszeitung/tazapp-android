@@ -3,6 +3,7 @@ package de.thecode.android.tazreader.okhttp3;
 import android.content.Context;
 import android.text.TextUtils;
 
+import de.thecode.android.tazreader.push.PushHelper;
 import de.thecode.android.tazreader.utils.BuildTypeProvider;
 
 import java.util.Map;
@@ -11,6 +12,7 @@ import okhttp3.Call;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 
 /**
  * Created by mate on 17.02.2017.
@@ -18,22 +20,33 @@ import okhttp3.Request;
 
 public class OkHttp3Helper {
 
-    private static OkHttp3Helper instance;
 
-    public synchronized static OkHttp3Helper getInstance(Context context) {
-        if (instance == null) instance = new OkHttp3Helper(context.getApplicationContext());
-        return instance;
+    private static volatile OkHttp3Helper mInstance;
+
+    public static OkHttp3Helper getInstance(Context context) {
+        if (mInstance == null) {
+            synchronized (OkHttp3Helper.class) {
+                if (mInstance == null) {
+                    mInstance = new OkHttp3Helper(context.getApplicationContext());
+                }
+            }
+        }
+        return mInstance;
     }
+
 
     private final Map<String, String> standardHeaders;
 
     private final UserAgentInterceptor userAgentInterceptor;
+    private final PushHelper           pushHelper;
 
     private OkHttp3Helper(Context context) {
         standardHeaders = HeaderHelper.getInstance(context)
                                       .getStandardHeader();
         userAgentInterceptor = new UserAgentInterceptor(context);
+        pushHelper = PushHelper.getInstance(context);
     }
+
 
     public OkHttpClient.Builder getOkHttpClientBuilder(String username, String password) {
         OkHttpClient.Builder httpClientBuilder = new OkHttpClient.Builder();
@@ -51,15 +64,25 @@ public class OkHttp3Helper {
         return getOkHttpClientBuilder(null, null);
     }
 
-    public Call getCall(HttpUrl url, String username, String password) {
+    public Call getCall(HttpUrl url, String username, String password, RequestBody requestBody) {
         OkHttpClient client = getOkHttpClientBuilder(username, password).build();
-        Request request = new Request.Builder().url(url)
-                                               .build();
+        Request.Builder requestBuilder = new Request.Builder().url(url);
+        if (requestBody != null) {
+            requestBuilder.post(requestBody);
+        }
+        Request request = requestBuilder.build();
         return client.newCall(request);
     }
 
-    public Call getCall(HttpUrl url) {
-        return getCall(url, null, null);
+    public Call getCall(HttpUrl url, RequestBody requestBody) {
+        return getCall(url, null, null, requestBody);
     }
 
+    public Call getCall(HttpUrl url, String username, String password) {
+        return getCall(url,username,password,null);
+    }
+
+    public Call getCall(HttpUrl url) {
+        return getCall(url, null, null, null);
+    }
 }

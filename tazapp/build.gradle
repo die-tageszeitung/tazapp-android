@@ -18,6 +18,8 @@ def tazAboUrl = '"https://www.taz.de/zeitung/abo/digitales-abo/apaper"'
 def tazCheckLogin = '"https://dl.taz.de/digiAboCheckLogin"'
 def tazResourceUrl = '"https://dl.taz.de/ressourcen"'
 def tazArchiveUrl = '"https://dl.taz.de/tpaperArchiv"'
+def tazPushRestUrl = '"https://dl.taz.de/tpaperPushInfo"'
+def tazStagingPushRestUrl = '"https://dl.taz.de/tpaperPushInfoTest"'
 
 def lmdPlist = '"https://dl.monde-diplomatique.de/tpaperIssue.plist"'
 def lmdPlistArchiv = '"https://dl.monde-diplomatique.de/tpaperIssue.plist?start=%1$s&end=%2$s"'
@@ -27,6 +29,8 @@ def lmdAboUrl = '"https://dl.monde-diplomatique.de/zeitung/abo/digitales-abo/apa
 def lmdCheckLogin = '"https://dl.monde-diplomatique.de/digiAboCheckLogin"'
 def lmdResourceUrl = '"https://dl.monde-diplomatique.de/ressourcen"'
 def lmdArchiveUrl = '"https://dl.monde-diplomatique.de/tpaperArchiv"'
+def lmdPushRestUrl = '"https://dl.monde-diplomatique.de/tpaperPushInfo"'
+def lmdStagingPushRestUrl = '"https://dl.monde-diplomatique.de/tpaperPushInfoTest"'
 
 def plistUrl = "PLISTURL"
 def plistArchiveUrl = "PLISTARCHIVURL"
@@ -34,6 +38,7 @@ def aboUrl = "ABOURL"
 def checkLoginUrl = "CHECKLOGINURL"
 def resourceUrl = "RESOURCEURL"
 def archiveUrl = "ARCHIVEURL"
+def pushRestUrl = "PUSHRESTURL"
 
 apply plugin: 'idea'
 
@@ -163,6 +168,7 @@ android {
             buildConfigField 'String', checkLoginUrl, tazCheckLogin
             buildConfigField 'String', resourceUrl, tazResourceUrl
             buildConfigField 'String', archiveUrl, tazArchiveUrl
+            buildConfigField 'String', pushRestUrl, tazPushRestUrl
         }
         lmd {
             applicationId "de.thecode.lmd"
@@ -173,6 +179,7 @@ android {
             buildConfigField 'String', checkLoginUrl, lmdCheckLogin
             buildConfigField 'String', resourceUrl, lmdResourceUrl
             buildConfigField 'String', archiveUrl, lmdArchiveUrl
+            buildConfigField 'String', pushRestUrl, lmdPushRestUrl
         }
     }
 
@@ -188,9 +195,11 @@ android {
                 if (flavor.name.equalsIgnoreCase('taz')) {
                     variant.buildConfigField 'String', plistUrl, tazStagingPlist
                     variant.buildConfigField 'String', plistArchiveUrl, tazStagingPlistArchiv
+                    variant.buildConfigField 'String', pushRestUrl, tazStagingPushRestUrl
                 } else if (flavor.name.equalsIgnoreCase('lmd')) {
                     variant.buildConfigField 'String', plistUrl, lmdStagingPlist
                     variant.buildConfigField 'String', plistArchiveUrl, lmdStagingPlistArchiv
+                    variant.buildConfigField 'String', pushRestUrl, lmdStagingPushRestUrl
                 }
 
             }
@@ -267,6 +276,8 @@ dependencies {
     compile 'org.mightyfrog.centeringrecyclerview:centeringrecyclerview:1.1.6'
 
     compile "com.google.firebase:firebase-messaging:$firebaseVer"
+
+    compile 'com.evernote:android-job:1.1.11'
 }
 
 apply plugin: 'com.google.gms.google-services'

@@ -15,9 +15,11 @@ import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Resource;
 import de.thecode.android.tazreader.data.TazSettings;
+import de.thecode.android.tazreader.push.PushHelper;
 import de.thecode.android.tazreader.secure.Base64;
 import de.thecode.android.tazreader.sync.AccountHelper;
 import de.thecode.android.tazreader.utils.StorageManager;
+import de.thecode.android.tazreader.utils.UserAgentHelper;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.greenrobot.eventbus.EventBus;
@@ -35,6 +37,8 @@ public class DownloadManager {
     android.app.DownloadManager mDownloadManager;
     Context                     mContext;
     StorageManager              mStorage;
+    UserAgentHelper             userAgentHelper;
+    PushHelper                  pushHelper;
 
     private static DownloadManager instance;
 
@@ -47,6 +51,8 @@ public class DownloadManager {
         mDownloadManager = ((android.app.DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE));
         mContext = context;
         mStorage = StorageManager.getInstance(context);
+        userAgentHelper = UserAgentHelper.getInstance(context);
+        pushHelper = PushHelper.getInstance(context);
     }
 
     @SuppressLint("NewApi")
@@ -60,7 +66,7 @@ public class DownloadManager {
 
         Timber.i("requesting paper download: %s", paper);
 
-        Uri downloadUri = Uri.parse(paper.getLink());
+        Uri downloadUri = pushHelper.addToUri(Uri.parse(paper.getLink()));
 
         Request request;
         try {
@@ -68,8 +74,9 @@ public class DownloadManager {
         } catch (Exception e1) {
             String httpUrl = paper.getLink()
                                   .replace("https://", "http://");
-            request = new Request(Uri.parse(httpUrl));
+            request = new Request(pushHelper.addToUri(Uri.parse(httpUrl)));
         }
+        addUserAgent(request);
 
         if (paper.getPublicationId() > 0) {
             request.addRequestHeader("Authorization",
@@ -139,14 +146,16 @@ public class DownloadManager {
                                  .appendPath(resource.getKey())
                                  .build();
             } else downloadUri = Uri.parse(resource.getUrl());
+
             Request request;
             try {
                 request = new Request(downloadUri);
             } catch (Exception e1) {
                 String httpUrl = downloadUri.toString()
                                             .replace("https://", "http://");
-                request = new Request(Uri.parse(httpUrl));
+                request = new Request(pushHelper.addToUri(Uri.parse(httpUrl)));
             }
+            addUserAgent(request);
 
             File destinationFile = mStorage.getDownloadFile(resource);
 
@@ -170,6 +179,10 @@ public class DownloadManager {
                             null);
         }
 
+    }
+
+    private void addUserAgent(Request request) {
+        request.addRequestHeader(UserAgentHelper.USER_AGENT_HEADER_NAME, userAgentHelper.getUserAgentHeaderValue());
     }
 
     public void cancelDownload(long downloadId) {

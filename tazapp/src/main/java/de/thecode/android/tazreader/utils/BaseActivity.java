@@ -8,6 +8,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 
 import de.thecode.android.tazreader.BuildConfig;
+import de.thecode.android.tazreader.dialog.PushNotificationDialog;
 import de.thecode.android.tazreader.push.PushHelper;
 import de.thecode.android.tazreader.push.PushNotification;
 
@@ -24,6 +25,8 @@ import timber.log.Timber;
  */
 public class BaseActivity extends AppCompatActivity {
 
+    private static final String DIALOG_PUSH = "DialogPush";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -33,12 +36,14 @@ public class BaseActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        EventBus.getDefault().register(this);
+        EventBus.getDefault()
+                .register(this);
     }
 
     @Override
     protected void onStop() {
-        EventBus.getDefault().unregister(this);
+        EventBus.getDefault()
+                .unregister(this);
         super.onStop();
     }
 
@@ -62,5 +67,9 @@ public class BaseActivity extends AppCompatActivity {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onPushNotification(PushNotification event) {
         Timber.d("received PushNotification Event");
+        new PushNotificationDialog.Builder().setPositiveButton()
+                                            .setPushNotification(event)
+                                            .buildSupport()
+                                            .show(getSupportFragmentManager(), DIALOG_PUSH);
     }
 }

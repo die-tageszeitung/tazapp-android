@@ -9,6 +9,7 @@ import android.preference.PreferenceManager;
 
 import com.scottyab.aescrypt.AESCrypt;
 
+import de.thecode.android.tazreader.push.PushRestApiJob;
 import de.thecode.android.tazreader.secure.SimpleCrypto;
 
 import java.security.GeneralSecurityException;
@@ -43,7 +44,7 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
         public static final  String FISRTSTART                = "firstStart";
         //        public static final String PAGING = "paging";
         public static final  String ISSCROLL                  = "isScroll";
-        public static final  String RINGTONE                  = "ringtone";
+        private static final String RINGTONE                  = "ringtone";
         public static final  String VIBRATE                   = "vibrate";
         public static final  String NAVDRAWERLEARNED          = "navdrawerlearned";
         public static final  String FORCESYNC                 = "forcesync";
@@ -53,20 +54,22 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
         public static final  String PAPERNOTIFICATIONIDS      = "paperNotificationIds";
         public static final  String ISSOCIAL                  = "isSocial";
         public static final  String PAGEINDEXBUTTON           = "pageIndexButton";
-        public static final  String INDEXBUTTON               = "indexButton";
+        private static final String INDEXBUTTON               = "indexButton";
         public static final  String TEXTTOSPEACH              = "textToSpeech";
         public static final  String USER                      = "user";
         public static final  String PASS                      = "pass";
         public static final  String USERMIGRATIONNOTIFICATION = "usermigrationnotification";
-        public static final  String SYNCSERVICENEXTRUN        = "syncServiceNextRun";
+        private static final String SYNCSERVICENEXTRUN        = "syncServiceNextRun";
         public static final  String DEMOMODE                  = "demoMode";
         public static final  String ISCHANGEARTICLE           = "isChangeArtikel";
         public static final  String ISPAGING                  = "isPaging";
         public static final  String ISSCROLLTONEXT            = "isScrollToNext";
         public static final  String PAGETAPTOARTICLE          = "pageTapToArticle";
         public static final  String PAGEDOUBLETAPZOOM         = "pageDoubleTapZoom";
-        public static final  String PAGETAPBORDERTOTURN       = "pageTapBorderToTurn";
+        private static final String PAGETAPBORDERTOTURN       = "pageTapBorderToTurn";
         private static final String INDEXALWAYSEXPANDED       = "indexAlwaysExpanded";
+        private static final String FIREBASETOKEN = "firebaseToken";
+        private static final String FIREBASETOKENOLD = "firebaseTokenOld";
     }
 
 
@@ -86,9 +89,11 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         if (changeListeners.containsKey(key) && changeListeners.get(key) != null) {
+            Object value = sharedPreferences.getAll()
+                                            .get(key);
             for (OnPreferenceChangeListener listener : changeListeners.get(key)) {
                 if (listener != null) {
-                    listener.onPreferenceChanged(key, sharedPreferences);
+                    listener.onPreferenceChanged(value);
                 }
             }
         }
@@ -182,6 +187,14 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
         Timber.d("key %s", key);
     }
 
+    public void setRingtone(Uri ringtoneUri) {
+        String uri = ringtoneUri == null ? "" : ringtoneUri.toString();
+        sharedPreferences.edit()
+                         .putString(PREFKEY.RINGTONE, uri)
+                         .apply();
+        PushRestApiJob.scheduleJob();
+    }
+
     public Uri getRingtone() {
         Uri result;
         String ringtoneUri = getPrefString(PREFKEY.RINGTONE, null);
@@ -192,6 +205,28 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
             result = Uri.parse(ringtoneUri);
         }
         return result;
+    }
+
+    public String getFirebaseToken(){
+        return sharedPreferences.getString(PREFKEY.FIREBASETOKEN,"");
+    }
+
+    public String getOldFirebaseToken(){
+        return sharedPreferences.getString(PREFKEY.FIREBASETOKENOLD,null);
+    }
+
+    public void removeOldToken() {
+        sharedPreferences.edit().remove(PREFKEY.FIREBASETOKENOLD).apply();
+    }
+
+    public void setFirebaseToken(String token) {
+        String oldToken = getFirebaseToken();
+        Editor editor = sharedPreferences.edit();
+        if (oldToken != null) {
+            editor.putString(PREFKEY.FIREBASETOKENOLD,oldToken);
+        }
+        editor.putString(PREFKEY.FIREBASETOKEN,token).apply();
+        PushRestApiJob.scheduleJob();
     }
 
     public SharedPreferences getSharedPreferences() {
@@ -287,8 +322,8 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
         }
     }
 
-    public interface OnPreferenceChangeListener {
-        void onPreferenceChanged(String key, SharedPreferences preferences);
+    public interface OnPreferenceChangeListener<T> {
+        void onPreferenceChanged(T changedValue);
     }
 
 

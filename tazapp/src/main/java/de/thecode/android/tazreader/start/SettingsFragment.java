@@ -294,12 +294,7 @@ public class SettingsFragment extends BaseFragment {
         if (requestCode == REQUESTCODE_NOTIFICATION_SOUND) {
             if (resultCode == Activity.RESULT_OK) {
                 if (data.hasExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI)) {
-                    Uri uri = data.getParcelableExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI);
-                    if (uri != null) {
-                        TazSettings.getInstance(getActivity()).setPref(TazSettings.PREFKEY.RINGTONE, uri.toString());
-                    } else {
-                        TazSettings.getInstance(getActivity()).setPref(TazSettings.PREFKEY.RINGTONE, "");
-                    }
+                    TazSettings.getInstance(getContext()).setRingtone((Uri) data.getParcelableExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI));
                     updateNotificationSoundLayout();
                 }
             }

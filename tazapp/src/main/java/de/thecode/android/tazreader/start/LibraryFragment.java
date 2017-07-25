@@ -1,7 +1,6 @@
 package de.thecode.android.tazreader.start;
 
 
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -55,10 +54,10 @@ public class LibraryFragment extends BaseFragment
     private AutofitRecyclerView  recyclerView;
     private FloatingActionButton fabArchive;
 
-    private TazSettings.OnPreferenceChangeListener demoModeChangedListener = new TazSettings.OnPreferenceChangeListener() {
+    private TazSettings.OnPreferenceChangeListener demoModeChangedListener = new TazSettings.OnPreferenceChangeListener<Boolean>() {
         @Override
-        public void onPreferenceChanged(String key, SharedPreferences preferences) {
-            onDemoModeChanged(preferences.getBoolean(key,true));
+        public void onPreferenceChanged(Boolean value) {
+            onDemoModeChanged(value);
         }
     };
 
