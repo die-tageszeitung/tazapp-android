@@ -108,7 +108,7 @@ public class ReaderActivity extends BaseActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Orientation.setActivityOrientationFromPrefs(this);
+        //Orientation.setActivityOrientationFromPrefs(this);
 
         mStorage = StorageManager.getInstance(this);
 

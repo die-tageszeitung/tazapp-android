@@ -25,7 +25,7 @@ public class PushNotificationDialog extends DialogCustomView {
     @Override
     public View getView(LayoutInflater inflater, ViewGroup parent) {
         WebView webView = new WebView(inflater.getContext());
-        webView.loadDataWithBaseURL("file:///android_asset/", getHtml(inflater.getContext()), "text/html", "utf-8", null);
+        webView.loadDataWithBaseURL("file:///android_asset/push/", getHtml(inflater.getContext()), "text/html", "utf-8", null);
         webView.getSettings()
                .setAllowFileAccess(true);
         return webView;
@@ -52,7 +52,8 @@ public class PushNotificationDialog extends DialogCustomView {
         String html;
         try {
             html = IOUtils.toString(context.getAssets()
-                                           .open("pushnotification_template.html"), "UTF-8");
+                                           .open("push/template.html"), "UTF-8");
+
             if (pushNotification != null) {
                 html = html.replaceFirst("\\{title\\}", pushNotification.getTitle())
                            .replaceFirst("\\{body\\}", pushNotification.getBody());

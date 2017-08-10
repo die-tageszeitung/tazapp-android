@@ -122,7 +122,7 @@ public class NotificationHelper {
 
         if (withSound) {
             Uri ringtoneUri = TazSettings.getInstance(context)
-                                         .getRingtone();
+                                         .getNotificationSoundUri(TazSettings.PREFKEY.NOTIFICATION_SOUND_DOWNLOAD);
             if (ringtoneUri != null) nBuilder.setSound(ringtoneUri);
         }
         if (withVibration) {
@@ -163,7 +163,7 @@ public class NotificationHelper {
                                      .getColor(R.color.notification))
                     .setSmallIcon(android.R.drawable.stat_notify_error);
             Uri ringtoneUri = TazSettings.getInstance(context)
-                                         .getRingtone();
+                                         .getNotificationSoundUri(TazSettings.PREFKEY.NOTIFICATION_SOUND_DOWNLOAD);
             if (ringtoneUri != null) nBuilder.setSound(ringtoneUri);
             if (TazSettings.getInstance(context)
                            .getPrefBoolean(TazSettings.PREFKEY.VIBRATE, false))

@@ -84,7 +84,7 @@ public class PushHelper {
     }
 
     public String getDeviceMessageSound() {
-        Uri ringtoneUri = settings.getRingtone();
+        Uri ringtoneUri = settings.getNotificationSoundUri(TazSettings.PREFKEY.NOTIFICATION_SOUND_PUSH);
         if (ringtoneUri != null) {
             return ringtoneUri.toString();
         }

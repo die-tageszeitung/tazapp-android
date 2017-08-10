@@ -3,11 +3,11 @@ def versionMinor = 2
 def versionPatch = 3
 def versionBuild = 2
 
-def supportLibVer = "25.3.1"
-def buildToolsVer = "25.0.2"
+def supportLibVer = "26.0.1"
+def buildToolsVer = "26.0.1"
 def firebaseVer = "11.0.2"
-def compileSdkVer = 25
-def targetSdkVer = 25
+def compileSdkVer = 26
+def targetSdkVer = 26
 def minSdkVer = 15
 
 def tazPlist = '"https://dl.taz.de/tpaperIssue.plist"'
@@ -217,13 +217,13 @@ android {
         }
     }
 
-    variantFilter { variant ->
-        variant.getFlavors().each { flavor ->
-            if (flavor.name.equalsIgnoreCase('lmd')) {
-                variant.setIgnore(true)
-            }
-        }
-    }
+//    variantFilter { variant ->
+//        variant.getFlavors().each { flavor ->
+//            if (flavor.name.equalsIgnoreCase('lmd')) {
+//                variant.setIgnore(true)
+//            }
+//        }
+//    }
 }
 
 repositories {
@@ -237,6 +237,8 @@ dependencies {
     compile "com.android.support:design:$supportLibVer"
     compile "com.android.support:support-v4:$supportLibVer"
     compile "com.android.support:cardview-v7:$supportLibVer"
+
+    compile "com.takisoft.fix:preference-v7:$supportLibVer"+".0"
 
     compile 'com.squareup.okhttp3:okhttp:3.6.0'
     compile 'com.squareup.okhttp3:logging-interceptor:3.6.0'

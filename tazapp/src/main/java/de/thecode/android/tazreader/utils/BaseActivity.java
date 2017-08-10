@@ -8,6 +8,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 
 import de.thecode.android.tazreader.BuildConfig;
+import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.dialog.PushNotificationDialog;
 import de.thecode.android.tazreader.push.PushHelper;
 import de.thecode.android.tazreader.push.PushNotification;
@@ -25,12 +26,23 @@ import timber.log.Timber;
  */
 public class BaseActivity extends AppCompatActivity {
 
-    private static final String DIALOG_PUSH = "DialogPush";
+    private static final String                            DIALOG_PUSH                   = "DialogPush";
+    private TazSettings.OnPreferenceChangeListener<String> orientationPreferenceListener = new TazSettings.OnPreferenceChangeListener<String>() {
+        @Override
+        public void onPreferenceChanged(String changedValue) {
+            setOrientation(changedValue);
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         FragmentManager.enableDebugLogging(BuildConfig.DEBUG);
+        setOrientation(TazSettings.getInstance(this).getPrefString(TazSettings.PREFKEY.ORIENTATION,"auto"));
+    }
+
+    private void setOrientation(String orientationKey){
+        Orientation.setActivityOrientation(this, orientationKey);
     }
 
     @Override
@@ -38,10 +50,12 @@ public class BaseActivity extends AppCompatActivity {
         super.onStart();
         EventBus.getDefault()
                 .register(this);
+        TazSettings.getInstance(this).addOnPreferenceChangeListener(TazSettings.PREFKEY.ORIENTATION,orientationPreferenceListener);
     }
 
     @Override
     protected void onStop() {
+        TazSettings.getInstance(this).removeOnPreferenceChangeListener(orientationPreferenceListener);
         EventBus.getDefault()
                 .unregister(this);
         super.onStop();
@@ -72,4 +86,6 @@ public class BaseActivity extends AppCompatActivity {
                                             .buildSupport()
                                             .show(getSupportFragmentManager(), DIALOG_PUSH);
     }
+
+
 }

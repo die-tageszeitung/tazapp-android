@@ -1,0 +1,13 @@
+h1, h2 {
+  font-family: sans-serif;
+}
+h1 {
+  font-size  : 16pt;
+}
+h2 {
+  font-size  : 14pt;
+}
+p {
+  font-size  : 12pt;
+  font-family: serif;
+}

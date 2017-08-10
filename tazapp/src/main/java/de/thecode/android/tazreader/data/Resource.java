@@ -5,9 +5,11 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 
+import de.thecode.android.tazreader.provider.TazProvider;
+
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
-import de.thecode.android.tazreader.provider.TazProvider;
+import timber.log.Timber;
 
 
 public class Resource {
@@ -135,5 +137,19 @@ public class Resource {
     @Override
     public String toString() {
         return ToStringBuilder.reflectionToString(this);
+    }
+
+    public static Resource getLatestDownloaded(Context context){
+
+        Cursor cursor = context.getContentResolver()
+                               .query(CONTENT_URI, null, null, null , "rowid DESC");
+        try {
+            if (cursor.moveToNext()) {
+                Timber.i("");
+            }
+        } finally {
+            cursor.close();
+        }
+        return null;
     }
 }

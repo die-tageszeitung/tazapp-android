@@ -47,7 +47,6 @@ import de.thecode.android.tazreader.sync.SyncHelper;
 import de.thecode.android.tazreader.utils.BaseActivity;
 import de.thecode.android.tazreader.utils.BaseFragment;
 import de.thecode.android.tazreader.utils.Connection;
-import de.thecode.android.tazreader.utils.Orientation;
 import de.thecode.android.tazreader.widget.CustomToolbar;
 
 import org.greenrobot.eventbus.Subscribe;
@@ -96,7 +95,9 @@ public class StartActivity extends BaseActivity
 
     NavigationDrawerFragment.NavigationItem userItem;
     NavigationDrawerFragment.NavigationItem libraryItem;
-    NavigationDrawerFragment.NavigationItem settingsItem;
+//    NavigationDrawerFragment.NavigationItem settingsItem;
+    NavigationDrawerFragment.NavigationItem preferencesItem;
+
     NavigationDrawerFragment.NavigationItem helpItem;
     NavigationDrawerFragment.NavigationItem imprintItem;
     NavigationDrawerFragment.NavigationItem importItem;
@@ -126,6 +127,8 @@ public class StartActivity extends BaseActivity
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        //Resource.getLatestDownloaded(this);
+
         if (TazSettings.getInstance(this)
                        .getPrefInt(TazSettings.PREFKEY.PAPERMIGRATEFROM, 0) != 0) {
             Intent migrationIntent = new Intent(this, MigrationActivity.class);
@@ -136,7 +139,7 @@ public class StartActivity extends BaseActivity
         TazSettings.getInstance(this)
                    .removePref(TazSettings.PREFKEY.PAPERMIGRATEFROM);
 
-        Orientation.setActivityOrientationFromPrefs(this);
+        //Orientation.setActivityOrientationFromPrefs(this);
 
 
         retainDataFragment = RetainDataFragment.findOrCreateRetainFragment(getSupportFragmentManager(), this);
@@ -178,9 +181,15 @@ public class StartActivity extends BaseActivity
         importItem.setAccessibilty(false);
         libraryItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_library), R.drawable.ic_library,
                                                                   LibraryFragment.class);
-        settingsItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_settings), R.drawable.ic_settings,
-                                                                   SettingsFragment.class);
-        settingsItem.setAccessibilty(false);
+//        settingsItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_settings), R.drawable.ic_settings,
+//                                                                   SettingsFragment.class);
+//        settingsItem.setAccessibilty(false);
+
+        preferencesItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_preferences), R.drawable.ic_settings,
+                                                                   PreferencesFragment.class);
+        preferencesItem.setAccessibilty(false);
+
+
         helpItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_help), R.drawable.ic_help,
                                                                HelpFragment.class);
         helpItem.setAccessibilty(false);
@@ -195,7 +204,8 @@ public class StartActivity extends BaseActivity
         mDrawerFragment.addItem(helpItem);
         mDrawerFragment.addDividerItem();
         mDrawerFragment.addItem(imprintItem);
-        mDrawerFragment.addItem(settingsItem);
+       // mDrawerFragment.addItem(settingsItem);
+        mDrawerFragment.addItem(preferencesItem);
 
 
         //has to be after adding useritem
