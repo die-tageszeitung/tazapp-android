@@ -33,7 +33,8 @@ public class PushRestApiJob extends Job {
         try {
             Response response = call.execute();
             if (response.isSuccessful()) {
-                TazSettings.getInstance(getContext()).removeOldToken();
+                TazSettings.getInstance(getContext())
+                           .removeOldToken();
                 return Result.SUCCESS;
             }
             Timber.e(response.body()
@@ -45,8 +46,9 @@ public class PushRestApiJob extends Job {
     }
 
     public static void scheduleJob() {
-        new JobRequest.Builder(PushRestApiJob.TAG).setExecutionWindow(15_000L, 60_000L*60)
-                                                  .setRequiredNetworkType(JobRequest.NetworkType.CONNECTED)
+        new JobRequest.Builder(PushRestApiJob.TAG).startNow()
+                                                  .setBackoffCriteria(4_000, JobRequest.BackoffPolicy.LINEAR)
+                                                  .setRequiredNetworkType(JobRequest.NetworkType.ANY)
                                                   .setUpdateCurrent(true)
                                                   .build()
                                                   .schedule();

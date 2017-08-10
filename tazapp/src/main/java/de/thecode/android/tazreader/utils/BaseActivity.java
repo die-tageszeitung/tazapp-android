@@ -12,6 +12,7 @@ import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.dialog.PushNotificationDialog;
 import de.thecode.android.tazreader.push.PushHelper;
 import de.thecode.android.tazreader.push.PushNotification;
+import de.thecode.android.tazreader.push.PushRestApiJob;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -33,6 +34,13 @@ public class BaseActivity extends AppCompatActivity {
             setOrientation(changedValue);
         }
     };
+    private TazSettings.OnPreferenceChangeListener<Object> pushPreferenceListener = new TazSettings.OnPreferenceChangeListener<Object>() {
+        @Override
+        public void onPreferenceChanged(Object changedValue) {
+            PushRestApiJob.scheduleJob();
+        }
+    };
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,11 +59,15 @@ public class BaseActivity extends AppCompatActivity {
         EventBus.getDefault()
                 .register(this);
         TazSettings.getInstance(this).addOnPreferenceChangeListener(TazSettings.PREFKEY.ORIENTATION,orientationPreferenceListener);
+        TazSettings.getInstance(this).addOnPreferenceChangeListener(TazSettings.PREFKEY.NOTIFICATION_PUSH,pushPreferenceListener);
+        TazSettings.getInstance(this).addOnPreferenceChangeListener(TazSettings.PREFKEY.NOTIFICATION_SOUND_PUSH,pushPreferenceListener);
+        TazSettings.getInstance(this).addOnPreferenceChangeListener(TazSettings.PREFKEY.FIREBASETOKEN,pushPreferenceListener);
     }
 
     @Override
     protected void onStop() {
         TazSettings.getInstance(this).removeOnPreferenceChangeListener(orientationPreferenceListener);
+        TazSettings.getInstance(this).removeOnPreferenceChangeListener(pushPreferenceListener);
         EventBus.getDefault()
                 .unregister(this);
         super.onStop();

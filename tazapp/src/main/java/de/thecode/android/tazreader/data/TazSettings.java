@@ -10,7 +10,6 @@ import android.text.TextUtils;
 
 import com.scottyab.aescrypt.AESCrypt;
 
-import de.thecode.android.tazreader.push.PushRestApiJob;
 import de.thecode.android.tazreader.secure.SimpleCrypto;
 
 import java.security.GeneralSecurityException;
@@ -70,8 +69,9 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
         public static final  String PAGEDOUBLETAPZOOM           = "pageDoubleTapZoom";
         private static final String PAGETAPBORDERTOTURN         = "pageTapBorderToTurn";
         private static final String INDEXALWAYSEXPANDED         = "indexAlwaysExpanded";
-        private static final String FIREBASETOKEN               = "firebaseToken";
+        public static final String FIREBASETOKEN               = "firebaseToken";
         private static final String FIREBASETOKENOLD            = "firebaseTokenOld";
+        public static final String NOTIFICATION_PUSH            = "notification_push";
     }
 
 
@@ -186,9 +186,9 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
         sharedPreferences.edit()
                          .putString(key, uriString)
                          .apply();
-        if (key.equals(PREFKEY.NOTIFICATION_SOUND_PUSH)) {
-            PushRestApiJob.scheduleJob();
-        }
+//        if (key.equals(PREFKEY.NOTIFICATION_SOUND_PUSH)) {
+//            PushRestApiJob.scheduleJob();
+//        }
 
     }
 
@@ -225,7 +225,7 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
         }
         editor.putString(PREFKEY.FIREBASETOKEN, token)
               .apply();
-        PushRestApiJob.scheduleJob();
+        //PushRestApiJob.scheduleJob();
     }
 
     public SharedPreferences getSharedPreferences() {

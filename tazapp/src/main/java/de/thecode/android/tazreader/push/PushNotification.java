@@ -3,6 +3,8 @@ package de.thecode.android.tazreader.push;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 /**
  * Created by mate on 24.07.2017.
  */
@@ -11,17 +13,19 @@ public class PushNotification implements Parcelable {
 
     public enum Type {
         unknown, alert, debug, newIssue;
+
         public static Type fromString(String name) {
             try {
                 return Type.valueOf(name);
-            } catch (IllegalArgumentException ignored) {}
+            } catch (IllegalArgumentException ignored) {
+            }
             return unknown;
         }
     }
 
     private final Type   type;
     private final String title;
-    private final String body;
+    private       String body;
     private final String url;
     private final String issue;
 
@@ -51,6 +55,10 @@ public class PushNotification implements Parcelable {
 
     public String getIssue() {
         return issue;
+    }
+
+    public void setBody(String body) {
+        this.body = body;
     }
 
     @Override
@@ -87,4 +95,9 @@ public class PushNotification implements Parcelable {
             return new PushNotification[size];
         }
     };
+
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this);
+    }
 }

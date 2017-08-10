@@ -95,10 +95,17 @@
 
     </android.support.v7.preference.PreferenceCategory>
     <android.support.v7.preference.PreferenceCategory
+            android:key="pushCat"
             android:title="@string/category_notification_push">
+
+        <android.support.v7.preference.SwitchPreferenceCompat
+                android:key="@string/pref_key_notification_push"
+                android:title="@string/pref_title_notification_push"
+                android:defaultValue="@bool/pref_default_notification_push" />
 
         <de.thecode.android.tazreader.preferences.NotificationSoundPreference
                 android:key="@string/pref_key_notification_push_ringtone"
+                android:dependency="@string/pref_key_notification_push"
                 android:title="@string/pref_title_notification_push_ringtone"/>
 
 

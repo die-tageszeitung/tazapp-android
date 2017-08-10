@@ -127,7 +127,7 @@ public class StartActivity extends BaseActivity
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        //Resource.getLatestDownloaded(this);
+        Resource latestResource = Resource.getLatestDownloaded(this);
 
         if (TazSettings.getInstance(this)
                        .getPrefInt(TazSettings.PREFKEY.PAPERMIGRATEFROM, 0) != 0) {

@@ -48,8 +48,9 @@ public class PushHelper {
     public static final String PARAMETER_APPVERSION   = "appVersion";
     public static final String PARAMETER_APPBUILD     = "appBuild";
     public static final String PARAMETER_SOUND        = "deviceMessageSound";
+    public static final String PARAMETER_PUSH_ACTIVE  = "benachrichtigungen";
 
-    private TazSettings   settings;
+    private TazSettings settings;
 
     private String deviceFormat;
 
@@ -88,7 +89,11 @@ public class PushHelper {
         if (ringtoneUri != null) {
             return ringtoneUri.toString();
         }
-        return null;
+        return "";
+    }
+
+    public boolean getPushActive() {
+        return settings.getPrefBoolean(TazSettings.PREFKEY.NOTIFICATION_PUSH, true);
     }
 
 
@@ -99,7 +104,8 @@ public class PushHelper {
                   .appendQueryParameter(PARAMETER_DEVICEFORMAT, getDeviceFormat())
                   .appendQueryParameter(PARAMETER_APPVERSION, getAppVersion())
                   .appendQueryParameter(PARAMETER_APPBUILD, getAppBuild())
-                  .appendQueryParameter(PARAMETER_SOUND, getDeviceMessageSound());
+                  .appendQueryParameter(PARAMETER_SOUND, getDeviceMessageSound())
+                  .appendQueryParameter(PARAMETER_PUSH_ACTIVE, String.valueOf(getPushActive()));
         return uriBuilder.build();
     }
 
@@ -111,11 +117,13 @@ public class PushHelper {
                                                          .add(PARAMETER_DEVICEFORMAT, getDeviceFormat())
                                                          .add(PARAMETER_APPVERSION, getAppVersion())
                                                          .add(PARAMETER_APPBUILD, getAppBuild())
-                                                         .add(PARAMETER_SOUND, getDeviceMessageSound());
+                                                         .add(PARAMETER_SOUND, getDeviceMessageSound())
+                                                         .add(PARAMETER_PUSH_ACTIVE, String.valueOf(getPushActive()));
 
         if (!TextUtils.isEmpty(oldtoken) && !oldtoken.equals(token)) {
-            builder.add(PARAMETER_OLDTOKEN,oldtoken);
-        } return builder.build();
+            builder.add(PARAMETER_OLDTOKEN, oldtoken);
+        }
+        return builder.build();
     }
 
     public static void checkIntentForFCMPushNotificationExtras(Intent intent) {
@@ -139,6 +147,10 @@ public class PushHelper {
                         .post(pushNotification);
                 break;
             case debug:
+                if (BuildConfig.DEBUG) {
+                    EventBus.getDefault()
+                            .post(pushNotification);
+                }
                 Timber.i("Debug notification received");
                 break;
             case newIssue:
