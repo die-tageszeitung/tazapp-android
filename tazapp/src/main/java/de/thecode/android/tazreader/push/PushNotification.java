@@ -1,15 +1,24 @@
 package de.thecode.android.tazreader.push;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import de.thecode.android.tazreader.push.model.Issue;
 
 /**
  * Created by mate on 24.07.2017.
  */
 
 public class PushNotification implements Parcelable {
+
+    private static final Gson gson;
+
+    static  {
+        gson =  new GsonBuilder().setPrettyPrinting().setPrettyPrinting().create();
+    }
 
     public enum Type {
         unknown, alert, debug, newIssue;
@@ -24,25 +33,19 @@ public class PushNotification implements Parcelable {
     }
 
     private final Type   type;
-    private final String title;
     private       String body;
     private final String url;
-    private final String issue;
+    private final Issue issue;
 
-    public PushNotification(String type, String title, String body, String url, String issue) {
+    public PushNotification(String type, String body, String url, String issue) {
         this.type = Type.fromString(type);
-        this.title = title;
         this.body = body;
         this.url = url;
-        this.issue = issue;
+        this.issue = Issue.fromJson(issue);
     }
 
     public Type getType() {
         return type;
-    }
-
-    public String getTitle() {
-        return title;
     }
 
     public String getBody() {
@@ -53,12 +56,17 @@ public class PushNotification implements Parcelable {
         return url;
     }
 
-    public String getIssue() {
+    public Issue getIssue() {
         return issue;
     }
 
     public void setBody(String body) {
         this.body = body;
+    }
+
+    @Override
+    public String toString() {
+        return gson.toJson(this);
     }
 
     @Override
@@ -69,19 +77,17 @@ public class PushNotification implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeInt(this.type == null ? -1 : this.type.ordinal());
-        dest.writeString(this.title);
         dest.writeString(this.body);
         dest.writeString(this.url);
-        dest.writeString(this.issue);
+        dest.writeParcelable(this.issue, flags);
     }
 
     protected PushNotification(Parcel in) {
         int tmpType = in.readInt();
         this.type = tmpType == -1 ? null : Type.values()[tmpType];
-        this.title = in.readString();
         this.body = in.readString();
         this.url = in.readString();
-        this.issue = in.readString();
+        this.issue = in.readParcelable(Issue.class.getClassLoader());
     }
 
     public static final Parcelable.Creator<PushNotification> CREATOR = new Parcelable.Creator<PushNotification>() {
@@ -95,9 +101,4 @@ public class PushNotification implements Parcelable {
             return new PushNotification[size];
         }
     };
-
-    @Override
-    public String toString() {
-        return ToStringBuilder.reflectionToString(this);
-    }
 }

@@ -100,7 +100,7 @@ public class StartActivity extends BaseActivity
 
     NavigationDrawerFragment.NavigationItem helpItem;
     NavigationDrawerFragment.NavigationItem imprintItem;
-    NavigationDrawerFragment.NavigationItem importItem;
+    // NavigationDrawerFragment.NavigationItem importItem;
 
     TazSettings.OnPreferenceChangeListener demoModeChanged = new TazSettings.OnPreferenceChangeListener<Boolean>() {
         @Override
@@ -176,9 +176,9 @@ public class StartActivity extends BaseActivity
 
         userItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_account), R.drawable.ic_account,
                                                                LoginFragment.class);
-        importItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_import), R.drawable.ic_file_folder,
-                                                                 ImportFragment.class);
-        importItem.setAccessibilty(false);
+//        importItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_import), R.drawable.ic_file_folder,
+//                                                                 ImportFragment.class);
+//        importItem.setAccessibilty(false);
         libraryItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_library), R.drawable.ic_library,
                                                                   LibraryFragment.class);
 //        settingsItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_settings), R.drawable.ic_settings,
@@ -200,7 +200,7 @@ public class StartActivity extends BaseActivity
         mDrawerFragment.addItem(libraryItem);
         mDrawerFragment.addDividerItem();
         mDrawerFragment.addItem(userItem);
-        mDrawerFragment.addItem(importItem);
+//        mDrawerFragment.addItem(importItem);
         mDrawerFragment.addItem(helpItem);
         mDrawerFragment.addDividerItem();
         mDrawerFragment.addItem(imprintItem);

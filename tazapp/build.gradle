@@ -1,7 +1,7 @@
 def versionMajor = 3
 def versionMinor = 2
 def versionPatch = 3
-def versionBuild = 3
+def versionBuild = 4
 
 def supportLibVer = "26.0.1"
 def buildToolsVer = "26.0.1"
@@ -280,6 +280,8 @@ dependencies {
     compile "com.google.firebase:firebase-messaging:$firebaseVer"
 
     compile 'com.evernote:android-job:1.2.0-alpha3'
+
+    compile 'com.google.code.gson:gson:2.8.1'
 }
 
 apply plugin: 'com.google.gms.google-services'

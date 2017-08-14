@@ -1,5 +1,8 @@
 package de.thecode.android.tazreader.push;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -23,6 +26,11 @@ import timber.log.Timber;
 public class PushHelper {
 
     private static volatile PushHelper mInstance;
+    private static          Gson       gson;
+
+    static {
+        gson = new GsonBuilder().setPrettyPrinting().create();
+    }
 
     public static PushHelper getInstance(Context context) {
         if (mInstance == null) {
@@ -36,7 +44,6 @@ public class PushHelper {
     }
 
     public static final String PAYLOAD_TYPE  = "type";
-    public static final String PAYLOAD_TITLE = "title";
     public static final String PAYLOAD_BODY  = "body";
     public static final String PAYLOAD_URL   = "url";
     public static final String PAYLOAD_ISSUE = "issue";
@@ -48,7 +55,7 @@ public class PushHelper {
     public static final String PARAMETER_APPVERSION   = "appVersion";
     public static final String PARAMETER_APPBUILD     = "appBuild";
     public static final String PARAMETER_SOUND        = "deviceMessageSound";
-    public static final String PARAMETER_PUSH_ACTIVE  = "benachrichtigungen";
+    public static final String PARAMETER_PUSH_ACTIVE  = "Benachrichtigungen";
 
     private TazSettings settings;
 
@@ -129,7 +136,6 @@ public class PushHelper {
     public static void checkIntentForFCMPushNotificationExtras(Intent intent) {
         if (intent.hasExtra("google.message_id")) {
             dispatchPushNotification(new PushNotification(intent.getStringExtra(PAYLOAD_TYPE),
-                                                          intent.getStringExtra(PAYLOAD_TITLE),
                                                           intent.getStringExtra(PAYLOAD_BODY),
                                                           intent.getStringExtra(PAYLOAD_URL),
                                                           intent.getStringExtra(PAYLOAD_ISSUE)));
@@ -137,10 +143,9 @@ public class PushHelper {
     }
 
     public static void dispatchPushNotification(PushNotification pushNotification) {
-        Timber.d("dispatching push notification %s %s",
+        Timber.d("dispatching push notification %s",
                  pushNotification.getType()
-                                 .name(),
-                 pushNotification.getTitle());
+                                 .name());
         switch (pushNotification.getType()) {
             case alert:
                 EventBus.getDefault()
@@ -161,5 +166,9 @@ public class PushHelper {
                 Timber.e("Unknown notification received");
                 break;
         }
+    }
+
+    public static String toJson(PushNotification pushNotification){
+        return gson.toJson(pushNotification);
     }
 }
