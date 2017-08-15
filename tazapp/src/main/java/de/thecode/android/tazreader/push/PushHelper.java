@@ -12,6 +12,7 @@ import android.text.TextUtils;
 import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.TazSettings;
+import de.thecode.android.tazreader.sync.SyncHelper;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -133,16 +134,16 @@ public class PushHelper {
         return builder.build();
     }
 
-    public static void checkIntentForFCMPushNotificationExtras(Intent intent) {
+    public static void checkIntentForFCMPushNotificationExtras(Context context, Intent intent) {
         if (intent.hasExtra("google.message_id")) {
-            dispatchPushNotification(new PushNotification(intent.getStringExtra(PAYLOAD_TYPE),
+            dispatchPushNotification(context, new PushNotification(intent.getStringExtra(PAYLOAD_TYPE),
                                                           intent.getStringExtra(PAYLOAD_BODY),
                                                           intent.getStringExtra(PAYLOAD_URL),
                                                           intent.getStringExtra(PAYLOAD_ISSUE)));
         }
     }
 
-    public static void dispatchPushNotification(PushNotification pushNotification) {
+    public static void dispatchPushNotification(Context context, PushNotification pushNotification) {
         Timber.d("dispatching push notification %s",
                  pushNotification.getType()
                                  .name());
@@ -159,8 +160,8 @@ public class PushHelper {
                 Timber.i("Debug notification received");
                 break;
             case newIssue:
-                //TODO newIssue
-                Timber.i("newIssue notification received, TODO");
+                Timber.i("newIssue notification received");
+                SyncHelper.requestSync(context);
                 break;
             default:
                 Timber.e("Unknown notification received");

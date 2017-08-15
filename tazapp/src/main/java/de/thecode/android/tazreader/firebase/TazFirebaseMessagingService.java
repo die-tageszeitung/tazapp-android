@@ -31,7 +31,7 @@ public class TazFirebaseMessagingService extends FirebaseMessagingService {
                                                                      remoteMessage.getData()
                                                                                             .get(PushHelper.PAYLOAD_ISSUE));
 
-            PushHelper.dispatchPushNotification(pushNotification);
+            PushHelper.dispatchPushNotification(this, pushNotification);
 
 
         }

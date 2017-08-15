@@ -87,7 +87,7 @@ public class BaseActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        PushHelper.checkIntentForFCMPushNotificationExtras(getIntent());
+        PushHelper.checkIntentForFCMPushNotificationExtras(this, getIntent());
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
