@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Header -->
+    <string name="category_abo">EPAPER ABO</string>
+    <string name="category_screen">BILDSCHIRM</string>
+    <string name="category_read">ANSICHT</string>
+    <string name="category_readpage">SEITENANSICHT</string>
+    <string name="category_readarticle">ARTIKELANSICHT</string>
+    <string name="category_notification_push">PUSH BENACHRICHTIGUNG</string>
+    <string name="category_notification_download">DOWNLOAD BENACHRICHTIGUNG</string>
+    <string name="category_other">SONSTIGES</string>
+    <!--  -->
+    <string name="pref_key_autoload">autoload</string>
+    <string name="pref_title_autoload">Nächste Ausgabe automatisch laden</string>
+    <bool name="pref_default_autoload">false</bool>
+    <!--  -->
+    <string name="pref_key_autoload_wifi">autoload_wifi</string>
+    <string name="pref_title_autoload_wifi">nur über WIFI automatisch laden</string>
+    <bool name="pref_default_autoload_wifi">true</bool>
+    <!--  -->
+    <string name="pref_key_autodelete">autodelete</string>
+    <string name="pref_title_autodelete">Alte Ausgaben automatisch löschen</string>
+    <string name="pref_summary_autodelete">Es werden nur Ausgaben ohne Bookmarks automatisch gelöscht.</string>
+    <bool name="pref_default_autodelete">false</bool>
+    <!--  -->
+    <string name="pref_key_autodelete_days">autodeleteDays</string>
+    <string name="pref_title_autodelete_days">Ausgaben behalten</string>
+    <string name="pref_summary_autodelete_days">%s Ausgabe(n) nicht automatisch löschen</string>
+    <string name="pref_default_autodelete_days">14</string>
+    <!--  -->
+    <string name="pref_key_keepscreen">KeepScreen</string>
+    <string name="pref_title_keepscreen">beim lesen aktiv lassen</string>
+    <bool name="pref_default_keepscreen">false</bool>
+    <!--  -->
+    <string name="pref_key_orientation">Orientation</string>
+    <string name="pref_title_orientation">Ausrichtung</string>
+    <string name="pref_default_orientation">auto</string>
+    <string-array name="pref_values_orientation">
+        <item>auto</item>
+        <item>port</item>
+        <item>land</item>
+    </string-array>
+    <string-array name="pref_names_orientation">
+        <item>Automatisch</item>
+        <item>Portrait</item>
+        <item>Querformat</item>
+    </string-array>
+    <!--  -->
+    <string name="pref_key_index_button">indexButton</string>
+    <string name="pref_title_index_button">Button für Inhaltsverzeichnis anzeigen</string>
+    <string name="pref_summary_index_button">Wenn Sie nicht vom linken Bildschirmrand wischen können, wird links oben ein zusätzlicher Button eingeblendet.</string>
+    <bool name="pref_default_index_button">false</bool>
+    <!--  -->
+    <string name="pref_key_pageindex_button">pageIndexButton</string>
+    <string name="pref_title_pageindex_button">Button für Seitenübersicht anzeigen</string>
+    <string name="pref_summary_pageindex_button">Wenn Sie nicht vom rechten Bildschirmrand wischen können, wird rechts oben ein zusätzlicher Button eingeblendet.</string>
+    <bool name="pref_default_pageindex_button">false</bool>
+    <!--  -->
+    <string name="pref_key_page_tap_border_turn">pageTapBorderToTurn</string>
+    <string name="pref_title_page_tap_border_turn">Blätter durch Einfaches Tippen am Bildschirmrand</string>
+    <bool name="pref_default_page_tap_border_turn">true</bool>
+    <!--  -->
+    <string name="pref_key_page_tap_to_article">pageTapToArticle</string>
+    <string name="pref_title_page_tap_to_article">Artikelansicht durch Einfaches Tippen</string>
+    <bool name="pref_default_page_tap_to_article">true</bool>
+    <!--  -->
+    <string name="pref_key_page_doubletap_zoom">pageDoubleTapZoom</string>
+    <string name="pref_title_page_doubletap_zoom">Vergrößerung durch Doppeltes Tippen</string>
+    <bool name="pref_default_page_doubletap_zoom">true</bool>
+    <!--  -->
+    <string name="pref_key_tts_active">textToSpeech</string>
+    <string name="pref_title_tts_active">Text vorlesen durch "doppeltes Tippen"</string>
+    <bool name="pref_default_tts_active">false</bool>
+    <!--  -->
+    <string name="pref_key_acra_active">acra.alwaysaccept</string>
+    <string name="pref_title_acra_active">Fehlerreports automatisch senden</string>
+    <!--  -->
+    <string name="pref_key_notification_download_vibrate">vibrate</string>
+    <string name="pref_title_notification_download_vibrate">Vibration</string>
+    <bool name="pref_default_notification_download_vibrate">true</bool>
+    <!--  -->
+    <string name="pref_key_notification_download_ringtone">ringtone</string>
+    <string name="pref_title_notification_download_ringtone">Benachrichtigungston auswählen</string>
+    <!--  -->
+    <string name="pref_key_notification_push_ringtone">ringtone_push</string>
+    <string name="pref_title_notification_push_ringtone">Benachrichtigungston auswählen</string>
+    <!--  -->
+    <string name="pref_key_notification_push">notification_push</string>
+    <string name="pref_title_notification_push">Push Benachrichtigungen erhalten"</string>
+    <bool name="pref_default_notification_push">true</bool>
+
+</resources>

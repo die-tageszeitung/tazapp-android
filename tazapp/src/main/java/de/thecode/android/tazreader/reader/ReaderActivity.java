@@ -41,11 +41,9 @@ import de.thecode.android.tazreader.reader.index.IndexFragment;
 import de.thecode.android.tazreader.reader.index.PageIndexFragment;
 import de.thecode.android.tazreader.reader.page.PagesFragment;
 import de.thecode.android.tazreader.utils.BaseActivity;
-import de.thecode.android.tazreader.utils.Orientation;
 import de.thecode.android.tazreader.utils.StorageManager;
 import de.thecode.android.tazreader.utils.TintHelper;
 
-import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.json.JSONArray;
@@ -108,7 +106,7 @@ public class ReaderActivity extends BaseActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Orientation.setActivityOrientationFromPrefs(this);
+        //Orientation.setActivityOrientationFromPrefs(this);
 
         mStorage = StorageManager.getInstance(this);
 
@@ -167,23 +165,9 @@ public class ReaderActivity extends BaseActivity
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
-        EventBus.getDefault()
-                .register(this);
-    }
-
-    @Override
     protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
 
-    }
-
-    @Override
-    protected void onStop() {
-        EventBus.getDefault()
-                .unregister(this);
-        super.onStop();
     }
 
     @Override
@@ -649,6 +633,7 @@ public class ReaderActivity extends BaseActivity
 
     @Override
     public void onTtsStateChanged(ReaderTtsFragment.TTS newState) {
+        Timber.d(newState.name());
         if (mContentFragment != null) mContentFragment.onTtsStateChanged(newState);
     }
 

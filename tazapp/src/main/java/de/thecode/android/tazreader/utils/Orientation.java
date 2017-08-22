@@ -1,42 +1,33 @@
 package de.thecode.android.tazreader.utils;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.os.Build;
-
-import de.thecode.android.tazreader.data.TazSettings;
 
 /**
  * Created by mate on 03.02.2016.
  */
 public class Orientation {
 
-    public static boolean orientationLocked = false;
-
-    public static void setActivityOrientationFromPrefs(Activity activity)
-    {
-        if (!orientationLocked)
-        {
-            setActivityOrientation(activity, getOrientationFromConfigurationFromPrefs(activity));
-        }
+    public static void setActivityOrientation(Activity activity, String orientationKey) {
+        setActivityOrientation(activity, getOrientationFromConfiguration(orientationKey));
     }
 
-    public static int getOrientationFromConfigurationFromPrefs(Context context)
+
+    private static int getOrientationFromConfiguration(String orientationKey)
     {
-        String orientationKey = TazSettings.getInstance(context).getPrefString(TazSettings.PREFKEY.ORIENTATION, "0");
         int preferenceOrientation = Configuration.ORIENTATION_UNDEFINED;
-        if (orientationKey.equals("auto"))
+        if ("auto".equals(orientationKey))
             preferenceOrientation = Configuration.ORIENTATION_UNDEFINED;
-        else if (orientationKey.equals("land"))
+        else if ("land".equals(orientationKey))
             preferenceOrientation = Configuration.ORIENTATION_LANDSCAPE;
-        else if (orientationKey.equals("port"))
+        else if ("port".equals(orientationKey))
             preferenceOrientation = Configuration.ORIENTATION_PORTRAIT;
         return preferenceOrientation;
     }
 
-    public static void setActivityOrientation(Activity activity, int orientationFromConfiguration) {
+    private static void setActivityOrientation(Activity activity, int orientationFromConfiguration) {
         if (orientationFromConfiguration == Configuration.ORIENTATION_LANDSCAPE) {
             if (Build.VERSION.SDK_INT < 9) {
                 if (activity.getRequestedOrientation() != ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {

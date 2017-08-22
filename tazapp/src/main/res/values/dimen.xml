@@ -33,4 +33,5 @@
     <dimen name="fab_margin">0dp</dimen>
 
     <bool name="isTablet">false</bool>
+    <bool name="isNotTablet">false</bool>
 </resources>

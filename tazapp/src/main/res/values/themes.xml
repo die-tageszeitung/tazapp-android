@@ -1,15 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <style name="BaseTheme" parent="FlavorBaseTheme">
+
+    <style name="BaseTheme" parent="PreferenceFixTheme.Light.DarkActionBar">
         <item name="colorPrimary">@color/color_primary</item>
         <item name="colorPrimaryDark">@color/color_primary_dark</item>
         <item name="colorAccent">@color/color_accent</item>
         <item name="android:windowBackground">@drawable/splashbackground</item>
         <item name="windowActionModeOverlay">true</item>
+        <!--<item name="preferenceTheme">-->
+            <!--@style/AppPreferenceTheme-->
+        <!--</item>-->
+        <item name="alertDialogTheme">@style/AppDialogTheme</item>
     </style>
 
-    <style name="AppTheme" parent="BaseTheme">
+
+    <style name="AppTheme" parent="FlavorBaseTheme">
 
     </style>
 
@@ -28,9 +34,26 @@
         <item name="colorButtonNormal">@color/button_normal</item>
     </style>
 
-    <style name="AcraDialog" parent="Theme.AppCompat.Light.Dialog" >
+    <style name="AppDialogTheme" parent="@style/DialogBaseThemeLight" >
         <item name="colorPrimary">@color/color_primary</item>
         <item name="colorPrimaryDark">@color/color_primary_dark</item>
         <item name="colorAccent">@color/color_accent</item>
     </style>
+
+    <!--<style name="AppPreferenceTheme"-->
+           <!--parent="@style/PreferenceThemeOverlay.v14.Material.Fix">-->
+        <!--<item name="preferenceDialog_messageAppearance">@style/PreferenceFixTheme.TextAppearanceDialogMessage</item>-->
+        <!--<item name="preferenceFragmentCompatStyle">-->
+            <!--@style/AppPreferenceFragmentCompatStyle-->
+        <!--</item>-->
+    <!--</style>-->
+
+    <!--&lt;!&ndash; Custom Style for PreferenceFragmentCompat &ndash;&gt;-->
+    <!--<style name="AppPreferenceFragmentCompatStyle"-->
+           <!--parent="@style/PreferenceFragment.Material">-->
+        <!--<item name="android:layout">@layout/start_preferences</item>-->
+        <!--<item name="android:dividerHeight">0dp</item>-->
+    <!--</style>-->
+
+
 </resources>

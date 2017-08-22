@@ -1,12 +1,13 @@
 def versionMajor = 3
-def versionMinor = 2
-def versionPatch = 3
+def versionMinor = 3
+def versionPatch = 0
 def versionBuild = 0
 
-def supportLibVer = "25.3.1"
-def buildToolsVer = "25.0.2"
-def compileSdkVer = 25
-def targetSdkVer = 25
+def supportLibVer = "26.0.1"
+def buildToolsVer = "26.0.1"
+def firebaseVer = "11.0.2"
+def compileSdkVer = 26
+def targetSdkVer = 26
 def minSdkVer = 15
 
 def tazPlist = '"https://dl.taz.de/tpaperIssue.plist"'
@@ -17,6 +18,8 @@ def tazAboUrl = '"https://www.taz.de/zeitung/abo/digitales-abo/apaper"'
 def tazCheckLogin = '"https://dl.taz.de/digiAboCheckLogin"'
 def tazResourceUrl = '"https://dl.taz.de/ressourcen"'
 def tazArchiveUrl = '"https://dl.taz.de/tpaperArchiv"'
+def tazPushRestUrl = '"https://dl.taz.de/tpaperPushInfo"'
+def tazStagingPushRestUrl = '"https://dl.taz.de/tpaperPushInfoTest"'
 
 def lmdPlist = '"https://dl.monde-diplomatique.de/tpaperIssue.plist"'
 def lmdPlistArchiv = '"https://dl.monde-diplomatique.de/tpaperIssue.plist?start=%1$s&end=%2$s"'
@@ -26,6 +29,8 @@ def lmdAboUrl = '"https://dl.monde-diplomatique.de/zeitung/abo/digitales-abo/apa
 def lmdCheckLogin = '"https://dl.monde-diplomatique.de/digiAboCheckLogin"'
 def lmdResourceUrl = '"https://dl.monde-diplomatique.de/ressourcen"'
 def lmdArchiveUrl = '"https://dl.monde-diplomatique.de/tpaperArchiv"'
+def lmdPushRestUrl = '"https://dl.monde-diplomatique.de/tpaperPushInfo"'
+def lmdStagingPushRestUrl = '"https://dl.monde-diplomatique.de/tpaperPushInfoTest"'
 
 def plistUrl = "PLISTURL"
 def plistArchiveUrl = "PLISTARCHIVURL"
@@ -33,6 +38,7 @@ def aboUrl = "ABOURL"
 def checkLoginUrl = "CHECKLOGINURL"
 def resourceUrl = "RESOURCEURL"
 def archiveUrl = "ARCHIVEURL"
+def pushRestUrl = "PUSHRESTURL"
 
 apply plugin: 'idea'
 
@@ -45,6 +51,7 @@ idea {
 
 apply plugin: 'com.android.application'
 apply plugin: 'com.github.gfx.ribbonizer'
+apply plugin: 'com.github.triplet.play'
 
 def overheadPath
 
@@ -161,6 +168,7 @@ android {
             buildConfigField 'String', checkLoginUrl, tazCheckLogin
             buildConfigField 'String', resourceUrl, tazResourceUrl
             buildConfigField 'String', archiveUrl, tazArchiveUrl
+            buildConfigField 'String', pushRestUrl, tazPushRestUrl
         }
         lmd {
             applicationId "de.thecode.lmd"
@@ -171,6 +179,7 @@ android {
             buildConfigField 'String', checkLoginUrl, lmdCheckLogin
             buildConfigField 'String', resourceUrl, lmdResourceUrl
             buildConfigField 'String', archiveUrl, lmdArchiveUrl
+            buildConfigField 'String', pushRestUrl, lmdPushRestUrl
         }
     }
 
@@ -186,9 +195,11 @@ android {
                 if (flavor.name.equalsIgnoreCase('taz')) {
                     variant.buildConfigField 'String', plistUrl, tazStagingPlist
                     variant.buildConfigField 'String', plistArchiveUrl, tazStagingPlistArchiv
+                    variant.buildConfigField 'String', pushRestUrl, tazStagingPushRestUrl
                 } else if (flavor.name.equalsIgnoreCase('lmd')) {
                     variant.buildConfigField 'String', plistUrl, lmdStagingPlist
                     variant.buildConfigField 'String', plistArchiveUrl, lmdStagingPlistArchiv
+                    variant.buildConfigField 'String', pushRestUrl, lmdStagingPushRestUrl
                 }
 
             }
@@ -206,13 +217,13 @@ android {
         }
     }
 
-    variantFilter { variant ->
-        variant.getFlavors().each { flavor ->
-            if (flavor.name.equalsIgnoreCase('lmd')) {
-                variant.setIgnore(true)
-            }
-        }
-    }
+//    variantFilter { variant ->
+//        variant.getFlavors().each { flavor ->
+//            if (flavor.name.equalsIgnoreCase('lmd')) {
+//                variant.setIgnore(true)
+//            }
+//        }
+//    }
 }
 
 repositories {
@@ -226,6 +237,8 @@ dependencies {
     compile "com.android.support:design:$supportLibVer"
     compile "com.android.support:support-v4:$supportLibVer"
     compile "com.android.support:cardview-v7:$supportLibVer"
+
+    compile "com.takisoft.fix:preference-v7:$supportLibVer"+".0"
 
     compile 'com.squareup.okhttp3:okhttp:3.6.0'
     compile 'com.squareup.okhttp3:logging-interceptor:3.6.0'
@@ -263,4 +276,12 @@ dependencies {
     compile 'ch.acra:acra:4.9.2'
 
     compile 'org.mightyfrog.centeringrecyclerview:centeringrecyclerview:1.1.6'
+
+    compile "com.google.firebase:firebase-messaging:$firebaseVer"
+
+    compile 'com.evernote:android-job:1.2.0-alpha3'
+
+    compile 'com.google.code.gson:gson:2.8.1'
 }
+
+apply plugin: 'com.google.gms.google-services'

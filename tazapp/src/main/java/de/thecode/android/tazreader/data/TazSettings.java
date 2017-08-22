@@ -6,6 +6,7 @@ import android.content.SharedPreferences.Editor;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.preference.PreferenceManager;
+import android.text.TextUtils;
 
 import com.scottyab.aescrypt.AESCrypt;
 
@@ -24,49 +25,53 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
 
     public static final class PREFKEY {
 
-        public static final  String FONTSIZE                  = "fontsize";
-        public static final  String COLSIZE                   = "colsize";
-        public static final  String THEME                     = "theme";
-        public static final  String ISFOOT                    = "isFoot";
-        public static final  String FULLSCREEN                = "FullScreen";
-        public static final  String AUTOLOAD                  = "autoload";
-        public static final  String AUTOLOAD_WIFI             = "autoload_wifi";
-        public static final  String AUTODELETE                = "autodelete";
-        public static final  String AUTODELETE_VALUE          = "autodeleteDays";
-        public static final  String LASTAUTOLOAD              = "lastautoload";
-        public static final  String CONTENTVERBOSE            = "ContentVerbose";
-        public static final  String KEEPSCREEN                = "KeepScreen";
-        public static final  String ORIENTATION               = "Orientation";
-        public static final  String LASTACTIVITY              = "lastActivity";
-        public static final  String LASTOPENPAPER             = "lastOpenPaper";
-        public static final  String LASTVERSION               = "lastVersion";
-        public static final  String FISRTSTART                = "firstStart";
+        public static final  String FONTSIZE                    = "fontsize";
+        public static final  String COLSIZE                     = "colsize";
+        public static final  String THEME                       = "theme";
+        public static final  String ISFOOT                      = "isFoot";
+        public static final  String FULLSCREEN                  = "FullScreen";
+        public static final  String AUTOLOAD                    = "autoload";
+        public static final  String AUTOLOAD_WIFI               = "autoload_wifi";
+        public static final  String AUTODELETE                  = "autodelete";
+        public static final  String AUTODELETE_VALUE            = "autodeleteDays";
+        public static final  String LASTAUTOLOAD                = "lastautoload";
+        public static final  String CONTENTVERBOSE              = "ContentVerbose";
+        public static final  String KEEPSCREEN                  = "KeepScreen";
+        public static final  String ORIENTATION                 = "Orientation";
+        public static final  String LASTACTIVITY                = "lastActivity";
+        public static final  String LASTOPENPAPER               = "lastOpenPaper";
+        public static final  String LASTVERSION                 = "lastVersion";
+        public static final  String FISRTSTART                  = "firstStart";
         //        public static final String PAGING = "paging";
-        public static final  String ISSCROLL                  = "isScroll";
-        public static final  String RINGTONE                  = "ringtone";
-        public static final  String VIBRATE                   = "vibrate";
-        public static final  String NAVDRAWERLEARNED          = "navdrawerlearned";
-        public static final  String FORCESYNC                 = "forcesync";
-        public static final  String PAPERMIGRATEFROM          = "paperMigrateFrom";
+        public static final  String ISSCROLL                    = "isScroll";
+        public static final String NOTIFICATION_SOUND_DOWNLOAD = "ringtone";
+        public static final String NOTIFICATION_SOUND_PUSH     = "ringtone_push";
+        public static final  String VIBRATE                     = "vibrate";
+        public static final  String NAVDRAWERLEARNED            = "navdrawerlearned";
+        public static final  String FORCESYNC                   = "forcesync";
+        public static final  String PAPERMIGRATEFROM            = "paperMigrateFrom";
         //        public static final String PAPERMIGRATERUNNING = "paperMigrateRunning";
-        public static final  String PAPERMIGRATEDIDS          = "paperMigratedIds";
-        public static final  String PAPERNOTIFICATIONIDS      = "paperNotificationIds";
-        public static final  String ISSOCIAL                  = "isSocial";
-        public static final  String PAGEINDEXBUTTON           = "pageIndexButton";
-        public static final  String INDEXBUTTON               = "indexButton";
-        public static final  String TEXTTOSPEACH              = "textToSpeech";
-        public static final  String USER                      = "user";
-        public static final  String PASS                      = "pass";
-        public static final  String USERMIGRATIONNOTIFICATION = "usermigrationnotification";
-        public static final  String SYNCSERVICENEXTRUN        = "syncServiceNextRun";
-        public static final  String DEMOMODE                  = "demoMode";
-        public static final  String ISCHANGEARTICLE           = "isChangeArtikel";
-        public static final  String ISPAGING                  = "isPaging";
-        public static final  String ISSCROLLTONEXT            = "isScrollToNext";
-        public static final  String PAGETAPTOARTICLE          = "pageTapToArticle";
-        public static final  String PAGEDOUBLETAPZOOM         = "pageDoubleTapZoom";
-        public static final  String PAGETAPBORDERTOTURN       = "pageTapBorderToTurn";
-        private static final String INDEXALWAYSEXPANDED       = "indexAlwaysExpanded";
+        public static final  String PAPERMIGRATEDIDS            = "paperMigratedIds";
+        public static final  String PAPERNOTIFICATIONIDS        = "paperNotificationIds";
+        public static final  String ISSOCIAL                    = "isSocial";
+        public static final  String PAGEINDEXBUTTON             = "pageIndexButton";
+        private static final String INDEXBUTTON                 = "indexButton";
+        public static final  String TEXTTOSPEACH                = "textToSpeech";
+        public static final  String USER                        = "user";
+        public static final  String PASS                        = "pass";
+        public static final  String USERMIGRATIONNOTIFICATION   = "usermigrationnotification";
+        private static final String SYNCSERVICENEXTRUN          = "syncServiceNextRun";
+        public static final  String DEMOMODE                    = "demoMode";
+        public static final  String ISCHANGEARTICLE             = "isChangeArtikel";
+        public static final  String ISPAGING                    = "isPaging";
+        public static final  String ISSCROLLTONEXT              = "isScrollToNext";
+        public static final  String PAGETAPTOARTICLE            = "pageTapToArticle";
+        public static final  String PAGEDOUBLETAPZOOM           = "pageDoubleTapZoom";
+        private static final String PAGETAPBORDERTOTURN         = "pageTapBorderToTurn";
+        private static final String INDEXALWAYSEXPANDED         = "indexAlwaysExpanded";
+        public static final String FIREBASETOKEN               = "firebaseToken";
+        private static final String FIREBASETOKENOLD            = "firebaseTokenOld";
+        public static final String NOTIFICATION_PUSH            = "notification_push";
     }
 
 
@@ -86,16 +91,17 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         if (changeListeners.containsKey(key) && changeListeners.get(key) != null) {
+            Object value = sharedPreferences.getAll()
+                                            .get(key);
             for (OnPreferenceChangeListener listener : changeListeners.get(key)) {
                 if (listener != null) {
-                    listener.onPreferenceChanged(key, sharedPreferences);
+                    listener.onPreferenceChanged(value);
                 }
             }
         }
     }
 
     public boolean setPref(String key, Object v) {
-
 
         Editor prefEdit = sharedPreferences.edit();
 
@@ -161,14 +167,6 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
         return sharedPreferences.getBoolean(key, defValue);
     }
 
-    public float getPrefFloat(String key, float defValue) throws ClassCastException {
-        return sharedPreferences.getFloat(key, defValue);
-    }
-
-    public Map<String, ?> getPrefAll() {
-        return sharedPreferences.getAll();
-    }
-
     public void setDefaultPref(String key, Object v) {
         if (!sharedPreferences.contains(key)) {
             setPref(key, v);
@@ -182,16 +180,52 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
         Timber.d("key %s", key);
     }
 
-    public Uri getRingtone() {
-        Uri result;
-        String ringtoneUri = getPrefString(PREFKEY.RINGTONE, null);
-        if (ringtoneUri == null) {
-            result = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-        } else {
-            if (ringtoneUri.equals("")) return null;
-            result = Uri.parse(ringtoneUri);
+    public void setNotificationSoundUri(String key, Uri uri) {
+        if (TextUtils.isEmpty(key)) return;
+        String uriString = uri == null ? "" : uri.toString();
+        sharedPreferences.edit()
+                         .putString(key, uriString)
+                         .apply();
+//        if (key.equals(PREFKEY.NOTIFICATION_SOUND_PUSH)) {
+//            PushRestApiJob.scheduleJob();
+//        }
+
+    }
+
+
+    public Uri getNotificationSoundUri(String key) {
+        String soundUri = sharedPreferences.getString(key, null);
+        if ("".equals(soundUri)) return null;
+        try {
+            return Uri.parse(soundUri);
+        } catch (Exception e) {
+            return RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         }
-        return result;
+    }
+
+    public String getFirebaseToken() {
+        return sharedPreferences.getString(PREFKEY.FIREBASETOKEN, "");
+    }
+
+    public String getOldFirebaseToken() {
+        return sharedPreferences.getString(PREFKEY.FIREBASETOKENOLD, null);
+    }
+
+    public void removeOldToken() {
+        sharedPreferences.edit()
+                         .remove(PREFKEY.FIREBASETOKENOLD)
+                         .apply();
+    }
+
+    public void setFirebaseToken(String token) {
+        String oldToken = getFirebaseToken();
+        Editor editor = sharedPreferences.edit();
+        if (oldToken != null) {
+            editor.putString(PREFKEY.FIREBASETOKENOLD, oldToken);
+        }
+        editor.putString(PREFKEY.FIREBASETOKEN, token)
+              .apply();
+        //PushRestApiJob.scheduleJob();
     }
 
     public SharedPreferences getSharedPreferences() {
@@ -287,9 +321,8 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
         }
     }
 
-    public interface OnPreferenceChangeListener {
-        void onPreferenceChanged(String key, SharedPreferences preferences);
+    public interface OnPreferenceChangeListener<T> {
+        void onPreferenceChanged(T changedValue);
     }
-
 
 }

@@ -6,6 +6,15 @@
         <item name="android:layout_gravity">center_horizontal</item>
     </style>
 
+
+    <style name="PreferenceLayout">
+        <item name="android:layout_gravity">center_horizontal</item>
+    </style>
+
+    <style name="PreferenceLayout.SpecialWidth">
+        <item name="android:layout_width">match_parent</item>
+    </style>
+
     <style name="SettingsLayout.SpecialWidth">
         <item name="android:layout_width">match_parent</item>
     </style>

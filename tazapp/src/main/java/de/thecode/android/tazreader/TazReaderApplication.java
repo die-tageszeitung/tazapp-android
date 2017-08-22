@@ -2,8 +2,9 @@ package de.thecode.android.tazreader;
 
 import android.app.Application;
 import android.content.Context;
-import android.media.RingtoneManager;
 import android.util.Log;
+
+import com.evernote.android.job.JobManager;
 
 import de.thecode.android.tazreader.analytics.AnalyticsWrapper;
 import de.thecode.android.tazreader.data.TazSettings;
@@ -44,6 +45,8 @@ public class TazReaderApplication extends Application {
         if (ACRA.isACRASenderServiceProcess()) return;
 
         EventBus.builder().addIndex(new EventBusIndex()).installDefaultEventBus();
+
+        JobManager.create(this).addJobCreator(new TazJobCreator());
 
         PicassoHelper.initPicasso(this);
 
@@ -115,9 +118,6 @@ public class TazReaderApplication extends Application {
         TazSettings.getInstance(this)
                    .setDefaultPref(TazSettings.PREFKEY.AUTODELETE_VALUE, 14);
         TazSettings.getInstance(this)
-                   .setDefaultPref(TazSettings.PREFKEY.RINGTONE,
-                                   RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
-        TazSettings.getInstance(this)
                    .setDefaultPref(TazSettings.PREFKEY.VIBRATE, true);
         TazSettings.getInstance(this)
                    .setDefaultPref(TazSettings.PREFKEY.ISSOCIAL, false);
@@ -135,6 +135,8 @@ public class TazReaderApplication extends Application {
                    .setDefaultPref(TazSettings.PREFKEY.PAGETAPTOARTICLE, true);
         TazSettings.getInstance(this)
                    .setDefaultPref(TazSettings.PREFKEY.PAGEDOUBLETAPZOOM, true);
+
+        //Timber.d("Token: %s", FirebaseInstanceId.getInstance().getToken());
 
     }
 

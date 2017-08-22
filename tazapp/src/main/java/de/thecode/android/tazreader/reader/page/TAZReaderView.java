@@ -9,11 +9,13 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
+import android.widget.Adapter;
 
 import com.artifex.mupdfdemo.PageView;
 import com.artifex.mupdfdemo.ReaderView;
 
 import de.thecode.android.tazreader.R;
+import de.thecode.android.tazreader.analytics.AnalyticsWrapper;
 import de.thecode.android.tazreader.data.Paper.Plist.Page;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.reader.IReaderCallback;
@@ -49,9 +51,18 @@ public class TAZReaderView extends ReaderView implements GestureDetector.OnDoubl
     }
 
     private void init(Context context) {
+        AnalyticsWrapper.getInstance()
+                        .trackBreadcrumb("init in TazReaderView");
         if (!isInEditMode()) mReaderCallback = (IReaderCallback) context;
         tapPageMargin = context.getResources()
                                .getDimensionPixelSize(R.dimen.reader_page_tapmargin);
+    }
+
+    @Override
+    public void setAdapter(Adapter adapter) {
+        AnalyticsWrapper.getInstance()
+                        .trackBreadcrumb("setAdapter in TazReaderView");
+        super.setAdapter(adapter);
     }
 
     @Override

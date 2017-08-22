@@ -10,15 +10,14 @@ import okhttp3.OkHttpClient;
 public class BuildTypeProvider {
 
     public static void installStetho(Context context) {
-        //do nothing
+
     }
 
     public static void addStethoInterceptor(OkHttpClient.Builder builder) {
-        //do nothing
     }
 
     public static void addLoggingInterceptor(OkHttpClient.Builder builder) {
-        //do nothing
+
     }
 
 }

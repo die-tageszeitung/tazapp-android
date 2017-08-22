@@ -113,6 +113,7 @@ public class ImportDirectoryLoader extends AsyncTaskLoader<List<ImportDirectoryL
                     } catch (Paper.PaperNotFoundException ignored) {
                     }
                 } catch (IOException | NullPointerException | ImportMetadata.NotReadableException e) {
+                    Timber.w(e,"in file %s",file.getName());
                     ifw.selectable = false;
                     ifw.detail = getContext().getString(R.string.import_error_detail);
                 }

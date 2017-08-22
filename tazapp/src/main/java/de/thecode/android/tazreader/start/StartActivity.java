@@ -3,7 +3,6 @@ package de.thecode.android.tazreader.start;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
@@ -48,10 +47,8 @@ import de.thecode.android.tazreader.sync.SyncHelper;
 import de.thecode.android.tazreader.utils.BaseActivity;
 import de.thecode.android.tazreader.utils.BaseFragment;
 import de.thecode.android.tazreader.utils.Connection;
-import de.thecode.android.tazreader.utils.Orientation;
 import de.thecode.android.tazreader.widget.CustomToolbar;
 
-import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.json.JSONArray;
@@ -98,15 +95,17 @@ public class StartActivity extends BaseActivity
 
     NavigationDrawerFragment.NavigationItem userItem;
     NavigationDrawerFragment.NavigationItem libraryItem;
-    NavigationDrawerFragment.NavigationItem settingsItem;
+//    NavigationDrawerFragment.NavigationItem settingsItem;
+    NavigationDrawerFragment.NavigationItem preferencesItem;
+
     NavigationDrawerFragment.NavigationItem helpItem;
     NavigationDrawerFragment.NavigationItem imprintItem;
-    NavigationDrawerFragment.NavigationItem importItem;
+    // NavigationDrawerFragment.NavigationItem importItem;
 
-    TazSettings.OnPreferenceChangeListener demoModeChanged = new TazSettings.OnPreferenceChangeListener() {
+    TazSettings.OnPreferenceChangeListener demoModeChanged = new TazSettings.OnPreferenceChangeListener<Boolean>() {
         @Override
-        public void onPreferenceChanged(String key, SharedPreferences preferences) {
-            onDemoModeChanged(preferences.getBoolean(key, true));
+        public void onPreferenceChanged(Boolean value) {
+            onDemoModeChanged(value);
         }
     };
 
@@ -115,22 +114,20 @@ public class StartActivity extends BaseActivity
         super.onStart();
         TazSettings.getInstance(this)
                    .addOnPreferenceChangeListener(TazSettings.PREFKEY.DEMOMODE, demoModeChanged);
-        EventBus.getDefault()
-                .register(this);
     }
 
     @Override
     public void onStop() {
         TazSettings.getInstance(this)
                    .removeOnPreferenceChangeListener(demoModeChanged);
-        EventBus.getDefault()
-                .unregister(this);
         super.onStop();
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        Resource latestResource = Resource.getLatestDownloaded(this);
 
         if (TazSettings.getInstance(this)
                        .getPrefInt(TazSettings.PREFKEY.PAPERMIGRATEFROM, 0) != 0) {
@@ -142,7 +139,7 @@ public class StartActivity extends BaseActivity
         TazSettings.getInstance(this)
                    .removePref(TazSettings.PREFKEY.PAPERMIGRATEFROM);
 
-        Orientation.setActivityOrientationFromPrefs(this);
+        //Orientation.setActivityOrientationFromPrefs(this);
 
 
         retainDataFragment = RetainDataFragment.findOrCreateRetainFragment(getSupportFragmentManager(), this);
@@ -179,14 +176,20 @@ public class StartActivity extends BaseActivity
 
         userItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_account), R.drawable.ic_account,
                                                                LoginFragment.class);
-        importItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_import), R.drawable.ic_file_folder,
-                                                                 ImportFragment.class);
-        importItem.setAccessibilty(false);
+//        importItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_import), R.drawable.ic_file_folder,
+//                                                                 ImportFragment.class);
+//        importItem.setAccessibilty(false);
         libraryItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_library), R.drawable.ic_library,
                                                                   LibraryFragment.class);
-        settingsItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_settings), R.drawable.ic_settings,
-                                                                   SettingsFragment.class);
-        settingsItem.setAccessibilty(false);
+//        settingsItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_settings), R.drawable.ic_settings,
+//                                                                   SettingsFragment.class);
+//        settingsItem.setAccessibilty(false);
+
+        preferencesItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_preferences), R.drawable.ic_settings,
+                                                                   PreferencesFragment.class);
+        preferencesItem.setAccessibilty(false);
+
+
         helpItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_help), R.drawable.ic_help,
                                                                HelpFragment.class);
         helpItem.setAccessibilty(false);
@@ -197,11 +200,12 @@ public class StartActivity extends BaseActivity
         mDrawerFragment.addItem(libraryItem);
         mDrawerFragment.addDividerItem();
         mDrawerFragment.addItem(userItem);
-        mDrawerFragment.addItem(importItem);
+//        mDrawerFragment.addItem(importItem);
         mDrawerFragment.addItem(helpItem);
         mDrawerFragment.addDividerItem();
         mDrawerFragment.addItem(imprintItem);
-        mDrawerFragment.addItem(settingsItem);
+       // mDrawerFragment.addItem(settingsItem);
+        mDrawerFragment.addItem(preferencesItem);
 
 
         //has to be after adding useritem
@@ -233,12 +237,7 @@ public class StartActivity extends BaseActivity
 
         if (TazSettings.getInstance(this)
                        .getSyncServiceNextRun() == 0) SyncHelper.requestSync(this);
-    }
 
-    @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-        Timber.d("intent: %s", intent);
     }
 
     @Override
@@ -291,6 +290,8 @@ public class StartActivity extends BaseActivity
             super.onBackPressed();
         }
     }
+
+
 
     @Override
     public RetainDataFragment getRetainData() {

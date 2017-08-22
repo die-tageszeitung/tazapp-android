@@ -5,32 +5,32 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 
-import org.apache.commons.lang3.builder.ToStringBuilder;
-
 import de.thecode.android.tazreader.provider.TazProvider;
+
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 
 public class Resource {
-    public static String TABLE_NAME = "RESOURCE";
-    public static final Uri CONTENT_URI = Uri.parse("content://" + TazProvider.AUTHORITY + "/" + TABLE_NAME);
-    public static final String CONTENT_TYPE = "vnd.android.cursor.dir/vnd.taz." + TABLE_NAME;
+    public static       String TABLE_NAME        = "RESOURCE";
+    public static final Uri    CONTENT_URI       = Uri.parse("content://" + TazProvider.AUTHORITY + "/" + TABLE_NAME);
+    public static final String CONTENT_TYPE      = "vnd.android.cursor.dir/vnd.taz." + TABLE_NAME;
     public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/vnd.taz." + TABLE_NAME;
 
     public static final class Columns {
-        public static final String KEY = "key";
+        public static final String KEY        = "key";
         public static final String DOWNLOADID = "downloadID";
         public static final String DOWNLOADED = "downloaded";
-        public static final String FILEHASH = "fileHash";
-        public static final String LEN = "len";
-        public static final String URL = "url";
+        public static final String FILEHASH   = "fileHash";
+        public static final String LEN        = "len";
+        public static final String URL        = "url";
     }
 
-    private String key;
-    private long downloadId;
+    private String  key;
+    private long    downloadId;
     private boolean downloaded;
-    private String url;
-    private String fileHash;
-    private long len;
+    private String  url;
+    private String  fileHash;
+    private long    len;
 
 
     public Resource(Cursor cursor) {
@@ -135,5 +135,21 @@ public class Resource {
     @Override
     public String toString() {
         return ToStringBuilder.reflectionToString(this);
+    }
+
+    public static Resource getLatestDownloaded(Context context) {
+
+        Cursor cursor = context.getContentResolver()
+                               .query(CONTENT_URI, null, "downloaded=1", null, "rowid DESC LIMIT 1");
+        if (cursor != null) {
+            try {
+                if (cursor.moveToNext()) {
+                    return new Resource(cursor);
+                }
+            } finally {
+                cursor.close();
+            }
+        }
+        return null;
     }
 }
