@@ -88,5 +88,7 @@
     <string name="pref_key_notification_push">notification_push</string>
     <string name="pref_title_notification_push">Push Benachrichtigungen erhalten"</string>
     <bool name="pref_default_notification_push">true</bool>
-
+    <!-- -->
+    <string name="pref_key_data_location">data_location</string>
+    <string name="pref_title_data_location">Speicherort</string>
 </resources>

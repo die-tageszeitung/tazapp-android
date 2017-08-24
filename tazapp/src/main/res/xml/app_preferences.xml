@@ -126,6 +126,10 @@
     <android.support.v7.preference.PreferenceCategory
             android:title="@string/category_other">
 
+        <android.support.v7.preference.Preference
+                android:key="@string/pref_key_data_location"
+                android:title="@string/pref_title_data_location"/>
+
         <android.support.v7.preference.SwitchPreferenceCompat
                 android:key="@string/pref_key_acra_active"
                 android:title="@string/pref_title_acra_active"/>

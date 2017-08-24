@@ -7,8 +7,7 @@ import com.squareup.picasso.Picasso;
 
 import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.okhttp3.OkHttp3Helper;
-
-import java.io.File;
+import de.thecode.android.tazreader.utils.StorageManager;
 
 import okhttp3.Cache;
 import okhttp3.OkHttpClient;
@@ -24,7 +23,7 @@ public class PicassoHelper {
 
     public static void initPicasso(Context context) {
         OkHttpClient.Builder picassoClientBuilder = OkHttp3Helper.getInstance(context).getOkHttpClientBuilder();
-        picassoClientBuilder.cache(new Cache(new File(context.getExternalCacheDir(), IMAGES_CACHE_DIR), IMAGES_DISK_USAGE_BYTES));
+        picassoClientBuilder.cache(new Cache(StorageManager.getInstance(context).getCache(IMAGES_CACHE_DIR), IMAGES_DISK_USAGE_BYTES));
         OkHttpClient picassoClient = picassoClientBuilder.build();
 
         Picasso.Builder picassoBuilder = new Picasso.Builder(context);

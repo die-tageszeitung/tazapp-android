@@ -135,6 +135,9 @@ public class TazReaderApplication extends Application {
                    .setDefaultPref(TazSettings.PREFKEY.PAGETAPTOARTICLE, true);
         TazSettings.getInstance(this)
                    .setDefaultPref(TazSettings.PREFKEY.PAGEDOUBLETAPZOOM, true);
+        TazSettings.getInstance(this)
+                   .setDefaultPref(TazSettings.PREFKEY.DATA_LOCATION, StorageManager.getInstance(this).getDataLocationDefaultDir().getAbsolutePath());
+
 
         //Timber.d("Token: %s", FirebaseInstanceId.getInstance().getToken());
 
