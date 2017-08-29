@@ -12,7 +12,9 @@ import de.mateware.dialog.Dialog;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.preferences.PreferenceFragmentCompat;
+import de.thecode.android.tazreader.utils.StorageManager;
 
+import java.io.File;
 import java.lang.ref.WeakReference;
 
 /**
@@ -94,12 +96,17 @@ public class PreferencesFragment extends PreferenceFragmentCompat {
     @Override
     public boolean onPreferenceTreeClick(Preference preference) {
         if (TazSettings.PREFKEY.DATA_LOCATION.equals(preference.getKey())) {
-            new Dialog.Builder().setTitle("Test")
-                                .setMessage("Bla Bla")
-                                .setNegativeButton()
-                                .setPositiveButton()
-                                .buildSupport()
-                                .show(getChildFragmentManager(), "Test");
+            File[] dataLocationDirs = StorageManager.getInstance(getContext()).getDataLocationDirs();
+            if (dataLocationDirs!= null && dataLocationDirs.length > 1) {
+                
+                new Dialog.Builder().setTitle("Test")
+                                    .setMessage("Bla Bla")
+                                    .setNegativeButton()
+                                    .setPositiveButton()
+                                    .buildSupport()
+                                    .show(getChildFragmentManager(), "Test");
+
+            }
             return true;
         }
         return super.onPreferenceTreeClick(preference);
