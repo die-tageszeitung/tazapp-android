@@ -114,30 +114,30 @@ public class DownloadManager {
                 .update(ContentUris.withAppendedId(Paper.CONTENT_URI, paper.getId()), paper.getContentValues(), null, null);
 
         if (!TextUtils.isEmpty(paper.getResource())) {
-            enqueResource(paper);
+            enqueResource(Resource.getWithKey(mContext,paper.getResource()));
         }
     }
 
     @SuppressLint("NewApi")
-    public void enqueResource(Paper paper) throws IllegalArgumentException, NotEnoughSpaceException {
+    public void enqueResource(Resource resource) throws IllegalArgumentException, NotEnoughSpaceException {
         //Paper paper = new Paper(mContext, paperId);
 
         //Uri downloadUri = Uri.parse(paper.getResourceUrl());
 
-        Resource resource = new Resource(mContext, paper.getResource());
+//        Resource resource = Resource.getWithKey(mContext, paper.getResource());
         Timber.i("requesting resource download: %s", resource);
 
-        if (resource.getKey() == null) {
-            resource.setKey(paper.getResource());
-            mContext.getContentResolver()
-                    .insert(Resource.CONTENT_URI, resource.getContentValues());
-        }
+//        if (resource.getKey() == null) {
+//            resource.setKey(paper.getResource());
+//            mContext.getContentResolver()
+//                    .insert(Resource.CONTENT_URI, resource.getContentValues());
+//        }
 
         if (!resource.isDownloaded() && !resource.isDownloading()) {
-            resource.setFileHash(paper.getResourceFileHash());
-            resource.setUrl(paper.getResourceUrl());
-            resource.setLen(paper.getResourceLen());
-            resource.setUrl(paper.getResourceUrl());
+//            resource.setFileHash(paper.getResourceFileHash());
+//            resource.setUrl(paper.getResourceUrl());
+//            resource.setLen(paper.getResourceLen());
+//            resource.setUrl(paper.getResourceUrl());
 
             Uri downloadUri;
             if (TextUtils.isEmpty(resource.getUrl())) {

@@ -528,7 +528,7 @@ public class StartActivity extends BaseActivity
         Paper openPaper;
         try {
             openPaper = new Paper(this, id);
-            Resource paperResource = new Resource(this, openPaper.getResource());
+            Resource paperResource = Resource.getWithKey(this, openPaper.getResource());
 
             if (paperResource.isDownloaded()) {
                 Timber.i("start reader for paper: %s", openPaper);
@@ -545,7 +545,7 @@ public class StartActivity extends BaseActivity
                         //DownloadHelper downloadHelper = new DownloadHelper(this);
                         try {
                             DownloadManager.getInstance(this)
-                                           .enqueResource(openPaper);
+                                           .enqueResource(Resource.getWithKey(this,openPaper.getResource()));
                             retainDataFragment.openPaperWaitingForRessource = id;
                         } catch (DownloadManager.NotEnoughSpaceException e) {
                             showDownloadErrorDialog(getString(R.string.message_resourcedownload_error),

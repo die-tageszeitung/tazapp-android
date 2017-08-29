@@ -36,7 +36,7 @@ public class DownloadFinishedResourceService extends IntentService {
         String resourceKey = intent.getStringExtra(PARAM_RESOURCE_KEY);
         Timber.i("Start service after downloaded for resource: %s", resourceKey);
         if (!TextUtils.isEmpty(resourceKey)) {
-            Resource resource = new Resource(this, resourceKey);
+            Resource resource = Resource.getWithKey(this,resourceKey);
             Timber.i("%s",resource);
             if (resource.isDownloading()) {
                 StorageManager storageManager = StorageManager.getInstance(this);

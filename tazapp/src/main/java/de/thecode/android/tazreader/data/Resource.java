@@ -5,7 +5,10 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 
+import com.dd.plist.NSDictionary;
+
 import de.thecode.android.tazreader.provider.TazProvider;
+import de.thecode.android.tazreader.utils.PlistHelper;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
@@ -25,6 +28,12 @@ public class Resource {
         public static final String URL        = "url";
     }
 
+    public static final class PLISTFIELDS {
+        public static final String RESOURCEFILEHASH = "resourceFileHash";
+        public static final String RESOURCEURL      = "resourceUrl";
+        public static final String RESOURCELEN      = "resourceLen";
+    }
+
     private String  key;
     private long    downloadId;
     private boolean downloaded;
@@ -37,17 +46,24 @@ public class Resource {
         setData(cursor);
     }
 
-    public Resource(Context context, String key) {
-        Cursor cursor = context.getContentResolver()
-                               .query(Uri.withAppendedPath(CONTENT_URI, key), null, null, null, null);
-        try {
-            if (cursor.moveToNext()) {
-                setData(cursor);
-            }
-        } finally {
-            cursor.close();
-        }
+//    public Resource(Context context, String key) {
+//        Cursor cursor = context.getContentResolver()
+//                               .query(Uri.withAppendedPath(CONTENT_URI, key), null, null, null, null);
+//        try {
+//            if (cursor.moveToNext()) {
+//                setData(cursor);
+//            }
+//        } finally {
+//            cursor.close();
+//        }
+//
+//    }
 
+    public Resource(NSDictionary nsDictionary) {
+        this.key = PlistHelper.getString(nsDictionary, Paper.Columns.RESOURCE);
+        this.fileHash = PlistHelper.getString(nsDictionary, PLISTFIELDS.RESOURCEFILEHASH);
+        this.url = PlistHelper.getString(nsDictionary, PLISTFIELDS.RESOURCEURL);
+        this.len = PlistHelper.getInt(nsDictionary, PLISTFIELDS.RESOURCELEN);
     }
 
     private void setData(Cursor cursor) {
@@ -149,6 +165,39 @@ public class Resource {
             } finally {
                 cursor.close();
             }
+        }
+        return null;
+    }
+
+    public static Resource getLatest(Context context) {
+
+        Cursor cursor = context.getContentResolver()
+                               .query(CONTENT_URI, null, null, null, "rowid DESC LIMIT 1");
+        if (cursor != null) {
+            try {
+                if (cursor.moveToNext()) {
+                    return new Resource(cursor);
+                }
+            } finally {
+                cursor.close();
+            }
+        }
+        return null;
+    }
+
+    public static Resource getWithKey(Context context, String key) {
+        Uri resourceUri = CONTENT_URI.buildUpon()
+                                     .appendPath(key)
+                                     .build();
+        Cursor cursor = context.getApplicationContext()
+                               .getContentResolver()
+                               .query(resourceUri, null, null, null, null);
+        try {
+            if (cursor.moveToNext()) {
+                return new Resource(cursor);
+            }
+        } finally {
+            cursor.close();
         }
         return null;
     }

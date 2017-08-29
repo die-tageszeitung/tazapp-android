@@ -18,6 +18,7 @@ import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Publication;
+import de.thecode.android.tazreader.data.Resource;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.download.CoverDownloadedEvent;
 import de.thecode.android.tazreader.download.DownloadManager;
@@ -103,6 +104,10 @@ public class SyncService extends IntentService {
             handlePlist(plist);
         }
 
+        if (startDate == null && endDate == null) {
+            downloadLatestRessource();
+        }
+
         reloadDataForImportedPapers();
 
         // AutoUpdate und Download der nächsten Ausgabe
@@ -158,8 +163,11 @@ public class SyncService extends IntentService {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
 
         Cursor tomorrowCursor = this.getContentResolver()
-                                    .query(Paper.CONTENT_URI, null, Paper.Columns.DATE + " LIKE '" + sdf.format(tomorrow) + "'",
-                                           null, null);
+                                    .query(Paper.CONTENT_URI,
+                                           null,
+                                           Paper.Columns.DATE + " LIKE '" + sdf.format(tomorrow) + "'",
+                                           null,
+                                           null);
         try {
             if (tomorrowCursor.moveToNext()) {
                 // Ausgabe von morgen ist da
@@ -181,15 +189,34 @@ public class SyncService extends IntentService {
                            .enquePaper(paper.getId());
         } catch (IllegalArgumentException | DownloadManager.DownloadNotAllowedException | Paper.PaperNotFoundException ignored) {
         } catch (DownloadManager.NotEnoughSpaceException e) {
-            NotificationHelper.showDownloadErrorNotification(this, this.getString(R.string.message_not_enough_space),
+            NotificationHelper.showDownloadErrorNotification(this,
+                                                             this.getString(R.string.message_not_enough_space),
                                                              paper.getId());
+        }
+    }
+
+    private void downloadLatestRessource() {
+        Paper latestPaper = Paper.getLatestPaper(this);
+        if (latestPaper != null) {
+            Resource latestResource = Resource.getWithKey(this, latestPaper.getResource());
+            if (latestResource != null && !latestResource.isDownloaded() && !latestResource.isDownloading()) {
+                try {
+                    DownloadManager.getInstance(this)
+                                   .enqueResource(latestResource);
+                } catch (DownloadManager.NotEnoughSpaceException e) {
+                    Timber.e(e);
+                }
+            }
         }
     }
 
     private void reloadDataForImportedPapers() {
         Cursor importedPaperCursor = this.getContentResolver()
-                                         .query(Paper.CONTENT_URI, null,
-                                                Paper.TABLE_NAME + "." + Paper.Columns.IMAGE + " IS NULL", null, null);
+                                         .query(Paper.CONTENT_URI,
+                                                null,
+                                                Paper.TABLE_NAME + "." + Paper.Columns.IMAGE + " IS NULL",
+                                                null,
+                                                null);
         try {
             while (importedPaperCursor.moveToNext()) {
                 Paper importedPaper = new Paper(importedPaperCursor);
@@ -212,9 +239,11 @@ public class SyncService extends IntentService {
                                       .getPrefInt(TazSettings.PREFKEY.AUTODELETE_VALUE, 0);
         if (papersToKeep > 0) {
             Cursor deletePapersCursor = this.getContentResolver()
-                                            .query(Paper.CONTENT_URI, null,
+                                            .query(Paper.CONTENT_URI,
+                                                   null,
                                                    Paper.Columns.ISDOWNLOADED + "=1 AND " + Paper.Columns.IMPORTED + "!=1 AND " + Paper.Columns.KIOSK + "!=1",
-                                                   null, Paper.Columns.DATE + " DESC");
+                                                   null,
+                                                   Paper.Columns.DATE + " DESC");
             try {
                 int counter = 0;
                 while (deletePapersCursor.moveToNext()) {
@@ -256,7 +285,9 @@ public class SyncService extends IntentService {
         }
         while (retry > 0) {
             okhttp3.Call call = OkHttp3Helper.getInstance(this)
-                                             .getCall(url, PushHelper.getInstance(this).getOkhttp3RequestBody());
+                                             .getCall(url,
+                                                      PushHelper.getInstance(this)
+                                                                .getOkhttp3RequestBody());
             try {
                 okhttp3.Response response = call.execute();
                 if (response.isSuccessful()) {
@@ -277,8 +308,11 @@ public class SyncService extends IntentService {
         Publication publication = new Publication(root);
 
         Cursor pubCursor = this.getContentResolver()
-                               .query(Publication.CONTENT_URI, null,
-                                      Publication.Columns.ISSUENAME + " LIKE '" + publication.getIssueName() + "'", null, null);
+                               .query(Publication.CONTENT_URI,
+                                      null,
+                                      Publication.Columns.ISSUENAME + " LIKE '" + publication.getIssueName() + "'",
+                                      null,
+                                      null);
 
         long publicationId;
         String publicationTitle = publication.getName();
@@ -321,8 +355,8 @@ public class SyncService extends IntentService {
                                              .appendPath(newPaper.getBookId())
                                              .build();
             Cursor cursor = this.getContentResolver()
-                                .query(bookIdUri, null, /*Paper.Columns.IMPORTED + "=0 AND " + Paper.Columns.KIOSK + "=0"*/ null,
-                                       null, null);
+                                .query(bookIdUri, null, /*Paper.Columns.IMPORTED + "=0 AND " + Paper.Columns.KIOSK + "=0"*/
+                                       null, null, null);
             try {
                 if (cursor.moveToNext()) {
                     Paper oldPaper = new Paper(cursor);
@@ -345,9 +379,9 @@ public class SyncService extends IntentService {
                             oldPaper.setLen(newPaper.getLen());
                             oldPaper.setFileHash(newPaper.getFileHash());
                             oldPaper.setResource(newPaper.getResource());
-                            oldPaper.setResourceFileHash(newPaper.getResourceFileHash());
-                            oldPaper.setResourceUrl(newPaper.getResourceUrl());
-                            oldPaper.setResourceLen(newPaper.getResourceLen());
+//                            oldPaper.setResourceFileHash(newPaper.getResourceFileHash());
+//                            oldPaper.setResourceUrl(newPaper.getResourceUrl());
+//                            oldPaper.setResourceLen(newPaper.getResourceLen());
                             oldPaper.setDemo(newPaper.isDemo());
                             oldPaper.setValidUntil(newPaper.getValidUntil());
                         }
@@ -359,6 +393,7 @@ public class SyncService extends IntentService {
                         if (reloadImage) preLoadImage(oldPaper);
                         //setMoveToPaperAtEnd(oldPaper);
                     }
+                    newPaper = oldPaper;
                 } else {
                     Timber.d("notfound");
 
@@ -367,6 +402,12 @@ public class SyncService extends IntentService {
                     newPaper.setId(newPaperId);
                     setMoveToPaperAtEnd(newPaper);
                     preLoadImage(newPaper);
+                }
+                Resource resource = Resource.getWithKey(this, newPaper.getResource());
+                if (resource == null) {
+                    resource = new Resource((NSDictionary) issue);
+                    this.getContentResolver()
+                        .insert(Resource.CONTENT_URI, resource.getContentValues());
                 }
             } finally {
                 cursor.close();

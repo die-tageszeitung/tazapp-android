@@ -273,8 +273,8 @@ public class ImportWorkerFragment extends BaseFragment {
         if (!preventImportFlag) paper.setImported(true);
         paper.setDownloaded(false);
         paper.setFileHash(null);
-        paper.setResourceUrl(null);
-        paper.setResourceFileHash(null);
+//        paper.setResourceUrl(null);
+//        paper.setResourceFileHash(null);
         paper.setResource(null);
         if (paper.getId() != null) {
             int affected = getActivity().getApplicationContext()
@@ -313,8 +313,8 @@ public class ImportWorkerFragment extends BaseFragment {
         if (!preventImportFlag) paper.setImported(true);
         paper.setDownloaded(true);
         paper.setFileHash(null);
-        paper.setResourceUrl(null);
-        paper.setResourceFileHash(null);
+//        paper.setResourceUrl(null);
+//        paper.setResourceFileHash(null);
         paper.setResource(null);
 
 
