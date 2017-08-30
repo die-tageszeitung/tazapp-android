@@ -188,7 +188,9 @@ public class ImportWorkerFragment extends BaseFragment {
 
         if (data != null) {
             try {
-                Paper paper = new Paper(getActivity().getApplicationContext(), data.getBookId());
+
+                Paper paper = Paper.getPaperWithBookId(getActivity().getApplicationContext(), data.getBookId());
+                if (paper == null) throw new Paper.PaperNotFoundException();
                 if (paper.isDownloaded()) {
 
                     if (noUserCallback) throw new Paper.PaperNotFoundException();
@@ -253,7 +255,8 @@ public class ImportWorkerFragment extends BaseFragment {
 
         Paper paper;
         try {
-            paper = new Paper(getActivity().getApplicationContext(), metadata.getBookId());
+            paper = Paper.getPaperWithBookId(getActivity().getApplicationContext(), metadata.getBookId());
+            if (paper == null) throw new Paper.PaperNotFoundException();
             storage.deletePaperDir(paper);
         } catch (Paper.PaperNotFoundException e) {
             paper = new Paper();
@@ -300,7 +303,8 @@ public class ImportWorkerFragment extends BaseFragment {
         Paper paper;
 
         try {
-            paper = new Paper(getActivity().getApplicationContext(), metadata.getBookId());
+            paper = Paper.getPaperWithBookId(getActivity().getApplicationContext(), metadata.getBookId());
+            if (paper == null) throw new Paper.PaperNotFoundException();
             storage.deletePaperDir(paper);
         } catch (Paper.PaperNotFoundException e) {
             paper = new Paper();

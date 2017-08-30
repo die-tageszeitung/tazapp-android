@@ -81,6 +81,52 @@ public class Paper {
         return null;
     }
 
+    public static List<Paper> getAllPapers(Context context){
+        List<Paper> result = new ArrayList<>();
+        Cursor cursor = context.getApplicationContext()
+                               .getContentResolver()
+                               .query(CONTENT_URI, null, null, null, Columns.DATE + " DESC");
+        try {
+            while (cursor.moveToNext()) {
+                result.add(new Paper(cursor));
+            }
+        } finally {
+            cursor.close();
+        }
+        return result;
+    }
+
+    public static Paper getPaperWithId(Context context, long id) {
+        Cursor cursor = context.getApplicationContext()
+                               .getContentResolver()
+                               .query(ContentUris.withAppendedId(CONTENT_URI, id), null, null, null, null);
+        try {
+            if (cursor.moveToNext()) {
+                return new Paper(cursor);
+            }
+        } finally {
+            cursor.close();
+        }
+        return null;
+    }
+
+    public static Paper getPaperWithBookId(Context context, String bookId) {
+        Uri bookIdUri = CONTENT_URI.buildUpon()
+                                   .appendPath(bookId)
+                                   .build();
+        Cursor cursor = context.getApplicationContext()
+                               .getContentResolver()
+                               .query(bookIdUri, null, null, null, null);
+        try {
+            if (cursor.moveToNext()) {
+                return new Paper(cursor);
+            }
+        } finally {
+            cursor.close();
+        }
+        return null;
+    }
+
 
     public static final class Columns implements BaseColumns {
 
@@ -145,39 +191,8 @@ public class Paper {
     public Paper() {
     }
 
-    public Paper(Context context, long id) throws PaperNotFoundException {
-        Cursor cursor = context.getApplicationContext()
-                               .getContentResolver()
-                               .query(ContentUris.withAppendedId(CONTENT_URI, id), null, null, null, null);
-        try {
-            if (cursor.moveToNext()) {
-                setData(cursor);
-            } else {
-                throw new PaperNotFoundException("Found no Paper with Id " + id);
-            }
-        } finally {
-            cursor.close();
-        }
-    }
 
-    public Paper(Context context, String bookId) throws PaperNotFoundException {
-        Uri bookIdUri = CONTENT_URI.buildUpon()
-                                   .appendPath(bookId)
-                                   .build();
-        Cursor cursor = context.getApplicationContext()
-                               .getContentResolver()
-                               .query(bookIdUri, null, null, null, null);
-        try {
-            if (cursor.moveToNext()) {
-                setData(cursor);
 
-            } else {
-                throw new PaperNotFoundException("Found no Paper with BookId " + bookId);
-            }
-        } finally {
-            cursor.close();
-        }
-    }
 
     public Paper(Cursor cursor) {
         setData(cursor);

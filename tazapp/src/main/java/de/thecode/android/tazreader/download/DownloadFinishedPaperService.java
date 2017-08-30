@@ -26,7 +26,7 @@ import timber.log.Timber;
  */
 public class DownloadFinishedPaperService extends IntentService implements UnzipStream.UnzipStreamProgressListener {
 
-    public static final String PARAM_PAPER_ID = "paperId";
+    public static final String PARAM_PAPER_ID    = "paperId";
     public static final String PARAM_CANCEL_BOOL = "cancel";
 
     private static volatile List<Long> canceledPapersIds = new ArrayList<>();
@@ -36,7 +36,7 @@ public class DownloadFinishedPaperService extends IntentService implements Unzip
         super(DownloadFinishedPaperService.class.getSimpleName());
     }
 
-    private long currentPaperId;
+    private long       currentPaperId;
     private UnzipPaper currentUnzipPaper;
 
     @Override
@@ -69,8 +69,8 @@ public class DownloadFinishedPaperService extends IntentService implements Unzip
         if (intent.getBooleanExtra(PARAM_CANCEL_BOOL, false)) return;
         long paperId = intent.getLongExtra(PARAM_PAPER_ID, -1);
         Timber.i("Start service after download for paper: %d", paperId);
-        if (paperId != -1) try {
-            Paper paper = new Paper(this, paperId);
+        Paper paper = Paper.getPaperWithId(this, paperId);
+        if (paper != null) {
             if (canceledPapersIds.contains(paperId)) {
                 canceledPapersIds.remove(paperId);
                 paper.delete(this);
@@ -80,7 +80,10 @@ public class DownloadFinishedPaperService extends IntentService implements Unzip
                 Timber.i("%s", paper);
                 StorageManager storageManager = StorageManager.getInstance(this);
                 currentPaperId = paperId;
-                currentUnzipPaper = new UnzipPaper(paper, storageManager.getDownloadFile(paper), storageManager.getPaperDirectory(paper), true);
+                currentUnzipPaper = new UnzipPaper(paper,
+                                                   storageManager.getDownloadFile(paper),
+                                                   storageManager.getPaperDirectory(paper),
+                                                   true);
                 currentUnzipPaper.getUnzipFile()
                                  .addProgressListener(this);
                 currentUnzipPaper.start();
@@ -88,8 +91,6 @@ public class DownloadFinishedPaperService extends IntentService implements Unzip
             } catch (ParserConfigurationException | IOException | SAXException | ParseException | PropertyListFormatException | UnzipCanceledException e) {
                 savePaper(paper, e);
             }
-        } catch (Paper.PaperNotFoundException e) {
-            Timber.e(e);
         }
         Timber.i("Finished service after download for paper: %d", paperId);
     }
@@ -110,7 +111,10 @@ public class DownloadFinishedPaperService extends IntentService implements Unzip
             paper.setDownloaded(true);
         }
 
-        getContentResolver().update(ContentUris.withAppendedId(Paper.CONTENT_URI, paper.getId()), paper.getContentValues(), null, null);
+        getContentResolver().update(ContentUris.withAppendedId(Paper.CONTENT_URI, paper.getId()),
+                                    paper.getContentValues(),
+                                    null,
+                                    null);
 
         if (exception == null) {
             NotificationHelper.showDownloadFinishedNotification(this, paper.getId());

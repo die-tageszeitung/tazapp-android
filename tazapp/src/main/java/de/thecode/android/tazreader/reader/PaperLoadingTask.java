@@ -33,7 +33,8 @@ public abstract class PaperLoadingTask extends AsyncTaskWithExecption<Void, Void
 
     @Override
     public Paper doInBackgroundWithException(Void... params) throws Exception {
-        Paper paper = new Paper(mContext, mPaperId);
+        Paper paper = Paper.getPaperWithId(mContext, mPaperId);
+        if (paper == null) throw new Paper.PaperNotFoundException();
         //paper.parsePlist(mStorage.getPaperFile(paper));
         paper.parsePlist(new File(StorageManager.getInstance(mContext).getPaperDirectory(paper), Paper.CONTENT_PLIST_FILENAME));
 

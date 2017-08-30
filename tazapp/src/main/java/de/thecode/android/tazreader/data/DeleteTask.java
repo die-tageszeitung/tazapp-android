@@ -25,7 +25,8 @@ public abstract class DeleteTask extends AsyncTaskWithExecption<Long, Void, Void
         if (params != null) {
             for (Long paperId : params) {
                 try {
-                    Paper deletePaper = new Paper(context, paperId);
+                    Paper deletePaper = Paper.getPaperWithId(context, paperId);
+                    if (deletePaper == null) throw new Paper.PaperNotFoundException();
                     if (deletePaper.isDownloading()) {
                         DownloadManager downloadManager = DownloadManager.getInstance(context);
                         DownloadManager.DownloadState state = downloadManager.getDownloadState(deletePaper.getDownloadId());

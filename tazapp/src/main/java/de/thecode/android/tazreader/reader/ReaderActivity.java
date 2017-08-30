@@ -444,6 +444,7 @@ public class ReaderActivity extends BaseActivity
 
     @Override
     public void onDialogClick(String tag, Bundle arguments, int which) {
+        super.onDialogClick(tag, arguments, which);
         if (TAG_DIALOG_TTS_ERROR.equals(tag)) {
             if (which == Dialog.BUTTON_NEUTRAL) {
                 Intent intent = new Intent();
@@ -456,6 +457,7 @@ public class ReaderActivity extends BaseActivity
 
     @Override
     public void onDialogDismiss(String tag, Bundle arguments) {
+        super.onDialogDismiss(tag, arguments);
         if (TAG_FRAGMENT_DIALOG_SETTING.equals(tag)) {
             //setImmersiveMode();
         }

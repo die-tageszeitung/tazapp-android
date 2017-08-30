@@ -9,8 +9,14 @@ import com.dd.plist.NSDictionary;
 
 import de.thecode.android.tazreader.provider.TazProvider;
 import de.thecode.android.tazreader.utils.PlistHelper;
+import de.thecode.android.tazreader.utils.StorageManager;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class Resource {
@@ -148,41 +154,50 @@ public class Resource {
         return len;
     }
 
+    public void delete(Context context){
+        StorageManager storage = StorageManager.getInstance(context);
+        storage.deleteResourceDir(getKey());
+        setDownloadId(0);
+        setDownloaded(false);
+        Uri resourceUri = CONTENT_URI.buildUpon()
+                                     .appendPath(getKey())
+                                     .build();
+        int affected = context.getContentResolver()
+                              .update(resourceUri, getContentValues(), null, null);
+    }
+
     @Override
     public String toString() {
         return ToStringBuilder.reflectionToString(this);
     }
 
-    public static Resource getLatestDownloaded(Context context) {
 
-        Cursor cursor = context.getContentResolver()
-                               .query(CONTENT_URI, null, "downloaded=1", null, "rowid DESC LIMIT 1");
-        if (cursor != null) {
-            try {
-                if (cursor.moveToNext()) {
-                    return new Resource(cursor);
-                }
-            } finally {
-                cursor.close();
-            }
-        }
-        return null;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+
+        if (!(o instanceof Resource)) return false;
+
+        Resource resource = (Resource) o;
+
+        return new EqualsBuilder().append(downloadId, resource.downloadId)
+                                  .append(downloaded, resource.downloaded)
+                                  .append(len, resource.len)
+                                  .append(key, resource.key)
+                                  .append(url, resource.url)
+                                  .append(fileHash, resource.fileHash)
+                                  .isEquals();
     }
 
-    public static Resource getLatest(Context context) {
-
-        Cursor cursor = context.getContentResolver()
-                               .query(CONTENT_URI, null, null, null, "rowid DESC LIMIT 1");
-        if (cursor != null) {
-            try {
-                if (cursor.moveToNext()) {
-                    return new Resource(cursor);
-                }
-            } finally {
-                cursor.close();
-            }
-        }
-        return null;
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37).append(key)
+                                          .append(downloadId)
+                                          .append(downloaded)
+                                          .append(url)
+                                          .append(fileHash)
+                                          .append(len)
+                                          .toHashCode();
     }
 
     public static Resource getWithKey(Context context, String key) {
@@ -200,5 +215,20 @@ public class Resource {
             cursor.close();
         }
         return null;
+    }
+
+    public static List<Resource> getAllResources(Context context){
+        List<Resource> result = new ArrayList<>();
+        Cursor cursor = context.getApplicationContext()
+                               .getContentResolver()
+                               .query(CONTENT_URI, null, null, null, null);
+        try {
+            while (cursor.moveToNext()) {
+                result.add(new Resource(cursor));
+            }
+        } finally {
+            cursor.close();
+        }
+        return result;
     }
 }

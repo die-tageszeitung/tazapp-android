@@ -4,6 +4,7 @@ package de.thecode.android.tazreader.start;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
@@ -35,6 +36,7 @@ import de.thecode.android.tazreader.data.Resource;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.dialog.ArchiveDialog;
 import de.thecode.android.tazreader.dialog.ArchiveEntry;
+import de.thecode.android.tazreader.dialog.HelpDialog;
 import de.thecode.android.tazreader.download.DownloadManager;
 import de.thecode.android.tazreader.download.NotificationHelper;
 import de.thecode.android.tazreader.download.PaperDownloadFailedEvent;
@@ -68,7 +70,7 @@ import timber.log.Timber;
 public class StartActivity extends BaseActivity
         implements IStartCallback, DialogButtonListener, DialogDismissListener, DialogCancelListener, DialogAdapterListListener {
 
-    private static final String DIALOG_FIRST                 = "dialogFirst";
+    //private static final String DIALOG_FIRST                 = "dialogFirst";
     private static final String DIALOG_USER_REENTER          = "dialogUserReenter";
     //private static final String DIALOG_MISSING_RESOURCE = "dialogMissingResource";
     private static final String DIALOG_RESOURCE_DOWNLOADING  = "dialogResourceDownloading";
@@ -95,10 +97,10 @@ public class StartActivity extends BaseActivity
 
     NavigationDrawerFragment.NavigationItem userItem;
     NavigationDrawerFragment.NavigationItem libraryItem;
-//    NavigationDrawerFragment.NavigationItem settingsItem;
+    //    NavigationDrawerFragment.NavigationItem settingsItem;
     NavigationDrawerFragment.NavigationItem preferencesItem;
 
-    NavigationDrawerFragment.NavigationItem helpItem;
+    NavigationDrawerFragment.ClickItem      helpItem;
     NavigationDrawerFragment.NavigationItem imprintItem;
     // NavigationDrawerFragment.NavigationItem importItem;
 
@@ -126,8 +128,6 @@ public class StartActivity extends BaseActivity
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        Resource latestResource = Resource.getLatestDownloaded(this);
 
         if (TazSettings.getInstance(this)
                        .getPrefInt(TazSettings.PREFKEY.PAPERMIGRATEFROM, 0) != 0) {
@@ -170,30 +170,32 @@ public class StartActivity extends BaseActivity
         if (getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         updateTitle();
 
-        mDrawerFragment = (NavigationDrawerFragment) getSupportFragmentManager().findFragmentById(
-                R.id.fragment_navigation_drawer);
+        mDrawerFragment = (NavigationDrawerFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_navigation_drawer);
         mDrawerFragment.setUp(R.id.fragment_navigation_drawer, (DrawerLayout) findViewById(R.id.drawer_layout), toolbar);
 
-        userItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_account), R.drawable.ic_account,
+        userItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_account),
+                                                               R.drawable.ic_account,
                                                                LoginFragment.class);
 //        importItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_import), R.drawable.ic_file_folder,
 //                                                                 ImportFragment.class);
 //        importItem.setAccessibilty(false);
-        libraryItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_library), R.drawable.ic_library,
+        libraryItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_library),
+                                                                  R.drawable.ic_library,
                                                                   LibraryFragment.class);
 //        settingsItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_settings), R.drawable.ic_settings,
 //                                                                   SettingsFragment.class);
 //        settingsItem.setAccessibilty(false);
 
-        preferencesItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_preferences), R.drawable.ic_settings,
-                                                                   PreferencesFragment.class);
+        preferencesItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_preferences),
+                                                                      R.drawable.ic_settings,
+                                                                      PreferencesFragment.class);
         preferencesItem.setAccessibilty(false);
 
 
-        helpItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_help), R.drawable.ic_help,
-                                                               HelpFragment.class);
+        helpItem = new NavigationDrawerFragment.ClickItem(getString(R.string.drawer_help), R.drawable.ic_help);
         helpItem.setAccessibilty(false);
-        imprintItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_imprint), R.drawable.ic_imprint,
+        imprintItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_imprint),
+                                                                  R.drawable.ic_imprint,
                                                                   ImprintFragment.class);
 
 
@@ -204,7 +206,7 @@ public class StartActivity extends BaseActivity
         mDrawerFragment.addItem(helpItem);
         mDrawerFragment.addDividerItem();
         mDrawerFragment.addItem(imprintItem);
-       // mDrawerFragment.addItem(settingsItem);
+        // mDrawerFragment.addItem(settingsItem);
         mDrawerFragment.addItem(preferencesItem);
 
 
@@ -225,7 +227,7 @@ public class StartActivity extends BaseActivity
                        .setPref(TazSettings.PREFKEY.FISRTSTART, false);
             TazSettings.getInstance(this)
                        .setPref(TazSettings.PREFKEY.USERMIGRATIONNOTIFICATION, true);
-            firstStartDialog();
+//            firstStartDialog();
         } else if (!TazSettings.getInstance(this)
                                .getPrefBoolean(TazSettings.PREFKEY.USERMIGRATIONNOTIFICATION, false)) {
             new Dialog.Builder().setCancelable(false)
@@ -276,6 +278,14 @@ public class StartActivity extends BaseActivity
     }
 
     @Override
+    public void onNavigationClick(NavigationDrawerFragment.ClickItem item) {
+        Timber.i("");
+        if (helpItem.equals(item)) {
+            showHelpDialog(HelpDialog.HELP_LIBRARY);
+        }
+    }
+
+    @Override
     public void onBackPressed() {
         if (getRetainData().getNavBackstack()
                            .size() > 1) {
@@ -290,7 +300,6 @@ public class StartActivity extends BaseActivity
             super.onBackPressed();
         }
     }
-
 
 
     @Override
@@ -332,7 +341,8 @@ public class StartActivity extends BaseActivity
 
     @Override
     public void startDownload(long paperId) throws Paper.PaperNotFoundException {
-        Paper downloadPaper = new Paper(this, paperId);
+        Paper downloadPaper = Paper.getPaperWithId(this, paperId);
+        if (downloadPaper == null) throw new Paper.PaperNotFoundException();
         if (!downloadPaper.isDownloading()) {
             switch (Connection.getConnectionType(this)) {
                 case Connection.CONNECTION_NOT_AVAILABLE:
@@ -369,7 +379,8 @@ public class StartActivity extends BaseActivity
         while (retainDataFragment.downloadQueue.size() > 0) {
             long paperId = retainDataFragment.downloadQueue.get(0);
             try {
-                Paper paper = new Paper(this, paperId);
+                Paper paper = Paper.getPaperWithId(this, paperId);
+                if (paper == null) throw new Paper.PaperNotFoundException();
                 try {
                     DownloadManager.getInstance(this)
                                    .enquePaper(paperId);
@@ -390,13 +401,13 @@ public class StartActivity extends BaseActivity
     }
 
 
-    private void firstStartDialog() {
-        new Dialog.Builder().setMessage(R.string.dialog_first)
-                            .setPositiveButton()
-                            .setNeutralButton(R.string.drawer_account)
-                            .buildSupport()
-                            .show(getSupportFragmentManager(), DIALOG_FIRST);
-    }
+//    private void firstStartDialog() {
+//        new Dialog.Builder().setMessage(R.string.dialog_first)
+//                            .setPositiveButton()
+//                            .setNeutralButton(R.string.drawer_account)
+//                            .buildSupport()
+//                            .show(getSupportFragmentManager(), DIALOG_FIRST);
+//    }
 
     public void showNoConnectionDialog() {
         new Dialog.Builder().setMessage(R.string.dialog_noconnection)
@@ -416,8 +427,10 @@ public class StartActivity extends BaseActivity
     }
 
     private void showLicencesDialog() {
-        new LicenceDialog.Builder().addEntry(
-                new Apache20Licence(this, "Android Support Library", "The Android Open Source Project", 2011))
+        new LicenceDialog.Builder().addEntry(new Apache20Licence(this,
+                                                                 "Android Support Library",
+                                                                 "The Android Open Source Project",
+                                                                 2011))
                                    .addEntry(new Apache20Licence(this, "OkHttp", "Square, Inc.", 2016))
                                    .addEntry(new Apache20Licence(this, "Picasso", "Square, Inc.", 2013))
                                    .addEntry(new Apache20Licence(this, "Picasso 2 OkHttp 3 Downloader", "Jake Wharton", 2016))
@@ -427,7 +440,10 @@ public class StartActivity extends BaseActivity
                                    .addEntry(new MitLicence(this, "dd-plist", "Daniel Dreibrodt", 2016))
                                    .addEntry(new Apache20Licence(this, "cwac-provider", "Mark Murphy", 2016))
                                    .addEntry(new Apache20Licence(this, "Centering Recycler View", "Shigehiro Soejima", 2015))
-                                   .addEntry(new Apache20Licence(this, "EventBus 3", "Markus Junginger, greenrobot (http://greenrobot.org)", 2016))
+                                   .addEntry(new Apache20Licence(this,
+                                                                 "EventBus 3",
+                                                                 "Markus Junginger, greenrobot (http://greenrobot.org)",
+                                                                 2016))
                                    .addEntry(new Apache20Licence(this, "Calligraphy", "Christopher Jenkins", 2013))
                                    .addEntry(new Apache20Licence(this, "Commons IO", "The Apache Software Foundation", 2016))
                                    .addEntry(new Apache20Licence(this, "ViewpagerIndicator", "Jordan Réjaud", 2016))
@@ -527,7 +543,8 @@ public class StartActivity extends BaseActivity
 
         Paper openPaper;
         try {
-            openPaper = new Paper(this, id);
+            openPaper = Paper.getPaperWithId(this, id);
+            if (openPaper == null) throw new Paper.PaperNotFoundException();
             Resource paperResource = Resource.getWithKey(this, openPaper.getResource());
 
             if (paperResource.isDownloaded()) {
@@ -545,11 +562,12 @@ public class StartActivity extends BaseActivity
                         //DownloadHelper downloadHelper = new DownloadHelper(this);
                         try {
                             DownloadManager.getInstance(this)
-                                           .enqueResource(Resource.getWithKey(this,openPaper.getResource()));
+                                           .enqueResource(Resource.getWithKey(this, openPaper.getResource()));
                             retainDataFragment.openPaperWaitingForRessource = id;
                         } catch (DownloadManager.NotEnoughSpaceException e) {
                             showDownloadErrorDialog(getString(R.string.message_resourcedownload_error),
-                                                    getString(R.string.message_not_enough_space), e);
+                                                    getString(R.string.message_not_enough_space),
+                                                    e);
                         }
 
                 }
@@ -584,7 +602,8 @@ public class StartActivity extends BaseActivity
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onPaperDownloadFailed(PaperDownloadFailedEvent event) {
         try {
-            Paper paper = new Paper(this, event.getPaperId());
+            Paper paper = Paper.getPaperWithId(this, event.getPaperId());
+            if (paper == null) throw new Paper.PaperNotFoundException();
             showDownloadErrorDialog(paper.getTitelWithDate(this), null, event.getException());
             NotificationHelper.cancelDownloadErrorNotification(this, event.getPaperId());
         } catch (Paper.PaperNotFoundException e) {
@@ -596,7 +615,8 @@ public class StartActivity extends BaseActivity
     public void onResourceDownload(ResourceDownloadEvent event) {
         if (retainDataFragment.openPaperWaitingForRessource != -1) {
             try {
-                Paper waitingPaper = new Paper(this, retainDataFragment.openPaperWaitingForRessource);
+                Paper waitingPaper = Paper.getPaperWithId(this, retainDataFragment.openPaperWaitingForRessource);
+                if (waitingPaper == null) throw new Paper.PaperNotFoundException();
                 if (event.getKey()
                          .equals(waitingPaper.getResource())) {
                     toggleWaitDialog(DIALOG_WAIT + waitingPaper.getBookId());
@@ -612,12 +632,50 @@ public class StartActivity extends BaseActivity
         }
     }
 
+    AsyncTask<Void, Void, Boolean> firstStartTask;
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (firstStartTask != null) firstStartTask.cancel(true);
+        firstStartTask = new AsyncTask<Void, Void, Boolean>() {
+            @Override
+            protected Boolean doInBackground(Void... voids) {
+                boolean showDialog = false;
+                List<Paper> allPapers = Paper.getAllPapers(StartActivity.this);
+                boolean foundDownloaded = false;
+                for (Paper paper : allPapers) {
+                    if (foundDownloaded || isCancelled()) break;
+                    foundDownloaded = paper.isDownloaded() || paper.isDownloading();
+                }
+                if (!foundDownloaded) {
+                    showDialog = TazSettings.getInstance(StartActivity.this)
+                                            .isDemoMode();
+                }
+                return showDialog;
+            }
+
+            @Override
+            protected void onPostExecute(Boolean aBoolean) {
+                if (aBoolean) showHelpDialog(HelpDialog.HELP_INTRO);
+            }
+        };
+        firstStartTask.execute();
+    }
+
+    @Override
+    protected void onPause() {
+        if (firstStartTask != null) firstStartTask.cancel(true);
+        super.onPause();
+    }
 
     @Override
     public void onDialogClick(String tag, Bundle arguments, int which) {
-        if (DIALOG_FIRST.equals(tag)) {
-            if (which == Dialog.BUTTON_NEUTRAL) mDrawerFragment.simulateClick(userItem, true);
-        } else if (DIALOG_USER_REENTER.equals(tag)) {
+        super.onDialogClick(tag, arguments, which);
+//        if (DIALOG_FIRST.equals(tag)) {
+//            if (which == Dialog.BUTTON_NEUTRAL) mDrawerFragment.simulateClick(userItem, true);
+//        } else
+        if (DIALOG_USER_REENTER.equals(tag)) {
             if (which == Dialog.BUTTON_POSITIVE) {
                 TazSettings.getInstance(this)
                            .setPref(TazSettings.PREFKEY.USERMIGRATIONNOTIFICATION, true);
@@ -636,7 +694,7 @@ public class StartActivity extends BaseActivity
 
             }
         } else if (ImprintFragment.DIALOG_TECHINFO.equals(tag)) {
-            switch (which){
+            switch (which) {
                 case Dialog.BUTTON_NEUTRAL:
                     showLicencesDialog();
                     break;
@@ -670,6 +728,7 @@ public class StartActivity extends BaseActivity
 
     @Override
     public void onDialogAdapterListClick(String tag, DialogAdapterList.DialogAdapterListEntry entry, Bundle arguments) {
+        super.onDialogAdapterListClick(tag, entry, arguments);
         if (DIALOG_ARCHIVE_YEAR.equals(tag)) {
             if (getResources().getBoolean(R.bool.archive_monthly)) {
                 showArchiveMonthPicker(((ArchiveEntry) entry).getNumber());
@@ -696,6 +755,7 @@ public class StartActivity extends BaseActivity
 
     @Override
     public void onDialogDismiss(String tag, Bundle arguments) {
+        super.onDialogDismiss(tag, arguments);
         if (DIALOG_DOWNLOAD_MOBILE.equals(tag)) {
             retainDataFragment.downloadQueue.clear();
         }
@@ -703,6 +763,7 @@ public class StartActivity extends BaseActivity
 
     @Override
     public void onDialogCancel(String tag, Bundle arguments) {
+        super.onDialogCancel(tag, arguments);
         if (DIALOG_DOWNLOAD_MOBILE.equals(tag)) {
             retainDataFragment.downloadQueue.clear();
         }

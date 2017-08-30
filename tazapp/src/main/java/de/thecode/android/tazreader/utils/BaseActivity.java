@@ -7,8 +7,16 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 
+import de.mateware.dialog.DialogAdapterList;
+import de.mateware.dialog.listener.DialogAdapterListListener;
+import de.mateware.dialog.listener.DialogButtonListener;
+import de.mateware.dialog.listener.DialogCancelListener;
+import de.mateware.dialog.listener.DialogDismissListener;
+import de.mateware.dialog.listener.DialogListListener;
 import de.thecode.android.tazreader.BuildConfig;
+import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.TazSettings;
+import de.thecode.android.tazreader.dialog.HelpDialog;
 import de.thecode.android.tazreader.dialog.PushNotificationDialog;
 import de.thecode.android.tazreader.push.PushHelper;
 import de.thecode.android.tazreader.push.PushNotification;
@@ -25,16 +33,20 @@ import timber.log.Timber;
 /**
  * Created by mate on 12.05.2015.
  */
-public class BaseActivity extends AppCompatActivity {
+public class BaseActivity extends AppCompatActivity
+        implements DialogButtonListener, DialogDismissListener, DialogCancelListener, DialogListListener,
+        DialogAdapterListListener {
 
-    private static final String                            DIALOG_PUSH                   = "DialogPush";
+    public static final  String DIALOG_HELP = "hilfeDialog";
+    private static final String DIALOG_PUSH = "DialogPush";
+
     private TazSettings.OnPreferenceChangeListener<String> orientationPreferenceListener = new TazSettings.OnPreferenceChangeListener<String>() {
         @Override
         public void onPreferenceChanged(String changedValue) {
             setOrientation(changedValue);
         }
     };
-    private TazSettings.OnPreferenceChangeListener<Object> pushPreferenceListener = new TazSettings.OnPreferenceChangeListener<Object>() {
+    private TazSettings.OnPreferenceChangeListener<Object> pushPreferenceListener        = new TazSettings.OnPreferenceChangeListener<Object>() {
         @Override
         public void onPreferenceChanged(Object changedValue) {
             PushRestApiJob.scheduleJob();
@@ -46,10 +58,11 @@ public class BaseActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         FragmentManager.enableDebugLogging(BuildConfig.DEBUG);
-        setOrientation(TazSettings.getInstance(this).getPrefString(TazSettings.PREFKEY.ORIENTATION,"auto"));
+        setOrientation(TazSettings.getInstance(this)
+                                  .getPrefString(TazSettings.PREFKEY.ORIENTATION, "auto"));
     }
 
-    private void setOrientation(String orientationKey){
+    private void setOrientation(String orientationKey) {
         Orientation.setActivityOrientation(this, orientationKey);
     }
 
@@ -58,16 +71,22 @@ public class BaseActivity extends AppCompatActivity {
         super.onStart();
         EventBus.getDefault()
                 .register(this);
-        TazSettings.getInstance(this).addOnPreferenceChangeListener(TazSettings.PREFKEY.ORIENTATION,orientationPreferenceListener);
-        TazSettings.getInstance(this).addOnPreferenceChangeListener(TazSettings.PREFKEY.NOTIFICATION_PUSH,pushPreferenceListener);
-        TazSettings.getInstance(this).addOnPreferenceChangeListener(TazSettings.PREFKEY.NOTIFICATION_SOUND_PUSH,pushPreferenceListener);
-        TazSettings.getInstance(this).addOnPreferenceChangeListener(TazSettings.PREFKEY.FIREBASETOKEN,pushPreferenceListener);
+        TazSettings.getInstance(this)
+                   .addOnPreferenceChangeListener(TazSettings.PREFKEY.ORIENTATION, orientationPreferenceListener);
+        TazSettings.getInstance(this)
+                   .addOnPreferenceChangeListener(TazSettings.PREFKEY.NOTIFICATION_PUSH, pushPreferenceListener);
+        TazSettings.getInstance(this)
+                   .addOnPreferenceChangeListener(TazSettings.PREFKEY.NOTIFICATION_SOUND_PUSH, pushPreferenceListener);
+        TazSettings.getInstance(this)
+                   .addOnPreferenceChangeListener(TazSettings.PREFKEY.FIREBASETOKEN, pushPreferenceListener);
     }
 
     @Override
     protected void onStop() {
-        TazSettings.getInstance(this).removeOnPreferenceChangeListener(orientationPreferenceListener);
-        TazSettings.getInstance(this).removeOnPreferenceChangeListener(pushPreferenceListener);
+        TazSettings.getInstance(this)
+                   .removeOnPreferenceChangeListener(orientationPreferenceListener);
+        TazSettings.getInstance(this)
+                   .removeOnPreferenceChangeListener(pushPreferenceListener);
         EventBus.getDefault()
                 .unregister(this);
         super.onStop();
@@ -99,5 +118,41 @@ public class BaseActivity extends AppCompatActivity {
                                             .show(getSupportFragmentManager(), DIALOG_PUSH);
     }
 
+    public void showHelpDialog(@HelpDialog.HelpPage String helpPage) {
+        if (getSupportFragmentManager().findFragmentByTag(DIALOG_HELP) == null) {
+            HelpDialog.Builder builder = new HelpDialog.Builder().setPositiveButton()
+                                                                 .setHelpPage(helpPage);
+            if (HelpDialog.HELP_INTRO.equals(helpPage)){
+                builder.setNeutralButton(R.string.drawer_account);
+            }
+            builder.buildSupport()
+                   .show(getSupportFragmentManager(), DIALOG_HELP);
+        }
+    }
 
+
+    @Override
+    public void onDialogClick(String tag, Bundle dialogArguments, int which) {
+
+    }
+
+    @Override
+    public void onDialogCancel(String tag, Bundle dialogArguments) {
+
+    }
+
+    @Override
+    public void onDialogDismiss(String tag, Bundle dialogArguments) {
+    Timber.i("");
+    }
+
+    @Override
+    public void onDialogAdapterListClick(String tag, DialogAdapterList.DialogAdapterListEntry entry, Bundle arguments) {
+
+    }
+
+    @Override
+    public void onDialogListClick(String tag, Bundle arguments, int which, String value, String[] items) {
+
+    }
 }

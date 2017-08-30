@@ -14,6 +14,8 @@ public interface IStartCallback {
 
     public void loadFragment(NavigationDrawerFragment.NavigationItem item);
 
+    public void onNavigationClick(NavigationDrawerFragment.ClickItem item);
+
     public void onUpdateDrawer(Fragment fragement);
 
     public Toolbar getToolbar();

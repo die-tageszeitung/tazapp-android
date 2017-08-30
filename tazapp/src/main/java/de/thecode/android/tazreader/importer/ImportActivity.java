@@ -80,6 +80,7 @@ public class ImportActivity extends BaseActivity implements DialogButtonListener
 
     @Override
     public void onDialogClick(String tag, Bundle arguments, int which) {
+        super.onDialogClick(tag, arguments, which);
         if (DIALOG_ERROR_IMPORT.equals(tag) && which == Dialog.BUTTON_POSITIVE) {
             workerFragment.handleNextDataUri();
         } else if (DIALOG_EXISTS_IMPORT.equals(tag)) {

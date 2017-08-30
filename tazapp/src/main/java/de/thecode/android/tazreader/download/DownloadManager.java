@@ -59,7 +59,10 @@ public class DownloadManager {
     public void enquePaper(long paperId) throws IllegalArgumentException, Paper.PaperNotFoundException,
             DownloadNotAllowedException, NotEnoughSpaceException {
 
-        Paper paper = new Paper(mContext, paperId);
+
+
+        Paper paper = Paper.getPaperWithId(mContext, paperId);
+        if (paper == null) throw new Paper.PaperNotFoundException();
 
         if (TazSettings.getInstance(mContext)
                        .isDemoMode() && !paper.isDemo()) throw new DownloadNotAllowedException();

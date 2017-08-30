@@ -37,9 +37,11 @@ import org.json.JSONException;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
@@ -108,6 +110,8 @@ public class SyncService extends IntentService {
             downloadLatestRessource();
         }
 
+        cleanUpResources();
+
         reloadDataForImportedPapers();
 
         // AutoUpdate und Download der nächsten Ausgabe
@@ -152,6 +156,30 @@ public class SyncService extends IntentService {
             }
         }
 
+    }
+
+    private void cleanUpResources() {
+        List<Paper> allPapers = Paper.getAllPapers(this);
+        List<Resource> keepResources = new ArrayList<>();
+        if (allPapers != null) {
+            for (Paper paper : allPapers) {
+                if (paper.isDownloaded() || paper.isDownloading()) {
+                    Resource resource = Resource.getWithKey(this, paper.getResource());
+                    if (resource != null && !keepResources.contains(resource)) keepResources.add(resource);
+                }
+            }
+        }
+        List<Resource> deleteResources = Resource.getAllResources(this);
+        Paper latestPaper = Paper.getLatestPaper(this);
+        if (latestPaper != null) deleteResources.remove(Resource.getWithKey(this, latestPaper.getResource()));
+        for (Resource keepResource : keepResources) {
+            if (deleteResources.contains(keepResource)) {
+                deleteResources.remove(keepResource);
+            }
+        }
+        for (Resource deleteResource : deleteResources) {
+            deleteResource.delete(this);
+        }
     }
 
     private Paper checkForTommorrowPaper() {

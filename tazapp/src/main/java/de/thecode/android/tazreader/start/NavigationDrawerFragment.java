@@ -216,6 +216,8 @@ public class NavigationDrawerFragment extends BaseFragment {
         Item item = navigationAdapter.getItem(position);
         if (item instanceof NavigationItem) {
             if (hasCallback()) getCallback().loadFragment((NavigationItem) item);
+        } else if (item instanceof ClickItem) {
+            if (hasCallback()) getCallback().onNavigationClick((ClickItem) item);
         }
     }
 
@@ -256,7 +258,7 @@ public class NavigationDrawerFragment extends BaseFragment {
                 case ENTRY:
                     //                case USER:
                     NavigationItemViewHolder itemViewHolder = (NavigationItemViewHolder) holder;
-                    NavigationItem item = (NavigationItem) items.get(position);
+                    ClickItem item = (ClickItem) items.get(position);
                     itemViewHolder.image.setImageResource(item.drawableId);
                     itemViewHolder.text.setText(item.text);
 
@@ -386,7 +388,7 @@ public class NavigationDrawerFragment extends BaseFragment {
 
         TYPE type;
         private int position;
-        private Class<? extends Fragment> target;
+
 
         public Item(TYPE type) {
             this.type = type;
@@ -404,36 +406,26 @@ public class NavigationDrawerFragment extends BaseFragment {
             return position;
         }
 
-        public void setTarget(Class<? extends Fragment> target) {
-            this.target = target;
-        }
 
-        public Class<? extends Fragment> getTarget() {
-            return target;
-        }
     }
 
-    public static class NavigationItem extends Item {
+    public static class ClickItem extends Item {
 
         String text;
         int drawableId;
         boolean accessibility = true;
 
-        //        int fragmentFactoryId; //From FragmentFactory
-
-        public NavigationItem(String text, Class<? extends Fragment> target) {
-            this(text, -1, target);
+        public ClickItem(String text) {
+            this(text,-1);
         }
 
-        public NavigationItem(String text, int drawableId, Class<? extends Fragment> target) {
-            this(TYPE.ENTRY, text, drawableId, target);
+        public ClickItem(String text, int drawableId) {
+            this(TYPE.ENTRY,text,drawableId);
         }
 
-        public NavigationItem(TYPE type, String text, int drawableId, Class<? extends Fragment> target) {
+        private ClickItem(TYPE type, String text, int drawableId) {
             super(type);
             this.text = text;
-            setTarget(target);
-            //            this.fragmentFactoryId = fragmentFactoryId;
             if (drawableId == -1) this.drawableId = R.drawable.ic_dot;
             else this.drawableId = drawableId;
         }
@@ -445,5 +437,32 @@ public class NavigationDrawerFragment extends BaseFragment {
         public void setAccessibilty(boolean bool) {
             accessibility = bool;
         }
+    }
+
+    public static class NavigationItem extends ClickItem {
+
+        private Class<? extends Fragment> target;
+
+        public NavigationItem(String text, Class<? extends Fragment> target) {
+            this(text, -1, target);
+        }
+
+        public NavigationItem(String text, int drawableId, Class<? extends Fragment> target) {
+            this(TYPE.ENTRY, text, drawableId, target);
+        }
+
+        private NavigationItem(TYPE type, String text, int drawableId, Class<? extends Fragment> target) {
+            super(type,text,drawableId);
+            setTarget(target);
+        }
+
+        public void setTarget(Class<? extends Fragment> target) {
+            this.target = target;
+        }
+
+        public Class<? extends Fragment> getTarget() {
+            return target;
+        }
+
     }
 }

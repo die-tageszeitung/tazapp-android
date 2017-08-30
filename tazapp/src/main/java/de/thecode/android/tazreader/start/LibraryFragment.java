@@ -392,7 +392,8 @@ public class LibraryFragment extends BaseFragment
     private void downloadSelected() {
         for (Long paperId : adapter.getSelected()) {
             try {
-                Paper paper = new Paper(getActivity(), paperId);
+                Paper paper = Paper.getPaperWithId(getContext(), paperId);
+                if (paper == null) throw new Paper.PaperNotFoundException();
                 if (hasCallback()) getCallback().startDownload(paper.getId());
             } catch (Paper.PaperNotFoundException e) {
                 Timber.e(e);
