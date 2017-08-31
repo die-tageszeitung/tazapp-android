@@ -48,7 +48,7 @@ public class HelpDialog extends DialogCustomView {
     public static final String HELP_PAGE    = "seiten.html";
     public static final String HELP_ARTICLE = "artikel.html";
 
-    private static final String HELP_RESOURCE_SUBDIR = "res/android-help";
+    private static final String[] HELP_RESOURCE_SUBDIRS = {"res/android-help","res/ios-help"};
 
     private static final String ARG_HELPPAGE = "helpPage";
     private String  helpPage;
@@ -90,16 +90,21 @@ public class HelpDialog extends DialogCustomView {
 
                 File latestResourceDir = StorageManager.getInstance(context)
                                                        .getResourceDirectory(latestResource.getKey());
-                try {
-                    File helpFileDir = new File(latestResourceDir, HELP_RESOURCE_SUBDIR);
-                    helpFileStream = new FileInputStream(new File(helpFileDir, helpPage));
-                    baseUrl = "file://" + helpFileDir.getAbsolutePath() + "/";
-                    withoutRessourceMode = false;
-                    break;
-                } catch (FileNotFoundException e) {
-                    Timber.e(e);
+                File helpFileDir = null;
+                for (String helpFileSubdirPath : HELP_RESOURCE_SUBDIRS) {
+                    helpFileDir = new File(latestResourceDir, helpFileSubdirPath);
+                    if (helpFileDir.exists()) break;
                 }
-
+                if (helpFileDir != null) {
+                    try {
+                        helpFileStream = new FileInputStream(new File(helpFileDir, helpPage));
+                        baseUrl = "file://" + helpFileDir.getAbsolutePath() + "/";
+                        withoutRessourceMode = false;
+                        break;
+                    } catch (FileNotFoundException e) {
+                        Timber.e(e);
+                    }
+                }
             }
         }
 
