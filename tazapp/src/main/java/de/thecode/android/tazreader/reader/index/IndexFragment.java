@@ -1,7 +1,6 @@
 package de.thecode.android.tazreader.reader.index;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
 import android.support.v4.content.ContextCompat;
@@ -28,7 +27,6 @@ import de.thecode.android.tazreader.data.Paper.Plist.Page.Article;
 import de.thecode.android.tazreader.data.Paper.Plist.Source;
 import de.thecode.android.tazreader.data.Paper.Plist.TopLink;
 import de.thecode.android.tazreader.data.TazSettings;
-import de.thecode.android.tazreader.reader.HelpActivity;
 import de.thecode.android.tazreader.reader.IReaderCallback;
 import de.thecode.android.tazreader.reader.ReaderActivity;
 import de.thecode.android.tazreader.reader.SettingsDialog;
@@ -150,8 +148,9 @@ public class IndexFragment extends BaseFragment {
                         setIndexVerbose(true);
                         break;
                     case R.id.toolbar_index_help:
-                        Intent helpIntent = new Intent(getActivity(), HelpActivity.class);
-                        startActivity(helpIntent);
+                        if (mReaderCallback != null) {
+                            mReaderCallback.onShowHelp();
+                        }
                         break;
                 }
                 return true;

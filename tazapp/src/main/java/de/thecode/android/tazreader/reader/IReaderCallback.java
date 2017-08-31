@@ -13,6 +13,8 @@ public interface IReaderCallback {
 
     public boolean onLoadPrevArticle(DIRECTIONS fromDirection,String position);
 
+    void onShowHelp();
+
     public int onGetBackgroundColor(String themeName);
     
     public void onBookmarkClick(IIndexItem item);

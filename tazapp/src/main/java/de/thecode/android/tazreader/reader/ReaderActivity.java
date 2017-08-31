@@ -33,6 +33,7 @@ import de.thecode.android.tazreader.analytics.AnalyticsWrapper;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Store;
 import de.thecode.android.tazreader.data.TazSettings;
+import de.thecode.android.tazreader.dialog.HelpDialog;
 import de.thecode.android.tazreader.download.NotificationHelper;
 import de.thecode.android.tazreader.reader.article.ArticleFragment;
 import de.thecode.android.tazreader.reader.article.TopLinkFragment;
@@ -310,6 +311,15 @@ public class ReaderActivity extends BaseActivity
                                 .trackBreadcrumb("...with init of Fragment");
                 mContentFragment.init(retainDataFragment.getPaper(), indexItem.getKey(), "");
             } else ((PagesFragment) mContentFragment).setPage(indexItem.getKey());
+        }
+    }
+
+    @Override
+    public void onShowHelp() {
+        if (mContentFragment instanceof PagesFragment) {
+            showHelpDialog(HelpDialog.HELP_PAGE);
+        } else {
+            showHelpDialog(HelpDialog.HELP_ARTICLE);
         }
     }
 

@@ -672,9 +672,9 @@ public class StartActivity extends BaseActivity
     @Override
     public void onDialogClick(String tag, Bundle arguments, int which) {
         super.onDialogClick(tag, arguments, which);
-//        if (DIALOG_FIRST.equals(tag)) {
-//            if (which == Dialog.BUTTON_NEUTRAL) mDrawerFragment.simulateClick(userItem, true);
-//        } else
+        if (DIALOG_HELP.equals(tag)) {
+            if (which == Dialog.BUTTON_NEUTRAL) mDrawerFragment.simulateClick(userItem, true);
+        } else
         if (DIALOG_USER_REENTER.equals(tag)) {
             if (which == Dialog.BUTTON_POSITIVE) {
                 TazSettings.getInstance(this)

@@ -102,7 +102,6 @@
             </intent-filter>
         </activity>
         <activity android:name=".migration.MigrationActivity"/>
-        <activity android:name=".reader.HelpActivity"/>
 
         <service
                 android:name=".download.DownloadFinishedResourceService"

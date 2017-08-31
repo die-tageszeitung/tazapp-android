@@ -12,9 +12,13 @@ import android.webkit.WebView;
 import de.mateware.dialog.DialogCustomView;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Resource;
+import de.thecode.android.tazreader.download.ResourceDownloadEvent;
 import de.thecode.android.tazreader.utils.StorageManager;
 
 import org.apache.commons.io.IOUtils;
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -44,11 +48,12 @@ public class HelpDialog extends DialogCustomView {
     public static final String HELP_PAGE    = "seiten.html";
     public static final String HELP_ARTICLE = "artikel.html";
 
-    private static final String HELP_RESOURCE_SUBDIR = "res/ios-help";
+    private static final String HELP_RESOURCE_SUBDIR = "res/android-help";
 
     private static final String ARG_HELPPAGE = "helpPage";
     private String  helpPage;
     private WebView webView;
+    private boolean withoutRessourceMode = true;
 
     @Override
     public View getView(LayoutInflater inflater, ViewGroup parent) {
@@ -63,10 +68,12 @@ public class HelpDialog extends DialogCustomView {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        EventBus.getDefault().register(this);
     }
 
     @Override
     public void onDestroy() {
+        EventBus.getDefault().unregister(this);
         super.onDestroy();
     }
 
@@ -87,6 +94,7 @@ public class HelpDialog extends DialogCustomView {
                     File helpFileDir = new File(latestResourceDir, HELP_RESOURCE_SUBDIR);
                     helpFileStream = new FileInputStream(new File(helpFileDir, helpPage));
                     baseUrl = "file://" + helpFileDir.getAbsolutePath() + "/";
+                    withoutRessourceMode = false;
                     break;
                 } catch (FileNotFoundException e) {
                     Timber.e(e);
@@ -112,6 +120,15 @@ public class HelpDialog extends DialogCustomView {
             }
         }
         webView.loadDataWithBaseURL(baseUrl, html, "text/html", "utf-8", null);
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onResourceDownload(ResourceDownloadEvent event) {
+        if (withoutRessourceMode) {
+            if (getContext() != null) {
+                setHtmlInWebView(getContext());
+            }
+        }
     }
 
     public static class Builder extends AbstractBuilder<Builder, HelpDialog> {
