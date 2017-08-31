@@ -15,7 +15,7 @@ import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Resource;
 import de.thecode.android.tazreader.data.TazSettings;
-import de.thecode.android.tazreader.push.PushHelper;
+import de.thecode.android.tazreader.okhttp3.RequestHelper;
 import de.thecode.android.tazreader.secure.Base64;
 import de.thecode.android.tazreader.sync.AccountHelper;
 import de.thecode.android.tazreader.utils.StorageManager;
@@ -38,7 +38,7 @@ public class DownloadManager {
     Context                     mContext;
     StorageManager              mStorage;
     UserAgentHelper             userAgentHelper;
-    PushHelper                  pushHelper;
+    RequestHelper               requestHelper;
 
     private static DownloadManager instance;
 
@@ -52,7 +52,7 @@ public class DownloadManager {
         mContext = context;
         mStorage = StorageManager.getInstance(context);
         userAgentHelper = UserAgentHelper.getInstance(context);
-        pushHelper = PushHelper.getInstance(context);
+        requestHelper = RequestHelper.getInstance(context);
     }
 
     @SuppressLint("NewApi")
@@ -69,7 +69,7 @@ public class DownloadManager {
 
         Timber.i("requesting paper download: %s", paper);
 
-        Uri downloadUri = pushHelper.addToUri(Uri.parse(paper.getLink()));
+        Uri downloadUri = requestHelper.addToUri(Uri.parse(paper.getLink()));
 
         Request request;
         try {
@@ -77,7 +77,7 @@ public class DownloadManager {
         } catch (Exception e1) {
             String httpUrl = paper.getLink()
                                   .replace("https://", "http://");
-            request = new Request(pushHelper.addToUri(Uri.parse(httpUrl)));
+            request = new Request(requestHelper.addToUri(Uri.parse(httpUrl)));
         }
         addUserAgent(request);
 
@@ -156,7 +156,7 @@ public class DownloadManager {
             } catch (Exception e1) {
                 String httpUrl = downloadUri.toString()
                                             .replace("https://", "http://");
-                request = new Request(pushHelper.addToUri(Uri.parse(httpUrl)));
+                request = new Request(requestHelper.addToUri(Uri.parse(httpUrl)));
             }
             addUserAgent(request);
 

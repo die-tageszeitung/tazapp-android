@@ -24,7 +24,7 @@ import de.thecode.android.tazreader.download.CoverDownloadedEvent;
 import de.thecode.android.tazreader.download.DownloadManager;
 import de.thecode.android.tazreader.download.NotificationHelper;
 import de.thecode.android.tazreader.okhttp3.OkHttp3Helper;
-import de.thecode.android.tazreader.push.PushHelper;
+import de.thecode.android.tazreader.okhttp3.RequestHelper;
 import de.thecode.android.tazreader.reader.ReaderActivity;
 import de.thecode.android.tazreader.start.ScrollToPaperEvent;
 import de.thecode.android.tazreader.utils.Connection;
@@ -314,8 +314,8 @@ public class SyncService extends IntentService {
         while (retry > 0) {
             okhttp3.Call call = OkHttp3Helper.getInstance(this)
                                              .getCall(url,
-                                                      PushHelper.getInstance(this)
-                                                                .getOkhttp3RequestBody());
+                                                      RequestHelper.getInstance(this)
+                                                                   .getOkhttp3RequestBody());
             try {
                 okhttp3.Response response = call.execute();
                 if (response.isSuccessful()) {
