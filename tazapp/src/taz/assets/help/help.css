@@ -1,0 +1,90 @@
+body {
+  font: normal 14pt/130% serif;
+  margin: 0.0em;
+  padding: 0.8em;
+  text-align: justify;
+}
+
+h1 {
+  font : bold 1.4em/120% sans-serif;
+#  color: #c80a1a;
+  margin: 0.0em;
+}
+
+h2 {
+  font : bold 1.3em/120% sans-serif;
+}
+
+h3 {
+  font : bold 1.2em/120% sans-serif;
+}
+
+p {
+  lang: de;
+  -webkit-hyphens: auto;
+  hyphens: auto;
+}
+
+li {   
+  padding-bottom : 0.5em;
+}
+
+ul {   
+  padding-left : 1.4em;
+}
+
+dd {
+#  padding-bottom:0.5em;
+}
+
+
+img { border:none; }
+
+table {
+  background-color:#f2f2f2;
+  font-size:90%;
+  border:1px solid #000; 
+  border-collapse:collapse;
+}
+th {
+  background-color:#dddddd;
+  padding-top:0.3em;
+  padding-bottom:0.2em;
+}
+td {
+  border:1px solid #000;
+  padding-right:1em;
+  padding-left:1em;
+}
+td.nopad {
+  border:1px solid #000;
+  padding-right:0em;
+  padding-left:0em;
+}
+td.pluspad {
+  border:1px solid #000;
+  padding-right:1em;
+  padding-left:1em;
+  padding-top:0.5em;
+  padding-bottom:0.5em;
+}
+caption {
+  text-align:left;
+  font-size:110%;
+  font-weight:bold;
+  padding-top:0.5em;
+  padding-bottom:0.5em;
+}
+
+.center { text-align:center; }
+
+.fail { color:red; }
+.success { color:green; }
+
+.menue {
+  color:#0655dd;
+  opacity:1.0;
+  background-color:white;
+}
+
+
