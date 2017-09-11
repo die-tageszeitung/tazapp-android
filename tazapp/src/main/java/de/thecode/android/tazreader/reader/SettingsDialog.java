@@ -85,7 +85,7 @@ public class SettingsDialog extends DialogCustomView {
         });
 
         SwitchCompat switchIsPaging = (SwitchCompat) view.findViewById(R.id.switchIsPaging);
-        switchIsPaging.setChecked(TazSettings.getInstance(getContext()).getPrefBoolean(TazSettings.PREFKEY.ISPAGING,false));
+        switchIsPaging.setChecked(TazSettings.getInstance(getContext()).getPrefBoolean(TazSettings.PREFKEY.ISPAGING, false));
         switchIsPaging.setOnCheckedChangeListener(new OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {

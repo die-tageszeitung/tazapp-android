@@ -35,7 +35,7 @@ public class TechInfoDialog extends DialogCustomView {
             versionName = packageInfo.versionName;
         } catch (Exception ignored) {
         }
-
+        versionName += " ("+BuildConfig.VERSION_CODE+")";
 
         String[] supportedArch;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {

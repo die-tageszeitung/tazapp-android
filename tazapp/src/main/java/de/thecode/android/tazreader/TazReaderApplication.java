@@ -87,6 +87,7 @@ public class TazReaderApplication extends Application {
             FileUtils.deleteQuietly(oldLibImageDir);
         }
 
+
         // MIGRATION BEENDET, setzten der aktuellen Version
         TazSettings.getInstance(this)
                    .setPref(TazSettings.PREFKEY.LASTVERSION, BuildConfig.VERSION_CODE);

@@ -73,7 +73,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
 
     Handler mUiThreadHandler;
-    boolean mIndexUpdated;
+    //boolean mIndexUpdated;
     GESTURES mLastGesture = GESTURES.undefined;
 
     public ArticleFragment() {
@@ -489,27 +489,23 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
         }
 
         @JavascriptInterface
-        public void pageReady(String percentSeen, final String position, String numberOfPages) {
+        public void pageReady(String percentSeen, String position, String numberOfPages) {
             Timber.d("%s %s %s", mArticle.getKey(), percentSeen, position, numberOfPages);
 
             //fade(1F, 800);
 
             runOnUiThread(new Runnable() {
-
+                String position;
                 @Override
                 public void run() {
-
-                    mProgressBar.setVisibility(View.GONE);
-                    if (!mIndexUpdated) {
-                        String newposition = position;
-                        if (TazSettings.getInstance(getContext()).getPrefBoolean(TazSettings.PREFKEY.ISSCROLL, false))
-                            newposition = "0";
-                        if (hasCallback())
-                            getCallback().updateIndexes(mArticle.getKey(), newposition);
-                        mIndexUpdated = true;
-                    }
+                    if (hasCallback())
+                        getCallback().updateIndexes(mArticle.getKey(), position);
                 }
-            });
+                Runnable init(String position) {
+                    this.position = position;
+                    return this;
+                }
+            }.init(position));
         }
 
         @JavascriptInterface

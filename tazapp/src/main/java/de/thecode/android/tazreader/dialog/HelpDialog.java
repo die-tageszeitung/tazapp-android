@@ -2,7 +2,6 @@ package de.thecode.android.tazreader.dialog;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.annotation.StringDef;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,13 +11,9 @@ import android.webkit.WebView;
 import de.mateware.dialog.DialogCustomView;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Resource;
-import de.thecode.android.tazreader.download.ResourceDownloadEvent;
 import de.thecode.android.tazreader.utils.StorageManager;
 
 import org.apache.commons.io.IOUtils;
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -53,7 +48,7 @@ public class HelpDialog extends DialogCustomView {
     private static final String ARG_HELPPAGE = "helpPage";
     private String  helpPage;
     private WebView webView;
-    private boolean withoutRessourceMode = true;
+    //private boolean withoutRessourceMode = true;
 
     @Override
     public View getView(LayoutInflater inflater, ViewGroup parent) {
@@ -63,18 +58,6 @@ public class HelpDialog extends DialogCustomView {
                .setJavaScriptEnabled(true);
         setHtmlInWebView(inflater.getContext());
         return webView;
-    }
-
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        EventBus.getDefault().register(this);
-    }
-
-    @Override
-    public void onDestroy() {
-        EventBus.getDefault().unregister(this);
-        super.onDestroy();
     }
 
     private void setHtmlInWebView(Context context) {
@@ -99,7 +82,6 @@ public class HelpDialog extends DialogCustomView {
                     try {
                         helpFileStream = new FileInputStream(new File(helpFileDir, helpPage));
                         baseUrl = "file://" + helpFileDir.getAbsolutePath() + "/";
-                        withoutRessourceMode = false;
                         break;
                     } catch (FileNotFoundException e) {
                         Timber.e(e);
@@ -111,7 +93,7 @@ public class HelpDialog extends DialogCustomView {
         if (helpFileStream == null) {
             try {
                 helpFileStream = context.getAssets()
-                                        .open("help/help.html");
+                                        .open("help/"+helpPage);
             } catch (IOException e) {
                 Timber.e(e);
             }
@@ -125,15 +107,6 @@ public class HelpDialog extends DialogCustomView {
             }
         }
         webView.loadDataWithBaseURL(baseUrl, html, "text/html", "utf-8", null);
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onResourceDownload(ResourceDownloadEvent event) {
-        if (withoutRessourceMode) {
-            if (getContext() != null) {
-                setHtmlInWebView(getContext());
-            }
-        }
     }
 
     public static class Builder extends AbstractBuilder<Builder, HelpDialog> {
