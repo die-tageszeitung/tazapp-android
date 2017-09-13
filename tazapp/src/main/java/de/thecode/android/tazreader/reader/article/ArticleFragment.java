@@ -240,7 +240,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
     @Override
     public void init(Paper paper, String key, String position) {
-        Timber.d("initialising ArticleFragment %s", key);
+        Timber.d("initialising ArticleFragment %s and position %s", key, position);
         mArticle = paper.getPlist()
                         .getIndexItem(key);
         mStartPosition = position;
@@ -498,6 +498,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
                 String position;
                 @Override
                 public void run() {
+                    mProgressBar.setVisibility(View.GONE);
                     if (hasCallback())
                         getCallback().updateIndexes(mArticle.getKey(), position);
                 }
