@@ -95,7 +95,8 @@ public class ReaderActivity extends BaseActivity
     FragmentManager mFragmentManager;
     StorageManager  mStorage;
 
-    ReaderDataFragment retainDataFragment;
+    //ReaderDataFragment retainDataFragment;
+    ReaderDataFragment retainDataFragmentNew;
     ReaderTtsFragment  retainTtsFragment;
 
     IndexFragment           mIndexFragment;
@@ -140,21 +141,26 @@ public class ReaderActivity extends BaseActivity
 
         mFragmentManager = getSupportFragmentManager();
 
-
-        retainDataFragment = ReaderDataFragment.retainDataFragment(getSupportFragmentManager(),ReaderDataFragment.class);
-        if (retainDataFragment != null) {
-            Timber.i("Found data fragment");
-            if (retainDataFragment.isPaperLoaded()) {
-                onPaperLoadFinished(new PaperLoadedEvent());
-            }
+        if (getReaderDataFragment().isPaperLoaded()) {
+            onPaperLoadFinished(new PaperLoadedEvent());
         } else {
-            Timber.i("Did not find data fragment, initialising loading");
-            retainDataFragment = ReaderDataFragment.createDataFragment(getSupportFragmentManager(),ReaderDataFragment.class);
-            retainDataFragment.loadPaper(paperId);
+            getReaderDataFragment().loadPaper(paperId);
         }
 
+//        retainDataFragment = ReaderDataFragment.retainDataFragment(getSupportFragmentManager(), ReaderDataFragment.class);
+//        if (retainDataFragment != null) {
+//            Timber.i("Found data fragment");
+//            if (retainDataFragment.isPaperLoaded()) {
+//                onPaperLoadFinished(new PaperLoadedEvent());
+//            }
+//        } else {
+//            Timber.i("Did not find data fragment, initialising loading");
+//            retainDataFragment = ReaderDataFragment.createDataFragment(getSupportFragmentManager(), ReaderDataFragment.class);
+//            retainDataFragment.loadPaper(paperId);
+//        }
+
         audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        retainTtsFragment = ReaderTtsFragment.createOrRetainDataFragment(getSupportFragmentManager(),ReaderTtsFragment.class);
+        retainTtsFragment = ReaderTtsFragment.createOrRetainDataFragment(getSupportFragmentManager(), ReaderTtsFragment.class);
         retainTtsFragment.setCallback(this);
         if (retainTtsFragment.getTtsState() == ReaderTtsFragment.TTS.PLAYING) ttsPreparePlayingInActivty();
     }
@@ -194,7 +200,14 @@ public class ReaderActivity extends BaseActivity
     private void initializeFragments() {
         loadIndexFragment();
         loadPageIndexFragment();
-        loadContentFragment(retainDataFragment.getCurrentKey(), retainDataFragment.getPostion());
+        loadContentFragment(getReaderDataFragment().getCurrentKey());
+    }
+
+    public ReaderDataFragment getReaderDataFragment() {
+        if (retainDataFragmentNew == null) retainDataFragmentNew = ReaderDataFragment.createOrRetainDataFragment(
+                getSupportFragmentManager(),
+                ReaderDataFragment.class);
+        return retainDataFragmentNew;
     }
 
     private void loadIndexFragment() {
@@ -205,10 +218,10 @@ public class ReaderActivity extends BaseActivity
             mIndexFragment = new IndexFragment();
             FragmentTransaction indexesFragmentTransaction = mFragmentManager.beginTransaction();
             indexesFragmentTransaction.replace(R.id.left_drawer, mIndexFragment, TAG_FRAGMENT_INDEX);
-            indexesFragmentTransaction.commitAllowingStateLoss();
+            indexesFragmentTransaction.commit();
         }
 
-        mIndexFragment.init(retainDataFragment.getPaper());
+        //mIndexFragment.init(retainDataFragment.getPaper());
     }
 
     private void loadPageIndexFragment() {
@@ -219,21 +232,21 @@ public class ReaderActivity extends BaseActivity
             mPageIndexFragment = new PageIndexFragment();
             FragmentTransaction indexesFragmentTransaction = mFragmentManager.beginTransaction();
             indexesFragmentTransaction.replace(R.id.right_drawer, mPageIndexFragment, TAG_FRAGMENT_PAGEINDEX);
-            indexesFragmentTransaction.commitAllowingStateLoss();
+            indexesFragmentTransaction.commit();
         }
-        mPageIndexFragment.init(retainDataFragment.getPaper());
+        //mPageIndexFragment.init(getReaderDataFragment().getPaper());
     }
 
-    private void loadContentFragment(String key, String position) {
+    private void loadContentFragment(String key) {
 
-        IIndexItem indexItem = retainDataFragment.getPaper()
-                                                 .getPlist()
-                                                 .getIndexItem(key);
+        IIndexItem indexItem = getReaderDataFragment().getPaper()
+                                                      .getPlist()
+                                                      .getIndexItem(key);
         if (indexItem != null) {
             switch (indexItem.getType()) {
                 case ARTICLE:
                 case TOPLINK:
-                    loadArticleFragment(indexItem, DIRECTIONS.NONE, position);
+                    loadArticleFragment(indexItem, DIRECTIONS.NONE, getPaper().getPositionInArticle(this,indexItem));
                     break;
                 case PAGE:
                     loadPagesFragment(indexItem);
@@ -243,9 +256,9 @@ public class ReaderActivity extends BaseActivity
     }
 
     private void loadArticleFragment(String key, DIRECTIONS direction, String position) {
-        IIndexItem indexItem = retainDataFragment.getPaper()
-                                                 .getPlist()
-                                                 .getIndexItem(key);
+        IIndexItem indexItem = getReaderDataFragment().getPaper()
+                                                      .getPlist()
+                                                      .getIndexItem(key);
         loadArticleFragment(indexItem, direction, position);
     }
 
@@ -255,9 +268,9 @@ public class ReaderActivity extends BaseActivity
         FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
 
         if (indexItem.getType() == IIndexItem.Type.TOPLINK) {
-            mContentFragment = new TopLinkFragment();
+            mContentFragment = TopLinkFragment.newInstance(indexItem.getKey());
         } else {
-            mContentFragment = new ArticleFragment();
+            mContentFragment = ArticleFragment.newInstance(indexItem.getKey(),position);
         }
 
 
@@ -287,30 +300,36 @@ public class ReaderActivity extends BaseActivity
 
         fragmentTransaction.commit();
 
-        mContentFragment.init(retainDataFragment.getPaper(), indexItem.getKey(), position);
+        //mContentFragment.init(retainDataFragment.getPaper(), indexItem.getKey(), position);
     }
 
     private void loadPagesFragment(IIndexItem indexItem) {
-        AnalyticsWrapper.getInstance()
-                        .trackBreadcrumb("loadPagesFragment...");
+
+
+
+
+//        AnalyticsWrapper.getInstance()
+//                        .trackBreadcrumb("loadPagesFragment...");
         if (indexItem.getType() == IIndexItem.Type.PAGE) {
-            boolean needInit = false;
+//            boolean needInit = false;
             if (mContentFragment == null) {
                 mContentFragment = (AbstractContentFragment) mFragmentManager.findFragmentById(R.id.content_frame);
-                needInit = true;
+//                needInit = true;
             }
             if (!(mContentFragment instanceof PagesFragment)) {
                 FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
-                mContentFragment = new PagesFragment();
+                mContentFragment = PagesFragment.newInstance(indexItem.getKey());
                 fragmentTransaction.replace(R.id.content_frame, mContentFragment);
                 fragmentTransaction.commit();
-                needInit = true;
+//                needInit = true;
+            } else {
+                ((PagesFragment) mContentFragment).setPage(indexItem.getKey());
             }
-            if (needInit) {
-                AnalyticsWrapper.getInstance()
-                                .trackBreadcrumb("...with init of Fragment");
-                mContentFragment.init(retainDataFragment.getPaper(), indexItem.getKey(), "");
-            } else ((PagesFragment) mContentFragment).setPage(indexItem.getKey());
+//            if (needInit) {
+//                AnalyticsWrapper.getInstance()
+//                                .trackBreadcrumb("...with init of Fragment");
+//                mContentFragment.init(retainDataFragment.getPaper(), indexItem.getKey(), "");
+//            } else ((PagesFragment) mContentFragment).setPage(indexItem.getKey());
         }
     }
 
@@ -357,15 +376,16 @@ public class ReaderActivity extends BaseActivity
     @Override
     public boolean onLoadPrevArticle(DIRECTIONS fromDirection, String position) {
 
-        int prevPosition = retainDataFragment.getPaper()
-                                             .getArticleCollectionOrderPosition(retainDataFragment.getCurrentKey()) - 1;
+        int prevPosition = getReaderDataFragment().getPaper()
+                                                  .getArticleCollectionOrderPosition(getReaderDataFragment().getCurrentKey()) - 1;
 
-        if (retainDataFragment.isFilterBookmarks()) {
+        if (getReaderDataFragment().isFilterBookmarks()) {
             while (prevPosition >= 0) {
-                IIndexItem item = retainDataFragment.getPaper()
-                                                    .getPlist()
-                                                    .getIndexItem(retainDataFragment.getPaper()
-                                                                                    .getArticleCollectionOrderKey(prevPosition));
+                IIndexItem item = getReaderDataFragment().getPaper()
+                                                         .getPlist()
+                                                         .getIndexItem(getReaderDataFragment().getPaper()
+                                                                                              .getArticleCollectionOrderKey(
+                                                                                                      prevPosition));
                 if (item != null) {
                     if (item.isBookmarked()) break;
                 }
@@ -374,8 +394,8 @@ public class ReaderActivity extends BaseActivity
         }
 
         if (prevPosition >= 0) {
-            loadArticleFragment(retainDataFragment.getPaper()
-                                                  .getArticleCollectionOrderKey(prevPosition), fromDirection, position);
+            loadArticleFragment(getReaderDataFragment().getPaper()
+                                                       .getArticleCollectionOrderKey(prevPosition), fromDirection, position);
             return true;
         }
         return false;
@@ -384,16 +404,17 @@ public class ReaderActivity extends BaseActivity
     @Override
     public boolean onLoadNextArticle(DIRECTIONS fromDirection, String position) {
 
-        int nextPositiion = retainDataFragment.getPaper()
-                                              .getArticleCollectionOrderPosition(retainDataFragment.getCurrentKey()) + 1;
+        int nextPositiion = getReaderDataFragment().getPaper()
+                                                   .getArticleCollectionOrderPosition(getReaderDataFragment().getCurrentKey()) + 1;
 
-        if (retainDataFragment.isFilterBookmarks()) {
-            while (nextPositiion < retainDataFragment.getPaper()
-                                                     .getArticleCollectionSize()) {
-                IIndexItem item = retainDataFragment.getPaper()
-                                                    .getPlist()
-                                                    .getIndexItem(retainDataFragment.getPaper()
-                                                                                    .getArticleCollectionOrderKey(nextPositiion));
+        if (getReaderDataFragment().isFilterBookmarks()) {
+            while (nextPositiion < getReaderDataFragment().getPaper()
+                                                          .getArticleCollectionSize()) {
+                IIndexItem item = getReaderDataFragment().getPaper()
+                                                         .getPlist()
+                                                         .getIndexItem(getReaderDataFragment().getPaper()
+                                                                                              .getArticleCollectionOrderKey(
+                                                                                                      nextPositiion));
                 if (item != null) {
                     if (item.isBookmarked()) break;
                 }
@@ -401,11 +422,11 @@ public class ReaderActivity extends BaseActivity
             }
         }
 
-        if (nextPositiion < retainDataFragment.getPaper()
-                                              .getArticleCollectionSize()) {
+        if (nextPositiion < getReaderDataFragment().getPaper()
+                                                   .getArticleCollectionSize()) {
 
-            loadArticleFragment(retainDataFragment.getPaper()
-                                                  .getArticleCollectionOrderKey(nextPositiion), fromDirection, position);
+            loadArticleFragment(getReaderDataFragment().getPaper()
+                                                       .getArticleCollectionOrderKey(nextPositiion), fromDirection, position);
             return true;
         }
         return false;
@@ -429,7 +450,7 @@ public class ReaderActivity extends BaseActivity
 
     @Override
     public boolean onLoad(String key) {
-        loadContentFragment(key, "0");
+        loadContentFragment(key);
         return false;
     }
 
@@ -440,7 +461,7 @@ public class ReaderActivity extends BaseActivity
         item.setBookmark(!item.isBookmarked());
         if (mIndexFragment != null) mIndexFragment.onBookmarkChange(item.getKey());
         if (item.getKey()
-                .equals(retainDataFragment.getCurrentKey())) {
+                .equals(getReaderDataFragment().getCurrentKey())) {
             if (mContentFragment instanceof ArticleFragment) ((ArticleFragment) mContentFragment).initialBookmark();
         }
         JSONArray bookmarks = getPaper().getBookmarkJson();
@@ -532,20 +553,20 @@ public class ReaderActivity extends BaseActivity
     }
 
     @Override
-    public void updateIndexes(String key, String position) {
-        retainDataFragment.setCurrentKey(key, position);
+    public void updateIndexes(String key) {
+        getReaderDataFragment().setCurrentKey(key);
         if (mIndexFragment != null) mIndexFragment.updateCurrentPosition(key);
         if (mPageIndexFragment != null) mPageIndexFragment.updateCurrentPosition(key);
         if (mContentFragment instanceof PagesFragment)
-            ((PagesFragment) mContentFragment).setShareButtonCallback(retainDataFragment.getPaper()
-                                                                                        .getPlist()
-                                                                                        .getIndexItem(key));
+            ((PagesFragment) mContentFragment).setShareButtonCallback(getReaderDataFragment().getPaper()
+                                                                                             .getPlist()
+                                                                                             .getIndexItem(key));
     }
 
 
     @Override
     public String getCurrentKey() {
-        return retainDataFragment.getCurrentKey();
+        return getReaderDataFragment().getCurrentKey();
     }
 
     @Override
@@ -556,27 +577,28 @@ public class ReaderActivity extends BaseActivity
 
     @Override
     public void setFilterBookmarks(boolean bool) {
-        retainDataFragment.setFilterBookmarks(bool);
+        getReaderDataFragment().setFilterBookmarks(bool);
     }
 
     @Override
     public boolean isFilterBookmarks() {
-        return retainDataFragment.isFilterBookmarks();
+        return getReaderDataFragment().isFilterBookmarks();
     }
 
 
     @Override
     public Paper getPaper() {
-        return retainDataFragment.getPaper();
+        Timber.i("");
+        return getReaderDataFragment().getPaper();
     }
 
 
     @Override
     public void onBackPressed() {
-        if (retainDataFragment != null && retainDataFragment.getCurrentKey() != null) {
-            IIndexItem currentItem = retainDataFragment.getPaper()
-                                                       .getPlist()
-                                                       .getIndexItem(retainDataFragment.getCurrentKey());
+        if (getReaderDataFragment() != null && getReaderDataFragment().getCurrentKey() != null) {
+            IIndexItem currentItem = getReaderDataFragment().getPaper()
+                                                            .getPlist()
+                                                            .getIndexItem(getReaderDataFragment().getCurrentKey());
             if (currentItem instanceof Paper.Plist.Page.Article) {
                 onLoad(((Paper.Plist.Page.Article) currentItem).getRealPage()
                                                                .getKey());

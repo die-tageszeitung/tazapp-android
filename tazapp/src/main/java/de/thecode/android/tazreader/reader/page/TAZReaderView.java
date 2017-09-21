@@ -34,7 +34,6 @@ public class TAZReaderView extends ReaderView implements GestureDetector.OnDoubl
 
     public TAZReaderView(Context context) {
         super(context);
-
         init(context);
     }
 
@@ -102,8 +101,7 @@ public class TAZReaderView extends ReaderView implements GestureDetector.OnDoubl
     protected void onMoveToChild(int i) {
         Timber.d("i: %s", i);
         Page page = (Page) getAdapter().getItem(i);
-        mReaderCallback.updateIndexes(page.getKey(), "0");
-
+        mReaderCallback.updateIndexes(page.getKey());
     }
 
     @Override

@@ -1,7 +1,7 @@
 package de.thecode.android.tazreader.reader.index;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
+import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -90,6 +90,7 @@ public class PageIndexFragment extends BaseFragment {
                 return bitmap.getByteCount() / 1024;
             }
         };
+        init(mReaderCallback.getPaper());
     }
 
     @Override
@@ -117,29 +118,29 @@ public class PageIndexFragment extends BaseFragment {
     }
 
     @Override
-    public void onAttach(Activity activity) {
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof IReaderCallback) mReaderCallback = (IReaderCallback)context;
+        else throw new RuntimeException(context.toString() + " must implement " + IReaderCallback.class.getSimpleName());
 
-        super.onAttach(activity);
-        mReaderCallback = (IReaderCallback) activity;
 
-
-        mThumbnailImageHeight = activity.getResources()
+        mThumbnailImageHeight = context.getResources()
                                         .getDimensionPixelSize(
-                                                R.dimen.pageindex_thumbnail_image_height) - (2 * activity.getResources()
+                                                R.dimen.pageindex_thumbnail_image_height) - (2 * context.getResources()
                                                                                                          .getDimensionPixelSize(
                                                                                                                  R.dimen.pageindex_padding));
-        mThumbnailImageWidth = activity.getResources()
+        mThumbnailImageWidth = context.getResources()
                                        .getDimensionPixelSize(
-                                               R.dimen.pageindex_thumbnail_image_width) - (2 * activity.getResources()
+                                               R.dimen.pageindex_thumbnail_image_width) - (2 * context.getResources()
                                                                                                        .getDimensionPixelSize(
                                                                                                                R.dimen.pageindex_padding));
 
         mPlaceHolderBitmap = Bitmap.createBitmap(mThumbnailImageWidth, mThumbnailImageHeight, Bitmap.Config.ARGB_8888);
         mPlaceHolderBitmap.eraseColor(getResources().getColor(R.color.pageindex_loadingpage_bitmapbackground));
-
     }
 
-    public void init(Paper paper) {
+
+    private void init(Paper paper) {
         Timber.d("initialising PageIndexFragment with paper: %s", paper);
         index = new ArrayList<>();
         for (Source source : paper.getPlist()

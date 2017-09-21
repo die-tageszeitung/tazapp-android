@@ -26,6 +26,7 @@ import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper.Plist.Page.Article;
 import de.thecode.android.tazreader.download.PaperDeletedEvent;
 import de.thecode.android.tazreader.provider.TazProvider;
+import de.thecode.android.tazreader.reader.ReaderActivity;
 import de.thecode.android.tazreader.reader.index.IIndexItem;
 import de.thecode.android.tazreader.utils.PlistHelper;
 import de.thecode.android.tazreader.utils.StorageManager;
@@ -1530,6 +1531,15 @@ public class Paper {
 
         }
         return array;
+    }
+
+    public boolean savePositionInArticle(Context context, IIndexItem article, String position) {
+        return saveStoreValue(context, ReaderActivity.STORE_KEY_POSITION_IN_ARTICLE + "_" + article.getKey(), position);
+    }
+
+    public String getPositionInArticle(Context context, IIndexItem article) {
+        String result = getStoreValue(context, ReaderActivity.STORE_KEY_POSITION_IN_ARTICLE + "_" + article.getKey());
+        return (TextUtils.isEmpty(result)) ? "0" : result;
     }
 
     public String getStoreValue(Context context, String key) {

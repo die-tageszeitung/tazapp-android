@@ -1,7 +1,6 @@
 package de.thecode.android.tazreader.reader;
 
 
-import android.os.Bundle;
 import android.text.TextUtils;
 
 import de.mateware.datafragment.DataFragmentBase;
@@ -18,16 +17,10 @@ public class ReaderDataFragment extends DataFragmentBase {
 
     private Paper   _paper;
     private String  mCurrentKey;
-    private String  mPosition;
+    //private String  mPosition;
     private boolean filterBookmarks;
 
     private PaperLoadingTask paperLoadingTask;
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setRetainInstance(true);
-    }
 
     public Paper getPaper() {
         return _paper;
@@ -53,7 +46,7 @@ public class ReaderDataFragment extends DataFragmentBase {
                     _paper = paper;
                     if (!isCancelled()) {
                         String currentKey = paper.getStoreValue(getContext(), ReaderActivity.STORE_KEY_CURRENTPOSITION);
-                        String position = paper.getStoreValue(getContext(), ReaderActivity.STORE_KEY_POSITION_IN_ARTICLE);
+                        //String position = paper.getStoreValue(getContext(), ReaderActivity.STORE_KEY_POSITION_IN_ARTICLE);
                         if (TextUtils.isEmpty(currentKey)) {
                             currentKey = paper.getPlist()
                                               .getSources()
@@ -66,8 +59,8 @@ public class ReaderDataFragment extends DataFragmentBase {
                                               .get(0)
                                               .getKey();
                         }
-                        if (TextUtils.isEmpty(position)) position = "0";
-                        setCurrentKey(currentKey, position);
+                        //if (TextUtils.isEmpty(position)) position = "0";
+                        setCurrentKey(currentKey);
                         EventBus.getDefault()
                                 .post(new PaperLoadedEvent());
                     }
@@ -77,14 +70,14 @@ public class ReaderDataFragment extends DataFragmentBase {
         }
     }
 
-    public void setCurrentKey(String currentKey, String position) {
-        Timber.d("%s %s", currentKey, position);
+    public void setCurrentKey(String currentKey) {
+        //Timber.d("%s %s", currentKey, position);
 
         mCurrentKey = currentKey;
-        mPosition = position;
+        //mPosition = position;
         try {
             _paper.saveStoreValue(getContext(), ReaderActivity.STORE_KEY_CURRENTPOSITION, mCurrentKey);
-            _paper.saveStoreValue(getContext(), ReaderActivity.STORE_KEY_POSITION_IN_ARTICLE, position);
+            //_paper.saveStoreValue(getContext(), ReaderActivity.STORE_KEY_POSITION_IN_ARTICLE, position);
         } catch (Exception e) {
             Timber.w(e);
         }
@@ -94,9 +87,9 @@ public class ReaderDataFragment extends DataFragmentBase {
         return mCurrentKey;
     }
 
-    public String getPostion() {
-        return mPosition;
-    }
+//    public String getPostion() {
+//        return mPosition;
+//    }
 
     public boolean isFilterBookmarks() {
         return filterBookmarks;

@@ -1,6 +1,6 @@
 package de.thecode.android.tazreader.reader.index;
 
-import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
 import android.support.v4.content.ContextCompat;
@@ -62,25 +62,37 @@ public class IndexFragment extends BaseFragment {
 
     IReaderCallback mReaderCallback;
 
+
     public IndexFragment() {
 
     }
 
 
+//    @Override
+//    public void onAttach(Activity activity) {
+//        super.onAttach(activity);
+//
+//        mReaderCallback = (IReaderCallback) activity;
+//
+//        bookmarkColorNormal = ContextCompat.getColor(activity, R.color.index_bookmark_off);
+//        bookmarkColorActive = ContextCompat.getColor(activity, R.color.index_bookmark_on);
+//
+//    }
+
     @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof IReaderCallback) mReaderCallback = (IReaderCallback)context;
+        else throw new RuntimeException(context.toString() + " must implement " + IReaderCallback.class.getSimpleName());
 
-        mReaderCallback = (IReaderCallback) activity;
-
-        bookmarkColorNormal = ContextCompat.getColor(activity, R.color.index_bookmark_off);
-        bookmarkColorActive = ContextCompat.getColor(activity, R.color.index_bookmark_on);
-
+        bookmarkColorNormal = ContextCompat.getColor(context, R.color.index_bookmark_off);
+        bookmarkColorActive = ContextCompat.getColor(context, R.color.index_bookmark_on);
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        init(mReaderCallback.getPaper());
         adapter = new IndexRecyclerViewAdapter();
         adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
             @Override
@@ -233,7 +245,7 @@ public class IndexFragment extends BaseFragment {
         super.onSaveInstanceState(outState);
     }
 
-    public void init(Paper paper) {
+    private void init(Paper paper) {
         Timber.d("paper: %s", paper);
         index.clear();
 

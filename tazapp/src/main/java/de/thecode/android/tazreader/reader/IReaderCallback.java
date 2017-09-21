@@ -27,7 +27,7 @@ public interface IReaderCallback {
     
     public void addConfigChangeListener(ConfigurationChangeListener listener);
 
-    public void updateIndexes(String key,String position);
+    public void updateIndexes(String key);
 
     public Paper getPaper();
 
