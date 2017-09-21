@@ -1,6 +1,6 @@
 @font-face {
   font-family: 'taz-bold';
-  src: url("taz-bold.otf") format("opentype"), url("taz-bold.woff") format("woff");
+  src: url("taz-bold.woff") format("woff");
   font-weight: normal;
   font-style: normal; }
 body {
@@ -33,7 +33,7 @@ img {
   width: 100%;
   display: inline-block; }
   .intro-title p {
-    background-color: #a80a1a;
+    background-color: #6991aa;
     color: white;
     font-size: 2em;
     float: right;
@@ -58,7 +58,7 @@ ul {
     background-color: #f5f5ee;
     margin: 0;
     cursor: pointer;
-    border-top: 2px solid #a80a1a;
+    border-top: 2px solid #6991aa;
     padding-top: 12px;
     padding-left: 2px;
     padding-bottom: 5px; }
@@ -98,13 +98,16 @@ ul {
       padding-bottom: 0.2em;
       padding-left: 0.2em;
       padding-top: 0.3em;
-      text-transform: uppercase; }
+      text-transform: uppercase;
+      color: #6991aa; }
     ul .tab-content h4 {
       font-size: 1em;
       margin-top: 0;
       margin-bottom: 0.1em; }
     ul .tab-content .text-indent {
       padding-left: 1em; }
+      ul .tab-content .text-indent img {
+        vertical-align: middle; }
     ul .tab-content .italic {
       font-style: italic; }
     ul .tab-content .tab-padding {
@@ -116,6 +119,10 @@ ul {
       ul .tab-content .centered-img img {
         max-width: 300px;
         width: 100%; }
+    ul .tab-content .border img {
+      border: 1px solid #ddd; }
+    ul .tab-content .fix-height img {
+      width: auto; }
     ul .tab-content table {
       width: 100%;
       border-collapse: collapse;
@@ -124,6 +131,8 @@ ul {
       ul .tab-content table tr {
         border-top: 1px solid #000;
         border-bottom: 1px solid #000; }
+        ul .tab-content table tr .oder {
+          line-height: 2.1em; }
       ul .tab-content table tr td:first-child {
         background-color: #f5f5ee;
         width: 50%; }
@@ -136,7 +145,7 @@ ul {
       background-color: #fff;
       width: auto; }
     ul .tab-content .close-tabs {
-      color: #a80a1a;
+      color: #6991aa;
       float: right;
       text-decoration: none;
       padding: 0.5em; }
