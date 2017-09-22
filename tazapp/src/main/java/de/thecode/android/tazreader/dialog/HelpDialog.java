@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.webkit.WebView;
 
 import de.mateware.dialog.DialogCustomView;
+import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Resource;
 import de.thecode.android.tazreader.utils.StorageManager;
@@ -67,12 +68,12 @@ public class HelpDialog extends DialogCustomView {
 
         baseUrl += helpPage;
 
-        //View view = inflater.inflate(R.layout.dialog_help, parent, false);
-        WebView webView = new WebView(inflater.getContext());
+        View view = inflater.inflate(R.layout.dialog_help, parent, false);
+        WebView webView = view.findViewById(R.id.help_web_view);
         webView.getSettings()
                .setJavaScriptEnabled(true);
         webView.loadUrl(baseUrl);
-        return webView;
+        return view;
     }
 
     public static class Builder extends AbstractBuilder<Builder, HelpDialog> {

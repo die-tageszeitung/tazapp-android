@@ -3,8 +3,6 @@ package de.thecode.android.tazreader.reader.article;
 import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.pm.ApplicationInfo;
-import android.os.Build;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.GestureDetector.SimpleOnGestureListener;
@@ -44,11 +42,6 @@ public class ArticleWebView extends WebView {
     @SuppressLint("NewApi")
     private void init(Context context) {
         mContext = context;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            if (0 != (context.getApplicationInfo().flags &= ApplicationInfo.FLAG_DEBUGGABLE)) {
-                WebView.setWebContentsDebuggingEnabled(true);
-            }
-        }
         setOverScrollMode(View.OVER_SCROLL_NEVER);
     }
 

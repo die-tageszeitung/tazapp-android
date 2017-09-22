@@ -2,7 +2,9 @@ package de.thecode.android.tazreader;
 
 import android.app.Application;
 import android.content.Context;
+import android.os.Build;
 import android.util.Log;
+import android.webkit.WebView;
 
 import com.evernote.android.job.JobManager;
 
@@ -44,9 +46,12 @@ public class TazReaderApplication extends Application {
 
         if (ACRA.isACRASenderServiceProcess()) return;
 
-        EventBus.builder().addIndex(new EventBusIndex()).installDefaultEventBus();
+        EventBus.builder()
+                .addIndex(new EventBusIndex())
+                .installDefaultEventBus();
 
-        JobManager.create(this).addJobCreator(new TazJobCreator());
+        JobManager.create(this)
+                  .addJobCreator(new TazJobCreator());
 
         PicassoHelper.initPicasso(this);
 
@@ -54,12 +59,16 @@ public class TazReaderApplication extends Application {
                                                                      .setFontAttrId(R.attr.fontPath)
                                                                      .build());
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT && BuildConfig.DEBUG) {
+            WebView.setWebContentsDebuggingEnabled(true);
+        }
+
 
         // Migration von alter Version
         int lastVersionCode = TazSettings.getInstance(this)
-                                         .getPrefInt(TazSettings.PREFKEY.LASTVERSION, Integer.parseInt(
-                                                 String.valueOf(BuildConfig.VERSION_CODE)
-                                                       .substring(1)));
+                                         .getPrefInt(TazSettings.PREFKEY.LASTVERSION,
+                                                     Integer.parseInt(String.valueOf(BuildConfig.VERSION_CODE)
+                                                                            .substring(1)));
         if (lastVersionCode < 16) {
             if (TazSettings.getInstance(this)
                            .getPrefString(TazSettings.PREFKEY.COLSIZE, "0")
@@ -79,8 +88,8 @@ public class TazReaderApplication extends Application {
             File dir = new File(getFilesDir().getParent() + "/shared_prefs/");
             String[] children = dir.list();
             for (String aChildren : children) {
-                if (aChildren.startsWith("com.crashlytics") || aChildren.startsWith("Twitter") || aChildren.startsWith(
-                        "io.fabric")) FileUtils.deleteQuietly(new File(dir, aChildren));
+                if (aChildren.startsWith("com.crashlytics") || aChildren.startsWith("Twitter") || aChildren.startsWith("io.fabric"))
+                    FileUtils.deleteQuietly(new File(dir, aChildren));
             }
             File oldLibImageDir = StorageManager.getInstance(this)
                                                 .getCache("library");
