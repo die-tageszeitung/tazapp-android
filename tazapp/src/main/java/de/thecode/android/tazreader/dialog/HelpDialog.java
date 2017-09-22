@@ -1,6 +1,5 @@
 package de.thecode.android.tazreader.dialog;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.StringDef;
 import android.view.LayoutInflater;
@@ -13,18 +12,10 @@ import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Resource;
 import de.thecode.android.tazreader.utils.StorageManager;
 
-import org.apache.commons.io.IOUtils;
-
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.List;
-
-import timber.log.Timber;
 
 /**
  * Created by mate on 25.07.2017.
@@ -46,32 +37,21 @@ public class HelpDialog extends DialogCustomView {
     private static final String[] HELP_RESOURCE_SUBDIRS = {"res/android-help","res/ios-help"};
 
     private static final String ARG_HELPPAGE = "helpPage";
-    private String  helpPage;
-    private WebView webView;
-    //private boolean withoutRessourceMode = true;
 
     @Override
-    public View getView(LayoutInflater inflater, ViewGroup parent) {
-        helpPage = getArguments().getString(ARG_HELPPAGE);
-        webView = new WebView(inflater.getContext());
-        webView.getSettings()
-               .setJavaScriptEnabled(true);
-        setHtmlInWebView(inflater.getContext());
-        return webView;
-    }
+    public View getView(final LayoutInflater inflater, ViewGroup parent) {
+        String helpPage = getArguments().getString(ARG_HELPPAGE);
 
-    private void setHtmlInWebView(Context context) {
 
-        List<Paper> papers = Paper.getAllPapers(context);
+        List<Paper> papers = Paper.getAllPapers(inflater.getContext());
 
         String baseUrl = "file:///android_asset/help/";
-        InputStream helpFileStream = null;
 
         for (Paper paper: papers) {
-            Resource latestResource = Resource.getWithKey(context, paper.getResource());
+            Resource latestResource = Resource.getWithKey(inflater.getContext(), paper.getResource());
             if (latestResource != null && latestResource.isDownloaded()) {
 
-                File latestResourceDir = StorageManager.getInstance(context)
+                File latestResourceDir = StorageManager.getInstance(getContext())
                                                        .getResourceDirectory(latestResource.getKey());
                 File helpFileDir = null;
                 for (String helpFileSubdirPath : HELP_RESOURCE_SUBDIRS) {
@@ -79,34 +59,20 @@ public class HelpDialog extends DialogCustomView {
                     if (helpFileDir.exists()) break;
                 }
                 if (helpFileDir != null) {
-                    try {
-                        helpFileStream = new FileInputStream(new File(helpFileDir, helpPage));
-                        baseUrl = "file://" + helpFileDir.getAbsolutePath() + "/";
-                        break;
-                    } catch (FileNotFoundException e) {
-                        Timber.e(e);
-                    }
+                     baseUrl = "file://" + helpFileDir.getAbsolutePath() + "/";
+                     break;
                 }
             }
         }
 
-        if (helpFileStream == null) {
-            try {
-                helpFileStream = context.getAssets()
-                                        .open("help/"+helpPage);
-            } catch (IOException e) {
-                Timber.e(e);
-            }
-        }
-        String html = "Hilfe konnte nicht geladen werden";
-        if (helpFileStream != null) {
-            try {
-                html = IOUtils.toString(helpFileStream, "UTF-8");
-            } catch (IOException e) {
-                Timber.e(e);
-            }
-        }
-        webView.loadDataWithBaseURL(baseUrl, html, "text/html", "utf-8", null);
+        baseUrl += helpPage;
+
+        //View view = inflater.inflate(R.layout.dialog_help, parent, false);
+        WebView webView = new WebView(inflater.getContext());
+        webView.getSettings()
+               .setJavaScriptEnabled(true);
+        webView.loadUrl(baseUrl);
+        return webView;
     }
 
     public static class Builder extends AbstractBuilder<Builder, HelpDialog> {

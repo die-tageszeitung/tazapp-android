@@ -6,6 +6,7 @@ import android.text.TextUtils;
 import de.mateware.datafragment.DataFragmentBase;
 import de.thecode.android.tazreader.data.Paper;
 
+import org.apache.commons.lang3.StringUtils;
 import org.greenrobot.eventbus.EventBus;
 
 import timber.log.Timber;
@@ -46,6 +47,7 @@ public class ReaderDataFragment extends DataFragmentBase {
                     _paper = paper;
                     if (!isCancelled()) {
                         String currentKey = paper.getStoreValue(getContext(), ReaderActivity.STORE_KEY_CURRENTPOSITION);
+                        currentKey = StringUtils.substringBefore(currentKey,"?"); //Workaround for sometimes position saved in key, could ot figure out why
                         //String position = paper.getStoreValue(getContext(), ReaderActivity.STORE_KEY_POSITION_IN_ARTICLE);
                         if (TextUtils.isEmpty(currentKey)) {
                             currentKey = paper.getPlist()

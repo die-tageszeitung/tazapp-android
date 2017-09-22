@@ -16,6 +16,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
+import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
 import android.view.KeyEvent;
@@ -246,7 +247,7 @@ public class ReaderActivity extends BaseActivity
             switch (indexItem.getType()) {
                 case ARTICLE:
                 case TOPLINK:
-                    loadArticleFragment(indexItem, DIRECTIONS.NONE, getPaper().getPositionInArticle(this,indexItem));
+                    loadArticleFragment(indexItem, DIRECTIONS.NONE, null);
                     break;
                 case PAGE:
                     loadPagesFragment(indexItem);
@@ -264,6 +265,8 @@ public class ReaderActivity extends BaseActivity
 
     private void loadArticleFragment(IIndexItem indexItem, DIRECTIONS direction, String position) {
 
+
+        if (TextUtils.isEmpty(position)) position = getPaper().getPositionInArticle(this,indexItem);
 
         FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
 

@@ -129,7 +129,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
         mWebView = (ArticleWebView) result.findViewById(R.id.webview);
         mWebView.setArticleWebViewCallback(this);
 
-        mWebView.setBackgroundColor(getCallback().onGetBackgroundColor(TazSettings.getInstance(getContext())
+        mWebView.setBackgroundColor(callback.onGetBackgroundColor(TazSettings.getInstance(getContext())
                                                                                   .getPrefString(TazSettings.PREFKEY.THEME,
                                                                                                  "normal")));
 
@@ -277,8 +277,8 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
     @Override
     public boolean onDoubleTap(MotionEvent e) {
-        if (hasCallback()) {
-            getCallback().speak(mArticle.getKey(), getTextToSpeech());
+        if (callback != null) {
+            callback.speak(mArticle.getKey(), getTextToSpeech());
         }
         return true;
     }
@@ -330,7 +330,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
                 @Override
                 public void onClick(View v) {
-                    if (hasCallback()) getCallback().onBookmarkClick(mArticle);
+                    if (callback != null) callback.onBookmarkClick(mArticle);
                 }
             });
 
@@ -417,7 +417,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
             } else if (url.startsWith(mArticle.getKey()) || url.startsWith("?")) {
                 loadArticleInWebview();
             } else {
-                if (hasCallback()) getCallback().onLoad(url);
+                if (callback != null) callback.onLoad(url);
             }
 
         }
@@ -509,7 +509,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
                             break;
                     }
 
-                    if (hasCallback()) getCallback().onLoadNextArticle(direction, String.valueOf(position));
+                    if (callback != null) callback.onLoadNextArticle(direction, String.valueOf(position));
                 }
             });
 
@@ -544,7 +544,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
                             break;
                     }
 
-                    if (hasCallback()) getCallback().onLoadPrevArticle(direction, positionString);
+                    if (callback != null) callback.onLoadPrevArticle(direction, positionString);
                 }
             });
         }
@@ -580,12 +580,12 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
                     Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
                     startActivity(browserIntent);
                 } else {
-                    if (hasCallback()) {
-                        IIndexItem indexItem = getCallback().getPaper()
+                    if (callback != null) {
+                        IIndexItem indexItem = callback.getPaper()
                                                             .getPlist()
                                                             .getIndexItem(url);
                         if (indexItem != null) {
-                            getCallback().onLoad(url);
+                            callback.onLoad(url);
                         }
                     }
                 }

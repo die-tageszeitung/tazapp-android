@@ -24,19 +24,19 @@ public class TopLinkFragment extends ArticleFragment {
     @Override
     public void onSwipeBottom(ArticleWebView view, MotionEvent e1, MotionEvent e2) {
 
-        if (hasCallback()) getCallback().onLoadPrevArticle(DIRECTIONS.TOP, "0");
+        if (callback != null) callback.onLoadPrevArticle(DIRECTIONS.TOP, "0");
     }
 
     @Override
     public void onSwipeTop(ArticleWebView view, MotionEvent e1, MotionEvent e2) {
 
-        if (hasCallback()) getCallback().onLoadNextArticle(DIRECTIONS.BOTTOM, "0");
+        if (callback != null) callback.onLoadNextArticle(DIRECTIONS.BOTTOM, "0");
     }
 
     @Override
     public void onSwipeLeft(ArticleWebView view, MotionEvent e1, MotionEvent e2) {
 
-        if (hasCallback()) getCallback().onLoadNextArticle(DIRECTIONS.RIGHT, "0");
+        if (callback != null) callback.onLoadNextArticle(DIRECTIONS.RIGHT, "0");
     }
 
     @Override
@@ -44,7 +44,7 @@ public class TopLinkFragment extends ArticleFragment {
 
         String position = "0";
         if (!TazSettings.getInstance(getContext()).getPrefBoolean(TazSettings.PREFKEY.ISSCROLL, false)) position = "EOF";
-        if (hasCallback()) getCallback().onLoadPrevArticle(DIRECTIONS.LEFT, position);
+        if (callback != null) callback.onLoadPrevArticle(DIRECTIONS.LEFT, position);
     }
 
     @Override
