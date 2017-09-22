@@ -229,16 +229,16 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
             viewHolder.wait.setVisibility(View.GONE);
         }
 
-        if (paper.hasUpdate() /*&& paper.isDownloaded()*/) {
-            viewHolder.badge.setText(R.string.string_badge_update);
-            viewHolder.badge.setVisibility(View.VISIBLE);
-        }
+//        if (paper.hasUpdate() /*&& paper.isDownloaded()*/) {
+//            viewHolder.badge.setText(R.string.string_badge_update);
+//            viewHolder.badge.setVisibility(View.VISIBLE);
+//        }
 
         //        else if (paper.isImported()) {
         //            viewHolder.badge.setText(R.string.string_badge_import);
         //            viewHolder.badge.setVisibility(View.VISIBLE);
         //        }
-        else if (paper.isKiosk()) {
+        if (paper.isKiosk()) {
             viewHolder.badge.setText(R.string.string_badge_kiosk);
             viewHolder.badge.setVisibility(View.VISIBLE);
         } else viewHolder.badge.setVisibility(View.GONE);
