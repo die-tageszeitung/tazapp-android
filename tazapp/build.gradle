@@ -286,7 +286,7 @@ dependencies {
 
     compile 'com.jakewharton.timber:timber:4.5.1'
 
-    compile 'uk.co.chrisjenx:calligraphy:2.1.0'
+    compile 'uk.co.chrisjenx:calligraphy:2.3.0'
     compile 'com.yqritc:recyclerview-flexibledivider:1.2.9'
 
 

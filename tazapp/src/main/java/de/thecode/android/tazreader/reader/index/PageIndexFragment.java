@@ -11,6 +11,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -220,7 +221,8 @@ public class PageIndexFragment extends BaseFragment {
             Paint paint = new Paint();
             int padding = getResources().getDimensionPixelSize(R.dimen.pageindex_thumbnail_current_borderwidth);
             float halfPadding = ((float) padding) / 2;
-            paint.setColor(getResources().getColor(R.color.pageindex_overlay_color));
+            paint.setColor(ContextCompat.getColor(getContext(),R.color.pageindex_overlay_color));
+            paint.setAlpha(128);
             paint.setStrokeWidth(padding);
             paint.setStyle(Paint.Style.STROKE);
 

@@ -8,6 +8,7 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -53,6 +54,7 @@ public class IndexFragment extends BaseFragment {
 
     int bookmarkColorActive;
     int bookmarkColorNormal;
+    float iconButtonAlpha;
 
     boolean mShowSubtitles;
     String currentlyMarkedInIndexKey = null;
@@ -87,6 +89,10 @@ public class IndexFragment extends BaseFragment {
 
         bookmarkColorNormal = ContextCompat.getColor(context, R.color.index_bookmark_off);
         bookmarkColorActive = ContextCompat.getColor(context, R.color.index_bookmark_on);
+
+        TypedValue outValue = new TypedValue();
+        context.getResources().getValue(R.dimen.icon_button_alpha,outValue,true);
+        iconButtonAlpha = outValue.getFloat();
     }
 
     @Override
@@ -450,10 +456,12 @@ public class IndexFragment extends BaseFragment {
                     FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) ((ArticleViewholder) viewholder).bookmark.getLayoutParams();
                     if (item.isBookmarked()) {
                         TintHelper.tintDrawable(((ArticleViewholder) viewholder).bookmark.getDrawable(), bookmarkColorActive);
+                        ((ArticleViewholder) viewholder).bookmark.setAlpha(1F);
                         layoutParams.topMargin = getActivity().getResources()
                                                               .getDimensionPixelOffset(R.dimen.reader_bookmark_offset_active);
                     } else {
                         TintHelper.tintDrawable(((ArticleViewholder) viewholder).bookmark.getDrawable(), bookmarkColorNormal);
+                        ((ArticleViewholder) viewholder).bookmark.setAlpha(iconButtonAlpha);
                         layoutParams.topMargin = getActivity().getResources()
                                                               .getDimensionPixelOffset(R.dimen.reader_bookmark_offset_normal);
                     }

@@ -25,6 +25,7 @@
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:paddingBottom="18dp"
+            android:alpha="@dimen/icon_button_alpha"
             />
     
     <LinearLayout
@@ -55,6 +56,7 @@
             android:layout_height="48dp"
 
             android:paddingBottom="18dp"
+            android:alpha="@dimen/icon_button_alpha"
             />
         <de.thecode.android.tazreader.widget.ReaderButton
             android:id="@+id/pageindex"
@@ -62,6 +64,7 @@
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:paddingBottom="18dp"
+            android:alpha="@dimen/icon_button_alpha"
             />
     </LinearLayout>
 

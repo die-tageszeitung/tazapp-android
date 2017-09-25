@@ -13,6 +13,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.text.Html;
 import android.text.TextUtils;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -338,11 +339,15 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
             FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) bookmark.getLayoutParams();
             if (mArticle.isBookmarked()) {
                 TintHelper.tintDrawable(bookmark.getDrawable(), ContextCompat.getColor(getActivity(), R.color.index_bookmark_on));
+                bookmark.setAlpha(1F);
                 layoutParams.topMargin = getContext().getResources()
                                                      .getDimensionPixelOffset(R.dimen.reader_bookmark_offset_active);
             } else {
                 TintHelper.tintDrawable(bookmark.getDrawable(),
                                         ContextCompat.getColor(getActivity(), R.color.index_bookmark_off));
+                TypedValue outValue = new TypedValue();
+                getContext().getResources().getValue(R.dimen.icon_button_alpha,outValue,true);
+                bookmark.setAlpha(outValue.getFloat());
                 layoutParams.topMargin = getContext().getResources()
                                                      .getDimensionPixelOffset(R.dimen.reader_bookmark_offset_normal);
             }

@@ -34,4 +34,8 @@
 
     <bool name="isTablet">false</bool>
     <bool name="isNotTablet">false</bool>
+
+    <item name="library_overlay_alpha" format="float" type="dimen">0.4</item>
+    <item name="icon_button_alpha" format="float" type="dimen">0.4</item>
+
 </resources>

@@ -166,6 +166,7 @@ public class StartActivity extends BaseActivity
         toolbar = (CustomToolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         toolbar.setItemColor(ContextCompat.getColor(this, R.color.toolbar_foreground_color));
+        toolbar.setTitleTextAppearance(this,R.style.Toolbar_TitleText);
 
         if (getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         updateTitle();

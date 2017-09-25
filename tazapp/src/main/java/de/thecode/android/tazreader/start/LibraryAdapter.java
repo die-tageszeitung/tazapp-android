@@ -2,6 +2,11 @@ package de.thecode.android.tazreader.start;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
+import android.os.Build;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
@@ -460,6 +465,14 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
             badge = (TextView) itemView.findViewById(R.id.lib_item_badge);
             image = (ImageView) itemView.findViewById(R.id.lib_item_facsimile);
             wait = (ProgressBar) itemView.findViewById(R.id.lib_item_wait);
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+
+                Drawable wrapDrawable = DrawableCompat.wrap(wait.getIndeterminateDrawable());
+                DrawableCompat.setTint(wrapDrawable, ContextCompat.getColor(itemView.getContext(), R.color.library_item_text));
+                wait.setIndeterminateDrawable(DrawableCompat.unwrap(wrapDrawable));
+            } else {
+                wait.getIndeterminateDrawable().setColorFilter(ContextCompat.getColor(itemView.getContext(), R.color.library_item_text), PorterDuff.Mode.SRC_IN);
+            }
             progress = (ProgressBar) itemView.findViewById(R.id.lib_item_progress);
             selected = (FrameLayout) itemView.findViewById(R.id.lib_item_selected_overlay);
             card.setOnLongClickListener(this);
