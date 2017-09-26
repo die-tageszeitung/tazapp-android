@@ -82,7 +82,7 @@
                 android:layout_marginBottom="10dp"
                 android:text="@string/string_badge_update"
                 android:textColor="@color/library_item_badge_text"
-                fontPath="@string/fontBold" />
+                android:textStyle="bold" />
 
 
 

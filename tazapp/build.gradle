@@ -1,9 +1,9 @@
 def versionMajor = 3
 def versionMinor = 4
 def versionPatch = 1
-def versionBuild = 2
+def versionBuild = 3
 
-def supportLibVer = "26.0.1"
+def supportLibVer = "26.1.0"
 def buildToolsVer = "26.0.1"
 def firebaseVer = "11.0.2"
 def compileSdkVer = 26
@@ -286,7 +286,6 @@ dependencies {
 
     compile 'com.jakewharton.timber:timber:4.5.1'
 
-    compile 'uk.co.chrisjenx:calligraphy:2.3.0'
     compile 'com.yqritc:recyclerview-flexibledivider:1.2.9'
 
 

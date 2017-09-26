@@ -12,9 +12,6 @@
         <item name="android:background">@color/toolbar_background_color</item>
     </style>
 
-
-
-
     <style name="IndexText">
         <item name="android:textSize">20sp</item>
         <item name="android:gravity">center_vertical</item>
@@ -22,36 +19,32 @@
 
     <style name="IndexText.Source">
         <item name="android:textColor">@color/index_text_source</item>
-        <item name="fontPath">@string/fontBold</item>
         <item name="android:textStyle">bold</item>
     </style>
 
     <style name="IndexText.Category">
         <item name="android:textColor">@color/index_text_category</item>
+        <item name="android:textStyle">bold</item>
     </style>
 
     <style name="IndexText.Page">
         <item name="android:textColor">@color/index_text_page</item>
-        <item name="fontPath">@string/fontBold</item>
         <item name="android:textStyle">bold</item>
     </style>
 
     <style name="IndexText.Article">
         <item name="android:textColor">@color/index_text_article</item>
         <item name="android:textSize">16sp</item>
-        <item name="fontPath">@string/fontBold</item>
         <item name="android:textStyle">bold</item>
     </style>
 
     <style name="IndexText.Article.Sub">
-        <item name="fontPath">@string/fontRegular</item>
         <item name="android:textStyle">normal</item>
     </style>
 
     <style name="IndexText.Toplink">
         <item name="android:textColor">@color/index_text_toplink</item>
         <item name="android:textSize">16sp</item>
-        <item name="fontPath">@string/fontBold</item>
         <item name="android:textStyle">bold</item>
     </style>
 
@@ -63,7 +56,6 @@
 
     <style name="PageIndexText.Source">
         <item name="android:textColor">@color/pageindex_text_source</item>
-        <item name="fontPath">@string/fontBold</item>
         <item name="android:textStyle">bold</item>
     </style>
 

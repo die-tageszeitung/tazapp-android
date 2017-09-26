@@ -22,7 +22,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/header_abo"
-                fontPath="@string/fontBold"/>
+                    />
 
             <CheckBox
                 android:id="@+id/autoLoadCheckBox"
@@ -100,7 +100,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/header_screen"
-                fontPath="@string/fontBold"/>
+                    />
 
             <CheckBox
                 android:id="@+id/screenActiveCheckBox"
@@ -168,7 +168,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/header_read"
-                    fontPath="@string/fontBold"/>
+                    />
 
             <CheckBox
                     android:id="@+id/showIndexButtonCheckBox"
@@ -204,7 +204,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/header_read_page"
-                fontPath="@string/fontBold"/>
+                    />
 
             <CheckBox
                     android:id="@+id/tapToTurnPageCheckbox"
@@ -238,7 +238,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/header_read_article"
-                    fontPath="@string/fontBold"/>
+                    />
 
             <CheckBox
                     android:id="@+id/ttsCheckBox"
@@ -256,7 +256,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/header_notification"
-                fontPath="@string/fontBold"/>
+                    />
 
             <RelativeLayout
                 style="@style/SettingsClickFrame"
@@ -297,8 +297,7 @@
                     style="@style/SettingsHeadline"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/header_other"
-                    fontPath="@string/fontBold"/>
+                    android:text="@string/header_other"/>
 
             <CheckBox
                     android:id="@+id/acraAlwaysAcceptCheckBox"

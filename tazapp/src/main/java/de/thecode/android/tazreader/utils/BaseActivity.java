@@ -1,7 +1,6 @@
 package de.thecode.android.tazreader.utils;
 
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
@@ -25,8 +24,6 @@ import de.thecode.android.tazreader.push.PushRestApiJob;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-
-import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
 import timber.log.Timber;
 
@@ -90,11 +87,6 @@ public class BaseActivity extends AppCompatActivity
         EventBus.getDefault()
                 .unregister(this);
         super.onStop();
-    }
-
-    @Override
-    protected void attachBaseContext(Context newBase) {
-        super.attachBaseContext(CalligraphyContextWrapper.wrap(newBase));
     }
 
     @Override

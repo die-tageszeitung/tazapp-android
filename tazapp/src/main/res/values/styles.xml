@@ -2,7 +2,7 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 
     <style name="Toolbar.TitleText" parent="TextAppearance.Widget.AppCompat.Toolbar.Title">
-        <item name="fontPath">fonts/TazWt07-Bold.otf</item>
+        <!--<item name="fontPath">fonts/TazWt07-Bold.otf</item>-->
     </style>
 
     <style name="SettingsLayout">

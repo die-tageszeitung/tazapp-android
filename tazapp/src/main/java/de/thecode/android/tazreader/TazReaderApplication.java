@@ -21,8 +21,6 @@ import org.acra.ACRA;
 import org.apache.commons.io.FileUtils;
 import org.greenrobot.eventbus.EventBus;
 
-import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
-
 import java.io.File;
 
 import timber.log.Timber;
@@ -55,9 +53,9 @@ public class TazReaderApplication extends Application {
 
         PicassoHelper.initPicasso(this);
 
-        CalligraphyConfig.initDefault(new CalligraphyConfig.Builder().setDefaultFontPath(getString(R.string.fontRegular))
-                                                                     .setFontAttrId(R.attr.fontPath)
-                                                                     .build());
+//        CalligraphyConfig.initDefault(new CalligraphyConfig.Builder().setDefaultFontPath(getString(R.string.fontRegular))
+//                                                                     .setFontAttrId(R.attr.fontPath)
+//                                                                     .build());
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT && BuildConfig.DEBUG) {
             WebView.setWebContentsDebuggingEnabled(true);
