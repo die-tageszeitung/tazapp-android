@@ -9,7 +9,7 @@ import com.dd.plist.NSDictionary;
 
 import de.thecode.android.tazreader.provider.TazProvider;
 import de.thecode.android.tazreader.utils.PlistHelper;
-import de.thecode.android.tazreader.utils.StorageManager;
+import de.thecode.android.tazreader.utils.StorageHelper;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -155,8 +155,8 @@ public class Resource {
     }
 
     public void delete(Context context){
-        StorageManager storage = StorageManager.getInstance(context);
-        storage.deleteResourceDir(getKey());
+
+        StorageHelper.deleteResourceDir(context, getKey());
         setDownloadId(0);
         setDownloaded(false);
         Uri resourceUri = CONTENT_URI.buildUpon()

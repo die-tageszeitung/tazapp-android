@@ -12,7 +12,7 @@ import de.thecode.android.tazreader.data.Resource;
 import de.thecode.android.tazreader.secure.HashHelper;
 import de.thecode.android.tazreader.start.StartActivity;
 import de.thecode.android.tazreader.sync.SyncHelper;
-import de.thecode.android.tazreader.utils.StorageManager;
+import de.thecode.android.tazreader.utils.StorageHelper;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -30,7 +30,6 @@ public class DownloadReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
 
-        StorageManager externalStorage = StorageManager.getInstance(context);
         DownloadManager downloadHelper = DownloadManager.getInstance(context);
 
         String action = intent.getAction();
@@ -56,7 +55,7 @@ public class DownloadReceiver extends BroadcastReceiver {
                     Timber.i("Download complete for paper: %s, %s", paper, state);
                     boolean failed = false;
                     if (state.getStatus() == DownloadManager.DownloadState.STATUS_SUCCESSFUL) {
-                        File downloadFile = externalStorage.getDownloadFile(paper);
+                        File downloadFile = StorageHelper.getDownloadFile(context, paper);
                         if (!downloadFile.exists()) {
                             failed = true;
                         } else {
@@ -96,9 +95,9 @@ public class DownloadReceiver extends BroadcastReceiver {
                         paper.setDownloadId(0);
                         context.getContentResolver()
                                .update(ContentUris.withAppendedId(Paper.CONTENT_URI, paper.getId()), paper.getContentValues(), null, null);
-                        if (externalStorage.getDownloadFile(paper)
+                        if (StorageHelper.getDownloadFile(context,paper)
                                            .exists()) //noinspection ResultOfMethodCallIgnored
-                            externalStorage.getDownloadFile(paper)
+                            StorageHelper.getDownloadFile(context,paper)
                                            .delete();
                         NotificationHelper.showDownloadErrorNotification(context, null, paper.getId());
                         EventBus.getDefault()
@@ -122,7 +121,7 @@ public class DownloadReceiver extends BroadcastReceiver {
                     if (state.getStatus() == DownloadManager.DownloadState.STATUS_SUCCESSFUL) {
 
 
-                        File downloadFile = externalStorage.getDownloadFile(resource);
+                        File downloadFile = StorageHelper.getDownloadFile(context, resource);
                         if (!downloadFile.exists()) {
                             failed = true;
                         } else {

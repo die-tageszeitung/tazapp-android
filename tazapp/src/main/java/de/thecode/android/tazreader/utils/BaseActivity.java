@@ -30,7 +30,7 @@ import timber.log.Timber;
 /**
  * Created by mate on 12.05.2015.
  */
-public class BaseActivity extends AppCompatActivity
+public abstract class BaseActivity extends AppCompatActivity
         implements DialogButtonListener, DialogDismissListener, DialogCancelListener, DialogListListener,
         DialogAdapterListListener {
 

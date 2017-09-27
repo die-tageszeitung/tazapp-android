@@ -20,7 +20,7 @@ import com.artifex.mupdfdemo.TextWord;
 import de.thecode.android.tazreader.data.Paper.Plist.Page;
 import de.thecode.android.tazreader.reader.IReaderCallback;
 import de.thecode.android.tazreader.reader.index.IIndexItem;
-import de.thecode.android.tazreader.utils.StorageManager;
+import de.thecode.android.tazreader.utils.StorageHelper;
 
 import java.io.File;
 import java.util.Locale;
@@ -30,8 +30,8 @@ import timber.log.Timber;
 public class TAZPageView extends PageView {
 
     TAZMuPDFCore mCore;
-    Page _page;
-    Context _context;
+    Page         _page;
+    Context      _context;
 
     public TAZPageView(Context c, Point parentSize, Bitmap sharedHqBm) {
         super(c, parentSize, sharedHqBm);
@@ -42,7 +42,7 @@ public class TAZPageView extends PageView {
 
     public void init(Page page) {
 
-        if (_page != null) Timber.d("page: %s",page.getKey());
+        if (_page != null) Timber.d("page: %s", page.getKey());
         if (_page != null) {
             if (!_page.getKey()
                       .equals(page.getKey())) {
@@ -75,16 +75,19 @@ public class TAZPageView extends PageView {
     }
 
     @Override
-    protected CancellableTaskDefinition<Void, Void> getDrawPageTask(final Bitmap bm, final int sizeX, final int sizeY, final int patchX, final int patchY, final int patchWidth, final int patchHeight) {
+    protected CancellableTaskDefinition<Void, Void> getDrawPageTask(final Bitmap bm, final int sizeX, final int sizeY,
+                                                                    final int patchX, final int patchY, final int patchWidth,
+                                                                    final int patchHeight) {
 
         return new MuPDFCancellableTaskDefinition<Void, Void>(mCore) {
 
             @Override
             public Void doInBackground(MuPDFCore.Cookie cookie, Void... params) {
-                Timber.d("cookie: %s, params: %s",cookie, params);
+                Timber.d("cookie: %s, params: %s", cookie, params);
                 // Workaround bug in Android Honeycomb 3.x, where the bitmap generation count
                 // is not incremented when drawing.
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB && Build.VERSION.SDK_INT < Build.VERSION_CODES.ICE_CREAM_SANDWICH) bm.eraseColor(0);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB && Build.VERSION.SDK_INT < Build.VERSION_CODES.ICE_CREAM_SANDWICH)
+                    bm.eraseColor(0);
                 mCore.drawPage(bm, mPageNumber, sizeX, sizeY, patchX, patchY, patchWidth, patchHeight, cookie);
                 return null;
             }
@@ -92,16 +95,26 @@ public class TAZPageView extends PageView {
 
     }
 
-    protected CancellableTaskDefinition<Void, Void> getUpdatePageTask(final Bitmap bm, final int sizeX, final int sizeY, final int patchX, final int patchY, final int patchWidth, final int patchHeight) {
-        Timber.d("bm: %s, sizeX: %s, sizeY: %s, patchX: %s, patchY: %s, patchWidth: %s, patchHeight: %s",bm, sizeX, sizeY, patchX, patchY, patchWidth, patchHeight);
+    protected CancellableTaskDefinition<Void, Void> getUpdatePageTask(final Bitmap bm, final int sizeX, final int sizeY,
+                                                                      final int patchX, final int patchY, final int patchWidth,
+                                                                      final int patchHeight) {
+        Timber.d("bm: %s, sizeX: %s, sizeY: %s, patchX: %s, patchY: %s, patchWidth: %s, patchHeight: %s",
+                 bm,
+                 sizeX,
+                 sizeY,
+                 patchX,
+                 patchY,
+                 patchWidth,
+                 patchHeight);
         return new MuPDFCancellableTaskDefinition<Void, Void>(mCore) {
 
             @Override
             public Void doInBackground(MuPDFCore.Cookie cookie, Void... params) {
-                Timber.d("cookie: %s, params: %s",cookie, params);
+                Timber.d("cookie: %s, params: %s", cookie, params);
                 // Workaround bug in Android Honeycomb 3.x, where the bitmap generation count
                 // is not incremented when drawing.
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB && Build.VERSION.SDK_INT < Build.VERSION_CODES.ICE_CREAM_SANDWICH) bm.eraseColor(0);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB && Build.VERSION.SDK_INT < Build.VERSION_CODES.ICE_CREAM_SANDWICH)
+                    bm.eraseColor(0);
                 mCore.updatePage(bm, mPageNumber, sizeX, sizeY, patchX, patchY, patchWidth, patchHeight, cookie);
                 return null;
             }
@@ -124,18 +137,17 @@ public class TAZPageView extends PageView {
 
     @Override
     protected void addMarkup(PointF[] quadPoints, Type type) {
-        Timber.d("quadPoints: %s, type: %s",quadPoints, type);
+        Timber.d("quadPoints: %s, type: %s", quadPoints, type);
         // TODO Auto-generated method stub
     }
 
     public class LoadCoreTask extends AsyncTask<Void, Void, TAZMuPDFCore> {
 
         Context _context;
-        String _filename;
+        String  _filename;
 
         public LoadCoreTask(Context context, Page page) {
-            StorageManager storage = StorageManager.getInstance(context);
-            File pdfFile = new File(storage.getPaperDirectory(page.getPaper()), page.getKey());
+            File pdfFile = new File(StorageHelper.getPaperDirectory(getContext(), page.getPaper()), page.getKey());
             _filename = pdfFile.getAbsolutePath();
         }
 
@@ -162,7 +174,7 @@ public class TAZPageView extends PageView {
     }
 
     public void setScale(float scale) {
-        Timber.d("scale: %s",scale);
+        Timber.d("scale: %s", scale);
         // This type of view scales automatically to fit the size
         // determined by the parent view groups during layout
     }
@@ -176,7 +188,7 @@ public class TAZPageView extends PageView {
         float relativeX = docRelX / mCore.getPageSize().x;
         float relativeY = docRelY / mCore.getPageSize().y;
 
-        Timber.d("relativeX: %s, relativeY: %s",relativeX, relativeY);
+        Timber.d("relativeX: %s, relativeY: %s", relativeX, relativeY);
 
         IReaderCallback readerCallback = ((TAZReaderView) getParent()).getReaderCallback();
 

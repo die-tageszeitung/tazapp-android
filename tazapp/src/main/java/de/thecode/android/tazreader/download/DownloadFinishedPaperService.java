@@ -7,7 +7,7 @@ import android.content.Intent;
 import com.dd.plist.PropertyListFormatException;
 
 import de.thecode.android.tazreader.data.Paper;
-import de.thecode.android.tazreader.utils.StorageManager;
+import de.thecode.android.tazreader.utils.StorageHelper;
 
 import org.greenrobot.eventbus.EventBus;
 import org.xml.sax.SAXException;
@@ -78,11 +78,10 @@ public class DownloadFinishedPaperService extends IntentService implements Unzip
             }
             try {
                 Timber.i("%s", paper);
-                StorageManager storageManager = StorageManager.getInstance(this);
                 currentPaperId = paperId;
                 currentUnzipPaper = new UnzipPaper(paper,
-                                                   storageManager.getDownloadFile(paper),
-                                                   storageManager.getPaperDirectory(paper),
+                                                   StorageHelper.getDownloadFile(this, paper),
+                                                   StorageHelper.getPaperDirectory(this, paper),
                                                    true);
                 currentUnzipPaper.getUnzipFile()
                                  .addProgressListener(this);

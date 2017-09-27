@@ -37,7 +37,7 @@ import de.thecode.android.tazreader.data.Paper.Plist.TopLink;
 import de.thecode.android.tazreader.reader.IReaderCallback;
 import de.thecode.android.tazreader.reader.page.TAZMuPDFCore;
 import de.thecode.android.tazreader.utils.BaseFragment;
-import de.thecode.android.tazreader.utils.StorageManager;
+import de.thecode.android.tazreader.utils.StorageHelper;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
@@ -121,20 +121,18 @@ public class PageIndexFragment extends BaseFragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof IReaderCallback) mReaderCallback = (IReaderCallback)context;
+        if (context instanceof IReaderCallback) mReaderCallback = (IReaderCallback) context;
         else throw new RuntimeException(context.toString() + " must implement " + IReaderCallback.class.getSimpleName());
 
 
         mThumbnailImageHeight = context.getResources()
-                                        .getDimensionPixelSize(
-                                                R.dimen.pageindex_thumbnail_image_height) - (2 * context.getResources()
-                                                                                                         .getDimensionPixelSize(
-                                                                                                                 R.dimen.pageindex_padding));
+                                       .getDimensionPixelSize(R.dimen.pageindex_thumbnail_image_height) - (2 * context.getResources()
+                                                                                                                      .getDimensionPixelSize(
+                                                                                                                              R.dimen.pageindex_padding));
         mThumbnailImageWidth = context.getResources()
-                                       .getDimensionPixelSize(
-                                               R.dimen.pageindex_thumbnail_image_width) - (2 * context.getResources()
-                                                                                                       .getDimensionPixelSize(
-                                                                                                               R.dimen.pageindex_padding));
+                                      .getDimensionPixelSize(R.dimen.pageindex_thumbnail_image_width) - (2 * context.getResources()
+                                                                                                                    .getDimensionPixelSize(
+                                                                                                                            R.dimen.pageindex_padding));
 
         mPlaceHolderBitmap = Bitmap.createBitmap(mThumbnailImageWidth, mThumbnailImageHeight, Bitmap.Config.ARGB_8888);
         mPlaceHolderBitmap.eraseColor(getResources().getColor(R.color.pageindex_loadingpage_bitmapbackground));
@@ -214,14 +212,19 @@ public class PageIndexFragment extends BaseFragment {
 
     private void makeOverlayBitmap(float x1, float y1, float x2, float y2) {
         try {
-            Timber.d("x1: %s, y1: %s, x2: %s, y2: %s, mThumbnailImageWidth: %s, mThumbnailImageHeight: %s", x1, y1, x2, y2,
-                      mThumbnailImageWidth, mThumbnailImageHeight);
+            Timber.d("x1: %s, y1: %s, x2: %s, y2: %s, mThumbnailImageWidth: %s, mThumbnailImageHeight: %s",
+                     x1,
+                     y1,
+                     x2,
+                     y2,
+                     mThumbnailImageWidth,
+                     mThumbnailImageHeight);
             mCurrentArticleOverlay = Bitmap.createBitmap(mThumbnailImageWidth, mThumbnailImageHeight, Bitmap.Config.ARGB_8888);
             Canvas canvas = new Canvas(mCurrentArticleOverlay);
             Paint paint = new Paint();
             int padding = getResources().getDimensionPixelSize(R.dimen.pageindex_thumbnail_current_borderwidth);
             float halfPadding = ((float) padding) / 2;
-            paint.setColor(ContextCompat.getColor(getContext(),R.color.pageindex_overlay_color));
+            paint.setColor(ContextCompat.getColor(getContext(), R.color.pageindex_overlay_color));
             paint.setAlpha(128);
             paint.setStrokeWidth(padding);
             paint.setStyle(Paint.Style.STROKE);
@@ -328,7 +331,7 @@ public class PageIndexFragment extends BaseFragment {
 
         public Bitmap getBitmap(String key, int width, int height) {
             if (mPdfThumbHelper == null) {
-                mPdfThumbHelper = new FileCachePDFThumbHelper(StorageManager.getInstance(getActivity()), paper.getFileHash());
+                mPdfThumbHelper = new FileCachePDFThumbHelper(getContext(), paper.getFileHash());
             }
             File imageFile = mPdfThumbHelper.getFile(key);
             Timber.d("imagefile %s", imageFile.getName());
@@ -347,8 +350,7 @@ public class PageIndexFragment extends BaseFragment {
                 try {
                     Bitmap lq = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
 
-                    File paperDirectory = StorageManager.getInstance(getActivity())
-                                                        .getPaperDirectory(paper);
+                    File paperDirectory = StorageHelper.getPaperDirectory(getContext(), paper);
                     TAZMuPDFCore core = new TAZMuPDFCore(getActivity(), new File(paperDirectory, key).getAbsolutePath());
                     core.countPages();
                     core.setPageSize(core.getPageSize(0));

@@ -39,7 +39,7 @@ import de.thecode.android.tazreader.reader.ReaderActivity.DIRECTIONS;
 import de.thecode.android.tazreader.reader.ReaderTtsFragment;
 import de.thecode.android.tazreader.reader.article.ArticleWebView.ArticleWebViewCallback;
 import de.thecode.android.tazreader.reader.index.IIndexItem;
-import de.thecode.android.tazreader.utils.StorageManager;
+import de.thecode.android.tazreader.utils.StorageHelper;
 import de.thecode.android.tazreader.utils.TintHelper;
 import de.thecode.android.tazreader.widget.ReaderButton;
 import de.thecode.android.tazreader.widget.ShareButton;
@@ -116,8 +116,8 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putString(ARG_KEY,mArticle.getKey());
-        outState.putString(ARG_POSITION,mPosition);
+        outState.putString(ARG_KEY, mArticle.getKey());
+        outState.putString(ARG_POSITION, mPosition);
     }
 
     @SuppressLint({"SetJavaScriptEnabled", "NewApi", "AddJavascriptInterface"})
@@ -131,8 +131,8 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
         mWebView.setArticleWebViewCallback(this);
 
         mWebView.setBackgroundColor(callback.onGetBackgroundColor(TazSettings.getInstance(getContext())
-                                                                                  .getPrefString(TazSettings.PREFKEY.THEME,
-                                                                                                 "normal")));
+                                                                             .getPrefString(TazSettings.PREFKEY.THEME,
+                                                                                            "normal")));
 
         mWebView.setWebViewClient(new ArticleWebViewClient());
         mWebView.setWebChromeClient(new ArticleWebChromeClient());
@@ -229,8 +229,8 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
             @Override
             public void run() {
-                String baseUrl = "file://" + StorageManager.getInstance(getActivity())
-                                                           .getPaperDirectory(mArticle.getPaper()) + "/" + mArticle.getKey() + "?position=" + mPosition;
+                String baseUrl = "file://" + StorageHelper.getPaperDirectory(getContext(),
+                                                                             mArticle.getPaper()) + "/" + mArticle.getKey() + "?position=" + mPosition;
                 mWebView.loadDataWithBaseURL(baseUrl, getHtml(), "text/html", "UTF-8", null);
                 mShareButton.setCallback(mArticle);
             }
@@ -346,7 +346,8 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
                 TintHelper.tintDrawable(bookmark.getDrawable(),
                                         ContextCompat.getColor(getActivity(), R.color.index_bookmark_off));
                 TypedValue outValue = new TypedValue();
-                getContext().getResources().getValue(R.dimen.icon_button_alpha,outValue,true);
+                getContext().getResources()
+                            .getValue(R.dimen.icon_button_alpha, outValue, true);
                 bookmark.setAlpha(outValue.getFloat());
                 layoutParams.topMargin = getContext().getResources()
                                                      .getDimensionPixelOffset(R.dimen.reader_bookmark_offset_normal);
@@ -556,9 +557,9 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
         @JavascriptInterface
         public String getAbsoluteResourcePath() {
-            File resourceDir = StorageManager.getInstance(getActivity())
-                                             .getResourceDirectory(mArticle.getPaper()
-                                                                           .getResource());
+            File resourceDir = StorageHelper.getResourceDirectory(getContext(),
+                                                                  mArticle.getPaper()
+                                                                          .getResource());
             return "file://" + resourceDir.getAbsolutePath() + "/";
         }
 
@@ -587,8 +588,8 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
                 } else {
                     if (callback != null) {
                         IIndexItem indexItem = callback.getPaper()
-                                                            .getPlist()
-                                                            .getIndexItem(url);
+                                                       .getPlist()
+                                                       .getIndexItem(url);
                         if (indexItem != null) {
                             callback.onLoad(url);
                         }
@@ -612,12 +613,11 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
 
     public String getHtml() {
-        File articleFile = new File(StorageManager.getInstance(getActivity())
-                                                  .getPaperDirectory(mArticle.getPaper())
-                                                  .getAbsolutePath(), mArticle.getKey());
-        File resourceDir = StorageManager.getInstance(getActivity())
-                                         .getResourceDirectory(mArticle.getPaper()
-                                                                       .getResource());
+        File articleFile = new File(StorageHelper.getPaperDirectory(getContext(), mArticle.getPaper())
+                                                 .getAbsolutePath(), mArticle.getKey());
+        File resourceDir = StorageHelper.getResourceDirectory(getContext(),
+                                                              mArticle.getPaper()
+                                                                      .getResource());
 
         String resourceReplacement = "file://" + resourceDir.getAbsolutePath() + "/";
         String tazapiReplacement = "file:///android_asset/js/TAZAPI.js";

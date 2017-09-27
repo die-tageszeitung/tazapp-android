@@ -11,7 +11,7 @@ import de.mateware.dialog.DialogCustomView;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Resource;
-import de.thecode.android.tazreader.utils.StorageManager;
+import de.thecode.android.tazreader.utils.StorageHelper;
 
 import java.io.File;
 import java.lang.annotation.Retention;
@@ -52,8 +52,8 @@ public class HelpDialog extends DialogCustomView {
             Resource latestResource = Resource.getWithKey(inflater.getContext(), paper.getResource());
             if (latestResource != null && latestResource.isDownloaded()) {
 
-                File latestResourceDir = StorageManager.getInstance(getContext())
-                                                       .getResourceDirectory(latestResource.getKey());
+                File latestResourceDir = StorageHelper
+                                                      .getResourceDirectory(getContext(), latestResource.getKey());
                 File helpFileDir = null;
                 for (String helpFileSubdirPath : HELP_RESOURCE_SUBDIRS) {
                     helpFileDir = new File(latestResourceDir, helpFileSubdirPath);

@@ -6,7 +6,7 @@ import android.text.TextUtils;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.reader.index.IIndexItem;
 import de.thecode.android.tazreader.utils.AsyncTaskWithExecption;
-import de.thecode.android.tazreader.utils.StorageManager;
+import de.thecode.android.tazreader.utils.StorageHelper;
 
 import org.json.JSONArray;
 
@@ -36,7 +36,7 @@ public abstract class PaperLoadingTask extends AsyncTaskWithExecption<Void, Void
         Paper paper = Paper.getPaperWithId(mContext, mPaperId);
         if (paper == null) throw new Paper.PaperNotFoundException();
         //paper.parsePlist(mStorage.getPaperFile(paper));
-        paper.parsePlist(new File(StorageManager.getInstance(mContext).getPaperDirectory(paper), Paper.CONTENT_PLIST_FILENAME));
+        paper.parsePlist(new File(StorageHelper.getPaperDirectory(mContext,paper), Paper.CONTENT_PLIST_FILENAME));
 
         String bookmarkJsonString = paper.getStoreValue(mContext, Paper.STORE_KEY_BOOKMARKS);
         if (!TextUtils.isEmpty(bookmarkJsonString)) {

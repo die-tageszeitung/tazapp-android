@@ -18,7 +18,7 @@ import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.okhttp3.RequestHelper;
 import de.thecode.android.tazreader.secure.Base64;
 import de.thecode.android.tazreader.sync.AccountHelper;
-import de.thecode.android.tazreader.utils.StorageManager;
+import de.thecode.android.tazreader.utils.StorageHelper;
 import de.thecode.android.tazreader.utils.UserAgentHelper;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -36,7 +36,6 @@ public class DownloadManager {
 
     android.app.DownloadManager mDownloadManager;
     Context                     mContext;
-    StorageManager              mStorage;
     UserAgentHelper             userAgentHelper;
     RequestHelper               requestHelper;
 
@@ -50,7 +49,6 @@ public class DownloadManager {
     private DownloadManager(Context context) {
         mDownloadManager = ((android.app.DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE));
         mContext = context;
-        mStorage = StorageManager.getInstance(context);
         userAgentHelper = UserAgentHelper.getInstance(context);
         requestHelper = RequestHelper.getInstance(context);
     }
@@ -90,7 +88,7 @@ public class DownloadManager {
                                                                       Base64.NO_WRAP));
         }
 
-        File destinationFile = mStorage.getDownloadFile(paper);
+        File destinationFile = StorageHelper.getDownloadFile(mContext, paper);
 
         if (destinationFile == null) throw new DownloadNotAllowedException("Fehler beim Ermitteln des Downloadverzeichnisses.");
 
@@ -161,7 +159,7 @@ public class DownloadManager {
             }
             addUserAgent(request);
 
-            File destinationFile = mStorage.getDownloadFile(resource);
+            File destinationFile = StorageHelper.getDownloadFile(mContext, resource);
 
             assertEnougSpaceForDownload(destinationFile.getParentFile(), calculateBytesNeeded(resource.getLen()));
 

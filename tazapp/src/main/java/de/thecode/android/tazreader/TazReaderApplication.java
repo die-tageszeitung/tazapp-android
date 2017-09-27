@@ -15,7 +15,7 @@ import de.thecode.android.tazreader.picasso.PicassoHelper;
 import de.thecode.android.tazreader.reader.ReaderActivity;
 import de.thecode.android.tazreader.timber.TazTimberTree;
 import de.thecode.android.tazreader.utils.BuildTypeProvider;
-import de.thecode.android.tazreader.utils.StorageManager;
+import de.thecode.android.tazreader.utils.StorageHelper;
 
 import org.acra.ACRA;
 import org.apache.commons.io.FileUtils;
@@ -89,8 +89,7 @@ public class TazReaderApplication extends Application {
                 if (aChildren.startsWith("com.crashlytics") || aChildren.startsWith("Twitter") || aChildren.startsWith("io.fabric"))
                     FileUtils.deleteQuietly(new File(dir, aChildren));
             }
-            File oldLibImageDir = StorageManager.getInstance(this)
-                                                .getCache("library");
+            File oldLibImageDir = StorageHelper.getCache(this, "library");
             FileUtils.deleteQuietly(oldLibImageDir);
         }
 
