@@ -60,7 +60,6 @@ public class DownloadManager {
             DownloadNotAllowedException, NotEnoughSpaceException {
 
 
-
         Paper paper = Paper.getPaperWithId(mContext, paperId);
         if (paper == null) throw new Paper.PaperNotFoundException();
 
@@ -117,7 +116,9 @@ public class DownloadManager {
                 .update(ContentUris.withAppendedId(Paper.CONTENT_URI, paper.getId()), paper.getContentValues(), null, null);
 
         if (!TextUtils.isEmpty(paper.getResource())) {
-            enqueResource(Resource.getWithKey(mContext,paper.getResource()));
+            Resource resource = Resource.getWithKey(mContext, paper.getResource());
+            paper.saveResourcePartner(mContext, resource);
+            enqueResource(resource);
         }
     }
 

@@ -38,7 +38,7 @@ public abstract class PaperLoadingTask extends AsyncTaskWithExecption<Void, Void
         //paper.parsePlist(mStorage.getPaperFile(paper));
         paper.parsePlist(new File(StorageManager.getInstance(mContext).getPaperDirectory(paper), Paper.CONTENT_PLIST_FILENAME));
 
-        String bookmarkJsonString = paper.getStoreValue(mContext, ReaderActivity.STORE_KEY_BOOKMARKS);
+        String bookmarkJsonString = paper.getStoreValue(mContext, Paper.STORE_KEY_BOOKMARKS);
         if (!TextUtils.isEmpty(bookmarkJsonString)) {
             JSONArray bookmarksJsonArray = new JSONArray(bookmarkJsonString);
             for (int i = 0; i < bookmarksJsonArray.length(); i++) {

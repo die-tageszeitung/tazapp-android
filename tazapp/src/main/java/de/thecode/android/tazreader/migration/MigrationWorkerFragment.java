@@ -11,7 +11,6 @@ import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Store;
 import de.thecode.android.tazreader.data.TazSettings;
-import de.thecode.android.tazreader.reader.ReaderActivity;
 import de.thecode.android.tazreader.utils.AsyncTaskWithExecption;
 import de.thecode.android.tazreader.utils.BaseFragment;
 import de.thecode.android.tazreader.utils.StorageManager;
@@ -133,7 +132,7 @@ public class MigrationWorkerFragment extends BaseFragment {
                 for (Store store : storeList) {
                     Timber.i("Migrating Store %s", store.getKey());
                     if (store.getKey()
-                             .endsWith("/" + ReaderActivity.STORE_KEY_BOOKMARKS)) {
+                             .endsWith("/" + Paper.STORE_KEY_BOOKMARKS)) {
                         Timber.i("Migrating Bookmarks");
                         try {
                             JSONArray newBookmarksArray = new JSONArray();

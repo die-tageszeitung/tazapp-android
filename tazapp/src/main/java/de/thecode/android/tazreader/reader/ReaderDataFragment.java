@@ -46,7 +46,7 @@ public class ReaderDataFragment extends DataFragmentBase {
                 protected void onPostSuccess(Paper paper) {
                     _paper = paper;
                     if (!isCancelled()) {
-                        String currentKey = paper.getStoreValue(getContext(), ReaderActivity.STORE_KEY_CURRENTPOSITION);
+                        String currentKey = paper.getStoreValue(getContext(), Paper.STORE_KEY_CURRENTPOSITION);
                         currentKey = StringUtils.substringBefore(currentKey,"?"); //Workaround for sometimes position saved in key, could ot figure out why
                         //String position = paper.getStoreValue(getContext(), ReaderActivity.STORE_KEY_POSITION_IN_ARTICLE);
                         if (TextUtils.isEmpty(currentKey)) {
@@ -78,7 +78,7 @@ public class ReaderDataFragment extends DataFragmentBase {
         mCurrentKey = currentKey;
         //mPosition = position;
         try {
-            _paper.saveStoreValue(getContext(), ReaderActivity.STORE_KEY_CURRENTPOSITION, mCurrentKey);
+            _paper.saveStoreValue(getContext(), Paper.STORE_KEY_CURRENTPOSITION, mCurrentKey);
             //_paper.saveStoreValue(getContext(), ReaderActivity.STORE_KEY_POSITION_IN_ARTICLE, position);
         } catch (Exception e) {
             Timber.w(e);

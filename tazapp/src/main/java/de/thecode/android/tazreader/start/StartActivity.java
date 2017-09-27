@@ -546,7 +546,7 @@ public class StartActivity extends BaseActivity
         try {
             openPaper = Paper.getPaperWithId(this, id);
             if (openPaper == null) throw new Paper.PaperNotFoundException();
-            Resource paperResource = Resource.getWithKey(this, openPaper.getResource());
+            Resource paperResource = openPaper.getResourcePartner(this);
 
             if (paperResource.isDownloaded()) {
                 Timber.i("start reader for paper: %s", openPaper);

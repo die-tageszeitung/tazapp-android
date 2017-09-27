@@ -32,14 +32,14 @@ public class StorageManager {
         return instance;
     }
 
-    private Context mContext;
+    private Context mApplicationContext;
 
     private StorageManager(Context context) {
-        mContext = context;
+        mApplicationContext = context;
     }
 
     public File get(String type) {
-        File result = mContext.getExternalFilesDir(type);
+        File result = mApplicationContext.getExternalFilesDir(type);
         if (result != null) //noinspection ResultOfMethodCallIgnored
             result.mkdirs();
         return result;
@@ -47,7 +47,7 @@ public class StorageManager {
 
 
     public File getCache(String subDir) {
-        File result = mContext.getExternalCacheDir();
+        File result = mApplicationContext.getExternalCacheDir();
         if (result != null) {
             if (subDir != null) result = new File(result, subDir);
             result.mkdirs();

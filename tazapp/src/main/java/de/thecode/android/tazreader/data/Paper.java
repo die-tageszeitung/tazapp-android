@@ -26,7 +26,6 @@ import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper.Plist.Page.Article;
 import de.thecode.android.tazreader.download.PaperDeletedEvent;
 import de.thecode.android.tazreader.provider.TazProvider;
-import de.thecode.android.tazreader.reader.ReaderActivity;
 import de.thecode.android.tazreader.reader.index.IIndexItem;
 import de.thecode.android.tazreader.utils.PlistHelper;
 import de.thecode.android.tazreader.utils.StorageManager;
@@ -60,6 +59,11 @@ import timber.log.Timber;
 
 public class Paper {
 
+    public static final  String STORE_KEY_BOOKMARKS           = "bookmarks";
+    public static final  String STORE_KEY_CURRENTPOSITION     = "currentPosition";
+    private static final String STORE_KEY_POSITION_IN_ARTICLE = "positionInArticle";
+    private static final String STORE_KEY_RESOURCE_PARTNER    = "resource";
+
     public static       String TABLE_NAME        = "PAPER";
     public static final Uri    CONTENT_URI       = Uri.parse("content://" + TazProvider.AUTHORITY + "/" + TABLE_NAME);
     public static final String CONTENT_TYPE      = "vnd.android.cursor.dir/vnd.taz." + TABLE_NAME;
@@ -82,7 +86,7 @@ public class Paper {
         return null;
     }
 
-    public static List<Paper> getAllPapers(Context context){
+    public static List<Paper> getAllPapers(Context context) {
         List<Paper> result = new ArrayList<>();
         Cursor cursor = context.getApplicationContext()
                                .getContentResolver()
@@ -191,8 +195,6 @@ public class Paper {
 
     public Paper() {
     }
-
-
 
 
     public Paper(Cursor cursor) {
@@ -1534,12 +1536,22 @@ public class Paper {
     }
 
     public boolean savePositionInArticle(Context context, IIndexItem article, String position) {
-        return saveStoreValue(context, ReaderActivity.STORE_KEY_POSITION_IN_ARTICLE + "_" + article.getKey(), position);
+        return saveStoreValue(context, STORE_KEY_POSITION_IN_ARTICLE + "_" + article.getKey(), position);
     }
 
     public String getPositionInArticle(Context context, IIndexItem article) {
-        String result = getStoreValue(context, ReaderActivity.STORE_KEY_POSITION_IN_ARTICLE + "_" + article.getKey());
+        String result = getStoreValue(context, STORE_KEY_POSITION_IN_ARTICLE + "_" + article.getKey());
         return (TextUtils.isEmpty(result)) ? "0" : result;
+    }
+
+    public boolean saveResourcePartner(Context context, Resource resource) {
+        return saveStoreValue(context, STORE_KEY_RESOURCE_PARTNER, resource.getKey());
+    }
+
+    public Resource getResourcePartner(Context context) {
+        String resource = getStoreValue(context, STORE_KEY_RESOURCE_PARTNER);
+        if (TextUtils.isEmpty(resource)) resource = getResource(); //Fallback;
+        return Resource.getWithKey(context, resource);
     }
 
     public String getStoreValue(Context context, String key) {

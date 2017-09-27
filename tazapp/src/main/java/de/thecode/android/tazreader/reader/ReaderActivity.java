@@ -30,7 +30,6 @@ import de.mateware.dialog.listener.DialogButtonListener;
 import de.mateware.dialog.listener.DialogDismissListener;
 import de.mateware.snacky.Snacky;
 import de.thecode.android.tazreader.R;
-import de.thecode.android.tazreader.analytics.AnalyticsWrapper;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Store;
 import de.thecode.android.tazreader.data.TazSettings;
@@ -83,9 +82,6 @@ public class ReaderActivity extends BaseActivity
     public static final  String TAG_FRAGMENT_DIALOG_SETTING   = "settingsDialog";
     public static final  String TAG_DIALOG_TTS_ERROR          = "ttsError";
     public static final  String KEY_EXTRA_PAPER_ID            = "paperId";
-    public static final  String STORE_KEY_BOOKMARKS           = "bookmarks";
-    public static final  String STORE_KEY_CURRENTPOSITION     = "currentPosition";
-    public static final  String STORE_KEY_POSITION_IN_ARTICLE = "positionInArticle";
 
     DrawerLayout mDrawerLayout;
     View         mDrawerLayoutIndex;
@@ -469,9 +465,9 @@ public class ReaderActivity extends BaseActivity
         }
         JSONArray bookmarks = getPaper().getBookmarkJson();
         if (bookmarks.length() > 0) {
-            getPaper().saveStoreValue(this, STORE_KEY_BOOKMARKS, bookmarks.toString());
+            getPaper().saveStoreValue(this, Paper.STORE_KEY_BOOKMARKS, bookmarks.toString());
         } else {
-            getPaper().deleteStoreKey(this, STORE_KEY_BOOKMARKS);
+            getPaper().deleteStoreKey(this, Paper.STORE_KEY_BOOKMARKS);
         }
 
     }

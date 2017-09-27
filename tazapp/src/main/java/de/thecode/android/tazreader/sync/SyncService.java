@@ -25,7 +25,6 @@ import de.thecode.android.tazreader.download.DownloadManager;
 import de.thecode.android.tazreader.download.NotificationHelper;
 import de.thecode.android.tazreader.okhttp3.OkHttp3Helper;
 import de.thecode.android.tazreader.okhttp3.RequestHelper;
-import de.thecode.android.tazreader.reader.ReaderActivity;
 import de.thecode.android.tazreader.start.ScrollToPaperEvent;
 import de.thecode.android.tazreader.utils.Connection;
 
@@ -164,7 +163,7 @@ public class SyncService extends IntentService {
         if (allPapers != null) {
             for (Paper paper : allPapers) {
                 if (paper.isDownloaded() || paper.isDownloading()) {
-                    Resource resource = Resource.getWithKey(this, paper.getResource());
+                    Resource resource = paper.getResourcePartner(this);
                     if (resource != null && !keepResources.contains(resource)) keepResources.add(resource);
                 }
             }
@@ -281,7 +280,7 @@ public class SyncService extends IntentService {
                         if (!deletePaper.getId()
                                         .equals(currentOpenPaperId)) {
                             boolean safeToDelete = true;
-                            String bookmarksJsonString = deletePaper.getStoreValue(this, ReaderActivity.STORE_KEY_BOOKMARKS);
+                            String bookmarksJsonString = deletePaper.getStoreValue(this, Paper.STORE_KEY_BOOKMARKS);
                             if (!TextUtils.isEmpty(bookmarksJsonString)) {
                                 try {
                                     JSONArray bookmarks = new JSONArray(bookmarksJsonString);
