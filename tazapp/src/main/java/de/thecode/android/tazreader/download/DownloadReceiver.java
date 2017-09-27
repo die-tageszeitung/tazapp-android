@@ -24,13 +24,11 @@ import timber.log.Timber;
 
 public class DownloadReceiver extends BroadcastReceiver {
 
-    //    Context mContext;
+    //    Context context;
     //    ExternalStorage mStorage;
 
     @Override
     public void onReceive(Context context, Intent intent) {
-
-        DownloadManager downloadHelper = DownloadManager.getInstance(context);
 
         String action = intent.getAction();
 
@@ -39,8 +37,8 @@ public class DownloadReceiver extends BroadcastReceiver {
         if (android.app.DownloadManager.ACTION_DOWNLOAD_COMPLETE.equals(action)) {
             long downloadId = intent.getLongExtra(android.app.DownloadManager.EXTRA_DOWNLOAD_ID, 0);
 
-            DownloadManager.DownloadState state = downloadHelper.getDownloadState(downloadId);
-            boolean firstOccurrenceOfState = downloadHelper.isFirstOccurrenceOfState(state);
+            DownloadHelper.DownloadState state = DownloadHelper.getDownloadState(context, downloadId);
+            boolean firstOccurrenceOfState = DownloadHelper.isFirstOccurrenceOfState(state);
             if (!firstOccurrenceOfState) {
                 Timber.w("DownloadState already received: %s", state);
                 return;
@@ -54,7 +52,7 @@ public class DownloadReceiver extends BroadcastReceiver {
                     //DownloadHelper.DownloadState downloadDownloadState = downloadHelper.getDownloadState(downloadId);
                     Timber.i("Download complete for paper: %s, %s", paper, state);
                     boolean failed = false;
-                    if (state.getStatus() == DownloadManager.DownloadState.STATUS_SUCCESSFUL) {
+                    if (state.getStatus() == DownloadHelper.DownloadState.STATUS_SUCCESSFUL) {
                         File downloadFile = StorageHelper.getDownloadFile(context, paper);
                         if (!downloadFile.exists()) {
                             failed = true;
@@ -82,12 +80,12 @@ public class DownloadReceiver extends BroadcastReceiver {
                                 context.startService(unzipIntent);
                             }
                         }
-                    } else if (state.getStatus() == DownloadManager.DownloadState.STATUS_FAILED) {
+                    } else if (state.getStatus() == DownloadHelper.DownloadState.STATUS_FAILED) {
                         failed = true;
                     }
                     if (failed) {
                         Timber.e("Download failed");
-                        DownloadException exception = new DownloadException(state.getStatusText() + ": " + state.getReasonText());
+                        DownloadException exception = new DownloadException(state.getStatusText(context) + ": " + state.getReasonText(context));
                         if (state.getReason() == 406) {
                             SyncHelper.requestSync(context);
                         }
@@ -118,7 +116,7 @@ public class DownloadReceiver extends BroadcastReceiver {
                     Timber.i("Download complete for resource: %s, %s", resource, state);
 
                     boolean failed = false;
-                    if (state.getStatus() == DownloadManager.DownloadState.STATUS_SUCCESSFUL) {
+                    if (state.getStatus() == DownloadHelper.DownloadState.STATUS_SUCCESSFUL) {
 
 
                         File downloadFile = StorageHelper.getDownloadFile(context, resource);
@@ -149,12 +147,12 @@ public class DownloadReceiver extends BroadcastReceiver {
                                 context.startService(unzipIntent);
                             }
                         }
-                    } else if (state.getStatus() == DownloadManager.DownloadState.STATUS_FAILED) {
+                    } else if (state.getStatus() == DownloadHelper.DownloadState.STATUS_FAILED) {
                         failed = true;
                     }
                     if (failed) {
                         Timber.e("Download failed");
-                        DownloadException exception = new DownloadException(state.getStatusText() + ": " + state.getReasonText());
+                        DownloadException exception = new DownloadException(state.getStatusText(context) + ": " + state.getReasonText(context));
                         //AnalyticsWrapper.getInstance().logException(exception);
                         resource.setDownloadId(0);
                         context.getContentResolver()

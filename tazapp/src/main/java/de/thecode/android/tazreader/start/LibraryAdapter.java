@@ -23,7 +23,7 @@ import com.squareup.picasso.Picasso;
 
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
-import de.thecode.android.tazreader.download.DownloadManager;
+import de.thecode.android.tazreader.download.DownloadHelper;
 import de.thecode.android.tazreader.download.DownloadProgressEvent;
 import de.thecode.android.tazreader.download.PaperDownloadFailedEvent;
 import de.thecode.android.tazreader.download.UnzipProgressEvent;
@@ -53,7 +53,7 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
     OnItemClickListener           mClickListener;
     OnItemLongClickListener       mLongClickListener;
 
-    DownloadManager downloadHelper;
+
 
     public LibraryAdapter(Context context, Cursor cursor, IStartCallback callback) {
         super(context, cursor);
@@ -63,8 +63,6 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
 
         mContext = context;
         this.callback = new WeakReference<IStartCallback>(callback);
-
-        downloadHelper = DownloadManager.getInstance(context);
 
         mCoverImageHeight = context.getResources()
                                    .getDimensionPixelSize(R.dimen.cover_image_height);
@@ -456,7 +454,7 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
         ProgressBar progress;
         FrameLayout selected;
         private Paper _paper;
-        DownloadManager.DownloadProgressThread downloadProgressThread;
+        DownloadHelper.DownloadProgressThread downloadProgressThread;
 
         public ViewHolder(View itemView) {
             super(itemView);
@@ -512,9 +510,9 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
                 if (paper.isDownloaded()) setProgress(100);
                 else {
                     if (paper.isDownloading()) {
-                        DownloadManager.DownloadState downloadState = downloadHelper.getDownloadState(paper.getDownloadId());
+                        DownloadHelper.DownloadState downloadState = DownloadHelper.getDownloadState(mContext, paper.getDownloadId());
                         setDownloadProgress(downloadState.getDownloadProgress());
-                        downloadProgressThread = downloadHelper.new DownloadProgressThread(paper.getDownloadId(), paper.getId());
+                        downloadProgressThread = new DownloadHelper.DownloadProgressThread(mContext, paper.getDownloadId(), paper.getId());
                         downloadProgressThread.start();
                     } else setProgress(0);
                 }

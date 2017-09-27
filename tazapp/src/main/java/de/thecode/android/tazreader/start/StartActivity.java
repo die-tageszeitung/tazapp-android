@@ -37,7 +37,7 @@ import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.dialog.ArchiveDialog;
 import de.thecode.android.tazreader.dialog.ArchiveEntry;
 import de.thecode.android.tazreader.dialog.HelpDialog;
-import de.thecode.android.tazreader.download.DownloadManager;
+import de.thecode.android.tazreader.download.DownloadHelper;
 import de.thecode.android.tazreader.download.NotificationHelper;
 import de.thecode.android.tazreader.download.PaperDownloadFailedEvent;
 import de.thecode.android.tazreader.download.PaperDownloadFinishedEvent;
@@ -166,7 +166,7 @@ public class StartActivity extends BaseActivity
         toolbar = (CustomToolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         toolbar.setItemColor(ContextCompat.getColor(this, R.color.toolbar_foreground_color));
-        toolbar.setTitleTextAppearance(this,R.style.Toolbar_TitleText);
+        toolbar.setTitleTextAppearance(this, R.style.Toolbar_TitleText);
 
         if (getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         updateTitle();
@@ -383,13 +383,12 @@ public class StartActivity extends BaseActivity
                 Paper paper = Paper.getPaperWithId(this, paperId);
                 if (paper == null) throw new Paper.PaperNotFoundException();
                 try {
-                    DownloadManager.getInstance(this)
-                                   .enquePaper(paperId);
+                    DownloadHelper.enquePaper(this, paperId);
                 } catch (IllegalArgumentException e) {
                     showDownloadManagerErrorDialog();
-                } catch (DownloadManager.DownloadNotAllowedException e) {
+                } catch (DownloadHelper.DownloadNotAllowedException e) {
                     showDownloadErrorDialog(paper.getTitelWithDate(this), getString(R.string.message_download_not_allowed), e);
-                } catch (DownloadManager.NotEnoughSpaceException e) {
+                } catch (DownloadHelper.NotEnoughSpaceException e) {
                     showDownloadErrorDialog(paper.getTitelWithDate(this), getString(R.string.message_not_enough_space), e);
                 }
             } catch (Paper.PaperNotFoundException e) {
@@ -562,10 +561,9 @@ public class StartActivity extends BaseActivity
                         toggleWaitDialog(DIALOG_WAIT + openPaper.getBookId());
                         //DownloadHelper downloadHelper = new DownloadHelper(this);
                         try {
-                            DownloadManager.getInstance(this)
-                                           .enqueResource(Resource.getWithKey(this, openPaper.getResource()));
+                            DownloadHelper.enqueResource(this, Resource.getWithKey(this, openPaper.getResource()));
                             retainDataFragment.openPaperWaitingForRessource = id;
-                        } catch (DownloadManager.NotEnoughSpaceException e) {
+                        } catch (DownloadHelper.NotEnoughSpaceException e) {
                             showDownloadErrorDialog(getString(R.string.message_resourcedownload_error),
                                                     getString(R.string.message_not_enough_space),
                                                     e);
@@ -675,8 +673,7 @@ public class StartActivity extends BaseActivity
         super.onDialogClick(tag, arguments, which);
         if (DIALOG_HELP.equals(tag)) {
             if (which == Dialog.BUTTON_NEUTRAL) mDrawerFragment.simulateClick(userItem, true);
-        } else
-        if (DIALOG_USER_REENTER.equals(tag)) {
+        } else if (DIALOG_USER_REENTER.equals(tag)) {
             if (which == Dialog.BUTTON_POSITIVE) {
                 TazSettings.getInstance(this)
                            .setPref(TazSettings.PREFKEY.USERMIGRATIONNOTIFICATION, true);

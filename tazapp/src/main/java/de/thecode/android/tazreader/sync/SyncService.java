@@ -21,7 +21,7 @@ import de.thecode.android.tazreader.data.Publication;
 import de.thecode.android.tazreader.data.Resource;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.download.CoverDownloadedEvent;
-import de.thecode.android.tazreader.download.DownloadManager;
+import de.thecode.android.tazreader.download.DownloadHelper;
 import de.thecode.android.tazreader.download.NotificationHelper;
 import de.thecode.android.tazreader.okhttp3.OkHttp3Helper;
 import de.thecode.android.tazreader.okhttp3.RequestHelper;
@@ -212,10 +212,9 @@ public class SyncService extends IntentService {
 
     private void downloadPaper(Paper paper) {
         try {
-            DownloadManager.getInstance(this)
-                           .enquePaper(paper.getId());
-        } catch (IllegalArgumentException | DownloadManager.DownloadNotAllowedException | Paper.PaperNotFoundException ignored) {
-        } catch (DownloadManager.NotEnoughSpaceException e) {
+            DownloadHelper.enquePaper(this, paper.getId());
+        } catch (IllegalArgumentException | DownloadHelper.DownloadNotAllowedException | Paper.PaperNotFoundException ignored) {
+        } catch (DownloadHelper.NotEnoughSpaceException e) {
             NotificationHelper.showDownloadErrorNotification(this,
                                                              this.getString(R.string.message_not_enough_space),
                                                              paper.getId());
@@ -228,9 +227,8 @@ public class SyncService extends IntentService {
             Resource latestResource = Resource.getWithKey(this, latestPaper.getResource());
             if (latestResource != null && !latestResource.isDownloaded() && !latestResource.isDownloading()) {
                 try {
-                    DownloadManager.getInstance(this)
-                                   .enqueResource(latestResource);
-                } catch (DownloadManager.NotEnoughSpaceException e) {
+                    DownloadHelper.enqueResource(this, latestResource);
+                } catch (DownloadHelper.NotEnoughSpaceException e) {
                     Timber.e(e);
                 }
             }

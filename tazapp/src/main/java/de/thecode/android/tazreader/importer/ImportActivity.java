@@ -11,7 +11,7 @@ import de.mateware.dialog.listener.DialogButtonListener;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.TazSettings;
-import de.thecode.android.tazreader.download.DownloadManager;
+import de.thecode.android.tazreader.download.DownloadHelper;
 import de.thecode.android.tazreader.utils.BaseActivity;
 
 import java.io.File;
@@ -107,9 +107,8 @@ public class ImportActivity extends BaseActivity implements DialogButtonListener
                     if (downloadUris != null) {
                         for (Uri downloadUri : downloadUris) {
                             try {
-                                DownloadManager.getInstance(this)
-                                               .enquePaper(ContentUris.parseId(downloadUri));
-                            } catch (Paper.PaperNotFoundException | DownloadManager.DownloadNotAllowedException | DownloadManager.NotEnoughSpaceException e) {
+                                DownloadHelper.enquePaper(this, ContentUris.parseId(downloadUri));
+                            } catch (Paper.PaperNotFoundException | DownloadHelper.DownloadNotAllowedException | DownloadHelper.NotEnoughSpaceException e) {
                                 Timber.e(e);
                                 //AnalyticsWrapper.getInstance().logException(e);
                             }
