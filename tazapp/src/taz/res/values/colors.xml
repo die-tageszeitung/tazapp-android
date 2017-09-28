@@ -21,8 +21,7 @@
     <!--<color name="TazRotA07">#B3A80A19</color>-->
 
     <color name="taz_red">#E20036</color>
-    <color name="taz_red_dark">#ba002d</color>
-    <color name="taz_red_accent">#fa003c</color>
+    <color name="taz_red_dark">#c60230</color>
     <color name="black">#000</color>
     <color name="dark_gray">#58585a</color>
     <color name="gray">#87888a</color>
