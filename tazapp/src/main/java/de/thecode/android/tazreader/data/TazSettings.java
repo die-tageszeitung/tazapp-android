@@ -44,8 +44,8 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
         public static final  String FISRTSTART                  = "firstStart";
         //        public static final String PAGING = "paging";
         public static final  String ISSCROLL                    = "isScroll";
-        public static final String NOTIFICATION_SOUND_DOWNLOAD = "ringtone";
-        public static final String NOTIFICATION_SOUND_PUSH     = "ringtone_push";
+        public static final  String NOTIFICATION_SOUND_DOWNLOAD = "ringtone";
+        public static final  String NOTIFICATION_SOUND_PUSH     = "ringtone_push";
         public static final  String VIBRATE                     = "vibrate";
         public static final  String NAVDRAWERLEARNED            = "navdrawerlearned";
         public static final  String FORCESYNC                   = "forcesync";
@@ -69,9 +69,9 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
         public static final  String PAGEDOUBLETAPZOOM           = "pageDoubleTapZoom";
         private static final String PAGETAPBORDERTOTURN         = "pageTapBorderToTurn";
         private static final String INDEXALWAYSEXPANDED         = "indexAlwaysExpanded";
-        public static final String FIREBASETOKEN               = "firebaseToken";
+        public static final  String FIREBASETOKEN               = "firebaseToken";
         private static final String FIREBASETOKENOLD            = "firebaseTokenOld";
-        public static final String NOTIFICATION_PUSH            = "notification_push";
+        public static final  String NOTIFICATION_PUSH           = "notification_push";
     }
 
 

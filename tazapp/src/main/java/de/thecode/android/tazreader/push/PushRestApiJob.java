@@ -8,6 +8,7 @@ import com.evernote.android.job.JobRequest;
 import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.okhttp3.OkHttp3Helper;
+import de.thecode.android.tazreader.okhttp3.RequestHelper;
 
 import okhttp3.Call;
 import okhttp3.HttpUrl;
@@ -28,8 +29,8 @@ public class PushRestApiJob extends Job {
         Timber.d("Running job");
         Call call = OkHttp3Helper.getInstance(getContext())
                                  .getCall(HttpUrl.parse(BuildConfig.PUSHRESTURL),
-                                          PushHelper.getInstance(getContext())
-                                                    .getOkhttp3RequestBody());
+                                          RequestHelper.getInstance(getContext())
+                                                       .getOkhttp3RequestBody());
         try {
             Response response = call.execute();
             if (response.isSuccessful()) {

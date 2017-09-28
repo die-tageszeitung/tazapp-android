@@ -28,7 +28,7 @@ import de.thecode.android.tazreader.download.PaperDeletedEvent;
 import de.thecode.android.tazreader.provider.TazProvider;
 import de.thecode.android.tazreader.reader.index.IIndexItem;
 import de.thecode.android.tazreader.utils.PlistHelper;
-import de.thecode.android.tazreader.utils.StorageManager;
+import de.thecode.android.tazreader.utils.StorageHelper;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -59,6 +59,11 @@ import timber.log.Timber;
 
 public class Paper {
 
+    public static final  String STORE_KEY_BOOKMARKS           = "bookmarks";
+    public static final  String STORE_KEY_CURRENTPOSITION     = "currentPosition";
+    private static final String STORE_KEY_POSITION_IN_ARTICLE = "positionInArticle";
+    private static final String STORE_KEY_RESOURCE_PARTNER    = "resource";
+
     public static       String TABLE_NAME        = "PAPER";
     public static final Uri    CONTENT_URI       = Uri.parse("content://" + TazProvider.AUTHORITY + "/" + TABLE_NAME);
     public static final String CONTENT_TYPE      = "vnd.android.cursor.dir/vnd.taz." + TABLE_NAME;
@@ -66,30 +71,92 @@ public class Paper {
 
     public static final String CONTENT_PLIST_FILENAME = "content.plist";
 
+    public static Paper getLatestPaper(Context context) {
+        Cursor cursor = context.getContentResolver()
+                               .query(CONTENT_URI, null, null, null, Columns.DATE + " DESC LIMIT 1");
+        if (cursor != null) {
+            try {
+                if (cursor.moveToNext()) {
+                    return new Paper(cursor);
+                }
+            } finally {
+                cursor.close();
+            }
+        }
+        return null;
+    }
+
+    public static List<Paper> getAllPapers(Context context) {
+        List<Paper> result = new ArrayList<>();
+        Cursor cursor = context.getApplicationContext()
+                               .getContentResolver()
+                               .query(CONTENT_URI, null, null, null, Columns.DATE + " DESC");
+        try {
+            while (cursor.moveToNext()) {
+                result.add(new Paper(cursor));
+            }
+        } finally {
+            cursor.close();
+        }
+        return result;
+    }
+
+    public static Paper getPaperWithId(Context context, long id) {
+        Cursor cursor = context.getApplicationContext()
+                               .getContentResolver()
+                               .query(ContentUris.withAppendedId(CONTENT_URI, id), null, null, null, null);
+        try {
+            if (cursor.moveToNext()) {
+                return new Paper(cursor);
+            }
+        } finally {
+            cursor.close();
+        }
+        return null;
+    }
+
+    public static Paper getPaperWithBookId(Context context, String bookId) {
+        Uri bookIdUri = CONTENT_URI.buildUpon()
+                                   .appendPath(bookId)
+                                   .build();
+        Cursor cursor = context.getApplicationContext()
+                               .getContentResolver()
+                               .query(bookIdUri, null, null, null, null);
+        try {
+            if (cursor.moveToNext()) {
+                return new Paper(cursor);
+            }
+        } finally {
+            cursor.close();
+        }
+        return null;
+    }
+
+
     public static final class Columns implements BaseColumns {
 
-        public static final String DATE             = "date";
-        public static final String IMAGE            = "image";
-        public static final String IMAGEHASH        = "imageHash";
-        public static final String LINK             = "link";
-        public static final String FILEHASH         = "fileHash";
-        public static final String LEN              = "len";
-        public static final String LASTMODIFIED     = "lastModified";
-        public static final String BOOKID           = "bookId";
-        public static final String ISDEMO           = "isDemo";
-        public static final String HASUPDATE        = "hasUpdate";
-        public static final String DOWNLOADID       = "downloadId";
-        public static final String ISDOWNLOADED     = "isDownloaded";
-        public static final String KIOSK            = "kiosk";
-        public static final String IMPORTED         = "imported";
-        public static final String TITLE            = "title";
-        public static final String PUBLICATIONID    = "publicationId";
-        public static final String RESOURCE         = "resource";
-        public static final String RESOURCEFILEHASH = "resourceFileHash";
-        public static final String RESOURCEURL      = "resourceUrl";
-        public static final String RESOURCELEN      = "resourceLen";
-        public static final String VALIDUNTIL       = "validUntil";
-        public static final String FULL_VALIDUNTIL  = TABLE_NAME + "." + VALIDUNTIL;
+        public static final String DATE            = "date";
+        public static final String IMAGE           = "image";
+        public static final String IMAGEHASH       = "imageHash";
+        public static final String LINK            = "link";
+        public static final String FILEHASH        = "fileHash";
+        public static final String LEN             = "len";
+        public static final String LASTMODIFIED    = "lastModified";
+        public static final String BOOKID          = "bookId";
+        public static final String ISDEMO          = "isDemo";
+        public static final String HASUPDATE       = "hasUpdate";
+        public static final String DOWNLOADID      = "downloadId";
+        public static final String ISDOWNLOADED    = "isDownloaded";
+        public static final String KIOSK           = "kiosk";
+        public static final String IMPORTED        = "imported";
+        public static final String TITLE           = "title";
+        public static final String PUBLICATIONID   = "publicationId";
+        public static final String RESOURCE        = "resource";
+        //        public static final String RESOURCEFILEHASH = "resourceFileHash";
+//        public static final String RESOURCEURL      = "resourceUrl";
+//        public static final String RESOURCELEN      = "resourceLen";
+        public static final String VALIDUNTIL      = "validUntil";
+        public static final String FULL_VALIDUNTIL = TABLE_NAME + "." + VALIDUNTIL;
     }
 
     public final static int NOT_DOWNLOADED        = 1;
@@ -116,9 +183,9 @@ public class Paper {
     private String  title;
     private Long    publicationId;
     private String  resource;
-    private String  resourceFileHash;
-    private String  resourceUrl;
-    private long    resourceLen;
+    //    private String  resourceFileHash;
+//    private String  resourceUrl;
+//    private long    resourceLen;
     private long    validUntil;
     private int progress = 0;
 
@@ -129,39 +196,6 @@ public class Paper {
     public Paper() {
     }
 
-    public Paper(Context context, long id) throws PaperNotFoundException {
-        Cursor cursor = context.getApplicationContext()
-                               .getContentResolver()
-                               .query(ContentUris.withAppendedId(CONTENT_URI, id), null, null, null, null);
-        try {
-            if (cursor.moveToNext()) {
-                setData(cursor);
-            } else {
-                throw new PaperNotFoundException("Found no Paper with Id " + id);
-            }
-        } finally {
-            cursor.close();
-        }
-    }
-
-    public Paper(Context context, String bookId) throws PaperNotFoundException {
-        Uri bookIdUri = CONTENT_URI.buildUpon()
-                                   .appendPath(bookId)
-                                   .build();
-        Cursor cursor = context.getApplicationContext()
-                               .getContentResolver()
-                               .query(bookIdUri, null, null, null, null);
-        try {
-            if (cursor.moveToNext()) {
-                setData(cursor);
-
-            } else {
-                throw new PaperNotFoundException("Found no Paper with BookId " + bookId);
-            }
-        } finally {
-            cursor.close();
-        }
-    }
 
     public Paper(Cursor cursor) {
         setData(cursor);
@@ -192,9 +226,9 @@ public class Paper {
         //if (cursor.getColumnIndex(Publication.Columns.VALIDUNTIL) != -1)
         this.validUntil = cursor.getLong(cursor.getColumnIndex(Columns.VALIDUNTIL));
         this.resource = cursor.getString(cursor.getColumnIndex(Columns.RESOURCE));
-        this.resourceFileHash = cursor.getString(cursor.getColumnIndex(Columns.RESOURCEFILEHASH));
-        this.resourceUrl = cursor.getString(cursor.getColumnIndex(Columns.RESOURCEURL));
-        this.resourceLen = cursor.getLong(cursor.getColumnIndex(Columns.RESOURCELEN));
+//        this.resourceFileHash = cursor.getString(cursor.getColumnIndex(Columns.RESOURCEFILEHASH));
+//        this.resourceUrl = cursor.getString(cursor.getColumnIndex(Columns.RESOURCEURL));
+//        this.resourceLen = cursor.getLong(cursor.getColumnIndex(Columns.RESOURCELEN));
     }
 
     private boolean getBoolean(Cursor cursor, int columnIndex) {
@@ -212,9 +246,9 @@ public class Paper {
         this.bookId = PlistHelper.getString(nsDictionary, Columns.BOOKID);
         this.isDemo = PlistHelper.getBoolean(nsDictionary, Columns.ISDEMO);
         this.resource = PlistHelper.getString(nsDictionary, Columns.RESOURCE);
-        this.resourceFileHash = PlistHelper.getString(nsDictionary, Columns.RESOURCEFILEHASH);
-        this.resourceUrl = PlistHelper.getString(nsDictionary, Columns.RESOURCEURL);
-        this.resourceLen = PlistHelper.getInt(nsDictionary, Columns.RESOURCELEN);
+//        this.resourceFileHash = PlistHelper.getString(nsDictionary, Columns.RESOURCEFILEHASH);
+//        this.resourceUrl = PlistHelper.getString(nsDictionary, Columns.RESOURCEURL);
+//        this.resourceLen = PlistHelper.getInt(nsDictionary, Columns.RESOURCELEN);
     }
 
     public ContentValues getContentValues() {
@@ -240,9 +274,9 @@ public class Paper {
         cv.put(Columns.TITLE, title);
         cv.put(Columns.PUBLICATIONID, publicationId);
         cv.put(Columns.RESOURCE, resource);
-        cv.put(Columns.RESOURCEFILEHASH, resourceFileHash);
-        cv.put(Columns.RESOURCEURL, resourceUrl);
-        cv.put(Columns.RESOURCELEN, resourceLen);
+//        cv.put(Columns.RESOURCEFILEHASH, resourceFileHash);
+//        cv.put(Columns.RESOURCEURL, resourceUrl);
+//        cv.put(Columns.RESOURCELEN, resourceLen);
         cv.put(Columns.VALIDUNTIL, validUntil);
         cv.put(Columns._ID, id);
         return cv;
@@ -461,33 +495,33 @@ public class Paper {
         this.resource = resource;
     }
 
-    public void setResourceFileHash(String resourceFileHash) {
-        this.resourceFileHash = resourceFileHash;
-    }
-
-    public void setResourceUrl(String resourceUrl) {
-        this.resourceUrl = resourceUrl;
-    }
-
-    public void setResourceLen(long resourceLen) {
-        this.resourceLen = resourceLen;
-    }
+//    public void setResourceFileHash(String resourceFileHash) {
+//        this.resourceFileHash = resourceFileHash;
+//    }
+//
+//    public void setResourceUrl(String resourceUrl) {
+//        this.resourceUrl = resourceUrl;
+//    }
+//
+//    public void setResourceLen(long resourceLen) {
+//        this.resourceLen = resourceLen;
+//    }
 
     public String getResource() {
         return resource;
     }
 
-    public String getResourceFileHash() {
-        return resourceFileHash;
-    }
-
-    public String getResourceUrl() {
-        return resourceUrl;
-    }
-
-    public long getResourceLen() {
-        return resourceLen;
-    }
+//    public String getResourceFileHash() {
+//        return resourceFileHash;
+//    }
+//
+//    public String getResourceUrl() {
+//        return resourceUrl;
+//    }
+//
+//    public long getResourceLen() {
+//        return resourceLen;
+//    }
 
     public int getArticleCollectionOrderPosition(String key) {
         return articleCollectionOrder.get(key);
@@ -1069,10 +1103,10 @@ public class Paper {
 
             @Override
             public Intent getShareIntent(Context context) {
-                StorageManager storage = StorageManager.getInstance(context);
 
-                File pdfFile = new File(storage.getPaperDirectory(getPaper()), getKey());
-                File papersDir = storage.get(StorageManager.PAPER);
+
+                File pdfFile = new File(StorageHelper.getPaperDirectory(context, getPaper()), getKey());
+                File papersDir = StorageHelper.get(context, StorageHelper.PAPER);
 
                 try {
                     String pagePath = pdfFile.getCanonicalPath()
@@ -1501,6 +1535,25 @@ public class Paper {
         return array;
     }
 
+    public boolean savePositionInArticle(Context context, IIndexItem article, String position) {
+        return saveStoreValue(context, STORE_KEY_POSITION_IN_ARTICLE + "_" + article.getKey(), position);
+    }
+
+    public String getPositionInArticle(Context context, IIndexItem article) {
+        String result = getStoreValue(context, STORE_KEY_POSITION_IN_ARTICLE + "_" + article.getKey());
+        return (TextUtils.isEmpty(result)) ? "0" : result;
+    }
+
+    public boolean saveResourcePartner(Context context, Resource resource) {
+        return saveStoreValue(context, STORE_KEY_RESOURCE_PARTNER, resource.getKey());
+    }
+
+    public Resource getResourcePartner(Context context) {
+        String resource = getStoreValue(context, STORE_KEY_RESOURCE_PARTNER);
+        if (TextUtils.isEmpty(resource)) resource = getResource(); //Fallback;
+        return Resource.getWithKey(context, resource);
+    }
+
     public String getStoreValue(Context context, String key) {
         String path = getBookId() + "/" + key;
         return Store.getValueForKey(context, path);
@@ -1517,8 +1570,8 @@ public class Paper {
     }
 
     public void delete(Context context) {
-        StorageManager storage = StorageManager.getInstance(context);
-        storage.deletePaperDir(this);
+
+        StorageHelper.deletePaperDir(context, this);
         Picasso.with(context)
                .invalidate(getImage());
         if (isImported() || isKiosk()) {
@@ -1563,9 +1616,9 @@ public class Paper {
         equalsBuilder.append(fileHash, rhs.fileHash);
         equalsBuilder.append(len, rhs.len);
         equalsBuilder.append(resource, rhs.resource);
-        equalsBuilder.append(resourceFileHash, rhs.resourceFileHash);
-        equalsBuilder.append(resourceLen, rhs.resourceLen);
-        equalsBuilder.append(resourceUrl, rhs.resourceUrl);
+//        equalsBuilder.append(resourceFileHash, rhs.resourceFileHash);
+//        equalsBuilder.append(resourceLen, rhs.resourceLen);
+//        equalsBuilder.append(resourceUrl, rhs.resourceUrl);
         equalsBuilder.append(lastModified, rhs.lastModified);
         equalsBuilder.append(bookId, rhs.bookId);
         equalsBuilder.append(isDemo, rhs.isDemo);

@@ -8,7 +8,7 @@ import android.text.TextUtils;
 import com.dd.plist.PropertyListFormatException;
 
 import de.thecode.android.tazreader.data.Resource;
-import de.thecode.android.tazreader.utils.StorageManager;
+import de.thecode.android.tazreader.utils.StorageHelper;
 
 import org.greenrobot.eventbus.EventBus;
 import org.xml.sax.SAXException;
@@ -36,18 +36,19 @@ public class DownloadFinishedResourceService extends IntentService {
         String resourceKey = intent.getStringExtra(PARAM_RESOURCE_KEY);
         Timber.i("Start service after downloaded for resource: %s", resourceKey);
         if (!TextUtils.isEmpty(resourceKey)) {
-            Resource resource = new Resource(this, resourceKey);
-            Timber.i("%s",resource);
+            Resource resource = Resource.getWithKey(this, resourceKey);
+            Timber.i("%s", resource);
             if (resource.isDownloading()) {
-                StorageManager storageManager = StorageManager.getInstance(this);
 
                 try {
 
-                    UnzipResource unzipResource = new UnzipResource(storageManager.getDownloadFile(resource),storageManager.getResourceDirectory(resource.getKey()),true);
+                    UnzipResource unzipResource = new UnzipResource(StorageHelper.getDownloadFile(this, resource),
+                                                                    StorageHelper.getResourceDirectory(this, resource.getKey()),
+                                                                    true);
                     unzipResource.start();
                     saveResource(resource, null);
-                } catch (UnzipCanceledException|IOException | PropertyListFormatException | ParseException | SAXException | ParserConfigurationException e) {
-                    saveResource(resource,e);
+                } catch (UnzipCanceledException | IOException | PropertyListFormatException | ParseException | SAXException | ParserConfigurationException e) {
+                    saveResource(resource, e);
                 }
             }
         }
@@ -59,7 +60,10 @@ public class DownloadFinishedResourceService extends IntentService {
         if (e == null) {
             resource.setDownloadId(0);
             resource.setDownloaded(true);
-            getContentResolver().update(Uri.withAppendedPath(Resource.CONTENT_URI, resource.getKey()), resource.getContentValues(), null, null);
+            getContentResolver().update(Uri.withAppendedPath(Resource.CONTENT_URI, resource.getKey()),
+                                        resource.getContentValues(),
+                                        null,
+                                        null);
             EventBus.getDefault()
                     .post(new ResourceDownloadEvent(resource.getKey()));
         } else {

@@ -14,7 +14,7 @@ import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.download.UnzipPaperTask;
 import de.thecode.android.tazreader.utils.AsyncTaskWithExecption;
 import de.thecode.android.tazreader.utils.BaseFragment;
-import de.thecode.android.tazreader.utils.StorageManager;
+import de.thecode.android.tazreader.utils.StorageHelper;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -104,9 +104,8 @@ public class ImportWorkerFragment extends BaseFragment {
 
                             InputStream is = context.getContentResolver()
                                                     .openInputStream(dataUri);
-                            StorageManager storage = StorageManager.getInstance(context);
                             do {
-                                outputFile = new File(storage.getImportCache(), String.valueOf(System.currentTimeMillis()));
+                                outputFile = new File(StorageHelper.getImportCache(context), String.valueOf(System.currentTimeMillis()));
                             } while (outputFile.exists());
 
                             OutputStream os = new FileOutputStream(outputFile);
@@ -188,7 +187,9 @@ public class ImportWorkerFragment extends BaseFragment {
 
         if (data != null) {
             try {
-                Paper paper = new Paper(getActivity().getApplicationContext(), data.getBookId());
+
+                Paper paper = Paper.getPaperWithBookId(getActivity().getApplicationContext(), data.getBookId());
+                if (paper == null) throw new Paper.PaperNotFoundException();
                 if (paper.isDownloaded()) {
 
                     if (noUserCallback) throw new Paper.PaperNotFoundException();
@@ -249,12 +250,12 @@ public class ImportWorkerFragment extends BaseFragment {
 
     private void importTazAndroid(Uri dataUri, ImportMetadata metadata, File cacheFile, boolean deleteFile) throws ImportException, IOException {
 
-        StorageManager storage = StorageManager.getInstance(getActivity());
 
         Paper paper;
         try {
-            paper = new Paper(getActivity().getApplicationContext(), metadata.getBookId());
-            storage.deletePaperDir(paper);
+            paper = Paper.getPaperWithBookId(getActivity().getApplicationContext(), metadata.getBookId());
+            if (paper == null) throw new Paper.PaperNotFoundException();
+            StorageHelper.deletePaperDir(getContext(), paper);
         } catch (Paper.PaperNotFoundException e) {
             paper = new Paper();
             paper.setBookId(metadata.getBookId());
@@ -273,8 +274,8 @@ public class ImportWorkerFragment extends BaseFragment {
         if (!preventImportFlag) paper.setImported(true);
         paper.setDownloaded(false);
         paper.setFileHash(null);
-        paper.setResourceUrl(null);
-        paper.setResourceFileHash(null);
+//        paper.setResourceUrl(null);
+//        paper.setResourceFileHash(null);
         paper.setResource(null);
         if (paper.getId() != null) {
             int affected = getActivity().getApplicationContext()
@@ -295,13 +296,13 @@ public class ImportWorkerFragment extends BaseFragment {
     }
 
     private void importTpaper(Uri dataUri, ImportMetadata metadata, File cacheFile, boolean deleteFile) throws IOException {
-        StorageManager storage = StorageManager.getInstance(getActivity());
 
         Paper paper;
 
         try {
-            paper = new Paper(getActivity().getApplicationContext(), metadata.getBookId());
-            storage.deletePaperDir(paper);
+            paper = Paper.getPaperWithBookId(getActivity().getApplicationContext(), metadata.getBookId());
+            if (paper == null) throw new Paper.PaperNotFoundException();
+            StorageHelper.deletePaperDir(getContext(), paper);
         } catch (Paper.PaperNotFoundException e) {
             paper = new Paper();
             paper.setBookId(metadata.getBookId());
@@ -313,12 +314,12 @@ public class ImportWorkerFragment extends BaseFragment {
         if (!preventImportFlag) paper.setImported(true);
         paper.setDownloaded(true);
         paper.setFileHash(null);
-        paper.setResourceUrl(null);
-        paper.setResourceFileHash(null);
+//        paper.setResourceUrl(null);
+//        paper.setResourceFileHash(null);
         paper.setResource(null);
 
 
-        new UnzipPaperTask(paper, cacheFile, storage.getPaperDirectory(paper), deleteFile) {
+        new UnzipPaperTask(paper, cacheFile, StorageHelper.getPaperDirectory(getContext(), paper), deleteFile) {
             Context context;
             Uri dataUri;
             File cacheFile;

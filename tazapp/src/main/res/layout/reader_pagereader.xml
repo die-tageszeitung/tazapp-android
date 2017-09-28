@@ -16,6 +16,7 @@
             android:layout_alignParentTop="true"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
+            android:alpha="@dimen/icon_button_alpha"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:paddingBottom="18dp"
@@ -35,11 +36,13 @@
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:id="@+id/share"
+                android:alpha="@dimen/icon_button_alpha"
                 android:paddingBottom="18dp"/>
 
         <de.thecode.android.tazreader.widget.ReaderButton
                 android:src="@drawable/ic_apps_24dp"
                 android:id="@+id/pageindex"
+                android:alpha="@dimen/icon_button_alpha"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:paddingBottom="18dp"

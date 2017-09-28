@@ -87,10 +87,12 @@ public class NotificationHelper {
         StringBuilder bigTextBuilder = new StringBuilder();
         for (int i = 0; i < notifiedPaperIds.length(); i++) {
             try {
-                Paper paper = new Paper(context, notifiedPaperIds.getLong(i));
-                if (i >= 1) bigTextBuilder.append("\n");
-                bigTextBuilder.append(paper.getTitelWithDate(context));
-            } catch (JSONException | Paper.PaperNotFoundException e) {
+                Paper paper = Paper.getPaperWithId(context, notifiedPaperIds.getLong(i));
+                if (paper != null) {
+                    if (i >= 1) bigTextBuilder.append("\n");
+                    bigTextBuilder.append(paper.getTitelWithDate(context));
+                }
+            } catch (JSONException e) {
                 Timber.w(e);
             }
         }
@@ -101,8 +103,11 @@ public class NotificationHelper {
             contentText = String.format(context.getString(R.string.notification_content_text_summary), notifiedPaperIds.length());
         } else {
             try {
-                contentText = new Paper(context, notifiedPaperIds.getLong(0)).getTitelWithDate(context);
-            } catch (JSONException | Paper.PaperNotFoundException e) {
+                Paper paper = Paper.getPaperWithId(context, notifiedPaperIds.getLong(0));
+                if (paper != null) {
+                    contentText = paper.getTitelWithDate(context);
+                }
+            } catch (JSONException e) {
                 Timber.w(e);
             }
         }
@@ -136,13 +141,12 @@ public class NotificationHelper {
     }
 
     public static void showDownloadErrorNotification(Context context, String extraMessage, long paperId) {
-        Paper paper;
-        try {
-            paper = new Paper(context, paperId);
+        Paper paper = Paper.getPaperWithId(context, paperId);
+        if  (paper != null) {
             NotificationCompat.Builder nBuilder = new NotificationCompat.Builder(context);
 
-            StringBuilder message = new StringBuilder(
-                    String.format(context.getString(R.string.dialog_error_download), paper.getTitelWithDate(context)));
+            StringBuilder message = new StringBuilder(String.format(context.getString(R.string.dialog_error_download),
+                                                                    paper.getTitelWithDate(context)));
 
             if (!TextUtils.isEmpty(extraMessage)) message.append("\n")
                                                          .append(extraMessage);
@@ -170,16 +174,11 @@ public class NotificationHelper {
                 nBuilder.setDefaults(Notification.DEFAULT_VIBRATE);
             Notification notification = nBuilder.build();
 
-            NotificationManager notificationManager = (NotificationManager) context.getSystemService(
-                    Context.NOTIFICATION_SERVICE);
+            NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
             int notificationId = notificationErrorId + (int) paperId;
             notificationManager.cancel(notificationId);
             notificationManager.notify(notificationId, notification);
-        } catch (Paper.PaperNotFoundException e) {
-            Timber.w(e);
         }
-
-
     }
 
     public static void cancelDownloadErrorNotification(Context context, long paperId) {

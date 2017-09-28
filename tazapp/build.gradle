@@ -1,9 +1,9 @@
 def versionMajor = 3
-def versionMinor = 3
-def versionPatch = 0
-def versionBuild = 0
+def versionMinor = 4
+def versionPatch = 1
+def versionBuild = 4
 
-def supportLibVer = "26.0.1"
+def supportLibVer = "26.1.0"
 def buildToolsVer = "26.0.1"
 def firebaseVer = "11.0.2"
 def compileSdkVer = 26
@@ -82,11 +82,6 @@ if (overheadPath != null) {
 } else {
     logger.error('overheadpath not set')
 }
-
-
-
-
-import com.android.build.OutputFile
 
 
 android {
@@ -211,7 +206,7 @@ android {
 
     applicationVariants.all { variant ->
         variant.outputs.each { output ->
-            def baseAbiVersionCode = abiCodes.get(output.getFilter(OutputFile.ABI))
+            def baseAbiVersionCode = abiCodes.get(output.getFilter(com.android.build.OutputFile.ABI))
             output.versionCodeOverride = baseAbiVersionCode * 100000 + variant.versionCode;
             output.versionNameOverride = variant.versionName + " " + abiCodes.find{it.value == baseAbiVersionCode}.key
         }
@@ -224,6 +219,34 @@ android {
 //            }
 //        }
 //    }
+
+
+    productFlavors.all { flavor ->
+        def helpDir = new File(project.projectDir,"src/${flavor.name}/assets/help")
+        def localZip = new File(project.ext.overheadPath, "temp_${flavor.name}.zip")
+        def helpDownloadTaskName = "helpDownloadFile${flavor.name.capitalize()}"
+        def helpUnzipTaskName = "helpUnzipFile${flavor.name.capitalize()}"
+        def helpDeleteZipTaskName = "helpDeleteZipFile${flavor.name.capitalize()}"
+        def helpDeleteDirTaskName = "helpDeleteDir${flavor.name.capitalize()}"
+        def downloadTask = task "${helpDownloadTaskName}"(type: Download) {
+            sourceUrl = "http://dl.taz.de/down/help/${flavor.name}.zip"
+            target = localZip
+        }
+        def deleteZipTask = task "${helpDeleteZipTaskName}"(type: Delete) {
+            delete localZip
+        }
+        def deleteHelpDirTask = task "${helpDeleteDirTaskName}"(type: Delete) {
+            delete helpDir
+        }
+        def unzipTask = task "${helpUnzipTaskName}"(dependsOn: [downloadTask, deleteHelpDirTask], type: Copy) {
+            from zipTree(downloadTask.target)
+            into helpDir
+            doLast {
+                deleteZipTask.execute()
+            }
+        }
+        tasks.preBuild.dependsOn unzipTask
+    }
 }
 
 repositories {
@@ -263,15 +286,15 @@ dependencies {
 
     compile 'com.jakewharton.timber:timber:4.5.1'
 
-    compile 'uk.co.chrisjenx:calligraphy:2.1.0'
     compile 'com.yqritc:recyclerview-flexibledivider:1.2.9'
 
-    compile 'com.gitlab.matecode:androiddialog:1.2.29'
+
 
     compile 'com.scottyab:aescrypt:0.0.1'
 
     compile 'com.github.matecode:Snacky:1.0.2'
-    compile 'com.github.matecode:DataFragment:1.0.1'
+    compile 'com.github.matecode:DataFragment:1.0.2'
+    compile 'com.github.matecode:androiddialog:1.2.32'
 
     compile 'ch.acra:acra:4.9.2'
 
@@ -282,6 +305,19 @@ dependencies {
     compile 'com.evernote:android-job:1.2.0-alpha3'
 
     compile 'com.google.code.gson:gson:2.8.1'
+}
+
+class Download extends DefaultTask {
+    @Input
+    String sourceUrl
+
+    @OutputFile
+    File target
+
+    @TaskAction
+    void download() {
+        ant.get(src: sourceUrl, dest: target)
+    }
 }
 
 apply plugin: 'com.google.gms.google-services'

@@ -24,6 +24,7 @@ import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.okhttp3.OkHttp3Helper;
+import de.thecode.android.tazreader.okhttp3.RequestHelper;
 import de.thecode.android.tazreader.sync.AccountHelper;
 import de.thecode.android.tazreader.utils.BaseFragment;
 import de.thecode.android.tazreader.utils.RunnableExtended;
@@ -161,7 +162,11 @@ public class LoginFragment extends BaseFragment {
         showWaitingDialog();
 
         Call call = OkHttp3Helper.getInstance(getContext())
-                                 .getCall(HttpUrl.parse(BuildConfig.CHECKLOGINURL), username, password);
+                                 .getCall(HttpUrl.parse(BuildConfig.CHECKLOGINURL),
+                                          username,
+                                          password,
+                                          RequestHelper.getInstance(getContext())
+                                                       .getOkhttp3RequestBody());
 
         call.enqueue(new LoginCallback(username, password) {
 
@@ -195,8 +200,9 @@ public class LoginFragment extends BaseFragment {
                         }
                     });
                 } else {
-                    onFailure(call, new IOException(response.body()
-                                                            .string()));
+                    onFailure(call,
+                              new IOException(response.body()
+                                                      .string()));
                 }
             }
 

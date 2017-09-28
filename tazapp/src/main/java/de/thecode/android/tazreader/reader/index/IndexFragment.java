@@ -1,7 +1,6 @@
 package de.thecode.android.tazreader.reader.index;
 
-import android.app.Activity;
-import android.content.Intent;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
 import android.support.v4.content.ContextCompat;
@@ -9,6 +8,7 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -28,7 +28,6 @@ import de.thecode.android.tazreader.data.Paper.Plist.Page.Article;
 import de.thecode.android.tazreader.data.Paper.Plist.Source;
 import de.thecode.android.tazreader.data.Paper.Plist.TopLink;
 import de.thecode.android.tazreader.data.TazSettings;
-import de.thecode.android.tazreader.reader.HelpActivity;
 import de.thecode.android.tazreader.reader.IReaderCallback;
 import de.thecode.android.tazreader.reader.ReaderActivity;
 import de.thecode.android.tazreader.reader.SettingsDialog;
@@ -55,6 +54,7 @@ public class IndexFragment extends BaseFragment {
 
     int bookmarkColorActive;
     int bookmarkColorNormal;
+    float iconButtonAlpha;
 
     boolean mShowSubtitles;
     String currentlyMarkedInIndexKey = null;
@@ -64,25 +64,41 @@ public class IndexFragment extends BaseFragment {
 
     IReaderCallback mReaderCallback;
 
+
     public IndexFragment() {
 
     }
 
 
+//    @Override
+//    public void onAttach(Activity activity) {
+//        super.onAttach(activity);
+//
+//        mReaderCallback = (IReaderCallback) activity;
+//
+//        bookmarkColorNormal = ContextCompat.getColor(activity, R.color.index_bookmark_off);
+//        bookmarkColorActive = ContextCompat.getColor(activity, R.color.index_bookmark_on);
+//
+//    }
+
     @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof IReaderCallback) mReaderCallback = (IReaderCallback)context;
+        else throw new RuntimeException(context.toString() + " must implement " + IReaderCallback.class.getSimpleName());
 
-        mReaderCallback = (IReaderCallback) activity;
+        bookmarkColorNormal = ContextCompat.getColor(context, R.color.index_bookmark_off);
+        bookmarkColorActive = ContextCompat.getColor(context, R.color.index_bookmark_on);
 
-        bookmarkColorNormal = ContextCompat.getColor(activity, R.color.index_bookmark_off);
-        bookmarkColorActive = ContextCompat.getColor(activity, R.color.index_bookmark_on);
-
+        TypedValue outValue = new TypedValue();
+        context.getResources().getValue(R.dimen.icon_button_alpha,outValue,true);
+        iconButtonAlpha = outValue.getFloat();
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        init(mReaderCallback.getPaper());
         adapter = new IndexRecyclerViewAdapter();
         adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
             @Override
@@ -150,8 +166,9 @@ public class IndexFragment extends BaseFragment {
                         setIndexVerbose(true);
                         break;
                     case R.id.toolbar_index_help:
-                        Intent helpIntent = new Intent(getActivity(), HelpActivity.class);
-                        startActivity(helpIntent);
+                        if (mReaderCallback != null) {
+                            mReaderCallback.onShowHelp();
+                        }
                         break;
                 }
                 return true;
@@ -234,7 +251,7 @@ public class IndexFragment extends BaseFragment {
         super.onSaveInstanceState(outState);
     }
 
-    public void init(Paper paper) {
+    private void init(Paper paper) {
         Timber.d("paper: %s", paper);
         index.clear();
 
@@ -439,10 +456,12 @@ public class IndexFragment extends BaseFragment {
                     FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) ((ArticleViewholder) viewholder).bookmark.getLayoutParams();
                     if (item.isBookmarked()) {
                         TintHelper.tintDrawable(((ArticleViewholder) viewholder).bookmark.getDrawable(), bookmarkColorActive);
+                        ((ArticleViewholder) viewholder).bookmark.setAlpha(1F);
                         layoutParams.topMargin = getActivity().getResources()
                                                               .getDimensionPixelOffset(R.dimen.reader_bookmark_offset_active);
                     } else {
                         TintHelper.tintDrawable(((ArticleViewholder) viewholder).bookmark.getDrawable(), bookmarkColorNormal);
+                        ((ArticleViewholder) viewholder).bookmark.setAlpha(iconButtonAlpha);
                         layoutParams.topMargin = getActivity().getResources()
                                                               .getDimensionPixelOffset(R.dimen.reader_bookmark_offset_normal);
                     }

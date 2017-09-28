@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layer-list xmlns:android="http://schemas.android.com/apk/res/android" >
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item android:id="@android:id/background">
         <color android:color="#00000000" />
     </item>
     <item android:id="@android:id/progress">
         <clip android:clipOrientation="vertical" android:gravity="top">
-            <color android:color="@color/library_item_progress_overlay" />
+            <color android:color="@color/library_item_progress_overlay"/>
         </clip>
     </item>
 

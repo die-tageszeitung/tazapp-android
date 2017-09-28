@@ -107,7 +107,8 @@ public class ImportDirectoryLoader extends AsyncTaskLoader<List<ImportDirectoryL
                     ifw.selectable = true;
                     ifw.detail = metadata.getTitelWithDate(", ");
                     try {
-                        Paper paper = new Paper(getContext(),metadata.getBookId());
+                        Paper paper = Paper.getPaperWithBookId(getContext(), metadata.getBookId());
+                        if (paper == null) throw new Paper.PaperNotFoundException();
                         if (paper.isDownloaded() || paper.hasUpdate() || paper.isDownloading())
                             ifw.override = true;
                     } catch (Paper.PaperNotFoundException ignored) {

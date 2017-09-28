@@ -2,6 +2,11 @@ package de.thecode.android.tazreader.start;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
+import android.os.Build;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
@@ -18,7 +23,7 @@ import com.squareup.picasso.Picasso;
 
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
-import de.thecode.android.tazreader.download.DownloadManager;
+import de.thecode.android.tazreader.download.DownloadHelper;
 import de.thecode.android.tazreader.download.DownloadProgressEvent;
 import de.thecode.android.tazreader.download.PaperDownloadFailedEvent;
 import de.thecode.android.tazreader.download.UnzipProgressEvent;
@@ -48,7 +53,7 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
     OnItemClickListener           mClickListener;
     OnItemLongClickListener       mLongClickListener;
 
-    DownloadManager downloadHelper;
+
 
     public LibraryAdapter(Context context, Cursor cursor, IStartCallback callback) {
         super(context, cursor);
@@ -58,8 +63,6 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
 
         mContext = context;
         this.callback = new WeakReference<IStartCallback>(callback);
-
-        downloadHelper = DownloadManager.getInstance(context);
 
         mCoverImageHeight = context.getResources()
                                    .getDimensionPixelSize(R.dimen.cover_image_height);
@@ -229,16 +232,16 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
             viewHolder.wait.setVisibility(View.GONE);
         }
 
-        if (paper.hasUpdate() /*&& paper.isDownloaded()*/) {
-            viewHolder.badge.setText(R.string.string_badge_update);
-            viewHolder.badge.setVisibility(View.VISIBLE);
-        }
+//        if (paper.hasUpdate() /*&& paper.isDownloaded()*/) {
+//            viewHolder.badge.setText(R.string.string_badge_update);
+//            viewHolder.badge.setVisibility(View.VISIBLE);
+//        }
 
         //        else if (paper.isImported()) {
         //            viewHolder.badge.setText(R.string.string_badge_import);
         //            viewHolder.badge.setVisibility(View.VISIBLE);
         //        }
-        else if (paper.isKiosk()) {
+        if (paper.isKiosk()) {
             viewHolder.badge.setText(R.string.string_badge_kiosk);
             viewHolder.badge.setVisibility(View.VISIBLE);
         } else viewHolder.badge.setVisibility(View.GONE);
@@ -451,7 +454,7 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
         ProgressBar progress;
         FrameLayout selected;
         private Paper _paper;
-        DownloadManager.DownloadProgressThread downloadProgressThread;
+        DownloadHelper.DownloadProgressThread downloadProgressThread;
 
         public ViewHolder(View itemView) {
             super(itemView);
@@ -460,6 +463,14 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
             badge = (TextView) itemView.findViewById(R.id.lib_item_badge);
             image = (ImageView) itemView.findViewById(R.id.lib_item_facsimile);
             wait = (ProgressBar) itemView.findViewById(R.id.lib_item_wait);
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+
+                Drawable wrapDrawable = DrawableCompat.wrap(wait.getIndeterminateDrawable());
+                DrawableCompat.setTint(wrapDrawable, ContextCompat.getColor(itemView.getContext(), R.color.library_item_text));
+                wait.setIndeterminateDrawable(DrawableCompat.unwrap(wrapDrawable));
+            } else {
+                wait.getIndeterminateDrawable().setColorFilter(ContextCompat.getColor(itemView.getContext(), R.color.library_item_text), PorterDuff.Mode.SRC_IN);
+            }
             progress = (ProgressBar) itemView.findViewById(R.id.lib_item_progress);
             selected = (FrameLayout) itemView.findViewById(R.id.lib_item_selected_overlay);
             card.setOnLongClickListener(this);
@@ -499,9 +510,9 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
                 if (paper.isDownloaded()) setProgress(100);
                 else {
                     if (paper.isDownloading()) {
-                        DownloadManager.DownloadState downloadState = downloadHelper.getDownloadState(paper.getDownloadId());
+                        DownloadHelper.DownloadState downloadState = DownloadHelper.getDownloadState(mContext, paper.getDownloadId());
                         setDownloadProgress(downloadState.getDownloadProgress());
-                        downloadProgressThread = downloadHelper.new DownloadProgressThread(paper.getDownloadId(), paper.getId());
+                        downloadProgressThread = new DownloadHelper.DownloadProgressThread(mContext, paper.getDownloadId(), paper.getId());
                         downloadProgressThread.start();
                     } else setProgress(0);
                 }

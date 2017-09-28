@@ -87,7 +87,7 @@ public class CrashDialogFragment extends DialogFragment {
 
     private View buildCustomView(ACRAConfiguration config) {
         View root = LayoutInflater.from(getContext())
-                                  .inflate(R.layout.crash_dialog, null);
+                                  .inflate(R.layout.dialog_crash, null);
 
         TextView dialogText = (TextView) root.findViewById(R.id.dialogText);
         if (config.resDialogText() != ACRAConstants.DEFAULT_RES_VALUE) {

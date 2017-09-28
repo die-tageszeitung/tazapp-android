@@ -22,15 +22,15 @@ import timber.log.Timber;
 
 public class TazProvider extends ContentProvider {
     
-    private static final int PAPER_DIR = 1;
-    private static final int PAPER_ID = 2;
-    private static final int STORE_KEY = 3;
-    private static final int STORE_DIR = 4;
-    private static final int PAPER_BOOKID = 5;
+    private static final int PAPER_DIR       = 1;
+    private static final int PAPER_ID        = 2;
+    private static final int STORE_KEY       = 3;
+    private static final int STORE_DIR       = 4;
+    private static final int PAPER_BOOKID    = 5;
     private static final int PUBLICATION_DIR = 6;
-    private static final int PUBLICATION_ID = 7;
-    private static final int RESOURCE_DIR = 8;
-    private static final int RESOURCE_ID = 9;
+    private static final int PUBLICATION_ID  = 7;
+    private static final int RESOURCE_DIR    = 8;
+    private static final int RESOURCE_KEY    = 9;
         
     public static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".provider";
     private static UriMatcher sUriMatcher;
@@ -48,7 +48,7 @@ public class TazProvider extends ContentProvider {
         sUriMatcher.addURI(AUTHORITY, Publication.TABLE_NAME, PUBLICATION_DIR);
         sUriMatcher.addURI(AUTHORITY, Publication.TABLE_NAME + "/#", PUBLICATION_ID);
         sUriMatcher.addURI(AUTHORITY, Resource.TABLE_NAME, RESOURCE_DIR);
-        sUriMatcher.addURI(AUTHORITY, Resource.TABLE_NAME + "/*", RESOURCE_ID);
+        sUriMatcher.addURI(AUTHORITY, Resource.TABLE_NAME + "/*", RESOURCE_KEY);
         
     }
     
@@ -141,7 +141,7 @@ public class TazProvider extends ContentProvider {
                 queryCursor.setNotificationUri(getContext().getContentResolver(), uri);
                 break;
                 
-            case RESOURCE_ID:
+            case RESOURCE_KEY:
                 String resourceKey = uri.getLastPathSegment();
                 queryCursor = mDb.query(Resource.TABLE_NAME,projection,Resource.Columns.KEY+" LIKE '"+resourceKey+"'",selectionArgs,null,null,sortOrder);
                 queryCursor.setNotificationUri(getContext().getContentResolver(), uri);
@@ -173,7 +173,7 @@ public class TazProvider extends ContentProvider {
                 return Publication.CONTENT_ITEM_TYPE;
             case RESOURCE_DIR:
                 return Resource.CONTENT_TYPE;
-            case RESOURCE_ID:
+            case RESOURCE_KEY:
                 return Resource.CONTENT_ITEM_TYPE;
             default:
                 throw new IllegalArgumentException("Unknown taz-provider type: " +
@@ -261,7 +261,7 @@ public class TazProvider extends ContentProvider {
                 affected = mDb.delete(Resource.TABLE_NAME,selection,selectionArgs);
                 break;
 
-            case RESOURCE_ID:
+            case RESOURCE_KEY:
                 String resourceKey = uri.getLastPathSegment();
                 affected = mDb.delete(Resource.TABLE_NAME,Resource.Columns.KEY +" LIKE '"+resourceKey+"'"+ (!TextUtils.isEmpty(selection) ? " AND (" + selection + ")" : ""),selectionArgs);
                 break;                
@@ -303,7 +303,7 @@ public class TazProvider extends ContentProvider {
                 affected = mDb.update(Resource.TABLE_NAME,values,selection,selectionArgs);
                 break;
 
-            case RESOURCE_ID:
+            case RESOURCE_KEY:
                 String resourceKey = uri.getLastPathSegment();
                 affected = mDb.update(Resource.TABLE_NAME,values,Resource.Columns.KEY +" LIKE '"+resourceKey+"'"+ (!TextUtils.isEmpty(selection) ? " AND (" + selection + ")" : ""),selectionArgs);
                 break;       

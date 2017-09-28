@@ -1,10 +1,11 @@
 package de.thecode.android.tazreader.data;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Build;
 
-import de.thecode.android.tazreader.utils.StorageManager;
+import de.thecode.android.tazreader.utils.StorageHelper;
 
 import org.apache.commons.io.FileUtils;
 
@@ -24,10 +25,10 @@ public abstract class FileCacheImageHelper {
     private File mCacheDir;
 
 
-    public FileCacheImageHelper(StorageManager storage, String subDir) {
+    public FileCacheImageHelper(Context context, String subDir) {
         //mContext = context;
         //ExternalStorage storage = new ExternalStorage(context);
-        mCacheDir = storage.getCache(subDir);
+        mCacheDir = StorageHelper.getCache(context, subDir);
     }
 
     public boolean save(Bitmap bitmap, String hash) throws IOException {

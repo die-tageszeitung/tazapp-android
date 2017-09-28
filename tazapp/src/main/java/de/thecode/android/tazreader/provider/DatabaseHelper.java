@@ -59,7 +59,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("ALTER TABLE " + Resource.TABLE_NAME + " ADD COLUMN " + Resource.Columns.FILEHASH + " TEXT;");
         db.execSQL("ALTER TABLE " + Resource.TABLE_NAME + " ADD COLUMN " + Resource.Columns.LEN + " INTEGER;");
         db.execSQL("ALTER TABLE " + Resource.TABLE_NAME + " ADD COLUMN " + Resource.Columns.URL + " TEXT;");
-        db.execSQL("ALTER TABLE " + Paper.TABLE_NAME + " ADD COLUMN " + Paper.Columns.RESOURCELEN + " INTEGER;");
+//        db.execSQL("ALTER TABLE " + Paper.TABLE_NAME + " ADD COLUMN " + Paper.Columns.RESOURCELEN + " INTEGER;");
     }
 
     private void upgradeFrom4To5(SQLiteDatabase db) {
@@ -68,8 +68,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     private void upgradeFrom3To4(SQLiteDatabase db) {
         db.execSQL("ALTER TABLE " + Paper.TABLE_NAME + " ADD COLUMN " + Paper.Columns.RESOURCE + " TEXT;");
-        db.execSQL("ALTER TABLE " + Paper.TABLE_NAME + " ADD COLUMN " + Paper.Columns.RESOURCEFILEHASH + " TEXT;");
-        db.execSQL("ALTER TABLE " + Paper.TABLE_NAME + " ADD COLUMN " + Paper.Columns.RESOURCEURL + " TEXT;");
+//        db.execSQL("ALTER TABLE " + Paper.TABLE_NAME + " ADD COLUMN " + Paper.Columns.RESOURCEFILEHASH + " TEXT;");
+//        db.execSQL("ALTER TABLE " + Paper.TABLE_NAME + " ADD COLUMN " + Paper.Columns.RESOURCEURL + " TEXT;");
         db.execSQL(CREATE_RESOURCE_V4);
     }
 
@@ -194,9 +194,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             Paper.Columns.LASTMODIFIED + " INTEGER," +
             Paper.Columns.BOOKID + " TEXT," +
             Paper.Columns.RESOURCE + " TEXT," +
-            Paper.Columns.RESOURCEFILEHASH + " TEXT," +
-            Paper.Columns.RESOURCEURL + " TEXT," +
-            Paper.Columns.RESOURCELEN + " INTEGER," +
+//            Paper.Columns.RESOURCEFILEHASH + " TEXT," +
+//            Paper.Columns.RESOURCEURL + " TEXT," +
+//            Paper.Columns.RESOURCELEN + " INTEGER," +
             Paper.Columns.ISDEMO + " INTEGER," +
             Paper.Columns.HASUPDATE + " INTEGER," +
             Paper.Columns.DOWNLOADID + " INTEGER," +
@@ -246,8 +246,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             Paper.Columns.LASTMODIFIED + " INTEGER," +
             Paper.Columns.BOOKID + " TEXT," +
             Paper.Columns.RESOURCE + " TEXT," +
-            Paper.Columns.RESOURCEFILEHASH + " TEXT," +
-            Paper.Columns.RESOURCEURL + " TEXT," +
+//            Paper.Columns.RESOURCEFILEHASH + " TEXT," +
+//            Paper.Columns.RESOURCEURL + " TEXT," +
             Paper.Columns.ISDEMO + " INTEGER," +
             Paper.Columns.HASUPDATE + " INTEGER," +
             Paper.Columns.DOWNLOADID + " INTEGER," +
@@ -295,8 +295,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             Paper.Columns.LASTMODIFIED + " INTEGER," +
             Paper.Columns.BOOKID + " TEXT," +
             Paper.Columns.RESOURCE + " TEXT," +
-            Paper.Columns.RESOURCEFILEHASH + " TEXT," +
-            Paper.Columns.RESOURCEURL + " TEXT," +
+//            Paper.Columns.RESOURCEFILEHASH + " TEXT," +
+//            Paper.Columns.RESOURCEURL + " TEXT," +
             Paper.Columns.ISDEMO + " INTEGER," +
             Paper.Columns.HASUPDATE + " INTEGER," +
             Paper.Columns.DOWNLOADID + " INTEGER," +

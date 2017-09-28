@@ -35,7 +35,7 @@ public class TechInfoDialog extends DialogCustomView {
             versionName = packageInfo.versionName;
         } catch (Exception ignored) {
         }
-
+        versionName += " ("+BuildConfig.VERSION_CODE+")";
 
         String[] supportedArch;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -48,7 +48,7 @@ public class TechInfoDialog extends DialogCustomView {
         supportedArchList = new ArrayList<>(new LinkedHashSet<>(supportedArchList)); //remove duplicate
 
 
-        View view = inflater.inflate(R.layout.techinfo_dialog,parent,false);
+        View view = inflater.inflate(R.layout.dialog_techinfo, parent, false);
         ((TextView) view.findViewById(R.id.version)).setText(versionName);
         ((TextView) view.findViewById(R.id.abis)).setText(TextUtils.join(", ", supportedArchList));
         ((TextView) view.findViewById(R.id.installationid)).setText(Installation.id(getContext()));

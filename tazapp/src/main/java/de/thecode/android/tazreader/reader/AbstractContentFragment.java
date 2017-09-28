@@ -3,38 +3,43 @@ package de.thecode.android.tazreader.reader;
 
 import android.content.Context;
 
-import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.utils.BaseFragment;
-
-import java.lang.ref.WeakReference;
 
 /**
  * Created by mate on 18.12.2014.
  */
 public abstract class AbstractContentFragment extends BaseFragment implements ReaderActivity.ConfigurationChangeListener {
-    private WeakReference<IReaderCallback> mCallback;
+
+    public IReaderCallback callback;
+
 
     public AbstractContentFragment() {
 
     }
 
-    public abstract void init(Paper paper, String key, String position);
+    //public abstract void init(Paper paper, String key, String position);
 
     @Override
     public void onAttach(Context context) {
-        mCallback = new WeakReference<>((IReaderCallback) context);
-        if (hasCallback()) getCallback().addConfigChangeListener(this);
         super.onAttach(context);
+
+        if (context instanceof IReaderCallback) callback = (IReaderCallback)context;
+        else throw new RuntimeException(context.toString() + " must implement " + IReaderCallback.class.getSimpleName());
+        callback.addConfigChangeListener(this);
+
+//        mCallback = new WeakReference<>((IReaderCallback) context);
+//        if (hasCallback()) getCallback().addConfigChangeListener(this);
+
     }
 
-    public boolean hasCallback() {
-        return mCallback != null && mCallback.get() != null;
-    }
+//    public boolean hasCallback() {
+//        return mCallback != null && mCallback.get() != null;
+//    }
 
-    public IReaderCallback getCallback() {
-        return mCallback.get();
-    }
+//    public IReaderCallback getCallback() {
+//        return mCallback.get();
+//    }
 
     // Configuration Handling///////
     public boolean setConfig(String name, String value) {

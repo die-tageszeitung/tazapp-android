@@ -15,10 +15,7 @@ import android.widget.Toast;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.analytics.AnalyticsWrapper;
 import de.thecode.android.tazreader.data.Paper;
-import de.thecode.android.tazreader.data.Paper.Plist.Book;
-import de.thecode.android.tazreader.data.Paper.Plist.Category;
 import de.thecode.android.tazreader.data.Paper.Plist.Page;
-import de.thecode.android.tazreader.data.Paper.Plist.Source;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.reader.AbstractContentFragment;
 import de.thecode.android.tazreader.reader.ReaderActivity;
@@ -33,6 +30,16 @@ import java.util.List;
 import timber.log.Timber;
 
 public class PagesFragment extends AbstractContentFragment {
+
+    private static final String ARG_STARTKEY = "start_key";
+
+    public static PagesFragment newInstance(String startKey) {
+        PagesFragment fragment = new PagesFragment();
+        Bundle bundle = new Bundle();
+        bundle.putString(ARG_STARTKEY, startKey);
+        fragment.setArguments(bundle);
+        return fragment;
+    }
 
     TAZReaderView _readerView;
     ShareButton   mShareButton;
@@ -53,7 +60,29 @@ public class PagesFragment extends AbstractContentFragment {
         super.onCreate(savedInstanceState);
         AnalyticsWrapper.getInstance()
                         .trackBreadcrumb("onCreate in PagesFragment");
+        if (savedInstanceState == null) {
+            if (getArguments() != null) _startKey = getArguments().getString(ARG_STARTKEY);
+        } else {
+            _startKey = savedInstanceState.getString(ARG_STARTKEY);
+        }
+        pages = new ArrayList<>();
+        for (Paper.Plist.Source source : callback.getPaper()
+                                                 .getPlist()
+                                                 .getSources()) {
+            for (Paper.Plist.Book book : source.getBooks()) {
+                for (Paper.Plist.Category category : book.getCategories()) {
+                    pages.addAll(category.getPages());
+                }
+            }
+        }
+        _adapter = new TazReaderViewAdaper();
         //setRetainInstance(true);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString(ARG_STARTKEY, _startKey);
     }
 
     @Override
@@ -107,7 +136,6 @@ public class PagesFragment extends AbstractContentFragment {
         } else mIndexButton.setVisibility(View.GONE);
 
 
-
         if (!TextUtils.isEmpty(_startKey)) setPage(_startKey);
 
         return view;
@@ -127,34 +155,38 @@ public class PagesFragment extends AbstractContentFragment {
                         .trackBreadcrumb("onAttach in PagesFragment");
     }
 
-    @Override
-    public void init(Paper paper, String key, String postion) {
-        AnalyticsWrapper.getInstance()
-                        .trackBreadcrumb("init in PagesFragment");
-        Timber.d("paper: %s, key: %s, postion: %s", paper, key, postion);
-        _startKey = key;
-        pages = new ArrayList<>();
-        for (Source source : paper.getPlist()
-                                  .getSources()) {
-            for (Book book : source.getBooks()) {
-                for (Category category : book.getCategories()) {
-                    pages.addAll(category.getPages());
-                }
-            }
-        }
-        _adapter = new TazReaderViewAdaper();
-    }
+//    @Override
+//    public void init(Paper paper, String key, String postion) {
+//        AnalyticsWrapper.getInstance()
+//                        .trackBreadcrumb("init in PagesFragment");
+//        Timber.d("paper: %s, key: %s, postion: %s", paper, key, postion);
+//        _startKey = key;
+//        pages = new ArrayList<>();
+//        for (Source source : paper.getPlist()
+//                                  .getSources()) {
+//            for (Book book : source.getBooks()) {
+//                for (Category category : book.getCategories()) {
+//                    pages.addAll(category.getPages());
+//                }
+//            }
+//        }
+//        _adapter = new TazReaderViewAdaper();
+//    }
 
     public void setPage(String key) {
         Timber.d("key: %s", key);
-        for (Page page : pages) {
-            if (page.getKey()
-                    .equals(key)) {
-                Timber.d("setting page with key: %s", key);
-                _readerView.resetScale();
-                _readerView.setDisplayedViewIndex(pages.indexOf(page));
-                break;
+        if (_readerView != null) {
+            for (Page page : pages) {
+                if (page.getKey()
+                        .equals(key)) {
+                    Timber.d("setting page with key: %s", key);
+                    _readerView.resetScale();
+                    _readerView.setDisplayedViewIndex(pages.indexOf(page));
+                    break;
+                }
             }
+        } else {
+            _startKey = key;
         }
     }
 

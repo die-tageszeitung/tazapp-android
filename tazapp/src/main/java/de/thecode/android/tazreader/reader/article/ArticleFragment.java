@@ -13,6 +13,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.text.Html;
 import android.text.TextUtils;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -29,7 +30,6 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import de.thecode.android.tazreader.R;
-import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Paper.Plist.Page.Article;
 import de.thecode.android.tazreader.data.Store;
 import de.thecode.android.tazreader.data.TazSettings;
@@ -39,7 +39,7 @@ import de.thecode.android.tazreader.reader.ReaderActivity.DIRECTIONS;
 import de.thecode.android.tazreader.reader.ReaderTtsFragment;
 import de.thecode.android.tazreader.reader.article.ArticleWebView.ArticleWebViewCallback;
 import de.thecode.android.tazreader.reader.index.IIndexItem;
-import de.thecode.android.tazreader.utils.StorageManager;
+import de.thecode.android.tazreader.utils.StorageHelper;
 import de.thecode.android.tazreader.utils.TintHelper;
 import de.thecode.android.tazreader.widget.ReaderButton;
 import de.thecode.android.tazreader.widget.ShareButton;
@@ -59,21 +59,34 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
     private static final String JAVASCRIPT_API_NAME = "ANDROIDAPI";
 
+    protected static final String ARG_KEY      = "arg_article_key";
+    protected static final String ARG_POSITION = "arg_article_position";
+
+    public static ArticleFragment newInstance(String articleKey, String position) {
+        ArticleFragment fragment = new ArticleFragment();
+        Bundle bundle = new Bundle();
+        bundle.putString(ARG_KEY, articleKey);
+        bundle.putString(ARG_POSITION, position);
+        fragment.setArguments(bundle);
+        return fragment;
+    }
+
+
     private enum GESTURES {
         undefined, swipeUp, swipeDown, swipeRight, swipeLeft
     }
 
     IIndexItem mArticle;
-    String mStartPosition = "";
+    String mPosition = "0";
 
     ArticleWebView mWebView;
-    ProgressBar mProgressBar;
-    FrameLayout mBookmarkClickLayout;
-    ShareButton mShareButton;
+    ProgressBar    mProgressBar;
+    FrameLayout    mBookmarkClickLayout;
+    ShareButton    mShareButton;
 
 
     Handler mUiThreadHandler;
-    boolean mIndexUpdated;
+    //boolean mIndexUpdated;
     GESTURES mLastGesture = GESTURES.undefined;
 
     public ArticleFragment() {
@@ -81,6 +94,31 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
         mUiThreadHandler = new Handler(Looper.getMainLooper());
     }
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        String key = null;
+        if (savedInstanceState != null) {
+            key = savedInstanceState.getString(ARG_KEY);
+            mPosition = savedInstanceState.getString(ARG_POSITION);
+        } else {
+            if (getArguments() != null) {
+                key = getArguments().getString(ARG_KEY);
+                mPosition = getArguments().getString(ARG_POSITION);
+            }
+        }
+        mArticle = callback.getPaper()
+                           .getPlist()
+                           .getIndexItem(key);
+        callback.updateIndexes(key);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString(ARG_KEY, mArticle.getKey());
+        outState.putString(ARG_POSITION, mPosition);
+    }
 
     @SuppressLint({"SetJavaScriptEnabled", "NewApi", "AddJavascriptInterface"})
     @Override
@@ -92,7 +130,9 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
         mWebView = (ArticleWebView) result.findViewById(R.id.webview);
         mWebView.setArticleWebViewCallback(this);
 
-        mWebView.setBackgroundColor(getCallback().onGetBackgroundColor(TazSettings.getInstance(getContext()).getPrefString(TazSettings.PREFKEY.THEME, "normal")));
+        mWebView.setBackgroundColor(callback.onGetBackgroundColor(TazSettings.getInstance(getContext())
+                                                                             .getPrefString(TazSettings.PREFKEY.THEME,
+                                                                                            "normal")));
 
         mWebView.setWebViewClient(new ArticleWebViewClient());
         mWebView.setWebChromeClient(new ArticleWebChromeClient());
@@ -172,79 +212,13 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
     }
 
 
-    @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-
-        super.onViewCreated(view, savedInstanceState);
-    }
-
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-
-        super.onActivityCreated(savedInstanceState);
-    }
-
-    @Override
-    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
-
-        super.onViewStateRestored(savedInstanceState);
-    }
-
-    @Override
-    public void onStart() {
-
-        super.onStart();
-    }
-
-    @Override
-    public void onResume() {
-
-        super.onResume();
-    }
-
-    @Override
-    public void onPause() {
-
-        super.onPause();
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-
-        super.onSaveInstanceState(outState);
-    }
-
-    @Override
-    public void onStop() {
-
-        super.onStop();
-    }
-
-    @Override
-    public void onDestroyView() {
-
-        super.onDestroyView();
-    }
-
-    @Override
-    public void onDestroy() {
-
-        super.onDestroy();
-    }
-
-    @Override
-    public void onDetach() {
-
-        super.onDetach();
-    }
-
-    @Override
-    public void init(Paper paper, String key, String position) {
-        Timber.d("initialising ArticleFragment %s", key);
-        mArticle = paper.getPlist()
-                        .getIndexItem(key);
-        mStartPosition = position;
-    }
+//    @Override
+//    public void init(Paper paper, String key, String position) {
+//        Timber.d("initialising ArticleFragment %s and position %s", key, position);
+//        mArticle = paper.getPlist()
+//                        .getIndexItem(key);
+//        mStartPosition = position;
+//    }
 
     private void runOnUiThread(Runnable runnable) {
         mUiThreadHandler.post(runnable);
@@ -255,8 +229,8 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
             @Override
             public void run() {
-                String baseUrl = "file://" + StorageManager.getInstance(getActivity())
-                                                           .getPaperDirectory(mArticle.getPaper()) + "/" + mArticle.getKey() + "?position=" + mStartPosition;
+                String baseUrl = "file://" + StorageHelper.getPaperDirectory(getContext(),
+                                                                             mArticle.getPaper()) + "/" + mArticle.getKey() + "?position=" + mPosition;
                 mWebView.loadDataWithBaseURL(baseUrl, getHtml(), "text/html", "UTF-8", null);
                 mShareButton.setCallback(mArticle);
             }
@@ -304,8 +278,8 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
     @Override
     public boolean onDoubleTap(MotionEvent e) {
-        if (hasCallback()) {
-            getCallback().speak(mArticle.getKey(), getTextToSpeech());
+        if (callback != null) {
+            callback.speak(mArticle.getKey(), getTextToSpeech());
         }
         return true;
     }
@@ -357,7 +331,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
                 @Override
                 public void onClick(View v) {
-                    if (hasCallback()) getCallback().onBookmarkClick(mArticle);
+                    if (callback != null) callback.onBookmarkClick(mArticle);
                 }
             });
 
@@ -365,12 +339,18 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
             FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) bookmark.getLayoutParams();
             if (mArticle.isBookmarked()) {
                 TintHelper.tintDrawable(bookmark.getDrawable(), ContextCompat.getColor(getActivity(), R.color.index_bookmark_on));
+                bookmark.setAlpha(1F);
                 layoutParams.topMargin = getContext().getResources()
-                                                 .getDimensionPixelOffset(R.dimen.reader_bookmark_offset_active);
+                                                     .getDimensionPixelOffset(R.dimen.reader_bookmark_offset_active);
             } else {
-                TintHelper.tintDrawable(bookmark.getDrawable(), ContextCompat.getColor(getActivity(), R.color.index_bookmark_off));
+                TintHelper.tintDrawable(bookmark.getDrawable(),
+                                        ContextCompat.getColor(getActivity(), R.color.index_bookmark_off));
+                TypedValue outValue = new TypedValue();
+                getContext().getResources()
+                            .getValue(R.dimen.icon_button_alpha, outValue, true);
+                bookmark.setAlpha(outValue.getFloat());
                 layoutParams.topMargin = getContext().getResources()
-                                                 .getDimensionPixelOffset(R.dimen.reader_bookmark_offset_normal);
+                                                     .getDimensionPixelOffset(R.dimen.reader_bookmark_offset_normal);
             }
             bookmark.setLayoutParams(layoutParams);
         }
@@ -443,7 +423,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
             } else if (url.startsWith(mArticle.getKey()) || url.startsWith("?")) {
                 loadArticleInWebview();
             } else {
-                if (hasCallback()) getCallback().onLoad(url);
+                if (callback != null) callback.onLoad(url);
             }
 
         }
@@ -462,12 +442,12 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
             if (store == null) {
                 store = new Store(path, value);
                 Uri resultUri = getContext().getContentResolver()
-                                        .insert(Store.CONTENT_URI, store.getContentValues());
+                                            .insert(Store.CONTENT_URI, store.getContentValues());
                 if (resultUri != null) result = true;
             } else {
                 store.setValue(value);
                 int affected = getContext().getContentResolver()
-                                       .update(Store.getUriForKey(path), store.getContentValues(), null, null);
+                                           .update(Store.getUriForKey(path), store.getContentValues(), null, null);
                 if (affected > 0) result = true;
             }
             Timber.d("%s %s %s", mArticle.getKey(), path, value, result);
@@ -489,25 +469,14 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
         }
 
         @JavascriptInterface
-        public void pageReady(String percentSeen, final String position, String numberOfPages) {
+        public void pageReady(String percentSeen, String position, String numberOfPages) {
             Timber.d("%s %s %s", mArticle.getKey(), percentSeen, position, numberOfPages);
-
-            //fade(1F, 800);
-
+            callback.getPaper()
+                    .savePositionInArticle(getContext(), mArticle, position);
             runOnUiThread(new Runnable() {
-
                 @Override
                 public void run() {
-
                     mProgressBar.setVisibility(View.GONE);
-                    if (!mIndexUpdated) {
-                        String newposition = position;
-                        if (TazSettings.getInstance(getContext()).getPrefBoolean(TazSettings.PREFKEY.ISSCROLL, false))
-                            newposition = "0";
-                        if (hasCallback())
-                            getCallback().updateIndexes(mArticle.getKey(), newposition);
-                        mIndexUpdated = true;
-                    }
                 }
             });
         }
@@ -546,8 +515,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
                             break;
                     }
 
-                    if (hasCallback())
-                        getCallback().onLoadNextArticle(direction, String.valueOf(position));
+                    if (callback != null) callback.onLoadNextArticle(direction, String.valueOf(position));
                 }
             });
 
@@ -576,22 +544,22 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
                             direction = DIRECTIONS.RIGHT;
                             break;
                         default:
-                            if (!TazSettings.getInstance(getContext()).getPrefBoolean(TazSettings.PREFKEY.ISSCROLL, false))
-                                positionString = "EOF";
+                            if (!TazSettings.getInstance(getContext())
+                                            .getPrefBoolean(TazSettings.PREFKEY.ISSCROLL, false)) positionString = "EOF";
                             direction = DIRECTIONS.LEFT;
                             break;
                     }
 
-                    if (hasCallback()) getCallback().onLoadPrevArticle(direction, positionString);
+                    if (callback != null) callback.onLoadPrevArticle(direction, positionString);
                 }
             });
         }
 
         @JavascriptInterface
         public String getAbsoluteResourcePath() {
-            File resourceDir = StorageManager.getInstance(getActivity())
-                                             .getResourceDirectory(mArticle.getPaper()
-                                                                           .getResource());
+            File resourceDir = StorageHelper.getResourceDirectory(getContext(),
+                                                                  mArticle.getPaper()
+                                                                          .getResource());
             return "file://" + resourceDir.getAbsolutePath() + "/";
         }
 
@@ -618,12 +586,12 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
                     Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
                     startActivity(browserIntent);
                 } else {
-                    if (hasCallback()) {
-                        IIndexItem indexItem = getCallback().getPaper()
-                                                            .getPlist()
-                                                            .getIndexItem(url);
+                    if (callback != null) {
+                        IIndexItem indexItem = callback.getPaper()
+                                                       .getPlist()
+                                                       .getIndexItem(url);
                         if (indexItem != null) {
-                            getCallback().onLoad(url);
+                            callback.onLoad(url);
                         }
                     }
                 }
@@ -645,12 +613,11 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
 
     public String getHtml() {
-        File articleFile = new File(StorageManager.getInstance(getActivity())
-                                                  .getPaperDirectory(mArticle.getPaper())
-                                                  .getAbsolutePath(), mArticle.getKey());
-        File resourceDir = StorageManager.getInstance(getActivity())
-                                         .getResourceDirectory(mArticle.getPaper()
-                                                                       .getResource());
+        File articleFile = new File(StorageHelper.getPaperDirectory(getContext(), mArticle.getPaper())
+                                                 .getAbsolutePath(), mArticle.getKey());
+        File resourceDir = StorageHelper.getResourceDirectory(getContext(),
+                                                              mArticle.getPaper()
+                                                                      .getResource());
 
         String resourceReplacement = "file://" + resourceDir.getAbsolutePath() + "/";
         String tazapiReplacement = "file:///android_asset/js/TAZAPI.js";
@@ -664,7 +631,8 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
             //            Matcher matcher = tazapiPattern.matcher(result);
             //            result = matcher.replaceAll("$1" + tazapiReplacement + "$3");
 
-            Pattern resPattern = Pattern.compile("(<[^>]+?(?:href|src)\\s*?=\\s*?(?:\"|'))(res.+?)((?:\"|').*?>)", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+            Pattern resPattern = Pattern.compile("(<[^>]+?(?:href|src)\\s*?=\\s*?(?:\"|'))(res.+?)((?:\"|').*?>)",
+                                                 Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
             Matcher matcher = resPattern.matcher(result);
             result = matcher.replaceAll("$1" + resourceReplacement + "$2$3");
 

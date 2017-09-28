@@ -60,7 +60,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".reader.ReaderActivity"
-            android:parentActivityName="de.thecode.android.tazreader.start.StartActivity">
+                  android:parentActivityName="de.thecode.android.tazreader.start.StartActivity"
+                  tools:targetApi="jelly_bean">
             <!-- Parent activity meta-data to support 4.0 and lower -->
             <meta-data
                     android:name="android.support.PARENT_ACTIVITY"
@@ -102,7 +103,6 @@
             </intent-filter>
         </activity>
         <activity android:name=".migration.MigrationActivity"/>
-        <activity android:name=".reader.HelpActivity"/>
 
         <service
                 android:name=".download.DownloadFinishedResourceService"

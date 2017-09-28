@@ -4,7 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 
 import de.thecode.android.tazreader.download.DownloadFinishedPaperService;
-import de.thecode.android.tazreader.download.DownloadManager;
+import de.thecode.android.tazreader.download.DownloadHelper;
 import de.thecode.android.tazreader.utils.AsyncTaskWithExecption;
 
 import timber.log.Timber;
@@ -25,18 +25,18 @@ public abstract class DeleteTask extends AsyncTaskWithExecption<Long, Void, Void
         if (params != null) {
             for (Long paperId : params) {
                 try {
-                    Paper deletePaper = new Paper(context, paperId);
+                    Paper deletePaper = Paper.getPaperWithId(context, paperId);
+                    if (deletePaper == null) throw new Paper.PaperNotFoundException();
                     if (deletePaper.isDownloading()) {
-                        DownloadManager downloadManager = DownloadManager.getInstance(context);
-                        DownloadManager.DownloadState state = downloadManager.getDownloadState(deletePaper.getDownloadId());
-                        if (state != null && state.getStatus() == DownloadManager.DownloadState.STATUS_SUCCESSFUL) {
+                        DownloadHelper.DownloadState state = DownloadHelper.getDownloadState(context, deletePaper.getDownloadId());
+                        if (state != null && state.getStatus() == DownloadHelper.DownloadState.STATUS_SUCCESSFUL) {
                             Intent cancelIntent = new Intent(context, DownloadFinishedPaperService.class);
                             cancelIntent.putExtra(DownloadFinishedPaperService.PARAM_CANCEL_BOOL,true);
                             cancelIntent.putExtra(DownloadFinishedPaperService.PARAM_PAPER_ID, deletePaper.getId());
                             context.startService(cancelIntent);
                         }
                         else
-                            DownloadManager.getInstance(context).cancelDownload(deletePaper.getDownloadId());
+                            DownloadHelper.cancelDownload(context, deletePaper.getDownloadId());
 
                     }
                         deletePaper.delete(context);

@@ -3,7 +3,6 @@ package de.thecode.android.tazreader.okhttp3;
 import android.content.Context;
 import android.text.TextUtils;
 
-import de.thecode.android.tazreader.push.PushHelper;
 import de.thecode.android.tazreader.utils.BuildTypeProvider;
 
 import java.util.Map;
@@ -38,13 +37,13 @@ public class OkHttp3Helper {
     private final Map<String, String> standardHeaders;
 
     private final UserAgentInterceptor userAgentInterceptor;
-    private final PushHelper           pushHelper;
+    private final RequestHelper        requestHelper;
 
     private OkHttp3Helper(Context context) {
         standardHeaders = HeaderHelper.getInstance(context)
                                       .getStandardHeader();
         userAgentInterceptor = new UserAgentInterceptor(context);
-        pushHelper = PushHelper.getInstance(context);
+        requestHelper = RequestHelper.getInstance(context);
     }
 
 
@@ -65,6 +64,9 @@ public class OkHttp3Helper {
     }
 
     public Call getCall(HttpUrl url, String username, String password, RequestBody requestBody) {
+
+
+
         OkHttpClient client = getOkHttpClientBuilder(username, password).build();
         Request.Builder requestBuilder = new Request.Builder().url(url);
         if (requestBody != null) {
