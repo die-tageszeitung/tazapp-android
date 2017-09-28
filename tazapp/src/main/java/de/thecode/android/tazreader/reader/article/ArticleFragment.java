@@ -1,6 +1,7 @@
 package de.thecode.android.tazreader.reader.article;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
 import android.net.MailTo;
 import android.net.ParseException;
@@ -157,11 +158,6 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
         mProgressBar = (ProgressBar) result.findViewById(R.id.progressBar);
 
-        if (mArticle != null) {
-            initialBookmark();
-            loadArticleInWebview();
-        }
-
         mShareButton = (ShareButton) result.findViewById(R.id.share);
 
         ReaderButton mPageIndexButton = (ReaderButton) result.findViewById(R.id.pageindex);
@@ -208,6 +204,11 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
         //ttsActive = TazSettings.getPrefBoolean(getContext(), TazSettings.PREFKEY.TEXTTOSPEACH, false);
 
+        if (mArticle != null) {
+            initialBookmark();
+            loadArticleInWebview(inflater.getContext());
+        }
+
         return (result);
     }
 
@@ -224,17 +225,11 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
         mUiThreadHandler.post(runnable);
     }
 
-    private void loadArticleInWebview() {
-        runOnUiThread(new Runnable() {
-
-            @Override
-            public void run() {
-                String baseUrl = "file://" + StorageHelper.getPaperDirectory(getContext(),
+    private void loadArticleInWebview(Context context) {
+                String baseUrl = "file://" + StorageHelper.getPaperDirectory(context,
                                                                              mArticle.getPaper()) + "/" + mArticle.getKey() + "?position=" + mPosition;
-                mWebView.loadDataWithBaseURL(baseUrl, getHtml(), "text/html", "UTF-8", null);
+                mWebView.loadDataWithBaseURL(baseUrl, getHtml(context), "text/html", "UTF-8", null);
                 mShareButton.setCallback(mArticle);
-            }
-        });
     }
 
 
@@ -421,7 +416,13 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
                          .show();
                 }
             } else if (url.startsWith(mArticle.getKey()) || url.startsWith("?")) {
-                loadArticleInWebview();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        loadArticleInWebview(getContext());
+                    }
+                });
+
             } else {
                 if (callback != null) callback.onLoad(url);
             }
@@ -612,10 +613,10 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
     private static final String TAZAPI_FILE_STRING = "TAZAPI.js";
 
 
-    public String getHtml() {
-        File articleFile = new File(StorageHelper.getPaperDirectory(getContext(), mArticle.getPaper())
+    public String getHtml(Context context) {
+        File articleFile = new File(StorageHelper.getPaperDirectory(context, mArticle.getPaper())
                                                  .getAbsolutePath(), mArticle.getKey());
-        File resourceDir = StorageHelper.getResourceDirectory(getContext(),
+        File resourceDir = StorageHelper.getResourceDirectory(context,
                                                               mArticle.getPaper()
                                                                       .getResource());
 
@@ -658,7 +659,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
     private CharSequence getTextToSpeech() {
         Pattern pattern = Pattern.compile(".*?<body.*?>(.*?)</body>.*?", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
-        Matcher matcher = pattern.matcher(getHtml());
+        Matcher matcher = pattern.matcher(getHtml(getContext()));
         if (matcher.matches()) {
 
             Pattern replacePattern = Pattern.compile("[\u00AD]?", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
