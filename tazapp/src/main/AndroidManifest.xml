@@ -61,8 +61,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".reader.ReaderActivity"
-                  android:parentActivityName="de.thecode.android.tazreader.start.StartActivity"
-                  tools:targetApi="jelly_bean">
+            android:parentActivityName="de.thecode.android.tazreader.start.StartActivity">
             <!-- Parent activity meta-data to support 4.0 and lower -->
             <meta-data
                     android:name="android.support.PARENT_ACTIVITY"

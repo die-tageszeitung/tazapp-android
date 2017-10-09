@@ -1,7 +1,6 @@
 package de.thecode.android.tazreader.download;
 
 import android.annotation.SuppressLint;
-import android.app.DownloadManager;
 import android.app.DownloadManager.Request;
 import android.content.ContentUris;
 import android.content.Context;
@@ -19,7 +18,7 @@ import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.okhttp3.RequestHelper;
 import de.thecode.android.tazreader.secure.Base64;
 import de.thecode.android.tazreader.sync.AccountHelper;
-import de.thecode.android.tazreader.utils.StorageHelper;
+import de.thecode.android.tazreader.utils.StorageManager;
 import de.thecode.android.tazreader.utils.UserAgentHelper;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -33,22 +32,41 @@ import java.util.Map;
 
 import timber.log.Timber;
 
-public class DownloadHelper {
+public class DownloadManager {
+
+    android.app.DownloadManager mDownloadManager;
+    Context                     mContext;
+    StorageManager              mStorage;
+    UserAgentHelper             userAgentHelper;
+    RequestHelper               requestHelper;
+
+    private static DownloadManager instance;
+
+    public static DownloadManager getInstance(Context context) {
+        if (instance == null) instance = new DownloadManager(context.getApplicationContext());
+        return instance;
+    }
+
+    private DownloadManager(Context context) {
+        mDownloadManager = ((android.app.DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE));
+        mContext = context;
+        mStorage = StorageManager.getInstance(context);
+        userAgentHelper = UserAgentHelper.getInstance(context);
+        requestHelper = RequestHelper.getInstance(context);
+    }
 
     @SuppressLint("NewApi")
-    public static void  enquePaper(Context context, long paperId) throws IllegalArgumentException, Paper.PaperNotFoundException,
+    public void enquePaper(long paperId) throws IllegalArgumentException, Paper.PaperNotFoundException,
             DownloadNotAllowedException, NotEnoughSpaceException {
 
 
-        Paper paper = Paper.getPaperWithId(context, paperId);
+        Paper paper = Paper.getPaperWithId(mContext, paperId);
         if (paper == null) throw new Paper.PaperNotFoundException();
 
-        if (TazSettings.getInstance(context)
+        if (TazSettings.getInstance(mContext)
                        .isDemoMode() && !paper.isDemo()) throw new DownloadNotAllowedException();
 
         Timber.i("requesting paper download: %s", paper);
-
-        RequestHelper requestHelper = RequestHelper.getInstance(context);
 
         Uri downloadUri = requestHelper.addToUri(Uri.parse(paper.getLink()));
 
@@ -60,19 +78,19 @@ public class DownloadHelper {
                                   .replace("https://", "http://");
             request = new Request(requestHelper.addToUri(Uri.parse(httpUrl)));
         }
-        addUserAgent(context, request);
+        addUserAgent(request);
 
         if (paper.getPublicationId() > 0) {
             request.addRequestHeader("Authorization",
-                                     "Basic " + Base64.encodeToString((AccountHelper.getInstance(context)
+                                     "Basic " + Base64.encodeToString((AccountHelper.getInstance(mContext)
                                                                                     .getUser(AccountHelper.ACCOUNT_DEMO_USER) + ":" + AccountHelper.getInstance(
-                                             context)
+                                             mContext)
                                                                                                                                                    .getPassword(
                                                                                                                                                            AccountHelper.ACCOUNT_DEMO_PASS)).getBytes(),
                                                                       Base64.NO_WRAP));
         }
 
-        File destinationFile = StorageHelper.getDownloadFile(context, paper);
+        File destinationFile = mStorage.getDownloadFile(paper);
 
         if (destinationFile == null) throw new DownloadNotAllowedException("Fehler beim Ermitteln des Downloadverzeichnisses.");
 
@@ -80,12 +98,12 @@ public class DownloadHelper {
 
         request.setDestinationUri(Uri.fromFile(destinationFile));
 
-        request.setTitle(paper.getTitelWithDate(context));
+        request.setTitle(paper.getTitelWithDate(mContext));
 
         request.setNotificationVisibility(Request.VISIBILITY_VISIBLE);
         request.setVisibleInDownloadsUi(false);
 
-        final long downloadId = ((android.app.DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE)).enqueue(request);
+        final long downloadId = mDownloadManager.enqueue(request);
 
         Timber.i("... download requested at android download manager, id: %d", downloadId);
 
@@ -94,28 +112,28 @@ public class DownloadHelper {
         paper.setIsdownloaded(false);
         paper.setHasupdate(false);
 
-        context.getContentResolver()
-               .update(ContentUris.withAppendedId(Paper.CONTENT_URI, paper.getId()), paper.getContentValues(), null, null);
+        mContext.getContentResolver()
+                .update(ContentUris.withAppendedId(Paper.CONTENT_URI, paper.getId()), paper.getContentValues(), null, null);
 
         if (!TextUtils.isEmpty(paper.getResource())) {
-            Resource resource = Resource.getWithKey(context, paper.getResource());
-            paper.saveResourcePartner(context, resource);
-            enqueResource(context, resource);
+            Resource resource = Resource.getWithKey(mContext, paper.getResource());
+            paper.saveResourcePartner(mContext, resource);
+            enqueResource(resource);
         }
     }
 
     @SuppressLint("NewApi")
-    public static void enqueResource(Context context, Resource resource) throws IllegalArgumentException, NotEnoughSpaceException {
-        //Paper paper = new Paper(context, paperId);
+    public void enqueResource(Resource resource) throws IllegalArgumentException, NotEnoughSpaceException {
+        //Paper paper = new Paper(mContext, paperId);
 
         //Uri downloadUri = Uri.parse(paper.getResourceUrl());
 
-//        Resource resource = Resource.getWithKey(context, paper.getResource());
+//        Resource resource = Resource.getWithKey(mContext, paper.getResource());
         Timber.i("requesting resource download: %s", resource);
 
 //        if (resource.getKey() == null) {
 //            resource.setKey(paper.getResource());
-//            context.getContentResolver()
+//            mContext.getContentResolver()
 //                    .insert(Resource.CONTENT_URI, resource.getContentValues());
 //        }
 
@@ -139,13 +157,11 @@ public class DownloadHelper {
             } catch (Exception e1) {
                 String httpUrl = downloadUri.toString()
                                             .replace("https://", "http://");
-
-                request = new Request(RequestHelper.getInstance(context)
-                                                   .addToUri(Uri.parse(httpUrl)));
+                request = new Request(requestHelper.addToUri(Uri.parse(httpUrl)));
             }
-            addUserAgent(context, request);
+            addUserAgent(request);
 
-            File destinationFile = StorageHelper.getDownloadFile(context, resource);
+            File destinationFile = mStorage.getDownloadFile(resource);
 
             assertEnougSpaceForDownload(destinationFile.getParentFile(), calculateBytesNeeded(resource.getLen()));
 
@@ -154,37 +170,39 @@ public class DownloadHelper {
             request.setNotificationVisibility(Request.VISIBILITY_VISIBLE);
             request.setVisibleInDownloadsUi(false);
 
-            long downloadId = ((android.app.DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE)).enqueue(request);
+            long downloadId = mDownloadManager.enqueue(request);
 
             Timber.i("... download requested at android download manager, id: %d", downloadId);
 
             resource.setDownloadId(downloadId);
 
-            context.getContentResolver()
-                   .update(Uri.withAppendedPath(Resource.CONTENT_URI, resource.getKey()),
-                           resource.getContentValues(),
-                           null,
-                           null);
+            mContext.getContentResolver()
+                    .update(Uri.withAppendedPath(Resource.CONTENT_URI, resource.getKey()),
+                            resource.getContentValues(),
+                            null,
+                            null);
         }
 
     }
 
-    private static void addUserAgent(Context context, Request request) {
-        request.addRequestHeader(UserAgentHelper.USER_AGENT_HEADER_NAME,
-                                 UserAgentHelper.getInstance(context)
-                                                .getUserAgentHeaderValue());
+    private void addUserAgent(Request request) {
+        request.addRequestHeader(UserAgentHelper.USER_AGENT_HEADER_NAME, userAgentHelper.getUserAgentHeaderValue());
     }
 
-    public static void cancelDownload(Context context, long downloadId) {
-        DownloadState state = getDownloadState(context, downloadId);
+    public void cancelDownload(long downloadId) {
+        DownloadState state = getDownloadState(downloadId);
         if (state != null && state.getStatus() != DownloadState.STATUS_SUCCESSFUL) {
-            if (((android.app.DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE)).remove(downloadId) > 0) {
-                Cursor cursor = context.getContentResolver()
-                                       .query(Paper.CONTENT_URI, null, Paper.Columns.DOWNLOADID + " = " + downloadId, null, null);
+            if (mDownloadManager.remove(downloadId) > 0) {
+                Cursor cursor = mContext.getContentResolver()
+                                        .query(Paper.CONTENT_URI,
+                                               null,
+                                               Paper.Columns.DOWNLOADID + " = " + downloadId,
+                                               null,
+                                               null);
                 try {
                     while (cursor.moveToNext()) {
                         Paper removedPaper = new Paper(cursor);
-                        removedPaper.delete(context);
+                        removedPaper.delete(mContext);
                     }
                 } finally {
                     cursor.close();
@@ -194,14 +212,14 @@ public class DownloadHelper {
         }
     }
 
-    public static DownloadState getDownloadState(Context context, long downloadId) {
-        return new DownloadState(((android.app.DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE)), downloadId);
+    public DownloadState getDownloadState(long downloadId) {
+        return new DownloadState(downloadId);
     }
 
 
     private static Map<Long, Map<Integer, List<Integer>>> stateStack = new HashMap<>();
 
-    public static boolean isFirstOccurrenceOfState(DownloadState state) {
+    public boolean isFirstOccurrenceOfState(DownloadState state) {
         boolean result = false;
 
         Map<Integer, List<Integer>> stateMap = stateStack.get(state.getDownloadId());
@@ -231,7 +249,7 @@ public class DownloadHelper {
         return result;
     }
 
-    public static class DownloadState {
+    public class DownloadState {
 
 
         public static final int STATUS_SUCCESSFUL = android.app.DownloadManager.STATUS_SUCCESSFUL;
@@ -250,14 +268,14 @@ public class DownloadHelper {
         String mDescription;
         long   mDownloadId;
 
-        public DownloadState(DownloadManager downloadManager, long downloadId) {
+        public DownloadState(long downloadId) {
             mDownloadId = downloadId;
             android.app.DownloadManager.Query q = new android.app.DownloadManager.Query();
 
             q.setFilterById(downloadId);
             Cursor cursor = null;
             try {
-                cursor = downloadManager.query(q);
+                cursor = mDownloadManager.query(q);
                 if (cursor != null && cursor.moveToFirst()) {
                     mStatus = cursor.getInt(cursor.getColumnIndex(android.app.DownloadManager.COLUMN_STATUS));
                     mReason = cursor.getInt(cursor.getColumnIndex(android.app.DownloadManager.COLUMN_REASON));
@@ -322,13 +340,13 @@ public class DownloadHelper {
          * Gibt einen lesbaren Text des Grundes für den DownloadStatus zurück... Dieser ist in /res/values/strings_download.xml
          * hinterlegt und kann im erbenden Projekt überschrieben werden.
          */
-        public String getReasonText(Context context) {
-            int id = context.getResources()
-                            .getIdentifier("download_reason_" + getReason(), "string", context.getPackageName());
+        public String getReasonText() {
+            int id = mContext.getResources()
+                             .getIdentifier("download_reason_" + getReason(), "string", mContext.getPackageName());
             if (id == 0) id = R.string.download_reason_notext;
-            StringBuilder builder = new StringBuilder(context.getString(id)).append("(")
-                                                                            .append(getReason())
-                                                                            .append(")");
+            StringBuilder builder = new StringBuilder(mContext.getString(id)).append("(")
+                                                                             .append(getReason())
+                                                                             .append(")");
             return builder.toString();
         }
 
@@ -336,20 +354,20 @@ public class DownloadHelper {
          * Gibt einen lesbaren Text des DownloadStatus zurück... Dieser ist in /res/values/strings_download.xml hinterlegt und
          * kann im erbenden Projekt überschrieben werden.
          */
-        public String getStatusText(Context context) {
+        public String getStatusText() {
             switch (getStatus()) {
                 case STATUS_SUCCESSFUL:
-                    return context.getString(R.string.download_status_successful);
+                    return mContext.getString(R.string.download_status_successful);
                 case STATUS_FAILED:
-                    return context.getString(R.string.download_status_failed);
+                    return mContext.getString(R.string.download_status_failed);
                 case STATUS_PAUSED:
-                    return context.getString(R.string.download_status_paused);
+                    return mContext.getString(R.string.download_status_paused);
                 case STATUS_PENDING:
-                    return context.getString(R.string.download_status_pending);
+                    return mContext.getString(R.string.download_status_pending);
                 case STATUS_RUNNING:
-                    return context.getString(R.string.download_status_running);
+                    return mContext.getString(R.string.download_status_running);
                 default:
-                    return context.getString(R.string.download_status_unknown);
+                    return mContext.getString(R.string.download_status_unknown);
             }
         }
 
@@ -359,15 +377,13 @@ public class DownloadHelper {
         }
     }
 
-    public static class DownloadProgressThread extends Thread {
+    public class DownloadProgressThread extends Thread {
 
-        long            downloadId;
-        long            paperId;
-        int             progress;
-        DownloadManager downloadManager;
+        long downloadId;
+        long paperId;
+        int  progress;
 
-        public DownloadProgressThread(Context context, long downloadId, long paperId) {
-            downloadManager = ((android.app.DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE));
+        public DownloadProgressThread(long downloadId, long paperId) {
             this.downloadId = downloadId;
             this.paperId = paperId;
             setName(this.getClass()
@@ -379,7 +395,7 @@ public class DownloadHelper {
             Timber.i("starting");
             boolean downloading = true;
             while (downloading && !isInterrupted()) {
-                DownloadState downloadState = new DownloadState(downloadManager, downloadId);
+                DownloadState downloadState = new DownloadState(downloadId);
                 switch (downloadState.getStatus()) {
                     case DownloadState.STATUS_FAILED:
                     case DownloadState.STATUS_NOTFOUND:
@@ -425,7 +441,7 @@ public class DownloadHelper {
     }
 
 
-    public static class DownloadNotAllowedException extends Exception {
+    public class DownloadNotAllowedException extends Exception {
         public DownloadNotAllowedException() {
         }
 

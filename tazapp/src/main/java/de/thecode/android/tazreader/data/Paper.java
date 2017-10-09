@@ -28,7 +28,7 @@ import de.thecode.android.tazreader.download.PaperDeletedEvent;
 import de.thecode.android.tazreader.provider.TazProvider;
 import de.thecode.android.tazreader.reader.index.IIndexItem;
 import de.thecode.android.tazreader.utils.PlistHelper;
-import de.thecode.android.tazreader.utils.StorageHelper;
+import de.thecode.android.tazreader.utils.StorageManager;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -1103,10 +1103,10 @@ public class Paper {
 
             @Override
             public Intent getShareIntent(Context context) {
+                StorageManager storage = StorageManager.getInstance(context);
 
-
-                File pdfFile = new File(StorageHelper.getPaperDirectory(context, getPaper()), getKey());
-                File papersDir = StorageHelper.get(context, StorageHelper.PAPER);
+                File pdfFile = new File(storage.getPaperDirectory(getPaper()), getKey());
+                File papersDir = storage.get(StorageManager.PAPER);
 
                 try {
                     String pagePath = pdfFile.getCanonicalPath()
@@ -1570,8 +1570,8 @@ public class Paper {
     }
 
     public void delete(Context context) {
-
-        StorageHelper.deletePaperDir(context, this);
+        StorageManager storage = StorageManager.getInstance(context);
+        storage.deletePaperDir(this);
         Picasso.with(context)
                .invalidate(getImage());
         if (isImported() || isKiosk()) {

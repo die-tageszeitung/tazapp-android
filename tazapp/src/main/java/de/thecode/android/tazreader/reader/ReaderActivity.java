@@ -42,7 +42,7 @@ import de.thecode.android.tazreader.reader.index.IndexFragment;
 import de.thecode.android.tazreader.reader.index.PageIndexFragment;
 import de.thecode.android.tazreader.reader.page.PagesFragment;
 import de.thecode.android.tazreader.utils.BaseActivity;
-import de.thecode.android.tazreader.utils.StorageHelper;
+import de.thecode.android.tazreader.utils.StorageManager;
 import de.thecode.android.tazreader.utils.TintHelper;
 
 import org.greenrobot.eventbus.Subscribe;
@@ -90,7 +90,7 @@ public class ReaderActivity extends BaseActivity
     ProgressBar  mLoadingProgress;
 
     FragmentManager mFragmentManager;
-    StorageHelper   mStorage;
+    StorageManager  mStorage;
 
     //ReaderDataFragment retainDataFragment;
     ReaderDataFragment retainDataFragmentNew;
@@ -106,6 +106,8 @@ public class ReaderActivity extends BaseActivity
         super.onCreate(savedInstanceState);
 
         //Orientation.setActivityOrientationFromPrefs(this);
+
+        mStorage = StorageManager.getInstance(this);
 
         long paperId;
         if (!getIntent().hasExtra(KEY_EXTRA_PAPER_ID))

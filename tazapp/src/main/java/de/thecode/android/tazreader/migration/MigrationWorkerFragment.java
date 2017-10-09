@@ -13,7 +13,7 @@ import de.thecode.android.tazreader.data.Store;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.utils.AsyncTaskWithExecption;
 import de.thecode.android.tazreader.utils.BaseFragment;
-import de.thecode.android.tazreader.utils.StorageHelper;
+import de.thecode.android.tazreader.utils.StorageManager;
 
 import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;
@@ -115,17 +115,17 @@ public class MigrationWorkerFragment extends BaseFragment {
                 List<File> filesToImport = new ArrayList<>();
                 Timber.i("Migrating to version 32 ...");
 
-
+                StorageManager storage = StorageManager.getInstance(applicationContext);
 
                 Timber.i("Deleting old temp dir");
-                File oldTemp = StorageHelper.get(applicationContext, "temp");
+                File oldTemp = storage.get("temp");
                 if (oldTemp.exists()) FileUtils.deleteQuietly(oldTemp);//Utils.deleteDir(oldTemp);
                 Timber.i("...finished");
 
                 Timber.i("Deleting Cache");
-                if (StorageHelper.getCache(applicationContext,null)
+                if (storage.getCache(null)
                            .exists())
-                    FileUtils.deleteQuietly(StorageHelper.getCache(applicationContext, null));//Utils.deleteDirContent(storage.getCache(null));
+                    FileUtils.deleteQuietly(storage.getCache(null));//Utils.deleteDirContent(storage.getCache(null));
                 Timber.i("...finished");
 
                 List<Store> storeList = Store.getAllStores(applicationContext);
@@ -159,7 +159,7 @@ public class MigrationWorkerFragment extends BaseFragment {
                 }
 
 
-                FileUtils.deleteQuietly(StorageHelper.getCache(applicationContext, null));//Utils.deleteDirContent(storage.getCache(null));
+                FileUtils.deleteQuietly(storage.getCache(null));//Utils.deleteDirContent(storage.getCache(null));
 
                 File externalFilesDir = applicationContext.getExternalFilesDir(null);
                 File externalStorageDir = null;
@@ -177,7 +177,7 @@ public class MigrationWorkerFragment extends BaseFragment {
 
                             File outputFile;
                             do {
-                                outputFile = new File(StorageHelper.getImportCache(applicationContext), String.valueOf(System.currentTimeMillis()));
+                                outputFile = new File(storage.getImportCache(), String.valueOf(System.currentTimeMillis()));
                             } while (outputFile.exists());
                             FileInputStream is = new FileInputStream(paperFile);
                             OutputStream os = new FileOutputStream(outputFile);
