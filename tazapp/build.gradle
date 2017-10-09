@@ -302,7 +302,7 @@ dependencies {
 
     compile "com.google.firebase:firebase-messaging:$firebaseVer"
 
-    compile 'com.evernote:android-job:1.2.0-alpha3'
+    compile 'com.evernote:android-job:1.2.0'
 
     compile 'com.google.code.gson:gson:2.8.1'
 }
