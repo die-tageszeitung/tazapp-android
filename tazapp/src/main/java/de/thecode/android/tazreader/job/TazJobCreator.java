@@ -1,9 +1,7 @@
-package de.thecode.android.tazreader;
+package de.thecode.android.tazreader.job;
 
 import com.evernote.android.job.Job;
 import com.evernote.android.job.JobCreator;
-
-import de.thecode.android.tazreader.push.PushRestApiJob;
 
 /**
  * Created by mate on 25.07.2017.
@@ -16,6 +14,10 @@ public class TazJobCreator implements JobCreator {
         switch (tag) {
             case PushRestApiJob.TAG:
                 return new PushRestApiJob();
+            case SyncJob.TAG:
+                return new SyncJob();
+            case AutoDownloadJob.TAG:
+                return new AutoDownloadJob();
             default:
                 return null;
         }

@@ -238,8 +238,9 @@ public class StartActivity extends BaseActivity
                                 .show(getSupportFragmentManager(), DIALOG_USER_REENTER);
         }
 
-        if (TazSettings.getInstance(this)
-                       .getSyncServiceNextRun() == 0) SyncHelper.requestSync(this);
+        //Todo run Sync on first start
+//        if (TazSettings.getInstance(this)
+//                       .getSyncServiceNextRun() == 0) SyncHelper.requestSync(this);
 
     }
 
@@ -384,7 +385,7 @@ public class StartActivity extends BaseActivity
                 if (paper == null) throw new Paper.PaperNotFoundException();
                 try {
                     DownloadManager.getInstance(this)
-                                   .enquePaper(paperId);
+                                   .enquePaper(paperId,false);
                 } catch (IllegalArgumentException e) {
                     showDownloadManagerErrorDialog();
                 } catch (DownloadManager.DownloadNotAllowedException e) {
@@ -563,7 +564,7 @@ public class StartActivity extends BaseActivity
                         //DownloadHelper downloadHelper = new DownloadHelper(this);
                         try {
                             DownloadManager.getInstance(this)
-                                           .enqueResource(Resource.getWithKey(this, openPaper.getResource()));
+                                           .enqueResource(Resource.getWithKey(this, openPaper.getResource()),false);
                             retainDataFragment.openPaperWaitingForRessource = id;
                         } catch (DownloadManager.NotEnoughSpaceException e) {
                             showDownloadErrorDialog(getString(R.string.message_resourcedownload_error),

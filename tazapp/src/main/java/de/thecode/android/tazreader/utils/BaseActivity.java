@@ -19,7 +19,7 @@ import de.thecode.android.tazreader.dialog.HelpDialog;
 import de.thecode.android.tazreader.dialog.PushNotificationDialog;
 import de.thecode.android.tazreader.push.PushHelper;
 import de.thecode.android.tazreader.push.PushNotification;
-import de.thecode.android.tazreader.push.PushRestApiJob;
+import de.thecode.android.tazreader.job.PushRestApiJob;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;

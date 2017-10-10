@@ -24,7 +24,7 @@ import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.download.CoverDownloadedEvent;
-import de.thecode.android.tazreader.sync.SyncHelper;
+import de.thecode.android.tazreader.job.SyncJob;
 import de.thecode.android.tazreader.sync.SyncStateChangedEvent;
 import de.thecode.android.tazreader.utils.BaseFragment;
 import de.thecode.android.tazreader.widget.AutofitRecyclerView;
@@ -83,7 +83,8 @@ public class LibraryFragment extends BaseFragment
             public void onRefresh() {
 
                 hideFab();
-                SyncHelper.requestSync(getContext());
+                SyncJob.scheduleJobImmediatly();
+                //SyncHelper.requestSync(getContext());
             }
         });
 
@@ -180,13 +181,13 @@ public class LibraryFragment extends BaseFragment
     @Override
     public void onResume() {
         super.onResume();
-        Timber.d("%s", TazSettings.getInstance(getActivity())
-                                   .getPrefBoolean(TazSettings.PREFKEY.FORCESYNC, false));
-        if (TazSettings.getInstance(getActivity())
-                       .getPrefBoolean(TazSettings.PREFKEY.FORCESYNC, false)) {
-
-            SyncHelper.requestSync(getContext());
-        }
+//        Timber.d("%s", TazSettings.getInstance(getActivity())
+//                                   .getPrefBoolean(TazSettings.PREFKEY.FORCESYNC, false));
+//        if (TazSettings.getInstance(getActivity())
+//                       .getPrefBoolean(TazSettings.PREFKEY.FORCESYNC, false)) {
+//
+//            SyncHelper.requestSync(getContext());
+//        }
     }
 
     @Override

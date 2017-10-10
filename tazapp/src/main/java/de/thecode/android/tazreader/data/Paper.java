@@ -377,9 +377,8 @@ public class Paper {
     }
 
     public long getDateInMillis() throws ParseException {
-        SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy", Locale.GERMANY);
-        return sdf.parse(getDate())
-                  .getTime();
+        return new SimpleDateFormat("yyyy-MM-dd", Locale.GERMANY).parse(getDate())
+                                                                 .getTime();
     }
 
     public void setDate(String date) {

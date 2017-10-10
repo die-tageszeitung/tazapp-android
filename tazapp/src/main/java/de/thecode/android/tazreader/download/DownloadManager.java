@@ -56,7 +56,7 @@ public class DownloadManager {
     }
 
     @SuppressLint("NewApi")
-    public void enquePaper(long paperId) throws IllegalArgumentException, Paper.PaperNotFoundException,
+    public void enquePaper(long paperId, boolean wifiOnly) throws IllegalArgumentException, Paper.PaperNotFoundException,
             DownloadNotAllowedException, NotEnoughSpaceException {
 
 
@@ -102,8 +102,9 @@ public class DownloadManager {
 
         request.setNotificationVisibility(Request.VISIBILITY_VISIBLE);
         request.setVisibleInDownloadsUi(false);
+        if (wifiOnly) request.setAllowedNetworkTypes(Request.NETWORK_WIFI);
 
-        final long downloadId = mDownloadManager.enqueue(request);
+        long downloadId = mDownloadManager.enqueue(request);
 
         Timber.i("... download requested at android download manager, id: %d", downloadId);
 
@@ -118,12 +119,12 @@ public class DownloadManager {
         if (!TextUtils.isEmpty(paper.getResource())) {
             Resource resource = Resource.getWithKey(mContext, paper.getResource());
             paper.saveResourcePartner(mContext, resource);
-            enqueResource(resource);
+            enqueResource(resource,wifiOnly);
         }
     }
 
     @SuppressLint("NewApi")
-    public void enqueResource(Resource resource) throws IllegalArgumentException, NotEnoughSpaceException {
+    public void enqueResource(Resource resource, boolean wifiOnly) throws IllegalArgumentException, NotEnoughSpaceException {
         //Paper paper = new Paper(mContext, paperId);
 
         //Uri downloadUri = Uri.parse(paper.getResourceUrl());
@@ -166,7 +167,7 @@ public class DownloadManager {
             assertEnougSpaceForDownload(destinationFile.getParentFile(), calculateBytesNeeded(resource.getLen()));
 
             request.setDestinationUri(Uri.fromFile(destinationFile));
-
+            if (wifiOnly) request.setAllowedNetworkTypes(Request.NETWORK_WIFI);
             request.setNotificationVisibility(Request.VISIBILITY_VISIBLE);
             request.setVisibleInDownloadsUi(false);
 

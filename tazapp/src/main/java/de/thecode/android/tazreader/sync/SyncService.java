@@ -213,7 +213,7 @@ public class SyncService extends IntentService {
     private void downloadPaper(Paper paper) {
         try {
             DownloadManager.getInstance(this)
-                           .enquePaper(paper.getId());
+                           .enquePaper(paper.getId(),false);
         } catch (IllegalArgumentException | DownloadManager.DownloadNotAllowedException | Paper.PaperNotFoundException ignored) {
         } catch (DownloadManager.NotEnoughSpaceException e) {
             NotificationHelper.showDownloadErrorNotification(this,
@@ -229,7 +229,7 @@ public class SyncService extends IntentService {
             if (latestResource != null && !latestResource.isDownloaded() && !latestResource.isDownloading()) {
                 try {
                     DownloadManager.getInstance(this)
-                                   .enqueResource(latestResource);
+                                   .enqueResource(latestResource,false);
                 } catch (DownloadManager.NotEnoughSpaceException e) {
                     Timber.e(e);
                 }

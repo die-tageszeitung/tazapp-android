@@ -108,7 +108,7 @@ public class ImportActivity extends BaseActivity implements DialogButtonListener
                         for (Uri downloadUri : downloadUris) {
                             try {
                                 DownloadManager.getInstance(this)
-                                               .enquePaper(ContentUris.parseId(downloadUri));
+                                               .enquePaper(ContentUris.parseId(downloadUri),false);
                             } catch (Paper.PaperNotFoundException | DownloadManager.DownloadNotAllowedException | DownloadManager.NotEnoughSpaceException e) {
                                 Timber.e(e);
                                 //AnalyticsWrapper.getInstance().logException(e);

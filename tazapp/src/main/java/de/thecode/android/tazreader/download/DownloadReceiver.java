@@ -11,7 +11,7 @@ import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Resource;
 import de.thecode.android.tazreader.secure.HashHelper;
 import de.thecode.android.tazreader.start.StartActivity;
-import de.thecode.android.tazreader.sync.SyncHelper;
+import de.thecode.android.tazreader.job.SyncJob;
 import de.thecode.android.tazreader.utils.StorageManager;
 
 import org.greenrobot.eventbus.EventBus;
@@ -90,7 +90,8 @@ public class DownloadReceiver extends BroadcastReceiver {
                         Timber.e("Download failed");
                         DownloadException exception = new DownloadException(state.getStatusText() + ": " + state.getReasonText());
                         if (state.getReason() == 406) {
-                            SyncHelper.requestSync(context);
+                            SyncJob.scheduleJobImmediatly();
+                            //SyncHelper.requestSync(context);
                         }
                         //AnalyticsWrapper.getInstance().logException(exception);
                         paper.setDownloadId(0);

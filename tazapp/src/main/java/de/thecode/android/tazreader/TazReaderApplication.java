@@ -6,11 +6,14 @@ import android.os.Build;
 import android.util.Log;
 import android.webkit.WebView;
 
+import com.evernote.android.job.JobConfig;
 import com.evernote.android.job.JobManager;
 
 import de.thecode.android.tazreader.analytics.AnalyticsWrapper;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.eventbus.EventBusIndex;
+import de.thecode.android.tazreader.job.TazJobCreator;
+import de.thecode.android.tazreader.job.TazJobLogger;
 import de.thecode.android.tazreader.picasso.PicassoHelper;
 import de.thecode.android.tazreader.reader.ReaderActivity;
 import de.thecode.android.tazreader.timber.TazTimberTree;
@@ -40,6 +43,8 @@ public class TazReaderApplication extends Application {
 
         super.onCreate();
 
+
+
         BuildTypeProvider.installStetho(this);
 
         if (ACRA.isACRASenderServiceProcess()) return;
@@ -48,6 +53,8 @@ public class TazReaderApplication extends Application {
                 .addIndex(new EventBusIndex())
                 .installDefaultEventBus();
 
+        JobConfig.addLogger(new TazJobLogger());
+        JobConfig.setLogcatEnabled(false);
         JobManager.create(this)
                   .addJobCreator(new TazJobCreator());
 
