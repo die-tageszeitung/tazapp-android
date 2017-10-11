@@ -28,6 +28,7 @@ import de.mateware.dialog.listener.DialogAdapterListListener;
 import de.mateware.dialog.listener.DialogButtonListener;
 import de.mateware.dialog.listener.DialogCancelListener;
 import de.mateware.dialog.listener.DialogDismissListener;
+import de.mateware.snacky.Snacky;
 import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.DeleteTask;
@@ -43,9 +44,10 @@ import de.thecode.android.tazreader.download.PaperDownloadFailedEvent;
 import de.thecode.android.tazreader.download.PaperDownloadFinishedEvent;
 import de.thecode.android.tazreader.download.ResourceDownloadEvent;
 import de.thecode.android.tazreader.importer.ImportActivity;
+import de.thecode.android.tazreader.job.SyncJob;
 import de.thecode.android.tazreader.migration.MigrationActivity;
 import de.thecode.android.tazreader.reader.ReaderActivity;
-import de.thecode.android.tazreader.sync.SyncHelper;
+import de.thecode.android.tazreader.sync.SyncErrorEvent;
 import de.thecode.android.tazreader.utils.BaseActivity;
 import de.thecode.android.tazreader.utils.BaseFragment;
 import de.thecode.android.tazreader.utils.Connection;
@@ -224,6 +226,7 @@ public class StartActivity extends BaseActivity
 
         if (TazSettings.getInstance(this)
                        .getPrefBoolean(TazSettings.PREFKEY.FISRTSTART, true)) {
+            SyncJob.scheduleJobImmediately(false);
             TazSettings.getInstance(this)
                        .setPref(TazSettings.PREFKEY.FISRTSTART, false);
             TazSettings.getInstance(this)
@@ -592,6 +595,16 @@ public class StartActivity extends BaseActivity
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onPaperDownloadFinished(SyncErrorEvent event) {
+        Snacky.builder()
+              .setView(findViewById(R.id.content_frame))
+              .setDuration(Snacky.LENGTH_SHORT)
+              .setText(event.getMessage())
+              .error()
+              .show();
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
     public void onPaperDownloadFinished(PaperDownloadFinishedEvent event) {
         Timber.d("event: %s", event);
         if (retainDataFragment.useOpenPaperafterDownload) {
@@ -740,7 +753,8 @@ public class StartActivity extends BaseActivity
                 Calendar endCal = Calendar.getInstance();
                 startCal.set(year, Calendar.JANUARY, 1);
                 endCal.set(year, Calendar.DECEMBER, 31);
-                SyncHelper.requestSync(this, startCal, endCal);
+                SyncJob.scheduleJobImmediately(true, startCal, endCal);
+                //SyncHelper.requestSync(this, startCal, endCal);
             }
         } else if (DIALOG_ARCHIVE_MONTH.equals(tag)) {
             int year = arguments.getInt(ARGUMENT_ARCHIVE_YEAR);
@@ -750,7 +764,8 @@ public class StartActivity extends BaseActivity
             startCal.set(year, month, 1);
             int lastDayOfMont = startCal.getActualMaximum(Calendar.DAY_OF_MONTH);
             endCal.set(year, month, lastDayOfMont);
-            SyncHelper.requestSync(this, startCal, endCal);
+            //SyncHelper.requestSync(this, startCal, endCal);
+            SyncJob.scheduleJobImmediately(true, startCal, endCal);
         }
     }
 

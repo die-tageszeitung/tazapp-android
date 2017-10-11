@@ -9,6 +9,8 @@ import android.net.Uri;
 
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Resource;
+import de.thecode.android.tazreader.job.DownloadFinishedPaperJob;
+import de.thecode.android.tazreader.job.DownloadFinishedResourceJob;
 import de.thecode.android.tazreader.secure.HashHelper;
 import de.thecode.android.tazreader.start.StartActivity;
 import de.thecode.android.tazreader.job.SyncJob;
@@ -78,9 +80,10 @@ public class DownloadReceiver extends BroadcastReceiver {
                                 failed = true;
                             }
                             if (!failed) {
-                                Intent unzipIntent = new Intent(context, DownloadFinishedPaperService.class);
-                                unzipIntent.putExtra(DownloadFinishedPaperService.PARAM_PAPER_ID, paper.getId());
-                                context.startService(unzipIntent);
+                                DownloadFinishedPaperJob.scheduleJob(paper);
+//                                Intent unzipIntent = new Intent(context, DownloadFinishedPaperService.class);
+//                                unzipIntent.putExtra(DownloadFinishedPaperService.PARAM_PAPER_ID, paper.getId());
+//                                context.startService(unzipIntent);
                             }
                         }
                     } else if (state.getStatus() == DownloadManager.DownloadState.STATUS_FAILED) {
@@ -90,7 +93,7 @@ public class DownloadReceiver extends BroadcastReceiver {
                         Timber.e("Download failed");
                         DownloadException exception = new DownloadException(state.getStatusText() + ": " + state.getReasonText());
                         if (state.getReason() == 406) {
-                            SyncJob.scheduleJobImmediatly();
+                            SyncJob.scheduleJobImmediately(false);
                             //SyncHelper.requestSync(context);
                         }
                         //AnalyticsWrapper.getInstance().logException(exception);
@@ -146,9 +149,10 @@ public class DownloadReceiver extends BroadcastReceiver {
                                 failed = true;
                             }
                             if (!failed) {
-                                Intent unzipIntent = new Intent(context, DownloadFinishedResourceService.class);
-                                unzipIntent.putExtra(DownloadFinishedResourceService.PARAM_RESOURCE_KEY, resource.getKey());
-                                context.startService(unzipIntent);
+                                DownloadFinishedResourceJob.scheduleJob(resource);
+//                                Intent unzipIntent = new Intent(context, DownloadFinishedResourceService.class);
+//                                unzipIntent.putExtra(DownloadFinishedResourceService.PARAM_RESOURCE_KEY, resource.getKey());
+//                                context.startService(unzipIntent);
                             }
                         }
                     } else if (state.getStatus() == DownloadManager.DownloadState.STATUS_FAILED) {

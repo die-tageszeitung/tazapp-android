@@ -16,6 +16,7 @@ import com.evernote.android.job.util.support.PersistableBundleCompat;
 import com.squareup.picasso.Picasso;
 
 import de.thecode.android.tazreader.BuildConfig;
+import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Publication;
 import de.thecode.android.tazreader.data.Resource;
@@ -24,10 +25,13 @@ import de.thecode.android.tazreader.download.DownloadManager;
 import de.thecode.android.tazreader.okhttp3.OkHttp3Helper;
 import de.thecode.android.tazreader.okhttp3.RequestHelper;
 import de.thecode.android.tazreader.start.ScrollToPaperEvent;
+import de.thecode.android.tazreader.sync.SyncErrorEvent;
 import de.thecode.android.tazreader.sync.SyncStateChangedEvent;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.greenrobot.eventbus.EventBus;
+import org.json.JSONArray;
+import org.json.JSONException;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -51,8 +55,9 @@ public class SyncJob extends Job {
 
     private static final String PLIST_KEY_ISSUES = "issues";
 
-    public static final String ARG_START_DATE = "startDate";
-    public static final String ARG_END_DATE   = "endDate";
+    public static final String ARG_START_DATE        = "startDate";
+    public static final String ARG_END_DATE          = "endDate";
+    public static final String ARG_INITIATED_BY_USER = "initiatedByUser";
 
     private Paper moveToPaperAtEnd;
 
@@ -68,10 +73,20 @@ public class SyncJob extends Job {
 
         String startDate = extras.getString(ARG_START_DATE, null);
         String endDate = extras.getString(ARG_END_DATE, null);
+        boolean initByUser = extras.getBoolean(ARG_INITIATED_BY_USER, false);
 
-        NSDictionary plist = callPlist(startDate, endDate, 5);
 
-        if (plist != null) {
+        NSDictionary plist = callPlist(startDate, endDate);
+
+        if (plist == null) {
+            if (initByUser) {
+                EventBus.getDefault().post(new SyncErrorEvent(getContext().getString(R.string.sync_job_plist_empty)));
+                return endJob(Result.SUCCESS);
+            } else {
+                return endJob(Result.RESCHEDULE);
+            }
+        } else {
+            if (!initByUser) autoDeleteTask();
             handlePlist(plist);
         }
 
@@ -81,8 +96,6 @@ public class SyncJob extends Job {
 
         cleanUpResources();
 
-        EventBus.getDefault()
-                .postSticky(new SyncStateChangedEvent(false));
 
         if (moveToPaperAtEnd != null) {
             EventBus.getDefault()
@@ -90,27 +103,16 @@ public class SyncJob extends Job {
             moveToPaperAtEnd = null;
         }
 
-        TazSettings settings = TazSettings.getInstance(getContext());
+        Paper latestPaper = Paper.getLatestPaper(getContext());
+        if (latestPaper != null) AutoDownloadJob.scheduleJob(latestPaper);
 
-        if (settings.getPrefBoolean(TazSettings.PREFKEY.AUTOLOAD, false)) {
-            Paper latestPaper = Paper.getLatestPaper(getContext());
-            if (latestPaper != null) {
-                try {
-                    if ((System.currentTimeMillis() - TimeUnit.DAYS.toMillis(1)) < latestPaper.getDateInMillis()) {
-                        boolean wifiOnly = TazSettings.getInstance(getContext())
-                                                      .getPrefBoolean(TazSettings.PREFKEY.AUTOLOAD_WIFI, false);
-                        if (!(latestPaper.isDownloaded() || latestPaper.isDownloading())) {
-                            DownloadManager.getInstance(getContext())
-                                           .enquePaper(latestPaper.getId(),wifiOnly);
-                        }
-                    }
-                } catch (ParseException | Paper.PaperNotFoundException | DownloadManager.NotEnoughSpaceException | DownloadManager.DownloadNotAllowedException e) {
-                    Timber.w(e);
-                }
-            }
-        }
+        return endJob(Result.SUCCESS);
+    }
 
-        return Result.SUCCESS;
+    private Result endJob(Result result) {
+        EventBus.getDefault()
+                .postSticky(new SyncStateChangedEvent(false));
+        return result;
     }
 
 
@@ -256,30 +258,27 @@ public class SyncJob extends Job {
         }
     }
 
-    private NSDictionary callPlist(String startDate, String endDate, int retry) {
+    private NSDictionary callPlist(String startDate, String endDate) {
         HttpUrl url;
         if (!TextUtils.isEmpty(startDate) && !TextUtils.isEmpty(endDate)) {
             url = HttpUrl.parse(String.format(BuildConfig.PLISTARCHIVURL, startDate, endDate));
         } else {
             url = HttpUrl.parse(BuildConfig.PLISTURL);
         }
-        while (retry > 0) {
-            okhttp3.Call call = OkHttp3Helper.getInstance(getContext())
-                                             .getCall(url,
-                                                      RequestHelper.getInstance(getContext())
-                                                                   .getOkhttp3RequestBody());
-            try {
-                okhttp3.Response response = call.execute();
-                if (response.isSuccessful()) {
-                    return (NSDictionary) PropertyListParser.parse(response.body()
-                                                                           .bytes());
-                }
-                throw new IOException(response.body()
-                                              .string());
-            } catch (Exception e) {
-                Timber.e(e);
-                retry--;
+        okhttp3.Call call = OkHttp3Helper.getInstance(getContext())
+                                         .getCall(url,
+                                                  RequestHelper.getInstance(getContext())
+                                                               .getOkhttp3RequestBody());
+        try {
+            okhttp3.Response response = call.execute();
+            if (response.isSuccessful()) {
+                return (NSDictionary) PropertyListParser.parse(response.body()
+                                                                       .bytes());
             }
+            throw new IOException(response.body()
+                                          .string());
+        } catch (Exception e) {
+            Timber.e(e);
         }
         return null;
     }
@@ -335,13 +334,66 @@ public class SyncJob extends Job {
         }
     }
 
-    public static void scheduleJobImmediatly() {
-        scheduleJobImmediatly(null, null);
+
+    private void autoDeleteTask() {
+        if (TazSettings.getInstance(getContext())
+                       .getPrefBoolean(TazSettings.PREFKEY.AUTODELETE, false)) {
+            long currentOpenPaperId = TazSettings.getInstance(getContext())
+                                                 .getPrefLong(TazSettings.PREFKEY.LASTOPENPAPER, -1L);
+            Timber.d("+++++++ TazSettings: Current Paper SyncAdapter View: %s", currentOpenPaperId);
+
+            int papersToKeep = TazSettings.getInstance(getContext())
+                                          .getPrefInt(TazSettings.PREFKEY.AUTODELETE_VALUE, 0);
+            if (papersToKeep > 0) {
+                Cursor deletePapersCursor = getContext().getContentResolver()
+                                                        .query(Paper.CONTENT_URI,
+                                                               null,
+                                                               Paper.Columns.ISDOWNLOADED + "=1 AND " + Paper.Columns.IMPORTED + "!=1 AND " + Paper.Columns.KIOSK + "!=1",
+                                                               null,
+                                                               Paper.Columns.DATE + " DESC");
+                try {
+                    int counter = 0;
+                    while (deletePapersCursor.moveToNext()) {
+                        if (counter >= papersToKeep) {
+                            Paper deletePaper = new Paper(deletePapersCursor);
+                            Timber.d("PaperId: %s (currentOpen:%s)", deletePaper.getId(), currentOpenPaperId);
+                            if (!deletePaper.getId()
+                                            .equals(currentOpenPaperId)) {
+                                boolean safeToDelete = true;
+                                String bookmarksJsonString = deletePaper.getStoreValue(getContext(), Paper.STORE_KEY_BOOKMARKS);
+                                if (!TextUtils.isEmpty(bookmarksJsonString)) {
+                                    try {
+                                        JSONArray bookmarks = new JSONArray(bookmarksJsonString);
+                                        if (bookmarks.length() > 0) safeToDelete = false;
+                                    } catch (JSONException e) {
+                                        // JSON Error, better don't delete
+                                        safeToDelete = false;
+                                    }
+                                }
+                                if (safeToDelete) {
+                                    deletePaper.delete(getContext());
+                                }
+                            }
+                        }
+                        counter++;
+                    }
+                } finally {
+                    deletePapersCursor.close();
+                }
+            }
+        }
     }
 
-    public static void scheduleJobImmediatly(Calendar start, Calendar end) {
+
+    public static void scheduleJobImmediately(boolean byUser) {
+        scheduleJobImmediately(byUser, null, null);
+    }
+
+    public static void scheduleJobImmediately(boolean byUser, Calendar start, Calendar end) {
 
         PersistableBundleCompat extras = new PersistableBundleCompat();
+
+        extras.putBoolean(ARG_INITIATED_BY_USER, byUser);
 
         if (start != null && end != null) {
             extras.putString(SyncJob.ARG_START_DATE, new SimpleDateFormat("yyyy-MM-dd", Locale.GERMANY).format(start.getTime()));
@@ -357,6 +409,8 @@ public class SyncJob extends Job {
     private static int scheduleJobIn(long latestMillis) {
         return new JobRequest.Builder(SyncJob.TAG).setExecutionWindow(Math.max(0, latestMillis - TimeUnit.MINUTES.toMillis(30)),
                                                                       Math.max(60000, latestMillis))
+                                                  .setRequiredNetworkType(JobRequest.NetworkType.CONNECTED)
+                                                  .setRequirementsEnforced(true)
                                                   .setUpdateCurrent(true)
                                                   .build()
                                                   .schedule();

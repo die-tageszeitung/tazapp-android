@@ -90,8 +90,8 @@ public class SyncService extends IntentService {
         }
 
         // If ForceSync it's now done
-        TazSettings.getInstance(this)
-                   .setPref(TazSettings.PREFKEY.FORCESYNC, false);
+//        TazSettings.getInstance(this)
+//                   .setPref(TazSettings.PREFKEY.FORCESYNC, false);
 
         // AutoDelete
         if (TazSettings.getInstance(this)
@@ -130,10 +130,10 @@ public class SyncService extends IntentService {
             }
         }
 
-        long nextPlannedRunAt = TazSettings.getInstance(this)
-                                           .getSyncServiceNextRun();
-        if (nextPlannedRunAt <= System.currentTimeMillis()) nextPlannedRunAt = Long.MAX_VALUE;
-        minDataValidUntil = Math.min(nextPlannedRunAt, minDataValidUntil);
+//        long nextPlannedRunAt = TazSettings.getInstance(this)
+//                                           .getSyncServiceNextRun();
+//        if (nextPlannedRunAt <= System.currentTimeMillis()) nextPlannedRunAt = Long.MAX_VALUE;
+//        minDataValidUntil = Math.min(nextPlannedRunAt, minDataValidUntil);
 
         SyncHelper.setAlarmManager(this, tomorrowPaper != null, minDataValidUntil);
 

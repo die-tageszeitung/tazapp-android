@@ -83,7 +83,7 @@ public class LibraryFragment extends BaseFragment
             public void onRefresh() {
 
                 hideFab();
-                SyncJob.scheduleJobImmediatly();
+                SyncJob.scheduleJobImmediately(true);
                 //SyncHelper.requestSync(getContext());
             }
         });

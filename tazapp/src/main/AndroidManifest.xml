@@ -103,16 +103,6 @@
         </activity>
         <activity android:name=".migration.MigrationActivity"/>
 
-        <service
-                android:name=".download.DownloadFinishedResourceService"
-                android:exported="false"/>
-        <service
-                android:name=".download.DownloadFinishedPaperService"
-                android:exported="false"/>
-        <service
-                android:name=".sync.SyncService"
-                android:exported="false"/>
-
         <receiver android:name=".download.NotificationBroadcastReceiver">
             <intent-filter>
                 <action android:name="${applicationId}.notificationclicked">

@@ -48,7 +48,7 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
         public static final  String NOTIFICATION_SOUND_PUSH     = "ringtone_push";
         public static final  String VIBRATE                     = "vibrate";
         public static final  String NAVDRAWERLEARNED            = "navdrawerlearned";
-        public static final  String FORCESYNC                   = "forcesync";
+        // public static final  String FORCESYNC                   = "forcesync";
         public static final  String PAPERMIGRATEFROM            = "paperMigrateFrom";
         //        public static final String PAPERMIGRATERUNNING = "paperMigrateRunning";
         public static final  String PAPERMIGRATEDIDS            = "paperMigratedIds";
@@ -60,7 +60,7 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
         public static final  String USER                        = "user";
         public static final  String PASS                        = "pass";
         public static final  String USERMIGRATIONNOTIFICATION   = "usermigrationnotification";
-        private static final String SYNCSERVICENEXTRUN          = "syncServiceNextRun";
+        // private static final String SYNCSERVICENEXTRUN          = "syncServiceNextRun";
         public static final  String DEMOMODE                    = "demoMode";
         public static final  String ISCHANGEARTICLE             = "isChangeArtikel";
         public static final  String ISPAGING                    = "isPaging";
@@ -237,15 +237,15 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
     }
 
 
-    public long getSyncServiceNextRun() {
-        return sharedPreferences.getLong(PREFKEY.SYNCSERVICENEXTRUN, 0);
-    }
-
-    public void setSyncServiceNextRun(long timeInMillis) {
-        sharedPreferences.edit()
-                         .putLong(PREFKEY.SYNCSERVICENEXTRUN, timeInMillis)
-                         .apply();
-    }
+//    public long getSyncServiceNextRun() {
+//        return sharedPreferences.getLong(PREFKEY.SYNCSERVICENEXTRUN, 0);
+//    }
+//
+//    public void setSyncServiceNextRun(long timeInMillis) {
+//        sharedPreferences.edit()
+//                         .putLong(PREFKEY.SYNCSERVICENEXTRUN, timeInMillis)
+//                         .apply();
+//    }
 
     public boolean isDemoMode() {
         return sharedPreferences.getBoolean(PREFKEY.DEMOMODE, true);

@@ -5,8 +5,6 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 
-import de.thecode.android.tazreader.data.TazSettings;
-
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -33,7 +31,7 @@ public class SyncHelper {
      */
     public static void requestSync(Context context) {
         Timber.i("Requested manual sync");
-        requestSync(context, null, null);
+        //requestSync(context, null, null);
     }
 
 
@@ -115,8 +113,8 @@ public class SyncHelper {
 
         AlarmManager alarm = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 
-        TazSettings.getInstance(context)
-                   .setSyncServiceNextRun(runAt);
+//        TazSettings.getInstance(context)
+//                   .setSyncServiceNextRun(runAt);
         Intent serviceIntent = new Intent(context.getApplicationContext(), SyncService.class);
 
         PendingIntent pendingServiceIntent = createPendingIntent(context, serviceIntent);

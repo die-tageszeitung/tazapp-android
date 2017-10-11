@@ -10,7 +10,6 @@ import de.mateware.dialog.Dialog;
 import de.mateware.dialog.listener.DialogButtonListener;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
-import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.download.DownloadManager;
 import de.thecode.android.tazreader.utils.BaseActivity;
 
@@ -184,7 +183,7 @@ public class ImportActivity extends BaseActivity implements DialogButtonListener
         } else {
             resultIntent.putExtra(EXTRA_RESULT_URIS, paperUris);
             setResult(RESULT_OK, resultIntent);
-            TazSettings.getInstance(this).setPref(TazSettings.PREFKEY.FORCESYNC, true);
+            //TazSettings.getInstance(this).setPref(TazSettings.PREFKEY.FORCESYNC, true);
         }
         finish();
     }

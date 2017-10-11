@@ -49,7 +49,7 @@ public class PushHelper {
             case newIssue:
                 Timber.i("newIssue notification received");
                 //SyncHelper.requestSync(context);
-                SyncJob.scheduleJobImmediatly();
+                SyncJob.scheduleJobImmediately(false);
                 break;
             default:
                 Timber.e("Unknown notification received");

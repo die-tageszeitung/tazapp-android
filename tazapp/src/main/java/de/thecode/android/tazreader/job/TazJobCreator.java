@@ -1,5 +1,7 @@
 package de.thecode.android.tazreader.job;
 
+import android.support.annotation.NonNull;
+
 import com.evernote.android.job.Job;
 import com.evernote.android.job.JobCreator;
 
@@ -10,7 +12,7 @@ import com.evernote.android.job.JobCreator;
 public class TazJobCreator implements JobCreator {
 
     @Override
-    public Job create(String tag) {
+    public Job create(@NonNull String tag) {
         switch (tag) {
             case PushRestApiJob.TAG:
                 return new PushRestApiJob();
@@ -18,6 +20,10 @@ public class TazJobCreator implements JobCreator {
                 return new SyncJob();
             case AutoDownloadJob.TAG:
                 return new AutoDownloadJob();
+            case DownloadFinishedPaperJob.TAG:
+                return new DownloadFinishedPaperJob();
+            case DownloadFinishedResourceJob.TAG:
+                return new DownloadFinishedResourceJob();
             default:
                 return null;
         }

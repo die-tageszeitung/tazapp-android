@@ -63,6 +63,7 @@ public class Paper {
     public static final  String STORE_KEY_CURRENTPOSITION     = "currentPosition";
     private static final String STORE_KEY_POSITION_IN_ARTICLE = "positionInArticle";
     private static final String STORE_KEY_RESOURCE_PARTNER    = "resource";
+    private static final String STORE_KEY_AUTO_DOWNLOADED    = "auto_download";
 
     public static       String TABLE_NAME        = "PAPER";
     public static final Uri    CONTENT_URI       = Uri.parse("content://" + TazProvider.AUTHORITY + "/" + TABLE_NAME);
@@ -1543,9 +1544,19 @@ public class Paper {
         return (TextUtils.isEmpty(result)) ? "0" : result;
     }
 
+    public boolean saveAutoDownloaded(Context context, boolean isAutoDownload) {
+        return saveStoreValue(context, STORE_KEY_AUTO_DOWNLOADED, String.valueOf(isAutoDownload));
+    }
+
+    public boolean isAutoDownloaded(Context context) {
+        String resultString = getStoreValue(context, STORE_KEY_AUTO_DOWNLOADED);
+        return Boolean.parseBoolean(resultString);
+    }
+
     public boolean saveResourcePartner(Context context, Resource resource) {
         return saveStoreValue(context, STORE_KEY_RESOURCE_PARTNER, resource.getKey());
     }
+
 
     public Resource getResourcePartner(Context context) {
         String resource = getStoreValue(context, STORE_KEY_RESOURCE_PARTNER);

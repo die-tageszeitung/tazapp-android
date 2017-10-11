@@ -9,6 +9,12 @@ import com.evernote.android.job.util.support.PersistableBundleCompat;
 import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.TazSettings;
+import de.thecode.android.tazreader.download.DownloadManager;
+
+import java.text.ParseException;
+import java.util.concurrent.TimeUnit;
+
+import timber.log.Timber;
 
 /**
  * Created by mate on 10.10.2017.
@@ -23,18 +29,45 @@ public class AutoDownloadJob extends Job {
     @NonNull
     @Override
     protected Result onRunJob(Params params) {
+
+        TazSettings settings = TazSettings.getInstance(getContext());
+        if (settings.getPrefBoolean(TazSettings.PREFKEY.AUTOLOAD, false)) {
+
+            PersistableBundleCompat extras = params.getExtras();
+            long paperId = extras.getLong(ARG_PAPER_ID, -1L);
+            Paper paper = Paper.getPaperWithId(getContext(), paperId);
+            if (paper != null) {
+                try {
+                    if (!paper.isAutoDownloaded(getContext()) && (System.currentTimeMillis() - TimeUnit.DAYS.toMillis(1)) < paper.getDateInMillis()) {
+                        boolean wifiOnly = TazSettings.getInstance(getContext())
+                                                      .getPrefBoolean(TazSettings.PREFKEY.AUTOLOAD_WIFI, false);
+                        if (!(paper.isDownloaded() || paper.isDownloading())) {
+                            DownloadManager.getInstance(getContext())
+                                           .enquePaper(paper.getId(), wifiOnly);
+                            paper = Paper.getPaperWithId(getContext(),paperId);
+                            if (!(paper.isDownloading() || paper.isDownloaded())) {
+                                return Result.RESCHEDULE;
+                            } else {
+                                paper.saveAutoDownloaded(getContext(),true);
+                            }
+                        }
+                    }
+                } catch (ParseException | Paper.PaperNotFoundException  e) {
+                    Timber.w(e);
+                } catch (DownloadManager.NotEnoughSpaceException | DownloadManager.DownloadNotAllowedException e) {
+                    Timber.w(e);
+                    //TODO Show Notification to User
+                }
+            }
+        }
         return Result.SUCCESS;
     }
 
-    public static void scheduleJob(@NonNull Paper paper, TazSettings settings) {
+    public static void scheduleJob(@NonNull Paper paper) {
         PersistableBundleCompat extras = new PersistableBundleCompat();
         extras.putLong(ARG_PAPER_ID, paper.getId());
 
-        boolean onlyOnWifi = settings.getPrefBoolean(TazSettings.PREFKEY.AUTOLOAD_WIFI, false);
-
         new JobRequest.Builder(TAG).setExtras(extras)
-                                   .setRequiredNetworkType(onlyOnWifi ? JobRequest.NetworkType.UNMETERED : JobRequest.NetworkType.CONNECTED)
-                                   .setRequirementsEnforced(true)
                                    .startNow()
                                    .build()
                                    .schedule();
