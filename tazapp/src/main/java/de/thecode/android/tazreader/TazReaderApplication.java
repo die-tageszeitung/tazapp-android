@@ -1,7 +1,6 @@
 package de.thecode.android.tazreader;
 
 import android.app.Application;
-import android.content.Context;
 import android.os.Build;
 import android.util.Log;
 import android.webkit.WebView;
@@ -20,7 +19,6 @@ import de.thecode.android.tazreader.timber.TazTimberTree;
 import de.thecode.android.tazreader.utils.BuildTypeProvider;
 import de.thecode.android.tazreader.utils.StorageManager;
 
-import org.acra.ACRA;
 import org.apache.commons.io.FileUtils;
 import org.greenrobot.eventbus.EventBus;
 
@@ -32,22 +30,15 @@ import timber.log.Timber;
 public class TazReaderApplication extends Application {
 
     @Override
-    protected void attachBaseContext(Context base) {
-        super.attachBaseContext(base);
-        Timber.plant(new TazTimberTree(BuildConfig.DEBUG ? Log.VERBOSE : Log.INFO));
-        AnalyticsWrapper.initialize(this);
-    }
-
-    @Override
     public void onCreate() {
 
         super.onCreate();
 
+        Timber.plant(new TazTimberTree(BuildConfig.DEBUG ? Log.VERBOSE : Log.WARN));
 
+        AnalyticsWrapper.initialize(this);
 
         BuildTypeProvider.installStetho(this);
-
-        if (ACRA.isACRASenderServiceProcess()) return;
 
         EventBus.builder()
                 .addIndex(new EventBusIndex())

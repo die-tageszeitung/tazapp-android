@@ -13,7 +13,6 @@ import android.widget.BaseAdapter;
 import android.widget.Toast;
 
 import de.thecode.android.tazreader.R;
-import de.thecode.android.tazreader.analytics.AnalyticsWrapper;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Paper.Plist.Page;
 import de.thecode.android.tazreader.data.TazSettings;
@@ -58,8 +57,8 @@ public class PagesFragment extends AbstractContentFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        AnalyticsWrapper.getInstance()
-                        .trackBreadcrumb("onCreate in PagesFragment");
+//        AnalyticsWrapper.getInstance()
+//                        .trackBreadcrumb("onCreate in PagesFragment");
         if (savedInstanceState == null) {
             if (getArguments() != null) _startKey = getArguments().getString(ARG_STARTKEY);
         } else {
@@ -87,8 +86,8 @@ public class PagesFragment extends AbstractContentFragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        AnalyticsWrapper.getInstance()
-                        .trackBreadcrumb("onCreateView in PagesFragment");
+//        AnalyticsWrapper.getInstance()
+//                        .trackBreadcrumb("onCreateView in PagesFragment");
         View view = inflater.inflate(R.layout.reader_pagereader, container, false);
         _readerView = (TAZReaderView) view.findViewById(R.id.readerview);
         _readerView.setAdapter(_adapter);
@@ -144,15 +143,15 @@ public class PagesFragment extends AbstractContentFragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        AnalyticsWrapper.getInstance()
-                        .trackBreadcrumb("onActivityCreated in PagesFragment");
+//        AnalyticsWrapper.getInstance()
+//                        .trackBreadcrumb("onActivityCreated in PagesFragment");
     }
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        AnalyticsWrapper.getInstance()
-                        .trackBreadcrumb("onAttach in PagesFragment");
+//        AnalyticsWrapper.getInstance()
+//                        .trackBreadcrumb("onAttach in PagesFragment");
     }
 
 //    @Override

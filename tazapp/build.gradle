@@ -49,9 +49,22 @@ idea {
     }
 }
 
+buildscript {
+    repositories {
+        maven {
+            url 'https://maven.fabric.io/public'
+        }
+    }
+
+    dependencies {
+        classpath 'io.fabric.tools:gradle:1.+'
+    }
+}
+
 apply plugin: 'com.android.application'
 apply plugin: 'com.github.gfx.ribbonizer'
 apply plugin: 'com.github.triplet.play'
+apply plugin: 'io.fabric'
 
 def overheadPath
 
@@ -137,11 +150,13 @@ android {
             debuggable true
             versionNameSuffix " Debug"
             applicationIdSuffix ".debug"
+            ext.enableCrashlytics = false
         }
         staging.initWith(buildTypes.debug)
         staging {
             versionNameSuffix " Staging"
             applicationIdSuffix ".staging"
+            ext.enableCrashlytics = true
         }
         release {
             zipAlignEnabled true
@@ -288,7 +303,10 @@ dependencies {
 
     compile 'com.yqritc:recyclerview-flexibledivider:1.2.9'
 
-
+    compile('com.crashlytics.sdk.android:crashlytics:2.7.0@aar') {
+        transitive = true;
+    }
+    compile 'net.ypresto.timbertreeutils:timbertreeutils:1.0.0'
 
     compile 'com.scottyab:aescrypt:0.0.1'
 
