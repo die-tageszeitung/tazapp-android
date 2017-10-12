@@ -72,8 +72,8 @@
     <string name="pref_title_tts_active">Text vorlesen durch "doppeltes Tippen"</string>
     <bool name="pref_default_tts_active">false</bool>
     <!--  -->
-    <string name="pref_key_acra_active">acra.alwaysaccept</string>
-    <string name="pref_title_acra_active">Fehlerreports automatisch senden</string>
+    <string name="pref_key_crashlytics_always_send">crashlytics_always_send</string>
+    <string name="pref_title_crashlytics_always_send">Fehlerreports automatisch senden</string>
     <!--  -->
     <string name="pref_key_notification_download_vibrate">vibrate</string>
     <string name="pref_title_notification_download_vibrate">Vibration</string>

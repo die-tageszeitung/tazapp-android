@@ -127,8 +127,9 @@
             android:title="@string/category_other">
 
         <android.support.v7.preference.SwitchPreferenceCompat
-                android:key="@string/pref_key_acra_active"
-                android:title="@string/pref_title_acra_active"/>
+                android:key="@string/pref_key_crashlytics_always_send"
+                android:title="@string/pref_title_crashlytics_always_send"/>
+
 
     </android.support.v7.preference.PreferenceCategory>
 

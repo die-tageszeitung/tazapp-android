@@ -7,7 +7,7 @@ import com.crashlytics.android.Crashlytics;
 import com.crashlytics.android.core.CrashlyticsCore;
 
 import de.thecode.android.tazreader.BuildConfig;
-import de.thecode.android.tazreader.utils.Installation;
+import de.thecode.android.tazreader.secure.Installation;
 
 import net.ypresto.timbertreeutils.CrashlyticsLogExceptionTree;
 import net.ypresto.timbertreeutils.CrashlyticsLogTree;

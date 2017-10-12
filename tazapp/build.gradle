@@ -62,9 +62,10 @@ buildscript {
 }
 
 apply plugin: 'com.android.application'
+apply plugin: 'io.fabric'
 apply plugin: 'com.github.gfx.ribbonizer'
 apply plugin: 'com.github.triplet.play'
-apply plugin: 'io.fabric'
+
 
 def overheadPath
 
@@ -105,6 +106,10 @@ android {
                 srcDir 'src/debug/java'
             }
         }
+    }
+
+    dexOptions {
+        jumboMode = true
     }
 
     compileSdkVersion compileSdkVer
@@ -313,8 +318,6 @@ dependencies {
     compile 'com.github.matecode:Snacky:1.0.2'
     compile 'com.github.matecode:DataFragment:1.0.2'
     compile 'com.github.matecode:androiddialog:1.2.32'
-
-    compile 'ch.acra:acra:4.9.2'
 
     compile 'org.mightyfrog.centeringrecyclerview:centeringrecyclerview:1.1.6'
 
