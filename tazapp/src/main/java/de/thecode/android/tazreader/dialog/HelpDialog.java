@@ -25,7 +25,7 @@ import java.util.List;
 public class HelpDialog extends DialogCustomView {
 
     @Retention(RetentionPolicy.SOURCE)
-    @StringDef({HELP_INTRO, HELP_LIBRARY, HELP_ARTICLE, HELP_PAGE})
+    @StringDef({HELP_INTRO, HELP_LIBRARY, HELP_ARTICLE, HELP_PAGE, HELP_PRIVACY})
     public @interface HelpPage {
     }
 
@@ -34,6 +34,7 @@ public class HelpDialog extends DialogCustomView {
     public static final String HELP_LIBRARY = "ausgaben.html";
     public static final String HELP_PAGE    = "seiten.html";
     public static final String HELP_ARTICLE = "artikel.html";
+    public static final String HELP_PRIVACY = "datenschutz.html";
 
     private static final String[] HELP_RESOURCE_SUBDIRS = {"res/android-help","res/ios-help"};
 

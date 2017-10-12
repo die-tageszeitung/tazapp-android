@@ -104,6 +104,7 @@ public class StartActivity extends BaseActivity
 
     NavigationDrawerFragment.ClickItem      helpItem;
     NavigationDrawerFragment.NavigationItem imprintItem;
+    NavigationDrawerFragment.ClickItem      privacyTermsItem;
     // NavigationDrawerFragment.NavigationItem importItem;
 
     TazSettings.OnPreferenceChangeListener demoModeChanged = new TazSettings.OnPreferenceChangeListener<Boolean>() {
@@ -168,7 +169,7 @@ public class StartActivity extends BaseActivity
         toolbar = (CustomToolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         toolbar.setItemColor(ContextCompat.getColor(this, R.color.toolbar_foreground_color));
-        toolbar.setTitleTextAppearance(this,R.style.Toolbar_TitleText);
+        toolbar.setTitleTextAppearance(this, R.style.Toolbar_TitleText);
 
         if (getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         updateTitle();
@@ -197,6 +198,9 @@ public class StartActivity extends BaseActivity
 
         helpItem = new NavigationDrawerFragment.ClickItem(getString(R.string.drawer_help), R.drawable.ic_help);
         helpItem.setAccessibilty(false);
+        privacyTermsItem = new NavigationDrawerFragment.ClickItem(getString(R.string.drawer_privacy_terms),
+                                                                  R.drawable.ic_security_black_24dp);
+        helpItem.setAccessibilty(false);
         imprintItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_imprint),
                                                                   R.drawable.ic_imprint,
                                                                   ImprintFragment.class);
@@ -209,6 +213,7 @@ public class StartActivity extends BaseActivity
         mDrawerFragment.addItem(helpItem);
         mDrawerFragment.addDividerItem();
         mDrawerFragment.addItem(imprintItem);
+        mDrawerFragment.addItem(privacyTermsItem);
         // mDrawerFragment.addItem(settingsItem);
         mDrawerFragment.addItem(preferencesItem);
 
@@ -287,7 +292,10 @@ public class StartActivity extends BaseActivity
         Timber.i("");
         if (helpItem.equals(item)) {
             showHelpDialog(HelpDialog.HELP_LIBRARY);
+        } else if (privacyTermsItem.equals(item)) {
+            showHelpDialog(HelpDialog.HELP_PRIVACY);
         }
+
     }
 
     @Override
@@ -388,7 +396,7 @@ public class StartActivity extends BaseActivity
                 if (paper == null) throw new Paper.PaperNotFoundException();
                 try {
                     DownloadManager.getInstance(this)
-                                   .enquePaper(paperId,false);
+                                   .enquePaper(paperId, false);
                 } catch (IllegalArgumentException e) {
                     showDownloadManagerErrorDialog();
                 } catch (DownloadManager.DownloadNotAllowedException e) {
@@ -567,7 +575,7 @@ public class StartActivity extends BaseActivity
                         //DownloadHelper downloadHelper = new DownloadHelper(this);
                         try {
                             DownloadManager.getInstance(this)
-                                           .enqueResource(Resource.getWithKey(this, openPaper.getResource()),false);
+                                           .enqueResource(Resource.getWithKey(this, openPaper.getResource()), false);
                             retainDataFragment.openPaperWaitingForRessource = id;
                         } catch (DownloadManager.NotEnoughSpaceException e) {
                             showDownloadErrorDialog(getString(R.string.message_resourcedownload_error),
@@ -689,8 +697,7 @@ public class StartActivity extends BaseActivity
         super.onDialogClick(tag, arguments, which);
         if (DIALOG_HELP.equals(tag)) {
             if (which == Dialog.BUTTON_NEUTRAL) mDrawerFragment.simulateClick(userItem, true);
-        } else
-        if (DIALOG_USER_REENTER.equals(tag)) {
+        } else if (DIALOG_USER_REENTER.equals(tag)) {
             if (which == Dialog.BUTTON_POSITIVE) {
                 TazSettings.getInstance(this)
                            .setPref(TazSettings.PREFKEY.USERMIGRATIONNOTIFICATION, true);
