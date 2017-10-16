@@ -11,6 +11,7 @@ import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Resource;
 import de.thecode.android.tazreader.job.DownloadFinishedPaperJob;
 import de.thecode.android.tazreader.job.DownloadFinishedResourceJob;
+import de.thecode.android.tazreader.notifications.NotificationUtils;
 import de.thecode.android.tazreader.secure.HashHelper;
 import de.thecode.android.tazreader.start.StartActivity;
 import de.thecode.android.tazreader.job.SyncJob;
@@ -104,7 +105,8 @@ public class DownloadReceiver extends BroadcastReceiver {
                                            .exists()) //noinspection ResultOfMethodCallIgnored
                             externalStorage.getDownloadFile(paper)
                                            .delete();
-                        NotificationHelper.showDownloadErrorNotification(context, null, paper.getId());
+                        new NotificationUtils(context).showDownloadErrorNotification(paper, null);
+                        //NotificationHelper.showDownloadErrorNotification(context, null, paper.getId());
                         EventBus.getDefault()
                                 .post(new PaperDownloadFailedEvent(paper.getId(), exception));
                     }

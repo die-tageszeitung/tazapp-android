@@ -117,7 +117,8 @@ public class DownloadFinishedPaperService extends IntentService implements Unzip
                                     null);
 
         if (exception == null) {
-            NotificationHelper.showDownloadFinishedNotification(this, paper.getId());
+
+            //NotificationHelper.showDownloadFinishedNotification(this, paper.getId());
             EventBus.getDefault()
                     .post(new PaperDownloadFinishedEvent(paper.getId()));
 
@@ -126,7 +127,8 @@ public class DownloadFinishedPaperService extends IntentService implements Unzip
         } else {
             Timber.e(exception);
             //AnalyticsWrapper.getInstance().logException(exception);
-            NotificationHelper.showDownloadErrorNotification(this, null, paper.getId());
+            //
+            //NotificationHelper.showDownloadErrorNotification(this, null, paper.getId());
             EventBus.getDefault()
                     .post(new PaperDownloadFailedEvent(paper.getId(), exception));
         }

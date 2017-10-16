@@ -105,6 +105,6 @@
     <string name="dialog_techinfo_supported_abis">Unterstützte ABIs</string>
     <string name="dialog_techinfo_installations_id">Installations ID</string>
     <string name="sync_job_plist_empty">Fehler beim Laden der Daten</string>
-    <string name="notification_channel_download">Download Benachrichtigungen</string>
+    <string name="notification_channel_download">Downloads</string>
 
 </resources>

@@ -7,9 +7,11 @@ import com.evernote.android.job.JobRequest;
 import com.evernote.android.job.util.support.PersistableBundleCompat;
 
 import de.thecode.android.tazreader.BuildConfig;
+import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.download.DownloadManager;
+import de.thecode.android.tazreader.notifications.NotificationUtils;
 
 import java.text.ParseException;
 import java.util.concurrent.TimeUnit;
@@ -52,11 +54,11 @@ public class AutoDownloadJob extends Job {
                             }
                         }
                     }
-                } catch (ParseException | Paper.PaperNotFoundException  e) {
+                } catch (ParseException | Paper.PaperNotFoundException  | DownloadManager.DownloadNotAllowedException e) {
                     Timber.w(e);
-                } catch (DownloadManager.NotEnoughSpaceException | DownloadManager.DownloadNotAllowedException e) {
+                } catch (DownloadManager.NotEnoughSpaceException e) {
                     Timber.w(e);
-                    //TODO Show Notification to User
+                    new NotificationUtils(getContext()).showDownloadErrorNotification(paper,getContext().getString(R.string.message_not_enough_space));
                 }
             }
         }

@@ -34,7 +34,7 @@ import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Store;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.dialog.HelpDialog;
-import de.thecode.android.tazreader.download.NotificationHelper;
+import de.thecode.android.tazreader.notifications.NotificationUtils;
 import de.thecode.android.tazreader.reader.article.ArticleFragment;
 import de.thecode.android.tazreader.reader.article.TopLinkFragment;
 import de.thecode.android.tazreader.reader.index.IIndexItem;
@@ -115,7 +115,7 @@ public class ReaderActivity extends BaseActivity
         else paperId = getIntent().getLongExtra(KEY_EXTRA_PAPER_ID, -1);
         if (paperId == -1) throw new IllegalStateException("paperId must not be " + paperId);
 
-        NotificationHelper.removeNotifiedPaperId(this, paperId);
+        new NotificationUtils(this).removeDownloadNotification(paperId);
 
         setContentView(R.layout.activity_reader);
 

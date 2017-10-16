@@ -103,17 +103,6 @@
         </activity>
         <activity android:name=".migration.MigrationActivity"/>
 
-        <receiver android:name=".download.NotificationBroadcastReceiver">
-            <intent-filter>
-                <action android:name="${applicationId}.notificationclicked">
-                </action>
-            </intent-filter>
-            <intent-filter>
-                <action android:name="${applicationId}.notificationdeleted">
-                </action>
-            </intent-filter>
-        </receiver>
-
         <provider
                 android:name="de.thecode.android.tazreader.provider.TazProvider"
                 android:authorities="${applicationId}.provider"

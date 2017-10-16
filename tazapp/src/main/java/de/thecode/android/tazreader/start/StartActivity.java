@@ -39,13 +39,13 @@ import de.thecode.android.tazreader.dialog.ArchiveDialog;
 import de.thecode.android.tazreader.dialog.ArchiveEntry;
 import de.thecode.android.tazreader.dialog.HelpDialog;
 import de.thecode.android.tazreader.download.DownloadManager;
-import de.thecode.android.tazreader.download.NotificationHelper;
 import de.thecode.android.tazreader.download.PaperDownloadFailedEvent;
 import de.thecode.android.tazreader.download.PaperDownloadFinishedEvent;
 import de.thecode.android.tazreader.download.ResourceDownloadEvent;
 import de.thecode.android.tazreader.importer.ImportActivity;
 import de.thecode.android.tazreader.job.SyncJob;
 import de.thecode.android.tazreader.migration.MigrationActivity;
+import de.thecode.android.tazreader.notifications.NotificationUtils;
 import de.thecode.android.tazreader.reader.ReaderActivity;
 import de.thecode.android.tazreader.sync.SyncErrorEvent;
 import de.thecode.android.tazreader.utils.BaseActivity;
@@ -126,6 +126,14 @@ public class StartActivity extends BaseActivity
         TazSettings.getInstance(this)
                    .removeOnPreferenceChangeListener(demoModeChanged);
         super.onStop();
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        Timber.i("receiviing new intent");
+        //TODO handle intent data to open book
+        super.onNewIntent(intent);
+        openReaderFromDownloadNoificationIntent(intent);
     }
 
     @Override
@@ -249,7 +257,21 @@ public class StartActivity extends BaseActivity
         //Todo run Sync on first start
 //        if (TazSettings.getInstance(this)
 //                       .getSyncServiceNextRun() == 0) SyncHelper.requestSync(this);
+        //Intent intent = getIntent();
+        openReaderFromDownloadNoificationIntent(getIntent());
+    }
 
+    private void openReaderFromDownloadNoificationIntent(Intent intent){
+        if (intent != null) {
+            if (intent.hasExtra(NotificationUtils.NOTIFICATION_EXTRA_TYPE_ID) && intent.hasExtra(NotificationUtils.NOTIFICATION_EXTRA_BOOKID)) {
+                String bookId = intent.getStringExtra(NotificationUtils.NOTIFICATION_EXTRA_BOOKID);
+                int type = intent.getIntExtra(NotificationUtils.NOTIFICATION_EXTRA_TYPE_ID,-1);
+                Paper paper = Paper.getPaperWithBookId(this,bookId);
+                if (type == NotificationUtils.DOWNLOAD_NOTIFICTAION_ID && paper != null){
+                    openReader(paper.getId());
+                }
+            }
+        }
     }
 
     @Override
@@ -628,7 +650,9 @@ public class StartActivity extends BaseActivity
             Paper paper = Paper.getPaperWithId(this, event.getPaperId());
             if (paper == null) throw new Paper.PaperNotFoundException();
             showDownloadErrorDialog(paper.getTitelWithDate(this), null, event.getException());
-            NotificationHelper.cancelDownloadErrorNotification(this, event.getPaperId());
+
+            //NotificationHelper.cancelDownloadErrorNotification(this, event.getPaperId());
+            new NotificationUtils(this).removeDownloadNotification(event.getPaperId());
         } catch (Paper.PaperNotFoundException e) {
             e.printStackTrace();
         }
