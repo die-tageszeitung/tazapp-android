@@ -102,17 +102,6 @@ public class NotificationUtils extends ContextWrapper {
         int defaults = Notification.DEFAULT_LIGHTS;
         if (withVibration) defaults |= Notification.DEFAULT_VIBRATE;
         builder.setDefaults(defaults);
-
-        try {
-            builder.setLargeIcon(Picasso.with(this)
-                                        .load(paper.getImage())
-                                        .transform(new LargeIconTransformation())
-                                        .transform(new CircleTransform())
-                                        .get());
-        } catch (IOException ignored) {
-
-        }
-
         getManager().notify(paper.getBookId(), DOWNLOAD_NOTIFICTAION_ID, builder.build());
     }
 
@@ -153,7 +142,7 @@ public class NotificationUtils extends ContextWrapper {
                                         .transform(new LargeIconTransformation())
                                         .transform(new CircleTransform())
                                         .get());
-        } catch (IOException ignored) {
+        } catch (IOException | IllegalStateException ignored) {
 
         }
 
@@ -171,7 +160,7 @@ public class NotificationUtils extends ContextWrapper {
     }
 
 
-    private class LargeIconTransformation implements Transformation {
+    private static class LargeIconTransformation implements Transformation {
 
         @Override
         public Bitmap transform(Bitmap source) {
@@ -193,7 +182,7 @@ public class NotificationUtils extends ContextWrapper {
         }
     }
 
-    private class CircleTransform implements Transformation {
+    private static class CircleTransform implements Transformation {
         @Override
         public Bitmap transform(Bitmap source) {
             int size = Math.min(source.getWidth(), source.getHeight());
