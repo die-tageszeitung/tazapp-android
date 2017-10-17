@@ -52,8 +52,8 @@ public class IndexFragment extends BaseFragment {
     Map<String, IIndexItem> index = new LinkedHashMap<>();
     IndexRecyclerViewAdapter adapter;
 
-    int bookmarkColorActive;
-    int bookmarkColorNormal;
+    int   bookmarkColorActive;
+    int   bookmarkColorNormal;
     float iconButtonAlpha;
 
     boolean mShowSubtitles;
@@ -84,14 +84,15 @@ public class IndexFragment extends BaseFragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof IReaderCallback) mReaderCallback = (IReaderCallback)context;
+        if (context instanceof IReaderCallback) mReaderCallback = (IReaderCallback) context;
         else throw new RuntimeException(context.toString() + " must implement " + IReaderCallback.class.getSimpleName());
 
         bookmarkColorNormal = ContextCompat.getColor(context, R.color.index_bookmark_off);
         bookmarkColorActive = ContextCompat.getColor(context, R.color.index_bookmark_on);
 
         TypedValue outValue = new TypedValue();
-        context.getResources().getValue(R.dimen.icon_button_alpha,outValue,true);
+        context.getResources()
+               .getValue(R.dimen.icon_button_alpha, outValue, true);
         iconButtonAlpha = outValue.getFloat();
     }
 
@@ -254,16 +255,17 @@ public class IndexFragment extends BaseFragment {
     private void init(Paper paper) {
         Timber.d("paper: %s", paper);
         index.clear();
-
-        for (Source source : paper.getPlist()
-                                  .getSources()) {
-            //index.add(source);
-            for (Book book : source.getBooks()) {
-                for (Category category : book.getCategories()) {
-                    index.put(category.getKey(), category);
-                    if (category.hasIndexChilds()) {
-                        for (IIndexItem categoryChild : category.getIndexChilds()) {
-                            index.put(categoryChild.getKey(), categoryChild);
+        if (paper != null && paper.getPlist() != null) {
+            for (Source source : paper.getPlist()
+                                      .getSources()) {
+                //index.add(source);
+                for (Book book : source.getBooks()) {
+                    for (Category category : book.getCategories()) {
+                        index.put(category.getKey(), category);
+                        if (category.hasIndexChilds()) {
+                            for (IIndexItem categoryChild : category.getIndexChilds()) {
+                                index.put(categoryChild.getKey(), categoryChild);
+                            }
                         }
                     }
                 }

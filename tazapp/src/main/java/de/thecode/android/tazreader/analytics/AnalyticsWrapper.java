@@ -9,7 +9,6 @@ import com.crashlytics.android.core.CrashlyticsCore;
 import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.secure.Installation;
 
-import net.ypresto.timbertreeutils.CrashlyticsLogExceptionTree;
 import net.ypresto.timbertreeutils.CrashlyticsLogTree;
 
 import io.fabric.sdk.android.Fabric;
@@ -40,7 +39,7 @@ public class AnalyticsWrapper {
 
     private void initFabric(Context context) {
         if (!BuildConfig.BUILD_TYPE.equalsIgnoreCase("debug")) {
-            Timber.plant(new CrashlyticsLogExceptionTree());
+            //Timber.plant(new CrashlyticsLogExceptionTree());
             Timber.plant(new CrashlyticsLogTree(Log.INFO));
         }
 
