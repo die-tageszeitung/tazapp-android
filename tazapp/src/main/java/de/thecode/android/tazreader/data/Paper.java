@@ -1591,6 +1591,8 @@ public class Paper {
             setDownloadId(0);
             setDownloaded(false);
             setHasupdate(false);
+            if (BuildConfig.BUILD_TYPE.equals("staging"))
+                setValidUntil(0); //Wunsch von Ralf, damit besser im Staging getestet werden kann
             int affected = context.getContentResolver()
                                   .update(ContentUris.withAppendedId(Paper.CONTENT_URI, getId()), getContentValues(), null, null);
             if (affected >= 1) EventBus.getDefault()
