@@ -1,23 +1,24 @@
 package de.thecode.android.tazreader;
 
 import android.app.Application;
-import android.content.Context;
 import android.os.Build;
 import android.util.Log;
 import android.webkit.WebView;
 
+import com.evernote.android.job.JobConfig;
 import com.evernote.android.job.JobManager;
 
 import de.thecode.android.tazreader.analytics.AnalyticsWrapper;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.eventbus.EventBusIndex;
+import de.thecode.android.tazreader.job.TazJobCreator;
+import de.thecode.android.tazreader.job.TazJobLogger;
 import de.thecode.android.tazreader.picasso.PicassoHelper;
 import de.thecode.android.tazreader.reader.ReaderActivity;
 import de.thecode.android.tazreader.timber.TazTimberTree;
 import de.thecode.android.tazreader.utils.BuildTypeProvider;
-import de.thecode.android.tazreader.utils.StorageHelper;
+import de.thecode.android.tazreader.utils.StorageManager;
 
-import org.acra.ACRA;
 import org.apache.commons.io.FileUtils;
 import org.greenrobot.eventbus.EventBus;
 
@@ -29,25 +30,22 @@ import timber.log.Timber;
 public class TazReaderApplication extends Application {
 
     @Override
-    protected void attachBaseContext(Context base) {
-        super.attachBaseContext(base);
-        Timber.plant(new TazTimberTree(BuildConfig.DEBUG ? Log.VERBOSE : Log.INFO));
-        AnalyticsWrapper.initialize(this);
-    }
-
-    @Override
     public void onCreate() {
 
         super.onCreate();
 
-        BuildTypeProvider.installStetho(this);
+        Timber.plant(new TazTimberTree(BuildConfig.DEBUG ? Log.VERBOSE : Log.WARN));
 
-        if (ACRA.isACRASenderServiceProcess()) return;
+        AnalyticsWrapper.initialize(this);
+
+        BuildTypeProvider.installStetho(this);
 
         EventBus.builder()
                 .addIndex(new EventBusIndex())
                 .installDefaultEventBus();
 
+        JobConfig.addLogger(new TazJobLogger());
+        JobConfig.setLogcatEnabled(false);
         JobManager.create(this)
                   .addJobCreator(new TazJobCreator());
 
@@ -89,7 +87,8 @@ public class TazReaderApplication extends Application {
                 if (aChildren.startsWith("com.crashlytics") || aChildren.startsWith("Twitter") || aChildren.startsWith("io.fabric"))
                     FileUtils.deleteQuietly(new File(dir, aChildren));
             }
-            File oldLibImageDir = StorageHelper.getCache(this, "library");
+            File oldLibImageDir = StorageManager.getInstance(this)
+                                                .getCache("library");
             FileUtils.deleteQuietly(oldLibImageDir);
         }
 
@@ -136,6 +135,8 @@ public class TazReaderApplication extends Application {
                    .setDefaultPref(TazSettings.PREFKEY.ISCHANGEARTICLE, true);
         TazSettings.getInstance(this)
                    .setDefaultPref(TazSettings.PREFKEY.ISPAGING, true);
+        TazSettings.getInstance(this)
+                   .setDefaultPref(TazSettings.PREFKEY.ISJUSTIFY, false);
         TazSettings.getInstance(this)
                    .setDefaultPref(TazSettings.PREFKEY.ISSCROLLTONEXT, getResources().getBoolean(R.bool.isTablet));
         TazSettings.getInstance(this)

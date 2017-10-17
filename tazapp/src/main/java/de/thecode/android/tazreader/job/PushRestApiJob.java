@@ -1,4 +1,4 @@
-package de.thecode.android.tazreader.push;
+package de.thecode.android.tazreader.job;
 
 import android.support.annotation.NonNull;
 
@@ -47,11 +47,11 @@ public class PushRestApiJob extends Job {
     }
 
     public static void scheduleJob() {
-        new JobRequest.Builder(PushRestApiJob.TAG).startNow()
-                                                  .setBackoffCriteria(4_000, JobRequest.BackoffPolicy.LINEAR)
-                                                  .setRequiredNetworkType(JobRequest.NetworkType.ANY)
-                                                  .setUpdateCurrent(true)
-                                                  .build()
-                                                  .schedule();
+        new JobRequest.Builder(TAG).startNow()
+                                   .setBackoffCriteria(4_000, JobRequest.BackoffPolicy.LINEAR)
+                                   .setRequiredNetworkType(JobRequest.NetworkType.ANY)
+                                   .setUpdateCurrent(true)
+                                   .build()
+                                   .schedule();
     }
 }

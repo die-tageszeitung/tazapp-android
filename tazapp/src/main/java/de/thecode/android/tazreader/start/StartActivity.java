@@ -28,6 +28,7 @@ import de.mateware.dialog.listener.DialogAdapterListListener;
 import de.mateware.dialog.listener.DialogButtonListener;
 import de.mateware.dialog.listener.DialogCancelListener;
 import de.mateware.dialog.listener.DialogDismissListener;
+import de.mateware.snacky.Snacky;
 import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.DeleteTask;
@@ -37,15 +38,16 @@ import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.dialog.ArchiveDialog;
 import de.thecode.android.tazreader.dialog.ArchiveEntry;
 import de.thecode.android.tazreader.dialog.HelpDialog;
-import de.thecode.android.tazreader.download.DownloadHelper;
-import de.thecode.android.tazreader.download.NotificationHelper;
+import de.thecode.android.tazreader.download.DownloadManager;
 import de.thecode.android.tazreader.download.PaperDownloadFailedEvent;
 import de.thecode.android.tazreader.download.PaperDownloadFinishedEvent;
 import de.thecode.android.tazreader.download.ResourceDownloadEvent;
 import de.thecode.android.tazreader.importer.ImportActivity;
+import de.thecode.android.tazreader.job.SyncJob;
 import de.thecode.android.tazreader.migration.MigrationActivity;
+import de.thecode.android.tazreader.notifications.NotificationUtils;
 import de.thecode.android.tazreader.reader.ReaderActivity;
-import de.thecode.android.tazreader.sync.SyncHelper;
+import de.thecode.android.tazreader.sync.SyncErrorEvent;
 import de.thecode.android.tazreader.utils.BaseActivity;
 import de.thecode.android.tazreader.utils.BaseFragment;
 import de.thecode.android.tazreader.utils.Connection;
@@ -102,6 +104,7 @@ public class StartActivity extends BaseActivity
 
     NavigationDrawerFragment.ClickItem      helpItem;
     NavigationDrawerFragment.NavigationItem imprintItem;
+    NavigationDrawerFragment.ClickItem      privacyTermsItem;
     // NavigationDrawerFragment.NavigationItem importItem;
 
     TazSettings.OnPreferenceChangeListener demoModeChanged = new TazSettings.OnPreferenceChangeListener<Boolean>() {
@@ -123,6 +126,14 @@ public class StartActivity extends BaseActivity
         TazSettings.getInstance(this)
                    .removeOnPreferenceChangeListener(demoModeChanged);
         super.onStop();
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        Timber.i("receiviing new intent");
+        //TODO handle intent data to open book
+        super.onNewIntent(intent);
+        openReaderFromDownloadNoificationIntent(intent);
     }
 
     @Override
@@ -195,6 +206,9 @@ public class StartActivity extends BaseActivity
 
         helpItem = new NavigationDrawerFragment.ClickItem(getString(R.string.drawer_help), R.drawable.ic_help);
         helpItem.setAccessibilty(false);
+        privacyTermsItem = new NavigationDrawerFragment.ClickItem(getString(R.string.drawer_privacy_terms),
+                                                                  R.drawable.ic_security_black_24dp);
+        helpItem.setAccessibilty(false);
         imprintItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_imprint),
                                                                   R.drawable.ic_imprint,
                                                                   ImprintFragment.class);
@@ -207,6 +221,7 @@ public class StartActivity extends BaseActivity
         mDrawerFragment.addItem(helpItem);
         mDrawerFragment.addDividerItem();
         mDrawerFragment.addItem(imprintItem);
+        mDrawerFragment.addItem(privacyTermsItem);
         // mDrawerFragment.addItem(settingsItem);
         mDrawerFragment.addItem(preferencesItem);
 
@@ -224,6 +239,7 @@ public class StartActivity extends BaseActivity
 
         if (TazSettings.getInstance(this)
                        .getPrefBoolean(TazSettings.PREFKEY.FISRTSTART, true)) {
+            SyncJob.scheduleJobImmediately(false);
             TazSettings.getInstance(this)
                        .setPref(TazSettings.PREFKEY.FISRTSTART, false);
             TazSettings.getInstance(this)
@@ -238,9 +254,24 @@ public class StartActivity extends BaseActivity
                                 .show(getSupportFragmentManager(), DIALOG_USER_REENTER);
         }
 
-        if (TazSettings.getInstance(this)
-                       .getSyncServiceNextRun() == 0) SyncHelper.requestSync(this);
+        //Todo run Sync on first start
+//        if (TazSettings.getInstance(this)
+//                       .getSyncServiceNextRun() == 0) SyncHelper.requestSync(this);
+        //Intent intent = getIntent();
+        openReaderFromDownloadNoificationIntent(getIntent());
+    }
 
+    private void openReaderFromDownloadNoificationIntent(Intent intent){
+        if (intent != null) {
+            if (intent.hasExtra(NotificationUtils.NOTIFICATION_EXTRA_TYPE_ID) && intent.hasExtra(NotificationUtils.NOTIFICATION_EXTRA_BOOKID)) {
+                String bookId = intent.getStringExtra(NotificationUtils.NOTIFICATION_EXTRA_BOOKID);
+                int type = intent.getIntExtra(NotificationUtils.NOTIFICATION_EXTRA_TYPE_ID,-1);
+                Paper paper = Paper.getPaperWithBookId(this,bookId);
+                if (type == NotificationUtils.DOWNLOAD_NOTIFICTAION_ID && paper != null){
+                    openReader(paper.getId());
+                }
+            }
+        }
     }
 
     @Override
@@ -283,7 +314,10 @@ public class StartActivity extends BaseActivity
         Timber.i("");
         if (helpItem.equals(item)) {
             showHelpDialog(HelpDialog.HELP_LIBRARY);
+        } else if (privacyTermsItem.equals(item)) {
+            showHelpDialog(HelpDialog.HELP_PRIVACY);
         }
+
     }
 
     @Override
@@ -383,12 +417,13 @@ public class StartActivity extends BaseActivity
                 Paper paper = Paper.getPaperWithId(this, paperId);
                 if (paper == null) throw new Paper.PaperNotFoundException();
                 try {
-                    DownloadHelper.enquePaper(this, paperId);
+                    DownloadManager.getInstance(this)
+                                   .enquePaper(paperId, false);
                 } catch (IllegalArgumentException e) {
                     showDownloadManagerErrorDialog();
-                } catch (DownloadHelper.DownloadNotAllowedException e) {
+                } catch (DownloadManager.DownloadNotAllowedException e) {
                     showDownloadErrorDialog(paper.getTitelWithDate(this), getString(R.string.message_download_not_allowed), e);
-                } catch (DownloadHelper.NotEnoughSpaceException e) {
+                } catch (DownloadManager.NotEnoughSpaceException e) {
                     showDownloadErrorDialog(paper.getTitelWithDate(this), getString(R.string.message_not_enough_space), e);
                 }
             } catch (Paper.PaperNotFoundException e) {
@@ -561,9 +596,10 @@ public class StartActivity extends BaseActivity
                         toggleWaitDialog(DIALOG_WAIT + openPaper.getBookId());
                         //DownloadHelper downloadHelper = new DownloadHelper(this);
                         try {
-                            DownloadHelper.enqueResource(this, Resource.getWithKey(this, openPaper.getResource()));
+                            DownloadManager.getInstance(this)
+                                           .enqueResource(Resource.getWithKey(this, openPaper.getResource()), false);
                             retainDataFragment.openPaperWaitingForRessource = id;
-                        } catch (DownloadHelper.NotEnoughSpaceException e) {
+                        } catch (DownloadManager.NotEnoughSpaceException e) {
                             showDownloadErrorDialog(getString(R.string.message_resourcedownload_error),
                                                     getString(R.string.message_not_enough_space),
                                                     e);
@@ -589,6 +625,16 @@ public class StartActivity extends BaseActivity
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onPaperDownloadFinished(SyncErrorEvent event) {
+        Snacky.builder()
+              .setView(findViewById(R.id.content_frame))
+              .setDuration(Snacky.LENGTH_SHORT)
+              .setText(event.getMessage())
+              .error()
+              .show();
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
     public void onPaperDownloadFinished(PaperDownloadFinishedEvent event) {
         Timber.d("event: %s", event);
         if (retainDataFragment.useOpenPaperafterDownload) {
@@ -604,7 +650,9 @@ public class StartActivity extends BaseActivity
             Paper paper = Paper.getPaperWithId(this, event.getPaperId());
             if (paper == null) throw new Paper.PaperNotFoundException();
             showDownloadErrorDialog(paper.getTitelWithDate(this), null, event.getException());
-            NotificationHelper.cancelDownloadErrorNotification(this, event.getPaperId());
+
+            //NotificationHelper.cancelDownloadErrorNotification(this, event.getPaperId());
+            new NotificationUtils(this).removeDownloadNotification(event.getPaperId());
         } catch (Paper.PaperNotFoundException e) {
             e.printStackTrace();
         }
@@ -736,7 +784,8 @@ public class StartActivity extends BaseActivity
                 Calendar endCal = Calendar.getInstance();
                 startCal.set(year, Calendar.JANUARY, 1);
                 endCal.set(year, Calendar.DECEMBER, 31);
-                SyncHelper.requestSync(this, startCal, endCal);
+                SyncJob.scheduleJobImmediately(true, startCal, endCal);
+                //SyncHelper.requestSync(this, startCal, endCal);
             }
         } else if (DIALOG_ARCHIVE_MONTH.equals(tag)) {
             int year = arguments.getInt(ARGUMENT_ARCHIVE_YEAR);
@@ -746,7 +795,8 @@ public class StartActivity extends BaseActivity
             startCal.set(year, month, 1);
             int lastDayOfMont = startCal.getActualMaximum(Calendar.DAY_OF_MONTH);
             endCal.set(year, month, lastDayOfMont);
-            SyncHelper.requestSync(this, startCal, endCal);
+            //SyncHelper.requestSync(this, startCal, endCal);
+            SyncJob.scheduleJobImmediately(true, startCal, endCal);
         }
     }
 

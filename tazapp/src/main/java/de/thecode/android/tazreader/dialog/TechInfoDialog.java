@@ -11,8 +11,7 @@ import android.widget.TextView;
 import de.mateware.dialog.DialogCustomView;
 import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.R;
-
-import org.acra.util.Installation;
+import de.thecode.android.tazreader.secure.Installation;
 
 import java.util.ArrayList;
 import java.util.Arrays;

@@ -28,7 +28,7 @@ import de.thecode.android.tazreader.download.PaperDeletedEvent;
 import de.thecode.android.tazreader.provider.TazProvider;
 import de.thecode.android.tazreader.reader.index.IIndexItem;
 import de.thecode.android.tazreader.utils.PlistHelper;
-import de.thecode.android.tazreader.utils.StorageHelper;
+import de.thecode.android.tazreader.utils.StorageManager;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -63,6 +63,7 @@ public class Paper {
     public static final  String STORE_KEY_CURRENTPOSITION     = "currentPosition";
     private static final String STORE_KEY_POSITION_IN_ARTICLE = "positionInArticle";
     private static final String STORE_KEY_RESOURCE_PARTNER    = "resource";
+    private static final String STORE_KEY_AUTO_DOWNLOADED    = "auto_download";
 
     public static       String TABLE_NAME        = "PAPER";
     public static final Uri    CONTENT_URI       = Uri.parse("content://" + TazProvider.AUTHORITY + "/" + TABLE_NAME);
@@ -377,9 +378,8 @@ public class Paper {
     }
 
     public long getDateInMillis() throws ParseException {
-        SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy", Locale.GERMANY);
-        return sdf.parse(getDate())
-                  .getTime();
+        return new SimpleDateFormat("yyyy-MM-dd", Locale.GERMANY).parse(getDate())
+                                                                 .getTime();
     }
 
     public void setDate(String date) {
@@ -1103,10 +1103,10 @@ public class Paper {
 
             @Override
             public Intent getShareIntent(Context context) {
+                StorageManager storage = StorageManager.getInstance(context);
 
-
-                File pdfFile = new File(StorageHelper.getPaperDirectory(context, getPaper()), getKey());
-                File papersDir = StorageHelper.get(context, StorageHelper.PAPER);
+                File pdfFile = new File(storage.getPaperDirectory(getPaper()), getKey());
+                File papersDir = storage.get(StorageManager.PAPER);
 
                 try {
                     String pagePath = pdfFile.getCanonicalPath()
@@ -1544,9 +1544,19 @@ public class Paper {
         return (TextUtils.isEmpty(result)) ? "0" : result;
     }
 
+    public boolean saveAutoDownloaded(Context context, boolean isAutoDownload) {
+        return saveStoreValue(context, STORE_KEY_AUTO_DOWNLOADED, String.valueOf(isAutoDownload));
+    }
+
+    public boolean isAutoDownloaded(Context context) {
+        String resultString = getStoreValue(context, STORE_KEY_AUTO_DOWNLOADED);
+        return Boolean.parseBoolean(resultString);
+    }
+
     public boolean saveResourcePartner(Context context, Resource resource) {
         return saveStoreValue(context, STORE_KEY_RESOURCE_PARTNER, resource.getKey());
     }
+
 
     public Resource getResourcePartner(Context context) {
         String resource = getStoreValue(context, STORE_KEY_RESOURCE_PARTNER);
@@ -1570,8 +1580,8 @@ public class Paper {
     }
 
     public void delete(Context context) {
-
-        StorageHelper.deletePaperDir(context, this);
+        StorageManager storage = StorageManager.getInstance(context);
+        storage.deletePaperDir(this);
         Picasso.with(context)
                .invalidate(getImage());
         if (isImported() || isKiosk()) {
@@ -1581,7 +1591,8 @@ public class Paper {
             setDownloadId(0);
             setDownloaded(false);
             setHasupdate(false);
-            setValidUntil(0);
+            if (BuildConfig.BUILD_TYPE.equals("staging"))
+                setValidUntil(0); //Wunsch von Ralf, damit besser im Staging getestet werden kann
             int affected = context.getContentResolver()
                                   .update(ContentUris.withAppendedId(Paper.CONTENT_URI, getId()), getContentValues(), null, null);
             if (affected >= 1) EventBus.getDefault()

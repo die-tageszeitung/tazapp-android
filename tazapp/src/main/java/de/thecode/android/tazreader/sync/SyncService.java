@@ -15,14 +15,12 @@ import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
 import de.thecode.android.tazreader.BuildConfig;
-import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Publication;
 import de.thecode.android.tazreader.data.Resource;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.download.CoverDownloadedEvent;
-import de.thecode.android.tazreader.download.DownloadHelper;
-import de.thecode.android.tazreader.download.NotificationHelper;
+import de.thecode.android.tazreader.download.DownloadManager;
 import de.thecode.android.tazreader.okhttp3.OkHttp3Helper;
 import de.thecode.android.tazreader.okhttp3.RequestHelper;
 import de.thecode.android.tazreader.start.ScrollToPaperEvent;
@@ -90,8 +88,8 @@ public class SyncService extends IntentService {
         }
 
         // If ForceSync it's now done
-        TazSettings.getInstance(this)
-                   .setPref(TazSettings.PREFKEY.FORCESYNC, false);
+//        TazSettings.getInstance(this)
+//                   .setPref(TazSettings.PREFKEY.FORCESYNC, false);
 
         // AutoDelete
         if (TazSettings.getInstance(this)
@@ -130,10 +128,10 @@ public class SyncService extends IntentService {
             }
         }
 
-        long nextPlannedRunAt = TazSettings.getInstance(this)
-                                           .getSyncServiceNextRun();
-        if (nextPlannedRunAt <= System.currentTimeMillis()) nextPlannedRunAt = Long.MAX_VALUE;
-        minDataValidUntil = Math.min(nextPlannedRunAt, minDataValidUntil);
+//        long nextPlannedRunAt = TazSettings.getInstance(this)
+//                                           .getSyncServiceNextRun();
+//        if (nextPlannedRunAt <= System.currentTimeMillis()) nextPlannedRunAt = Long.MAX_VALUE;
+//        minDataValidUntil = Math.min(nextPlannedRunAt, minDataValidUntil);
 
         SyncHelper.setAlarmManager(this, tomorrowPaper != null, minDataValidUntil);
 
@@ -212,12 +210,12 @@ public class SyncService extends IntentService {
 
     private void downloadPaper(Paper paper) {
         try {
-            DownloadHelper.enquePaper(this, paper.getId());
-        } catch (IllegalArgumentException | DownloadHelper.DownloadNotAllowedException | Paper.PaperNotFoundException ignored) {
-        } catch (DownloadHelper.NotEnoughSpaceException e) {
-            NotificationHelper.showDownloadErrorNotification(this,
-                                                             this.getString(R.string.message_not_enough_space),
-                                                             paper.getId());
+            DownloadManager.getInstance(this)
+                           .enquePaper(paper.getId(), false);
+        } catch (IllegalArgumentException | DownloadManager.DownloadNotAllowedException | Paper.PaperNotFoundException ignored) {
+        } catch (DownloadManager.NotEnoughSpaceException e) {
+
+            //NotificationHelper.showDownloadErrorNotification(this,this.getString(R.string.message_not_enough_space), paper.getId());
         }
     }
 
@@ -227,8 +225,9 @@ public class SyncService extends IntentService {
             Resource latestResource = Resource.getWithKey(this, latestPaper.getResource());
             if (latestResource != null && !latestResource.isDownloaded() && !latestResource.isDownloading()) {
                 try {
-                    DownloadHelper.enqueResource(this, latestResource);
-                } catch (DownloadHelper.NotEnoughSpaceException e) {
+                    DownloadManager.getInstance(this)
+                                   .enqueResource(latestResource, false);
+                } catch (DownloadManager.NotEnoughSpaceException e) {
                     Timber.e(e);
                 }
             }

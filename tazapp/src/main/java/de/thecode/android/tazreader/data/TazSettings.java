@@ -8,6 +8,7 @@ import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
 
+import com.crashlytics.android.core.CrashlyticsCore;
 import com.scottyab.aescrypt.AESCrypt;
 
 import de.thecode.android.tazreader.secure.SimpleCrypto;
@@ -48,7 +49,7 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
         public static final  String NOTIFICATION_SOUND_PUSH     = "ringtone_push";
         public static final  String VIBRATE                     = "vibrate";
         public static final  String NAVDRAWERLEARNED            = "navdrawerlearned";
-        public static final  String FORCESYNC                   = "forcesync";
+        // public static final  String FORCESYNC                   = "forcesync";
         public static final  String PAPERMIGRATEFROM            = "paperMigrateFrom";
         //        public static final String PAPERMIGRATERUNNING = "paperMigrateRunning";
         public static final  String PAPERMIGRATEDIDS            = "paperMigratedIds";
@@ -60,10 +61,11 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
         public static final  String USER                        = "user";
         public static final  String PASS                        = "pass";
         public static final  String USERMIGRATIONNOTIFICATION   = "usermigrationnotification";
-        private static final String SYNCSERVICENEXTRUN          = "syncServiceNextRun";
+        // private static final String SYNCSERVICENEXTRUN          = "syncServiceNextRun";
         public static final  String DEMOMODE                    = "demoMode";
         public static final  String ISCHANGEARTICLE             = "isChangeArtikel";
         public static final  String ISPAGING                    = "isPaging";
+        public static final  String ISJUSTIFY                   = "isJustify";
         public static final  String ISSCROLLTONEXT              = "isScrollToNext";
         public static final  String PAGETAPTOARTICLE            = "pageTapToArticle";
         public static final  String PAGEDOUBLETAPZOOM           = "pageDoubleTapZoom";
@@ -72,11 +74,13 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
         public static final  String FIREBASETOKEN               = "firebaseToken";
         private static final String FIREBASETOKENOLD            = "firebaseTokenOld";
         public static final  String NOTIFICATION_PUSH           = "notification_push";
+        public static final  String CRASHLYTICS_ALWAYS_SEND     = "always_send_reports_opt_in";
     }
 
 
     private static TazSettings       instance;
     private        SharedPreferences sharedPreferences;
+    private        SharedPreferences crashlyticsSharedPreferences;
 
     public static synchronized TazSettings getInstance(Context context) {
         if (instance == null) instance = new TazSettings(context.getApplicationContext());
@@ -85,6 +89,7 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
 
     private TazSettings(Context context) {
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        crashlyticsSharedPreferences = context.getSharedPreferences("com.crashlytics.sdk.android.crashlytics-core:"+ CrashlyticsCore.class.getName(), Context.MODE_PRIVATE);
         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
     }
 
@@ -228,6 +233,16 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
         //PushRestApiJob.scheduleJob();
     }
 
+    public void setCrashlyticsAlwaysSend(boolean alwaysSend) {
+        crashlyticsSharedPreferences.edit()
+                                    .putBoolean(PREFKEY.CRASHLYTICS_ALWAYS_SEND, alwaysSend)
+                                    .apply();
+    }
+
+    public boolean getCrashlyticsAlwaysSend() {
+        return crashlyticsSharedPreferences.getBoolean(PREFKEY.CRASHLYTICS_ALWAYS_SEND, false);
+    }
+
     public SharedPreferences getSharedPreferences() {
         return sharedPreferences;
     }
@@ -237,15 +252,15 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
     }
 
 
-    public long getSyncServiceNextRun() {
-        return sharedPreferences.getLong(PREFKEY.SYNCSERVICENEXTRUN, 0);
-    }
-
-    public void setSyncServiceNextRun(long timeInMillis) {
-        sharedPreferences.edit()
-                         .putLong(PREFKEY.SYNCSERVICENEXTRUN, timeInMillis)
-                         .apply();
-    }
+//    public long getSyncServiceNextRun() {
+//        return sharedPreferences.getLong(PREFKEY.SYNCSERVICENEXTRUN, 0);
+//    }
+//
+//    public void setSyncServiceNextRun(long timeInMillis) {
+//        sharedPreferences.edit()
+//                         .putLong(PREFKEY.SYNCSERVICENEXTRUN, timeInMillis)
+//                         .apply();
+//    }
 
     public boolean isDemoMode() {
         return sharedPreferences.getBoolean(PREFKEY.DEMOMODE, true);

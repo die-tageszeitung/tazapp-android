@@ -34,7 +34,7 @@ import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Store;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.dialog.HelpDialog;
-import de.thecode.android.tazreader.download.NotificationHelper;
+import de.thecode.android.tazreader.notifications.NotificationUtils;
 import de.thecode.android.tazreader.reader.article.ArticleFragment;
 import de.thecode.android.tazreader.reader.article.TopLinkFragment;
 import de.thecode.android.tazreader.reader.index.IIndexItem;
@@ -42,7 +42,7 @@ import de.thecode.android.tazreader.reader.index.IndexFragment;
 import de.thecode.android.tazreader.reader.index.PageIndexFragment;
 import de.thecode.android.tazreader.reader.page.PagesFragment;
 import de.thecode.android.tazreader.utils.BaseActivity;
-import de.thecode.android.tazreader.utils.StorageHelper;
+import de.thecode.android.tazreader.utils.StorageManager;
 import de.thecode.android.tazreader.utils.TintHelper;
 
 import org.greenrobot.eventbus.Subscribe;
@@ -90,7 +90,7 @@ public class ReaderActivity extends BaseActivity
     ProgressBar  mLoadingProgress;
 
     FragmentManager mFragmentManager;
-    StorageHelper   mStorage;
+    StorageManager  mStorage;
 
     //ReaderDataFragment retainDataFragment;
     ReaderDataFragment retainDataFragmentNew;
@@ -107,13 +107,15 @@ public class ReaderActivity extends BaseActivity
 
         //Orientation.setActivityOrientationFromPrefs(this);
 
+        mStorage = StorageManager.getInstance(this);
+
         long paperId;
         if (!getIntent().hasExtra(KEY_EXTRA_PAPER_ID))
             throw new IllegalStateException("Activity Reader has to be called with extra PaperId");
         else paperId = getIntent().getLongExtra(KEY_EXTRA_PAPER_ID, -1);
         if (paperId == -1) throw new IllegalStateException("paperId must not be " + paperId);
 
-        NotificationHelper.removeNotifiedPaperId(this, paperId);
+        new NotificationUtils(this).removeDownloadNotification(paperId);
 
         setContentView(R.layout.activity_reader);
 

@@ -7,7 +7,6 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
 
     <supports-screens android:anyDensity="true"/>
@@ -61,8 +60,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".reader.ReaderActivity"
-                  android:parentActivityName="de.thecode.android.tazreader.start.StartActivity"
-                  tools:targetApi="jelly_bean">
+            android:parentActivityName="de.thecode.android.tazreader.start.StartActivity">
             <!-- Parent activity meta-data to support 4.0 and lower -->
             <meta-data
                     android:name="android.support.PARENT_ACTIVITY"
@@ -105,35 +103,6 @@
         </activity>
         <activity android:name=".migration.MigrationActivity"/>
 
-        <service
-                android:name=".download.DownloadFinishedResourceService"
-                android:exported="false"/>
-        <service
-                android:name=".download.DownloadFinishedPaperService"
-                android:exported="false"/>
-        <service
-                android:name=".sync.SyncService"
-                android:exported="false"/>
-
-        <receiver android:name=".service.TazBootCompleteReceiver">
-            <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED"/>
-
-                <category android:name="android.intent.category.HOME"/>
-            </intent-filter>
-        </receiver>
-
-        <receiver android:name=".download.NotificationBroadcastReceiver">
-            <intent-filter>
-                <action android:name="${applicationId}.notificationclicked">
-                </action>
-            </intent-filter>
-            <intent-filter>
-                <action android:name="${applicationId}.notificationdeleted">
-                </action>
-            </intent-filter>
-        </receiver>
-
         <provider
                 android:name="de.thecode.android.tazreader.provider.TazProvider"
                 android:authorities="${applicationId}.provider"
@@ -172,20 +141,10 @@
                 <action android:name="com.google.firebase.MESSAGING_EVENT"/>
             </intent-filter>
         </service>
-
-        <activity
-                android:name=".acra.NewTazCrashDialog"
-                android:excludeFromRecents="true"
-                android:finishOnTaskLaunch="true"
-                android:launchMode="singleInstance" />
-
-        <!--<activity-->
-                <!--android:name=".acra.TazCrashDialog"-->
-                <!--android:excludeFromRecents="true"-->
-                <!--android:finishOnTaskLaunch="true"-->
-                <!--android:theme="@style/AcraDialog"-->
-                <!--android:launchMode="singleInstance" />-->
-
+        <meta-data
+                android:name="io.fabric.ApiKey"
+                android:value="${fabricApiKey}"
+                />
     </application>
 
 </manifest>

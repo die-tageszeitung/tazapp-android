@@ -69,8 +69,8 @@ public class MigrationActivity extends BaseActivity implements MigrationWorkerFr
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
         if (requestCode == ImportActivity.REQUEST_CODE_IMPORT_ACTIVITY) {
-            TazSettings.getInstance(this)
-                       .setPref(TazSettings.PREFKEY.FORCESYNC, true);
+//            TazSettings.getInstance(this)
+//                       .setPref(TazSettings.PREFKEY.FORCESYNC, true);
             finishActivity();
         }
     }

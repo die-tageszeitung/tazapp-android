@@ -10,8 +10,7 @@ import de.mateware.dialog.Dialog;
 import de.mateware.dialog.listener.DialogButtonListener;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
-import de.thecode.android.tazreader.data.TazSettings;
-import de.thecode.android.tazreader.download.DownloadHelper;
+import de.thecode.android.tazreader.download.DownloadManager;
 import de.thecode.android.tazreader.utils.BaseActivity;
 
 import java.io.File;
@@ -107,8 +106,9 @@ public class ImportActivity extends BaseActivity implements DialogButtonListener
                     if (downloadUris != null) {
                         for (Uri downloadUri : downloadUris) {
                             try {
-                                DownloadHelper.enquePaper(this, ContentUris.parseId(downloadUri));
-                            } catch (Paper.PaperNotFoundException | DownloadHelper.DownloadNotAllowedException | DownloadHelper.NotEnoughSpaceException e) {
+                                DownloadManager.getInstance(this)
+                                               .enquePaper(ContentUris.parseId(downloadUri),false);
+                            } catch (Paper.PaperNotFoundException | DownloadManager.DownloadNotAllowedException | DownloadManager.NotEnoughSpaceException e) {
                                 Timber.e(e);
                                 //AnalyticsWrapper.getInstance().logException(e);
                             }
@@ -183,7 +183,7 @@ public class ImportActivity extends BaseActivity implements DialogButtonListener
         } else {
             resultIntent.putExtra(EXTRA_RESULT_URIS, paperUris);
             setResult(RESULT_OK, resultIntent);
-            TazSettings.getInstance(this).setPref(TazSettings.PREFKEY.FORCESYNC, true);
+            //TazSettings.getInstance(this).setPref(TazSettings.PREFKEY.FORCESYNC, true);
         }
         finish();
     }

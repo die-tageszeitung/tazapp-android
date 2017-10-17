@@ -40,7 +40,7 @@ import de.thecode.android.tazreader.reader.ReaderActivity.DIRECTIONS;
 import de.thecode.android.tazreader.reader.ReaderTtsFragment;
 import de.thecode.android.tazreader.reader.article.ArticleWebView.ArticleWebViewCallback;
 import de.thecode.android.tazreader.reader.index.IIndexItem;
-import de.thecode.android.tazreader.utils.StorageHelper;
+import de.thecode.android.tazreader.utils.StorageManager;
 import de.thecode.android.tazreader.utils.TintHelper;
 import de.thecode.android.tazreader.widget.ReaderButton;
 import de.thecode.android.tazreader.widget.ShareButton;
@@ -226,10 +226,10 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
     }
 
     private void loadArticleInWebview(Context context) {
-                String baseUrl = "file://" + StorageHelper.getPaperDirectory(context,
-                                                                             mArticle.getPaper()) + "/" + mArticle.getKey() + "?position=" + mPosition;
-                mWebView.loadDataWithBaseURL(baseUrl, getHtml(context), "text/html", "UTF-8", null);
-                mShareButton.setCallback(mArticle);
+        String baseUrl = "file://" + StorageManager.getInstance(context)
+                                                   .getPaperDirectory(mArticle.getPaper()) + "/" + mArticle.getKey() + "?position=" + mPosition;
+        mWebView.loadDataWithBaseURL(baseUrl, getHtml(context), "text/html", "UTF-8", null);
+        mShareButton.setCallback(mArticle);
     }
 
 
@@ -558,9 +558,9 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
         @JavascriptInterface
         public String getAbsoluteResourcePath() {
-            File resourceDir = StorageHelper.getResourceDirectory(getContext(),
-                                                                  mArticle.getPaper()
-                                                                          .getResource());
+            File resourceDir = StorageManager.getInstance(getContext())
+                                             .getResourceDirectory(mArticle.getPaper()
+                                                                           .getResource());
             return "file://" + resourceDir.getAbsolutePath() + "/";
         }
 
@@ -614,11 +614,12 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
 
     public String getHtml(Context context) {
-        File articleFile = new File(StorageHelper.getPaperDirectory(context, mArticle.getPaper())
-                                                 .getAbsolutePath(), mArticle.getKey());
-        File resourceDir = StorageHelper.getResourceDirectory(context,
-                                                              mArticle.getPaper()
-                                                                      .getResource());
+        File articleFile = new File(StorageManager.getInstance(context)
+                                                  .getPaperDirectory(mArticle.getPaper())
+                                                  .getAbsolutePath(), mArticle.getKey());
+        File resourceDir = StorageManager.getInstance(context)
+                                         .getResourceDirectory(mArticle.getPaper()
+                                                                       .getResource());
 
         String resourceReplacement = "file://" + resourceDir.getAbsolutePath() + "/";
         String tazapiReplacement = "file:///android_asset/js/TAZAPI.js";

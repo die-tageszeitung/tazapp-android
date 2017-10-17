@@ -7,7 +7,7 @@ import android.content.Intent;
 import com.dd.plist.PropertyListFormatException;
 
 import de.thecode.android.tazreader.data.Paper;
-import de.thecode.android.tazreader.utils.StorageHelper;
+import de.thecode.android.tazreader.utils.StorageManager;
 
 import org.greenrobot.eventbus.EventBus;
 import org.xml.sax.SAXException;
@@ -78,10 +78,11 @@ public class DownloadFinishedPaperService extends IntentService implements Unzip
             }
             try {
                 Timber.i("%s", paper);
+                StorageManager storageManager = StorageManager.getInstance(this);
                 currentPaperId = paperId;
                 currentUnzipPaper = new UnzipPaper(paper,
-                                                   StorageHelper.getDownloadFile(this, paper),
-                                                   StorageHelper.getPaperDirectory(this, paper),
+                                                   storageManager.getDownloadFile(paper),
+                                                   storageManager.getPaperDirectory(paper),
                                                    true);
                 currentUnzipPaper.getUnzipFile()
                                  .addProgressListener(this);
@@ -116,7 +117,8 @@ public class DownloadFinishedPaperService extends IntentService implements Unzip
                                     null);
 
         if (exception == null) {
-            NotificationHelper.showDownloadFinishedNotification(this, paper.getId());
+
+            //NotificationHelper.showDownloadFinishedNotification(this, paper.getId());
             EventBus.getDefault()
                     .post(new PaperDownloadFinishedEvent(paper.getId()));
 
@@ -125,7 +127,8 @@ public class DownloadFinishedPaperService extends IntentService implements Unzip
         } else {
             Timber.e(exception);
             //AnalyticsWrapper.getInstance().logException(exception);
-            NotificationHelper.showDownloadErrorNotification(this, null, paper.getId());
+            //
+            //NotificationHelper.showDownloadErrorNotification(this, null, paper.getId());
             EventBus.getDefault()
                     .post(new PaperDownloadFailedEvent(paper.getId(), exception));
         }

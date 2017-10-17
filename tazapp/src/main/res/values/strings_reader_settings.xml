@@ -6,6 +6,7 @@
     <string name="isscroll">Blättern</string>
     <string name="ispaging">Tippen am Rand</string>
     <string name="isscrolltonext">Weiterscrollen</string>
+    <string name="isjustify">Blocksatz</string>
     <string name="fullscreen">Vollbild</string>
     <string name="header_screen">BILDSCHIRM</string>
     <string name="screen_active">beim lesen aktiv lassen</string>
