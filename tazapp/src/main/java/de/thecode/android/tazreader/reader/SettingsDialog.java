@@ -102,6 +102,16 @@ public class SettingsDialog extends DialogCustomView {
             }
         });
 
+        SwitchCompat switchIsJustify = (SwitchCompat) view.findViewById(R.id.switchIsJustify);
+        switchIsJustify.setChecked(TazSettings.getInstance(getContext()).getPrefBoolean(TazSettings.PREFKEY.ISJUSTIFY,false));
+        switchIsJustify.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (mCallback != null) mCallback.onConfigurationChange(TazSettings.PREFKEY.ISJUSTIFY, isChecked);
+            }
+        });
+
+
         SwitchCompat switchFullscreen = (SwitchCompat) view.findViewById(R.id.switchFullscreen);
         switchFullscreen.setVisibility(View.GONE);
 //        switchFullscreen.setChecked(isFullscreen);
