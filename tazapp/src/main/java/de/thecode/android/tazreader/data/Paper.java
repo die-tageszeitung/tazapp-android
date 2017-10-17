@@ -1591,7 +1591,6 @@ public class Paper {
             setDownloadId(0);
             setDownloaded(false);
             setHasupdate(false);
-            setValidUntil(0);
             int affected = context.getContentResolver()
                                   .update(ContentUris.withAppendedId(Paper.CONTENT_URI, getId()), getContentValues(), null, null);
             if (affected >= 1) EventBus.getDefault()

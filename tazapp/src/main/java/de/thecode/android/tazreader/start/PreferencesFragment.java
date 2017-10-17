@@ -3,6 +3,7 @@ package de.thecode.android.tazreader.start;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.preference.Preference;
+import android.support.v7.preference.PreferenceScreen;
 import android.support.v7.preference.SwitchPreferenceCompat;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -52,7 +53,13 @@ public class PreferencesFragment extends PreferenceFragmentCompat {
     @Override
     public void onCreatePreferencesFix(Bundle savedInstanceState, String rootKey) {
         addPreferencesFromResource(R.xml.app_preferences);
+        PreferenceScreen mainPreferenceScreen = (PreferenceScreen) findPreference("mainPreferenceScreen");
         pushPreferenceCat = findPreference("pushCat");
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            Preference downloadNotificationCat = findPreference("downloadNotificationCat");
+            mainPreferenceScreen.removePreference(downloadNotificationCat);
+
+        }
         crashlyticsAlwaysSendPreference = (SwitchPreferenceCompat) findPreference(getString(R.string.pref_key_crashlytics_always_send));
         crashlyticsAlwaysSendPreference.setChecked(TazSettings.getInstance(getContext())
                                                               .getCrashlyticsAlwaysSend());
