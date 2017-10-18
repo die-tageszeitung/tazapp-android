@@ -581,7 +581,7 @@ public class StartActivity extends BaseActivity
             openPaper = Paper.getPaperWithId(this, id);
             if (openPaper == null) throw new Paper.PaperNotFoundException();
             Resource paperResource = openPaper.getResourcePartner(this);
-
+            //TODO Check for null resource and handle it, ask for sync / delete and redownload
             if (paperResource.isDownloaded()) {
                 Timber.i("start reader for paper: %s", openPaper);
                 Intent intent = new Intent(this, ReaderActivity.class);
