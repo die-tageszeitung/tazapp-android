@@ -106,5 +106,7 @@
     <string name="dialog_techinfo_installations_id">Installations ID</string>
     <string name="sync_job_plist_empty">Fehler beim Laden der Daten</string>
     <string name="notification_channel_download">Downloads</string>
+    <string name="dialog_meassage_loading_missing_resource">Lade fehlende Ressourcen für die Ausgabe herunter, bitte warten…</string>
+    <string name="dialog_message_delete_wait">Lösche Ausgabe(n), bitte warten…</string>
 
 </resources>

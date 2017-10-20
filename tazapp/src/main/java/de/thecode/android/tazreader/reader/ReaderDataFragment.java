@@ -5,6 +5,7 @@ import android.text.TextUtils;
 
 import de.mateware.datafragment.DataFragmentBase;
 import de.thecode.android.tazreader.data.Paper;
+import de.thecode.android.tazreader.data.Resource;
 
 import org.apache.commons.lang3.StringUtils;
 import org.greenrobot.eventbus.EventBus;
@@ -17,6 +18,7 @@ import timber.log.Timber;
 public class ReaderDataFragment extends DataFragmentBase {
 
     private Paper   _paper;
+    private Resource _resource;
     private String  mCurrentKey;
     //private String  mPosition;
     private boolean filterBookmarks;
@@ -83,6 +85,14 @@ public class ReaderDataFragment extends DataFragmentBase {
         } catch (Exception e) {
             Timber.w(e);
         }
+    }
+
+    public void setResource(Resource _resource) {
+        this._resource = _resource;
+    }
+
+    public Resource getResource() {
+        return _resource;
     }
 
     public String getCurrentKey() {

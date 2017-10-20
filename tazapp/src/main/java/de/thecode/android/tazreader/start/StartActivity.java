@@ -133,7 +133,7 @@ public class StartActivity extends BaseActivity
         Timber.i("receiviing new intent");
         //TODO handle intent data to open book
         super.onNewIntent(intent);
-        openReaderFromDownloadNoificationIntent(intent);
+        openReaderFromDownloadNotificationIntent(intent);
     }
 
     @Override
@@ -258,16 +258,16 @@ public class StartActivity extends BaseActivity
 //        if (TazSettings.getInstance(this)
 //                       .getSyncServiceNextRun() == 0) SyncHelper.requestSync(this);
         //Intent intent = getIntent();
-        openReaderFromDownloadNoificationIntent(getIntent());
+        openReaderFromDownloadNotificationIntent(getIntent());
     }
 
-    private void openReaderFromDownloadNoificationIntent(Intent intent){
+    private void openReaderFromDownloadNotificationIntent(Intent intent) {
         if (intent != null) {
             if (intent.hasExtra(NotificationUtils.NOTIFICATION_EXTRA_TYPE_ID) && intent.hasExtra(NotificationUtils.NOTIFICATION_EXTRA_BOOKID)) {
                 String bookId = intent.getStringExtra(NotificationUtils.NOTIFICATION_EXTRA_BOOKID);
-                int type = intent.getIntExtra(NotificationUtils.NOTIFICATION_EXTRA_TYPE_ID,-1);
-                Paper paper = Paper.getPaperWithBookId(this,bookId);
-                if (type == NotificationUtils.DOWNLOAD_NOTIFICTAION_ID && paper != null){
+                int type = intent.getIntExtra(NotificationUtils.NOTIFICATION_EXTRA_TYPE_ID, -1);
+                Paper paper = Paper.getPaperWithBookId(this, bookId);
+                if (type == NotificationUtils.DOWNLOAD_NOTIFICTAION_ID && paper != null) {
                     openReader(paper.getId());
                 }
             }
@@ -557,15 +557,19 @@ public class StartActivity extends BaseActivity
                             .show(getSupportFragmentManager(), DIALOG_DOWNLOADMANAGER_ERROR);
     }
 
-
     @Override
-    public void toggleWaitDialog(String tag) {
+    public void showWaitDialog(String tag, String message) {
         DialogFragment dialog = (DialogFragment) getSupportFragmentManager().findFragmentByTag(tag);
         if (dialog == null) new DialogIndeterminateProgress.Builder().setCancelable(false)
-                                                                     .setMessage("Bitte warten...")
+                                                                     .setMessage(message)
                                                                      .buildSupport()
                                                                      .show(getSupportFragmentManager(), tag);
-        else dialog.dismiss();
+    }
+
+    @Override
+    public void hideWaitDialog(String tag) {
+        DialogFragment dialog = (DialogFragment) getSupportFragmentManager().findFragmentByTag(tag);
+        if (dialog != null) dialog.dismiss();
     }
 
     @Override
@@ -586,18 +590,19 @@ public class StartActivity extends BaseActivity
                 Timber.i("start reader for paper: %s", openPaper);
                 Intent intent = new Intent(this, ReaderActivity.class);
                 intent.putExtra(ReaderActivity.KEY_EXTRA_PAPER_ID, id);
+                intent.putExtra(ReaderActivity.KEY_EXTRA_RESOURCE_KEY, paperResource.getKey());
                 startActivity(intent);
             } else {
                 switch (Connection.getConnectionType(this)) {
                     case Connection.CONNECTION_NOT_AVAILABLE:
+                        //Todo show better dialog for user, explaining why he needs connection
                         showNoConnectionDialog();
                         break;
                     default:
-                        toggleWaitDialog(DIALOG_WAIT + openPaper.getBookId());
-                        //DownloadHelper downloadHelper = new DownloadHelper(this);
+                        showWaitDialog(DIALOG_WAIT + openPaper.getBookId(),getString(R.string.dialog_meassage_loading_missing_resource));
                         try {
                             DownloadManager.getInstance(this)
-                                           .enqueResource(Resource.getWithKey(this, openPaper.getResource()), false);
+                                           .enqueResource(paperResource, false);
                             retainDataFragment.openPaperWaitingForRessource = id;
                         } catch (DownloadManager.NotEnoughSpaceException e) {
                             showDownloadErrorDialog(getString(R.string.message_resourcedownload_error),
@@ -665,8 +670,9 @@ public class StartActivity extends BaseActivity
                 Paper waitingPaper = Paper.getPaperWithId(this, retainDataFragment.openPaperWaitingForRessource);
                 if (waitingPaper == null) throw new Paper.PaperNotFoundException();
                 if (event.getKey()
-                         .equals(waitingPaper.getResource())) {
-                    toggleWaitDialog(DIALOG_WAIT + waitingPaper.getBookId());
+                         .equals(waitingPaper.getResourcePartner(this)
+                                             .getKey())) {
+                    hideWaitDialog(DIALOG_WAIT + waitingPaper.getBookId());
                     long paperId = retainDataFragment.openPaperWaitingForRessource;
                     retainDataFragment.openPaperWaitingForRessource = -1;
                     if (event.isSuccessful()) {
@@ -902,19 +908,19 @@ public class StartActivity extends BaseActivity
         }
 
         public void deletePaper(Long... ids) {
-            if (hasCallback()) getCallback().toggleWaitDialog(DIALOG_WAIT + "delete");
+            if (hasCallback()) getCallback().showWaitDialog(DIALOG_WAIT + "delete",getString(R.string.dialog_message_delete_wait));
             new DeleteTask(getActivity()) {
 
                 @Override
                 protected void onPostError(Exception exception) {
                     Timber.e(exception);
 
-                    if (hasCallback()) getCallback().toggleWaitDialog(DIALOG_WAIT + "delete");
+                    if (hasCallback()) getCallback().hideWaitDialog(DIALOG_WAIT + "delete");
                 }
 
                 @Override
                 protected void onPostSuccess(Void aVoid) {
-                    if (hasCallback()) getCallback().toggleWaitDialog(DIALOG_WAIT + "delete");
+                    if (hasCallback()) getCallback().hideWaitDialog(DIALOG_WAIT + "delete");
                 }
             }.execute(ids);
         }

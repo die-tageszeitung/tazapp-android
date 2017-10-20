@@ -10,26 +10,28 @@ import de.thecode.android.tazreader.data.Paper;
  * Created by mate on 05.02.2015.
  */
 public interface IStartCallback {
-    public StartActivity.RetainDataFragment getRetainData();
+    StartActivity.RetainDataFragment getRetainData();
 
-    public void loadFragment(NavigationDrawerFragment.NavigationItem item);
+    void loadFragment(NavigationDrawerFragment.NavigationItem item);
 
-    public void onNavigationClick(NavigationDrawerFragment.ClickItem item);
+    void onNavigationClick(NavigationDrawerFragment.ClickItem item);
 
-    public void onUpdateDrawer(Fragment fragement);
+    void onUpdateDrawer(Fragment fragement);
 
-    public Toolbar getToolbar();
+    Toolbar getToolbar();
 
     void onSuccessfulCredentialsCheck();
 
-    public void enableDrawer(boolean bool);
+    void enableDrawer(boolean bool);
 
-    public void openReader(long paperId);
+    void openReader(long paperId);
 
-    public void startDownload(long paperId) throws Paper.PaperNotFoundException;
+    void startDownload(long paperId) throws Paper.PaperNotFoundException;
 
-    public void callArchive();
+    void callArchive();
 
-    public void toggleWaitDialog(String tag);
+    void showWaitDialog(String tag, String message);
+
+    void hideWaitDialog(String tag);
 
 }
