@@ -94,12 +94,13 @@ public class IndexFragment extends BaseFragment {
         context.getResources()
                .getValue(R.dimen.icon_button_alpha, outValue, true);
         iconButtonAlpha = outValue.getFloat();
+        init(mReaderCallback.getPaper());
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        init(mReaderCallback.getPaper());
+        //init(mReaderCallback.getPaper());
         adapter = new IndexRecyclerViewAdapter();
         adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
             @Override

@@ -11,6 +11,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
@@ -91,7 +92,7 @@ public class PageIndexFragment extends BaseFragment {
                 return bitmap.getByteCount() / 1024;
             }
         };
-        init(mReaderCallback.getPaper());
+        //init(mReaderCallback.getPaper());
     }
 
     @Override
@@ -113,9 +114,14 @@ public class PageIndexFragment extends BaseFragment {
                 PageIndexFragment.this.onItemClick(position);
             }
         };
-
+        adapter = new PageIndexRecylerAdapter();
         mRecyclerView.setAdapter(adapter);
         return view;
+    }
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        init();
     }
 
     @Override
@@ -138,11 +144,12 @@ public class PageIndexFragment extends BaseFragment {
 
         mPlaceHolderBitmap = Bitmap.createBitmap(mThumbnailImageWidth, mThumbnailImageHeight, Bitmap.Config.ARGB_8888);
         mPlaceHolderBitmap.eraseColor(getResources().getColor(R.color.pageindex_loadingpage_bitmapbackground));
+        init();
     }
 
-
-    private void init(Paper paper) {
-        Timber.d("initialising PageIndexFragment with paper: %s", paper);
+    private void init() {
+        if (mReaderCallback == null || adapter == null) return;
+        this.paper = mReaderCallback.getPaper();
         index = new ArrayList<>();
         for (Source source : paper.getPlist()
                                   .getSources()) {
@@ -153,9 +160,7 @@ public class PageIndexFragment extends BaseFragment {
                 }
             }
         }
-        this.paper = paper;
-
-        adapter = new PageIndexRecylerAdapter();
+        adapter.notifyDataSetChanged();
     }
 
     public void updateCurrentPosition(String key) {
