@@ -31,6 +31,7 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import de.thecode.android.tazreader.R;
+import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Paper.Plist.Page.Article;
 import de.thecode.android.tazreader.data.Resource;
 import de.thecode.android.tazreader.data.Store;
@@ -111,9 +112,16 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
                 mPosition = getArguments().getString(ARG_POSITION);
             }
         }
-        mArticle = callback.getPaper()
-                           .getPlist()
-                           .getIndexItem(key);
+
+        Paper paper = callback.getPaper();
+        if (paper != null) {
+            mArticle = paper.getPlist()
+                            .getIndexItem(key);
+        }
+
+//        mArticle = callback.getPaper()
+//                           .getPlist()
+//                           .getIndexItem(key);
         resource = callback.getResource();
         callback.updateIndexes(key);
     }

@@ -65,14 +65,18 @@ public class PagesFragment extends AbstractContentFragment {
             _startKey = savedInstanceState.getString(ARG_STARTKEY);
         }
         pages = new ArrayList<>();
-        for (Paper.Plist.Source source : callback.getPaper()
-                                                 .getPlist()
-                                                 .getSources()) {
-            for (Paper.Plist.Book book : source.getBooks()) {
-                for (Paper.Plist.Category category : book.getCategories()) {
-                    pages.addAll(category.getPages());
+        Paper paper = callback.getPaper();
+        if (paper != null){
+            for (Paper.Plist.Source source : paper
+                                                     .getPlist()
+                                                     .getSources()) {
+                for (Paper.Plist.Book book : source.getBooks()) {
+                    for (Paper.Plist.Category category : book.getCategories()) {
+                        pages.addAll(category.getPages());
+                    }
                 }
             }
+
         }
         _adapter = new TazReaderViewAdaper();
         //setRetainInstance(true);
