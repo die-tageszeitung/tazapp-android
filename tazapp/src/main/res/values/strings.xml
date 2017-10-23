@@ -38,6 +38,8 @@
     <string name="message_not_enough_space">Nicht genügend Speicherplatz vorhanden.</string>
     <string name="message_download_not_allowed">Der Download ist nicht gestattet.</string>
     <string name="message_paper_not_found">Ausgabe nicht gefunden.</string>
+    <string name="message_paper_not_downloaded">Ausgabe nicht heruntergeladen.</string>
+    <string name="message_resource_not_downloaded_no_connection">Eine benötigte Ressource steht nicht zur Verfügung und muss heruntergeladen werden. Bitte aktivieren Sie Ihre Internetverbindung.</string>
     <string name="notification_message_install_finished">Download fertig!</string>
     <string name="notification_content_text_summary">%1$d Ausgaben heruntergeladen</string>
     <string name="notification_error_download_title">Fehler</string>

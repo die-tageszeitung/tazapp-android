@@ -81,11 +81,12 @@ public class StartActivity extends BaseActivity
     private static final String DIALOG_DOWNLOAD_MOBILE       = "dialogDownloadMobile";
     private static final String DIALOG_ACCOUNT_ERROR         = "dialogAccountError";
     private static final String DIALOG_DOWNLOADMANAGER_ERROR = "dialogDownloadManagerError";
-    private static final String DIALOG_DOWNLOAD_ERROR        = "dialogDownloadManagerError";
+    private static final String DIALOG_DOWNLOAD_ERROR        = "dialogDownloadError";
     private static final String DIALOG_ARCHIVE_YEAR          = "dialogArchiveYear";
     private static final String DIALOG_ARCHIVE_MONTH         = "dialogArchiveMonth";
     private static final String DIALOG_WAIT                  = "dialogWait";
     private static final String DIALOG_LICENCES              = "dialogLicences";
+    private static final String DIALOG_ERROR_OPEN_PAPER      = "dialogErrorOpenPaper";
 
     private static final String ARGUMENT_RESOURCE_KEY           = "resourceKey";
     private static final String ARGUMENT_RESOURCE_URL           = "resourceUrl";
@@ -420,7 +421,7 @@ public class StartActivity extends BaseActivity
                     DownloadManager.getInstance(this)
                                    .enquePaper(paperId, false);
                 } catch (IllegalArgumentException e) {
-                    showDownloadManagerErrorDialog();
+                    showErrorDialog(getString(R.string.dialog_downloadmanager_error), DIALOG_DOWNLOADMANAGER_ERROR);
                 } catch (DownloadManager.DownloadNotAllowedException e) {
                     showDownloadErrorDialog(paper.getTitelWithDate(this), getString(R.string.message_download_not_allowed), e);
                 } catch (DownloadManager.NotEnoughSpaceException e) {
@@ -479,9 +480,7 @@ public class StartActivity extends BaseActivity
                                                                  "EventBus 3",
                                                                  "Markus Junginger, greenrobot (http://greenrobot.org)",
                                                                  2016))
-                                   .addEntry(new Apache20Licence(this, "Calligraphy", "Christopher Jenkins", 2013))
                                    .addEntry(new Apache20Licence(this, "Commons IO", "The Apache Software Foundation", 2016))
-                                   .addEntry(new Apache20Licence(this, "ViewpagerIndicator", "Jordan Réjaud", 2016))
                                    .addEntry(new Apache20Licence(this, "RecyclerView-FlexibleDivider", "yqritc", 2016))
                                    .addEntry(new Agpl30Licence(this, "mupdf", "Artifex Software, Inc.", 2015))
                                    .addEntry(new BsdLicence(this, "Stetho", "Facebook, Inc.", 2015))
@@ -490,19 +489,27 @@ public class StartActivity extends BaseActivity
                                    .show(getSupportFragmentManager(), DIALOG_LICENCES);
     }
 
-    private void showAccountErrorDialog() {
-        new Dialog.Builder().setMessage(R.string.dialog_account_error)
+//    private void showAccountErrorDialog() {
+//        new Dialog.Builder().setMessage(R.string.dialog_account_error)
+//                            .setPositiveButton()
+//                            .setCancelable(false)
+//                            .buildSupport()
+//                            .show(getSupportFragmentManager(), DIALOG_ACCOUNT_ERROR);
+//    }
+
+//    private void showDownloadManagerErrorDialog() {
+//        new Dialog.Builder().setMessage(R.string.dialog_downloadmanager_error)
+//                            .setPositiveButton()
+//                            .buildSupport()
+//                            .show(getSupportFragmentManager(), DIALOG_DOWNLOADMANAGER_ERROR);
+//    }
+
+    private void showErrorDialog(String message, String tag) {
+        new Dialog.Builder().setMessage(message)
                             .setPositiveButton()
                             .setCancelable(false)
                             .buildSupport()
-                            .show(getSupportFragmentManager(), DIALOG_ACCOUNT_ERROR);
-    }
-
-    private void showDownloadManagerErrorDialog() {
-        new Dialog.Builder().setMessage(R.string.dialog_downloadmanager_error)
-                            .setPositiveButton()
-                            .buildSupport()
-                            .show(getSupportFragmentManager(), DIALOG_DOWNLOADMANAGER_ERROR);
+                            .show(getSupportFragmentManager(), tag);
     }
 
     private void showArchiveYearPicker() {
@@ -584,6 +591,9 @@ public class StartActivity extends BaseActivity
         try {
             openPaper = Paper.getPaperWithId(this, id);
             if (openPaper == null) throw new Paper.PaperNotFoundException();
+            if (!openPaper.isDownloaded()) {
+                showErrorDialog(getString(R.string.message_paper_not_downloaded), DIALOG_ERROR_OPEN_PAPER);
+            }
             Resource paperResource = openPaper.getResourcePartner(this);
             //TODO Check for null resource and handle it, ask for sync / delete and redownload
             if (paperResource.isDownloaded()) {
@@ -595,11 +605,11 @@ public class StartActivity extends BaseActivity
             } else {
                 switch (Connection.getConnectionType(this)) {
                     case Connection.CONNECTION_NOT_AVAILABLE:
-                        //Todo show better dialog for user, explaining why he needs connection
-                        showNoConnectionDialog();
+                        showErrorDialog(getString(R.string.message_resource_not_downloaded_no_connection),DIALOG_ERROR_OPEN_PAPER);
                         break;
                     default:
-                        showWaitDialog(DIALOG_WAIT + openPaper.getBookId(),getString(R.string.dialog_meassage_loading_missing_resource));
+                        showWaitDialog(DIALOG_WAIT + openPaper.getBookId(),
+                                       getString(R.string.dialog_meassage_loading_missing_resource));
                         try {
                             DownloadManager.getInstance(this)
                                            .enqueResource(paperResource, false);
@@ -908,7 +918,8 @@ public class StartActivity extends BaseActivity
         }
 
         public void deletePaper(Long... ids) {
-            if (hasCallback()) getCallback().showWaitDialog(DIALOG_WAIT + "delete",getString(R.string.dialog_message_delete_wait));
+            if (hasCallback())
+                getCallback().showWaitDialog(DIALOG_WAIT + "delete", getString(R.string.dialog_message_delete_wait));
             new DeleteTask(getActivity()) {
 
                 @Override
