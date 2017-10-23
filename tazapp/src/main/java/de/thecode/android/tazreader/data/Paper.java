@@ -1557,6 +1557,9 @@ public class Paper {
         return saveStoreValue(context, STORE_KEY_RESOURCE_PARTNER, resource.getKey());
     }
 
+    public void deleteResourcePartner(Context context) {
+        deleteStoreKey(context, STORE_KEY_RESOURCE_PARTNER);
+    }
 
     public Resource getResourcePartner(Context context) {
         String resource = getStoreValue(context, STORE_KEY_RESOURCE_PARTNER);
@@ -1584,6 +1587,7 @@ public class Paper {
         storage.deletePaperDir(this);
         Picasso.with(context)
                .invalidate(getImage());
+        deleteResourcePartner(context);
         if (isImported() || isKiosk()) {
             context.getContentResolver()
                    .delete(ContentUris.withAppendedId(Paper.CONTENT_URI, getId()), null, null);

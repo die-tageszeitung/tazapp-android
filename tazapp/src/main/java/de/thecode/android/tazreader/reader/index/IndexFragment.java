@@ -26,7 +26,6 @@ import de.thecode.android.tazreader.data.Paper.Plist.Book;
 import de.thecode.android.tazreader.data.Paper.Plist.Category;
 import de.thecode.android.tazreader.data.Paper.Plist.Page.Article;
 import de.thecode.android.tazreader.data.Paper.Plist.Source;
-import de.thecode.android.tazreader.data.Paper.Plist.TopLink;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.reader.IReaderCallback;
 import de.thecode.android.tazreader.reader.ReaderActivity;
@@ -94,12 +93,13 @@ public class IndexFragment extends BaseFragment {
         context.getResources()
                .getValue(R.dimen.icon_button_alpha, outValue, true);
         iconButtonAlpha = outValue.getFloat();
+        init(mReaderCallback.getPaper());
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        init(mReaderCallback.getPaper());
+        //init(mReaderCallback.getPaper());
         adapter = new IndexRecyclerViewAdapter();
         adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
             @Override
@@ -270,12 +270,14 @@ public class IndexFragment extends BaseFragment {
                     }
                 }
             }
+
+            for (Paper.Plist.TopLink toplink : paper.getPlist()
+                                                    .getToplinks()) {
+                index.put("toplink_" + toplink.getKey(), toplink);
+            }
         }
 
-        for (TopLink toplink : paper.getPlist()
-                                    .getToplinks()) {
-            index.put("toplink_" + toplink.getKey(), toplink);
-        }
+
         mClickListener = new IIndexViewHolderClicks() {
 
             @Override

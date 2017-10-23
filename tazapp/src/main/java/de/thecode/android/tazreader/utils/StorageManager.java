@@ -91,6 +91,12 @@ public class StorageManager {
         return new File(get(RESOURCE), key);
     }
 
+    public File getResourceDirectory(Resource resource) {
+        if (resource == null) return null;
+        return getResourceDirectory(resource.getKey());
+    }
+
+
     public void deletePaperDir(Paper paper) {
         if (getPaperDirectory(paper).exists()) FileUtils.deleteQuietly(getPaperDirectory(paper));
 //        Utils.deleteDir(getPaperDirectory(paper));

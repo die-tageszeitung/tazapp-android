@@ -103,6 +103,12 @@ public class Store {
         Timber.d("key %s %d", key, affected);
     }
 
+    public static void deletePath(Context context, String path) {
+        int affected = context.getContentResolver()
+                              .delete(getUriForKey(path), null, null);
+        Timber.d("key %s %d", path, affected);
+    }
+
     public static List<Store> getAllStores(Context context) {
         Cursor cursor = context.getContentResolver()
                                .query(CONTENT_URI, null, null, null, null);

@@ -1,6 +1,7 @@
 package de.thecode.android.tazreader.reader;
 
 import de.thecode.android.tazreader.data.Paper;
+import de.thecode.android.tazreader.data.Resource;
 import de.thecode.android.tazreader.reader.ReaderActivity.ConfigurationChangeListener;
 import de.thecode.android.tazreader.reader.ReaderActivity.DIRECTIONS;
 import de.thecode.android.tazreader.reader.index.IIndexItem;
@@ -30,6 +31,8 @@ public interface IReaderCallback {
     public void updateIndexes(String key);
 
     public Paper getPaper();
+
+    public Resource getResource();
 
     public String getCurrentKey();
 

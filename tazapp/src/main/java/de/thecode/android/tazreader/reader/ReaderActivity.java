@@ -31,6 +31,7 @@ import de.mateware.dialog.listener.DialogDismissListener;
 import de.mateware.snacky.Snacky;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
+import de.thecode.android.tazreader.data.Resource;
 import de.thecode.android.tazreader.data.Store;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.dialog.HelpDialog;
@@ -77,11 +78,12 @@ public class ReaderActivity extends BaseActivity
         LEFT, RIGHT, TOP, BOTTOM, NONE
     }
 
-    private static final String TAG_FRAGMENT_INDEX            = "IndexFragment";
-    private static final String TAG_FRAGMENT_PAGEINDEX        = "PageIndexFragment";
-    public static final  String TAG_FRAGMENT_DIALOG_SETTING   = "settingsDialog";
-    public static final  String TAG_DIALOG_TTS_ERROR          = "ttsError";
-    public static final  String KEY_EXTRA_PAPER_ID            = "paperId";
+    private static final String TAG_FRAGMENT_INDEX          = "IndexFragment";
+    private static final String TAG_FRAGMENT_PAGEINDEX      = "PageIndexFragment";
+    public static final  String TAG_FRAGMENT_DIALOG_SETTING = "settingsDialog";
+    public static final  String TAG_DIALOG_TTS_ERROR        = "ttsError";
+    public static final  String KEY_EXTRA_PAPER_ID          = "paperId";
+    public static final  String KEY_EXTRA_RESOURCE_KEY      = "resourceKey";
 
     DrawerLayout mDrawerLayout;
     View         mDrawerLayoutIndex;
@@ -114,6 +116,14 @@ public class ReaderActivity extends BaseActivity
             throw new IllegalStateException("Activity Reader has to be called with extra PaperId");
         else paperId = getIntent().getLongExtra(KEY_EXTRA_PAPER_ID, -1);
         if (paperId == -1) throw new IllegalStateException("paperId must not be " + paperId);
+
+        if (!getIntent().hasExtra(KEY_EXTRA_RESOURCE_KEY))
+            throw new IllegalStateException("Activity Reader has to be called with extra Resource Key");
+        else {
+            Resource resource = Resource.getWithKey(this, getIntent().getStringExtra(KEY_EXTRA_RESOURCE_KEY));
+            if (resource == null) throw new IllegalStateException("Resource is null on loading reader");
+            getReaderDataFragment().setResource(resource);
+        }
 
         new NotificationUtils(this).removeDownloadNotification(paperId);
 
@@ -236,9 +246,8 @@ public class ReaderActivity extends BaseActivity
 
     private void loadContentFragment(String key) {
 
-        IIndexItem indexItem = getReaderDataFragment().getPaper()
-                                                      .getPlist()
-                                                      .getIndexItem(key);
+        IIndexItem indexItem = getPaper().getPlist()
+                                         .getIndexItem(key);
         if (indexItem != null) {
             switch (indexItem.getType()) {
                 case ARTICLE:
@@ -253,23 +262,22 @@ public class ReaderActivity extends BaseActivity
     }
 
     private void loadArticleFragment(String key, DIRECTIONS direction, String position) {
-        IIndexItem indexItem = getReaderDataFragment().getPaper()
-                                                      .getPlist()
-                                                      .getIndexItem(key);
+        IIndexItem indexItem = getPaper().getPlist()
+                                         .getIndexItem(key);
         loadArticleFragment(indexItem, direction, position);
     }
 
     private void loadArticleFragment(IIndexItem indexItem, DIRECTIONS direction, String position) {
 
 
-        if (TextUtils.isEmpty(position)) position = getPaper().getPositionInArticle(this,indexItem);
+        if (TextUtils.isEmpty(position)) position = getPaper().getPositionInArticle(this, indexItem);
 
         FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
 
         if (indexItem.getType() == IIndexItem.Type.TOPLINK) {
             mContentFragment = TopLinkFragment.newInstance(indexItem.getKey());
         } else {
-            mContentFragment = ArticleFragment.newInstance(indexItem.getKey(),position);
+            mContentFragment = ArticleFragment.newInstance(indexItem.getKey(), position);
         }
 
 
@@ -303,8 +311,6 @@ public class ReaderActivity extends BaseActivity
     }
 
     private void loadPagesFragment(IIndexItem indexItem) {
-
-
 
 
 //        AnalyticsWrapper.getInstance()
@@ -375,14 +381,14 @@ public class ReaderActivity extends BaseActivity
     @Override
     public boolean onLoadPrevArticle(DIRECTIONS fromDirection, String position) {
 
-        int prevPosition = getReaderDataFragment().getPaper()
+        int prevPosition = getPaper()
                                                   .getArticleCollectionOrderPosition(getReaderDataFragment().getCurrentKey()) - 1;
 
         if (getReaderDataFragment().isFilterBookmarks()) {
             while (prevPosition >= 0) {
-                IIndexItem item = getReaderDataFragment().getPaper()
+                IIndexItem item = getPaper()
                                                          .getPlist()
-                                                         .getIndexItem(getReaderDataFragment().getPaper()
+                                                         .getIndexItem(getPaper()
                                                                                               .getArticleCollectionOrderKey(
                                                                                                       prevPosition));
                 if (item != null) {
@@ -393,7 +399,7 @@ public class ReaderActivity extends BaseActivity
         }
 
         if (prevPosition >= 0) {
-            loadArticleFragment(getReaderDataFragment().getPaper()
+            loadArticleFragment(getPaper()
                                                        .getArticleCollectionOrderKey(prevPosition), fromDirection, position);
             return true;
         }
@@ -403,17 +409,12 @@ public class ReaderActivity extends BaseActivity
     @Override
     public boolean onLoadNextArticle(DIRECTIONS fromDirection, String position) {
 
-        int nextPositiion = getReaderDataFragment().getPaper()
-                                                   .getArticleCollectionOrderPosition(getReaderDataFragment().getCurrentKey()) + 1;
+        int nextPositiion = getPaper().getArticleCollectionOrderPosition(getReaderDataFragment().getCurrentKey()) + 1;
 
         if (getReaderDataFragment().isFilterBookmarks()) {
-            while (nextPositiion < getReaderDataFragment().getPaper()
-                                                          .getArticleCollectionSize()) {
-                IIndexItem item = getReaderDataFragment().getPaper()
-                                                         .getPlist()
-                                                         .getIndexItem(getReaderDataFragment().getPaper()
-                                                                                              .getArticleCollectionOrderKey(
-                                                                                                      nextPositiion));
+            while (nextPositiion < getPaper().getArticleCollectionSize()) {
+                IIndexItem item = getPaper().getPlist()
+                                            .getIndexItem(getPaper().getArticleCollectionOrderKey(nextPositiion));
                 if (item != null) {
                     if (item.isBookmarked()) break;
                 }
@@ -421,11 +422,9 @@ public class ReaderActivity extends BaseActivity
             }
         }
 
-        if (nextPositiion < getReaderDataFragment().getPaper()
-                                                   .getArticleCollectionSize()) {
+        if (nextPositiion < getPaper().getArticleCollectionSize()) {
 
-            loadArticleFragment(getReaderDataFragment().getPaper()
-                                                       .getArticleCollectionOrderKey(nextPositiion), fromDirection, position);
+            loadArticleFragment(getPaper().getArticleCollectionOrderKey(nextPositiion), fromDirection, position);
             return true;
         }
         return false;
@@ -557,7 +556,7 @@ public class ReaderActivity extends BaseActivity
         if (mIndexFragment != null) mIndexFragment.updateCurrentPosition(key);
         if (mPageIndexFragment != null) mPageIndexFragment.updateCurrentPosition(key);
         if (mContentFragment instanceof PagesFragment)
-            ((PagesFragment) mContentFragment).setShareButtonCallback(getReaderDataFragment().getPaper()
+            ((PagesFragment) mContentFragment).setShareButtonCallback(getPaper()
                                                                                              .getPlist()
                                                                                              .getIndexItem(key));
     }
@@ -588,16 +587,24 @@ public class ReaderActivity extends BaseActivity
     @Override
     public Paper getPaper() {
         Timber.i("");
-        return getReaderDataFragment().getPaper();
+        Paper paper = getReaderDataFragment().getPaper();
+        if (paper == null) {
+            Timber.e("Paper not loaded");
+            finish();
+        }
+        return paper;
     }
 
+    @Override
+    public Resource getResource() {
+        return getReaderDataFragment().getResource();
+    }
 
     @Override
     public void onBackPressed() {
         if (getReaderDataFragment() != null && getReaderDataFragment().getCurrentKey() != null) {
-            IIndexItem currentItem = getReaderDataFragment().getPaper()
-                                                            .getPlist()
-                                                            .getIndexItem(getReaderDataFragment().getCurrentKey());
+            IIndexItem currentItem = getPaper().getPlist()
+                                               .getIndexItem(getReaderDataFragment().getCurrentKey());
             if (currentItem instanceof Paper.Plist.Page.Article) {
                 onLoad(((Paper.Plist.Page.Article) currentItem).getRealPage()
                                                                .getKey());
