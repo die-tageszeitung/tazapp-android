@@ -25,7 +25,7 @@ def lmdPlist = '"https://dl.monde-diplomatique.de/tpaperIssue.plist"'
 def lmdPlistArchiv = '"https://dl.monde-diplomatique.de/tpaperIssue.plist?start=%1$s&end=%2$s"'
 def lmdStagingPlist = '"https://dl.monde-diplomatique.de/tpaperIssueTest.plist"'
 def lmdStagingPlistArchiv = '"https://dl.monde-diplomatique.de/tpaperIssueTest.plist?start=%1$s&end=%2$s"'
-def lmdAboUrl = '"https://dl.monde-diplomatique.de/zeitung/abo/digitales-abo/apaper"'
+def lmdAboUrl = '"https://monde-diplomatique.de/abo-digital"'
 def lmdCheckLogin = '"https://dl.monde-diplomatique.de/digiAboCheckLogin"'
 def lmdResourceUrl = '"https://dl.monde-diplomatique.de/ressourcen"'
 def lmdArchiveUrl = '"https://dl.monde-diplomatique.de/tpaperArchiv"'
@@ -172,9 +172,11 @@ android {
         }
     }
 
+    flavorDimensions "publication"
 
     productFlavors {
         taz {
+            dimension "publication"
             applicationId "de.thecode.android.tazreader"
             resValue 'string', 'app_name', 'taz.app'
             buildConfigField 'String', plistUrl, tazPlist
@@ -186,6 +188,7 @@ android {
             buildConfigField 'String', pushRestUrl, tazPushRestUrl
         }
         lmd {
+            dimension "publication"
             applicationId "de.thecode.lmd"
             resValue 'string', 'app_name', 'LMd'
             buildConfigField 'String', plistUrl, lmdPlist
@@ -267,6 +270,7 @@ android {
         }
         tasks.preBuild.dependsOn unzipTask
     }
+    buildToolsVersion '26.0.2'
 }
 
 repositories {

@@ -9,7 +9,6 @@
     <color name="lmdBlauDunkel">#405f72</color>
     <color name="lmdWebseiteGrau">#F0F0ED</color>
     <color name="grau">#BBB</color>
-    <color name="lmdBlau95">#eff3f6</color>
 
     <item name="color_primary" type="color">@color/lmd1</item>
     <item name="color_primary_dark" type="color">@color/lmd1</item>
