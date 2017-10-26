@@ -1,7 +1,9 @@
+/*
 a:link, a:visited, a:hover, a:active, a:focus {
   text-decoration: underline;
   color: #E20036;
 }
+*/
 @font-face {
   font-family: 'TazWt07-Bold';
   src: url("TazWt07-Bold.woff") format("woff");
