@@ -1,10 +1,12 @@
+/*
 a:link, a:visited, a:hover, a:active, a:focus {
   text-decoration: underline;
   color: #E20036;
 }
+*/
 @font-face {
-  font-family: 'AktivGrotesk-Bold';
-  src: url("AktivGrotesk_W_Bd.woff") format("woff");
+  font-family: 'TazWt07-Bold';
+  src: url("TazWt07-Bold.woff") format("woff");
   font-weight: normal;
   font-style: normal; }
 body {
@@ -42,7 +44,7 @@ img {
     margin-top: 0.6em;
     padding: 0.4em;
     text-align: right;
-    font-family: 'AktivGrotesk-Bold', Arial !important; }
+    font-family: 'TazWt07-Bold', Arial !important; }
     @media screen and (max-width: 768px) {
       .intro-title p {
         padding: 0.1em; } }
@@ -51,7 +53,7 @@ img {
         font: bold 1.6em sans-serif; } }
 
 .intro-header {
-  font-family: "AktivGrotesk-Bold",Arial !important;
+  font-family: "TazWt07-Bold",Arial !important;
   font-size: 1.5em;
   font-weight: unset;
   margin-top: 1.2em; }
@@ -186,4 +188,4 @@ ul {
   ul input[type=checkbox]:checked ~ h2 .tab-icon {
     transform: rotate(0deg); }
 
-/*# sourceMappingURL=help.css.map */
+/* sourceMappingURL=help.css.map */

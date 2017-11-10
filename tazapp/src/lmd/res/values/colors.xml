@@ -9,11 +9,6 @@
     <color name="lmdBlauDunkel">#405f72</color>
     <color name="lmdWebseiteGrau">#F0F0ED</color>
     <color name="grau">#BBB</color>
-    <color name="lmdBlauTransparent">#996991AA</color>
-    <color name="lmdBlau95">#eff3f6</color>
-
-    <color name="lmdBlauHellerA07">#B3c7e2f1</color>
-    <color name="lmdBlauDunkelA07">#B3405f72</color>
 
     <item name="color_primary" type="color">@color/lmd1</item>
     <item name="color_primary_dark" type="color">@color/lmd1</item>
@@ -27,8 +22,8 @@
 
     <item name="snackbar_action" type="color">@color/color_accent</item>
 
-    <item name="refresh_color_1" type="color">@color/lmd1</item>
-    <item name="refresh_color_2" type="color">@color/lmdBlauDunkel</item>
+    <item name="refresh_color_1" type="color">@color/color_accent</item>
+    <item name="refresh_color_2" type="color">@color/color_primary</item>
 
     <item name="index_background" type="color">@android:color/white</item>
     <item name="index_divider" type="color">@color/lmd2</item>
@@ -42,15 +37,15 @@
     <item name="index_text_page" type="color">@android:color/black</item>
     <item name="index_text_article" type="color">@android:color/black</item>
     <item name="index_text_toplink" type="color">@android:color/black</item>
-    <item name="index_bookmark_off" type="color">@color/lmdBlauHellerA07</item>
-    <item name="index_bookmark_on" type="color">@color/lmdBlauDunkelA07</item>
+    <item name="index_bookmark_off" type="color">@color/grau</item>
+    <item name="index_bookmark_on" type="color">@color/color_primary</item>
     <item name="index_currentmarker" type="color">@color/lmdBlauDunkel</item>
     <item name="pageindex_background" type="color">@color/lmd2</item>
     <item name="pageindex_loadingpage_bitmapbackground" type="color">@color/color_primary_dark</item>
-    <item name="pageindex_overlay_color" type="color">@color/lmdBlauTransparent</item>
+    <item name="pageindex_overlay_color" type="color">@color/color_primary</item>
     <item name="pageindex_background_source" type="color">@color/lmd1</item>
     <item name="pageindex_text_source" type="color">@android:color/white</item>
-    <item name="library_item_selected_overlay" type="color">@color/lmdBlauTransparent</item>
+    <item name="library_item_selected_overlay" type="color">@color/color_primary</item>
 
     <item name="start_navigation_background" type="color">@android:color/white</item>
     <item name="start_navigation_header_background" type="color">@android:color/white</item>
@@ -78,7 +73,7 @@
     <item name="library_item_background" type="color">@color/color_primary</item>
     <item name="library_item_badge" type="color">@color/color_primary_dark</item>
     <item name="library_item_badge_text" type="color">@android:color/white</item>
-    <item name="library_item_progress_overlay" type="color">#99BBBBBB</item>
+    <item name="library_item_progress_overlay" type="color">@color/grau</item>
 
     <item name="help_indicator_fill" type="color">@color/color_accent</item>
     <item name="help_indicator_page" type="color">@android:color/white</item>
