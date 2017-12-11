@@ -3,9 +3,10 @@ buildscript {
     repositories {
         jcenter()
         maven { url 'https://jitpack.io' }
+        google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.0.0'
+        classpath 'com.android.tools.build:gradle:3.0.1'
         classpath 'com.github.gfx.ribbonizer:ribbonizer-plugin:2.1.0'
         classpath 'com.github.triplet.gradle:play-publisher:1.2.0'
         classpath 'com.google.gms:google-services:3.1.0'
@@ -14,9 +15,11 @@ buildscript {
 
 allprojects {
     repositories {
+        google()
         jcenter()
         maven { url "https://jitpack.io" }
         maven { url "https://maven.google.com" }
+
     }
 }
 

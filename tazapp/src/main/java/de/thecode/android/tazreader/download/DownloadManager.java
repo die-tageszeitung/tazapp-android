@@ -110,8 +110,8 @@ public class DownloadManager {
 
         //paper.setDownloadprogress(0);
         paper.setDownloadId(downloadId);
-        paper.setIsdownloaded(false);
-        paper.setHasupdate(false);
+        paper.setDownloaded(false);
+        paper.setHasUpdate(false);
 
         mContext.getContentResolver()
                 .update(ContentUris.withAppendedId(Paper.CONTENT_URI, paper.getId()), paper.getContentValues(), null, null);

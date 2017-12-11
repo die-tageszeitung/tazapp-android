@@ -88,7 +88,7 @@ public class DownloadFinishedPaperJob extends Job implements UnzipStream.UnzipSt
 
         if (exception == null) {
             paper.parseMissingAttributes(false);
-            paper.setHasupdate(false);
+            paper.setHasUpdate(false);
             paper.setDownloaded(true);
         }
 

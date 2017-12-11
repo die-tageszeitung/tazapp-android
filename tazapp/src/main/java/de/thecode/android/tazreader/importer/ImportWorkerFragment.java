@@ -269,7 +269,7 @@ public class ImportWorkerFragment extends BaseFragment {
                              .appendEncodedPath(metadata.getArchive())
                              .build()
                              .toString());
-            paper.setHasupdate(true);
+            paper.setHasUpdate(true);
         }
         paper.setImage(null);
         paper.setImageHash(null);

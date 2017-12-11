@@ -107,7 +107,7 @@ public class DownloadFinishedPaperService extends IntentService implements Unzip
 
         if (exception == null) {
             paper.parseMissingAttributes(false);
-            paper.setHasupdate(false);
+            paper.setHasUpdate(false);
             paper.setDownloaded(true);
         }
 
