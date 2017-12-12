@@ -14,6 +14,7 @@ import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.BaseColumns;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import com.dd.plist.NSArray;
@@ -60,16 +61,16 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import timber.log.Timber;
 
-@Entity
+@Entity(tableName = Paper.TABLE_NAME)
 public class Paper {
 
     public static final  String STORE_KEY_BOOKMARKS           = "bookmarks";
     public static final  String STORE_KEY_CURRENTPOSITION     = "currentPosition";
     private static final String STORE_KEY_POSITION_IN_ARTICLE = "positionInArticle";
     private static final String STORE_KEY_RESOURCE_PARTNER    = "resource";
-    private static final String STORE_KEY_AUTO_DOWNLOADED    = "auto_download";
+    private static final String STORE_KEY_AUTO_DOWNLOADED     = "auto_download";
 
-    public static       String TABLE_NAME        = "PAPER";
+    public static final String TABLE_NAME        = "PAPER";
     public static final Uri    CONTENT_URI       = Uri.parse("content://" + TazProvider.AUTHORITY + "/" + TABLE_NAME);
     public static final String CONTENT_TYPE      = "vnd.android.cursor.dir/vnd.taz." + TABLE_NAME;
     public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/vnd.taz." + TABLE_NAME;
@@ -170,7 +171,7 @@ public class Paper {
     public final static int IS_DOWNLOADING        = 4;
     public final static int NOT_DOWNLOADED_IMPORT = 5;
 
-    @PrimaryKey
+    @Ignore
     private Long    id;
     private String  date;
     private String  image;
@@ -179,6 +180,8 @@ public class Paper {
     private String  fileHash;
     private long    len;
     private long    lastModified;
+    @PrimaryKey
+    @NonNull
     private String  bookId;
     private boolean isDemo;
     private boolean hasUpdate;
@@ -187,12 +190,14 @@ public class Paper {
     private boolean kiosk;
     private boolean imported;
     private String  title;
-    private Long    publicationId;
-    private String  resource;
+    private String publicationIssueName;
+    @Ignore
+    private Long   publicationId;
+    private String resource;
     //    private String  resourceFileHash;
 //    private String  resourceUrl;
 //    private long    resourceLen;
-    private long    validUntil;
+    private long   validUntil;
 
     @Ignore
     private int progress = 0;
@@ -260,6 +265,28 @@ public class Paper {
 //        this.resourceLen = PlistHelper.getInt(nsDictionary, Columns.RESOURCELEN);
     }
 
+//    public Paper(ContentValues cv) {
+//        if (cv.containsKey(Columns._ID)) this.id = cv.getAsLong(Columns._ID);
+//        if (cv.containsKey(Columns.DATE)) this.date = cv.getAsString(Columns.DATE);
+//        if (cv.containsKey(Columns.IMAGE)) this.image = cv.getAsString(Columns.IMAGE);
+//        if (cv.containsKey(Columns.IMAGEHASH)) this.imageHash = cv.getAsString(Columns.IMAGEHASH);
+//        if (cv.containsKey(Columns.LINK)) this.link = cv.getAsString(Columns.LINK);
+//        if (cv.containsKey(Columns.FILEHASH)) this.fileHash = cv.getAsString(Columns.FILEHASH);
+//        if (cv.containsKey(Columns.LEN)) this.len = cv.getAsLong(Columns.LEN);
+//        if (cv.containsKey(Columns.LASTMODIFIED)) this.lastModified = cv.getAsLong(Columns.LASTMODIFIED);
+//        if (cv.containsKey(Columns.BOOKID)) this.bookId = cv.getAsString(Columns.BOOKID);
+//        if (cv.containsKey(Columns.ISDEMO)) this.isDemo = cv.getAsBoolean(Columns.ISDEMO);
+//        if (cv.containsKey(Columns.HASUPDATE)) this.hasUpdate = cv.getAsBoolean(Columns.HASUPDATE);
+//        if (cv.containsKey(Columns.DOWNLOADID)) this.downloadId = cv.getAsLong(Columns.DOWNLOADID);
+//        if (cv.containsKey(Columns.ISDOWNLOADED)) this.isDownloaded = cv.getAsBoolean(Columns.ISDOWNLOADED);
+//        if (cv.containsKey(Columns.KIOSK)) this.kiosk = cv.getAsBoolean(Columns.KIOSK);
+//        if (cv.containsKey(Columns.IMPORTED)) this.imported = cv.getAsBoolean(Columns.IMPORTED);
+//        if (cv.containsKey(Columns.TITLE)) this.title = cv.getAsString(Columns.TITLE);
+//        if (cv.containsKey(Columns.PUBLICATIONID)) this.publicationId = cv.getAsLong(Columns.PUBLICATIONID);
+//        if (cv.containsKey(Columns.VALIDUNTIL)) this.validUntil = cv.getAsLong(Columns.VALIDUNTIL);
+//        if (cv.containsKey(Columns.RESOURCE)) this.resource = cv.getAsString(Columns.RESOURCE);
+//    }
+
     public ContentValues getContentValues() {
         ContentValues cv = new ContentValues();
         cv.put(Columns.BOOKID, bookId);
@@ -290,6 +317,7 @@ public class Paper {
         cv.put(Columns._ID, id);
         return cv;
     }
+
 
     public Uri getContentUri() {
         return ContentUris.withAppendedId(Paper.CONTENT_URI, getId());
@@ -473,6 +501,14 @@ public class Paper {
 
     public void setPublicationId(Long publicationId) {
         this.publicationId = publicationId;
+    }
+
+    public String getPublicationIssueName() {
+        return publicationIssueName;
+    }
+
+    public void setPublicationIssueName(String publicationIssueName) {
+        this.publicationIssueName = publicationIssueName;
     }
 
     public void setTitle(String title) {

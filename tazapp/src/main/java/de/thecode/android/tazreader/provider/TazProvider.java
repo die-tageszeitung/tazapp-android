@@ -12,7 +12,6 @@ import android.text.TextUtils;
 
 import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.data.Paper;
-import de.thecode.android.tazreader.data.Publication;
 import de.thecode.android.tazreader.data.Resource;
 import de.thecode.android.tazreader.data.Store;
 
@@ -28,16 +27,16 @@ public class TazProvider extends ContentProvider {
     private static final int STORE_DIR       = 4;
     private static final int STORE_PATH      = 10;
     private static final int PAPER_BOOKID    = 5;
-    private static final int PUBLICATION_DIR = 6;
-    private static final int PUBLICATION_ID  = 7;
+//    private static final int PUBLICATION_DIR = 6;
+//    private static final int PUBLICATION_ID  = 7;
     private static final int RESOURCE_DIR    = 8;
     private static final int RESOURCE_KEY    = 9;
 
     public static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".provider";
     private static UriMatcher sUriMatcher;
 
-    private DatabaseHelper mDatabaseHelper;
     private SQLiteDatabase mDb;
+
 
     static {
         sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
@@ -47,8 +46,8 @@ public class TazProvider extends ContentProvider {
         sUriMatcher.addURI(AUTHORITY, Store.TABLE_NAME + "/*/*", STORE_KEY);
         sUriMatcher.addURI(AUTHORITY, Store.TABLE_NAME + "/*", STORE_PATH);
         sUriMatcher.addURI(AUTHORITY, Store.TABLE_NAME, STORE_DIR);
-        sUriMatcher.addURI(AUTHORITY, Publication.TABLE_NAME, PUBLICATION_DIR);
-        sUriMatcher.addURI(AUTHORITY, Publication.TABLE_NAME + "/#", PUBLICATION_ID);
+//        sUriMatcher.addURI(AUTHORITY, Publication.TABLE_NAME, PUBLICATION_DIR);
+//        sUriMatcher.addURI(AUTHORITY, Publication.TABLE_NAME + "/#", PUBLICATION_ID);
         sUriMatcher.addURI(AUTHORITY, Resource.TABLE_NAME, RESOURCE_DIR);
         sUriMatcher.addURI(AUTHORITY, Resource.TABLE_NAME + "/*", RESOURCE_KEY);
 
@@ -56,9 +55,7 @@ public class TazProvider extends ContentProvider {
 
     @Override
     public boolean onCreate() {
-
-
-        mDatabaseHelper = new DatabaseHelper(getContext());
+        DatabaseHelper mDatabaseHelper = new DatabaseHelper(getContext());
         mDb = mDatabaseHelper.getWritableDatabase();
         return true;
     }
@@ -80,6 +77,7 @@ public class TazProvider extends ContentProvider {
                 //queryCursor = mDb.query(Paper.TABLE_NAME + " LEFT OUTER JOIN "+ Publication.TABLE_NAME + " ON "+ Paper.Columns.PUBLICATIONID +" = "+Publication.Columns.FULL_ID, new String[]{Paper.TABLE_NAME+".*"}, selection, selectionArgs, null, null, sortOrder);
 
                 queryCursor = mDb.query(Paper.TABLE_NAME, projection, selection, selectionArgs, null, null, sortOrder);
+
                 queryCursor.setNotificationUri(getContext().getContentResolver(), uri);
                 break;
 
@@ -135,22 +133,22 @@ public class TazProvider extends ContentProvider {
                 queryCursor.setNotificationUri(getContext().getContentResolver(), uri);
                 break;
 
-            case PUBLICATION_DIR:
-                queryCursor = mDb.query(Publication.TABLE_NAME, projection, selection, selectionArgs, null, null, sortOrder);
-                queryCursor.setNotificationUri(getContext().getContentResolver(), uri);
-                break;
-
-            case PUBLICATION_ID:
-                long publicationId = ContentUris.parseId(uri);
-                queryCursor = mDb.query(Publication.TABLE_NAME,
-                                        projection,
-                                        Publication.Columns._ID + " = " + publicationId + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ")" : ""),
-                                        selectionArgs,
-                                        null,
-                                        null,
-                                        sortOrder);
-                queryCursor.setNotificationUri(getContext().getContentResolver(), uri);
-                break;
+//            case PUBLICATION_DIR:
+//                queryCursor = mDb.query(Publication.TABLE_NAME, projection, selection, selectionArgs, null, null, sortOrder);
+//                queryCursor.setNotificationUri(getContext().getContentResolver(), uri);
+//                break;
+//
+//            case PUBLICATION_ID:
+//                long publicationId = ContentUris.parseId(uri);
+//                queryCursor = mDb.query(Publication.TABLE_NAME,
+//                                        projection,
+//                                        Publication.Columns._ID + " = " + publicationId + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ")" : ""),
+//                                        selectionArgs,
+//                                        null,
+//                                        null,
+//                                        sortOrder);
+//                queryCursor.setNotificationUri(getContext().getContentResolver(), uri);
+//                break;
 
             case RESOURCE_DIR:
                 queryCursor = mDb.query(Resource.TABLE_NAME, projection, selection, selectionArgs, null, null, sortOrder);
@@ -188,10 +186,10 @@ public class TazProvider extends ContentProvider {
                 return Store.CONTENT_TYPE;
             case STORE_KEY:
                 return Store.CONTENT_ITEM_TYPE;
-            case PUBLICATION_DIR:
-                return Publication.CONTENT_TYPE;
-            case PUBLICATION_ID:
-                return Publication.CONTENT_ITEM_TYPE;
+//            case PUBLICATION_DIR:
+//                return Publication.CONTENT_TYPE;
+//            case PUBLICATION_ID:
+//                return Publication.CONTENT_ITEM_TYPE;
             case RESOURCE_DIR:
                 return Resource.CONTENT_TYPE;
             case RESOURCE_KEY:
@@ -213,10 +211,13 @@ public class TazProvider extends ContentProvider {
                 break;
             case PAPER_DIR:
                 rowId = mDb.insert(Paper.TABLE_NAME, null, values);
+                //Paper paper = new Paper(values);
+                //database.paperDao().insertPaper(paper);
+
                 break;
-            case PUBLICATION_DIR:
-                rowId = mDb.insert(Publication.TABLE_NAME, null, values);
-                break;
+//            case PUBLICATION_DIR:
+//                rowId = mDb.insert(Publication.TABLE_NAME, null, values);
+//                break;
             case RESOURCE_DIR:
                 rowId = mDb.insert(Resource.TABLE_NAME, null, values);
                 if (rowId > -1) {
@@ -277,16 +278,16 @@ public class TazProvider extends ContentProvider {
                                       selectionArgs);
                 break;
 
-            case PUBLICATION_DIR:
-                affected = mDb.delete(Publication.TABLE_NAME, selection, selectionArgs);
-                break;
-
-            case PUBLICATION_ID:
-                long publicationId = ContentUris.parseId(uri);
-                affected = mDb.delete(Publication.TABLE_NAME,
-                                      Publication.Columns._ID + " = " + publicationId + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ")" : ""),
-                                      selectionArgs);
-                break;
+//            case PUBLICATION_DIR:
+//                affected = mDb.delete(Publication.TABLE_NAME, selection, selectionArgs);
+//                break;
+//
+//            case PUBLICATION_ID:
+//                long publicationId = ContentUris.parseId(uri);
+//                affected = mDb.delete(Publication.TABLE_NAME,
+//                                      Publication.Columns._ID + " = " + publicationId + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ")" : ""),
+//                                      selectionArgs);
+//                break;
 
             case RESOURCE_DIR:
                 affected = mDb.delete(Resource.TABLE_NAME, selection, selectionArgs);
@@ -332,13 +333,13 @@ public class TazProvider extends ContentProvider {
             case PAPER_DIR:
                 affected = mDb.update(Paper.TABLE_NAME, values, selection, selectionArgs);
                 break;
-            case PUBLICATION_ID:
-                long publicationId = ContentUris.parseId(uri);
-                affected = mDb.update(Publication.TABLE_NAME,
-                                      values,
-                                      Publication.Columns._ID + " = " + publicationId + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ")" : ""),
-                                      selectionArgs);
-                break;
+//            case PUBLICATION_ID:
+//                long publicationId = ContentUris.parseId(uri);
+//                affected = mDb.update(Publication.TABLE_NAME,
+//                                      values,
+//                                      Publication.Columns._ID + " = " + publicationId + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ")" : ""),
+//                                      selectionArgs);
+//                break;
 
             case RESOURCE_DIR:
                 affected = mDb.update(Resource.TABLE_NAME, values, selection, selectionArgs);

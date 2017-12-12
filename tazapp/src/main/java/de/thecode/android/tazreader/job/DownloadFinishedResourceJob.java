@@ -65,7 +65,7 @@ public class DownloadFinishedResourceJob extends Job {
 
     private void saveResource(Resource resource, Exception e) {
         if (e == null) {
-            resource.setDownloadId(0);
+            resource.setDownloadID(0);
             resource.setDownloaded(true);
             getContext().getContentResolver()
                         .update(Uri.withAppendedPath(Resource.CONTENT_URI, resource.getKey()),

@@ -175,7 +175,7 @@ public class DownloadManager {
 
             Timber.i("... download requested at android download manager, id: %d", downloadId);
 
-            resource.setDownloadId(downloadId);
+            resource.setDownloadID(downloadId);
 
             mContext.getContentResolver()
                     .update(Uri.withAppendedPath(Resource.CONTENT_URI, resource.getKey()),

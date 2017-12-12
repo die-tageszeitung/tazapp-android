@@ -1,5 +1,8 @@
 package de.thecode.android.tazreader.data;
 
+import android.arch.persistence.room.ColumnInfo;
+import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.PrimaryKey;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -13,9 +16,10 @@ import java.util.List;
 
 import timber.log.Timber;
 
+@Entity(tableName = Store.TABLE_NAME)
 public class Store {
 
-    public static       String TABLE_NAME        = "STORE";
+    public static final       String TABLE_NAME        = "STORE";
     public static final Uri    CONTENT_URI       = Uri.parse("content://" + TazProvider.AUTHORITY + "/" + TABLE_NAME);
     public static final String CONTENT_TYPE      = "vnd.android.cursor.dir/vnd.taz." + TABLE_NAME;
     public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/vnd.taz." + TABLE_NAME;
@@ -26,9 +30,15 @@ public class Store {
         public static final String VALUE = "value";
     }
 
+    @PrimaryKey
+    @ColumnInfo(name = BaseColumns._ID)
     private Long   id;
     private String key;
     private String value;
+
+    public Store(){
+
+    }
 
     public Store(String key, String value) {
         if (!key.startsWith("/")) key = "/" + key;
@@ -50,8 +60,16 @@ public class Store {
         return cv;
     }
 
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     public Long getId() {
         return id;
+    }
+
+    public void setKey(String key) {
+        this.key = key;
     }
 
     public String getKey() {

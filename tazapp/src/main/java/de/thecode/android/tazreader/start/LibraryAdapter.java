@@ -18,6 +18,7 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.squareup.picasso.Callback;
 import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 
@@ -27,7 +28,6 @@ import de.thecode.android.tazreader.download.DownloadManager;
 import de.thecode.android.tazreader.download.DownloadProgressEvent;
 import de.thecode.android.tazreader.download.PaperDownloadFailedEvent;
 import de.thecode.android.tazreader.download.UnzipProgressEvent;
-import de.thecode.android.tazreader.sync.SyncService;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -562,19 +562,26 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
         public boolean onItemLongClick(View v, int position, Paper paper);
     }
 
-    private static abstract class MissingCoverCallback extends SyncService.PreloadImageCallback {
+    private static abstract class MissingCoverCallback implements Callback {
 
         final ImageView imageView;
+        final Paper paper;
 
         protected MissingCoverCallback(ImageView imageView, Paper paper) {
-            super(paper);
+            this.paper = paper;
             this.imageView = imageView;
         }
 
         @Override
-        public void onError(Paper paper) {
+        public void onError() {
             onError(imageView, paper);
         }
+        @Override
+        public void onSuccess() {
+            onSuccess(paper);
+        }
+
+        public abstract void onSuccess(Paper paper);
 
         public abstract void onError(ImageView imageView, Paper paper);
     }

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.provider.BaseColumns;
 
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Publication;
@@ -27,7 +28,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(CREATE_PAPER_V6);
         db.execSQL(CREATE_STORE_V6);
-        db.execSQL(CREATE_PUBLICATION_V6);
+        //db.execSQL(CREATE_PUBLICATION_V6);
         db.execSQL(CREATE_RESOURCE_V6);
     }
 
@@ -214,16 +215,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             Store.Columns.VALUE + " TEXT" +
             ");";
 
-    private static final String CREATE_PUBLICATION_V6 = "CREATE TABLE " + Publication.TABLE_NAME + " (" +
-            Publication.Columns._ID + " INTEGER PRIMARY KEY," +
-            Publication.Columns.CREATED + " INTEGER," +
-            Publication.Columns.IMAGE + " TEXT," +
-            Publication.Columns.ISSUENAME + " TEXT," +
-            Publication.Columns.NAME + " TEXT," +
-            Publication.Columns.TYPENAME + " TEXT," +
-            Publication.Columns.URL + " TEXT," +
-            Publication.Columns.VALIDUNTIL + " INTEGER" +
-            ");";
+//    private static final String CREATE_PUBLICATION_V6 = "CREATE TABLE " + Publication.TABLE_NAME + " (" +
+//            Publication.Columns._ID + " INTEGER PRIMARY KEY," +
+//            Publication.Columns.CREATED + " INTEGER," +
+//            Publication.Columns.IMAGE + " TEXT," +
+//            Publication.Columns.ISSUENAME + " TEXT," +
+//            Publication.Columns.NAME + " TEXT," +
+//            Publication.Columns.TYPENAME + " TEXT," +
+//            Publication.Columns.URL + " TEXT," +
+//            Publication.Columns.VALIDUNTIL + " INTEGER" +
+//            ");";
 
     private static final String CREATE_RESOURCE_V6 = "CREATE TABLE " + Resource.TABLE_NAME + " (" +
             Resource.Columns.KEY + " TEXT PRIMARY KEY," +
@@ -265,16 +266,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             Store.Columns.VALUE + " TEXT" +
             ");";
 
-    private static final String CREATE_PUBLICATION_V5 = "CREATE TABLE " + Publication.TABLE_NAME + " (" +
-            Publication.Columns._ID + " INTEGER PRIMARY KEY," +
-            Publication.Columns.CREATED + " INTEGER," +
-            Publication.Columns.IMAGE + " TEXT," +
-            Publication.Columns.ISSUENAME + " TEXT," +
-            Publication.Columns.NAME + " TEXT," +
-            Publication.Columns.TYPENAME + " TEXT," +
-            Publication.Columns.URL + " TEXT," +
-            Publication.Columns.VALIDUNTIL + " INTEGER" +
-            ");";
+//    private static final String CREATE_PUBLICATION_V5 = "CREATE TABLE " + Publication.TABLE_NAME + " (" +
+//            Publication.Columns._ID + " INTEGER PRIMARY KEY," +
+//            Publication.Columns.CREATED + " INTEGER," +
+//            Publication.Columns.IMAGE + " TEXT," +
+//            Publication.Columns.ISSUENAME + " TEXT," +
+//            Publication.Columns.NAME + " TEXT," +
+//            Publication.Columns.TYPENAME + " TEXT," +
+//            Publication.Columns.URL + " TEXT," +
+//            Publication.Columns.VALIDUNTIL + " INTEGER" +
+//            ");";
 
     private static final String CREATE_RESOURCE_V5 = "CREATE TABLE " + Resource.TABLE_NAME + " (" +
             Resource.Columns.KEY + " TEXT PRIMARY KEY," +
@@ -313,16 +314,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             Store.Columns.VALUE + " TEXT" +
             ");";
 
-    private static final String CREATE_PUBLICATION_V4 = "CREATE TABLE " + Publication.TABLE_NAME + " (" +
-            Publication.Columns._ID + " INTEGER PRIMARY KEY," +
-            Publication.Columns.CREATED + " INTEGER," +
-            Publication.Columns.IMAGE + " TEXT," +
-            Publication.Columns.ISSUENAME + " TEXT," +
-            Publication.Columns.NAME + " TEXT," +
-            Publication.Columns.TYPENAME + " TEXT," +
-            Publication.Columns.URL + " TEXT," +
-            Publication.Columns.VALIDUNTIL + " INTEGER" +
-            ");";
+//    private static final String CREATE_PUBLICATION_V4 = "CREATE TABLE " + Publication.TABLE_NAME + " (" +
+//            Publication.Columns._ID + " INTEGER PRIMARY KEY," +
+//            Publication.Columns.CREATED + " INTEGER," +
+//            Publication.Columns.IMAGE + " TEXT," +
+//            Publication.Columns.ISSUENAME + " TEXT," +
+//            Publication.Columns.NAME + " TEXT," +
+//            Publication.Columns.TYPENAME + " TEXT," +
+//            Publication.Columns.URL + " TEXT," +
+//            Publication.Columns.VALIDUNTIL + " INTEGER" +
+//            ");";
 
     private static final String CREATE_RESOURCE_V4 = "CREATE TABLE " + Resource.TABLE_NAME + " (" +
             Resource.Columns.KEY + " TEXT PRIMARY KEY," +
@@ -362,16 +363,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             Store.Columns.VALUE + " TEXT" +
             ");";
 
-    private static final String CREATE_PUBLICATION_V3 = "CREATE TABLE " + Publication.TABLE_NAME + " (" +
-            Publication.Columns._ID + " INTEGER PRIMARY KEY," +
-            Publication.Columns.CREATED + " INTEGER," +
-            Publication.Columns.IMAGE + " TEXT," +
-            Publication.Columns.ISSUENAME + " TEXT," +
-            Publication.Columns.NAME + " TEXT," +
-            Publication.Columns.TYPENAME + " TEXT," +
-            Publication.Columns.URL + " TEXT," +
-            Publication.Columns.VALIDUNTIL + " INTEGER" +
-            ");";
+//    private static final String CREATE_PUBLICATION_V3 = "CREATE TABLE " + Publication.TABLE_NAME + " (" +
+//            Publication.Columns._ID + " INTEGER PRIMARY KEY," +
+//            Publication.Columns.CREATED + " INTEGER," +
+//            Publication.Columns.IMAGE + " TEXT," +
+//            Publication.Columns.ISSUENAME + " TEXT," +
+//            Publication.Columns.NAME + " TEXT," +
+//            Publication.Columns.TYPENAME + " TEXT," +
+//            Publication.Columns.URL + " TEXT," +
+//            Publication.Columns.VALIDUNTIL + " INTEGER" +
+//            ");";
 
 
     //---Version 2---
@@ -406,7 +407,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             ");";
 
     private static final String CREATE_PUBLICATION_V2 = "CREATE TABLE " + Publication.TABLE_NAME + " (" +
-            Publication.Columns._ID + " INTEGER PRIMARY KEY," +
+            BaseColumns._ID + " INTEGER PRIMARY KEY," +
             Publication.Columns.CREATED + " INTEGER," +
             Publication.Columns.IMAGE + " TEXT," +
             Publication.Columns.ISSUENAME + " TEXT," +

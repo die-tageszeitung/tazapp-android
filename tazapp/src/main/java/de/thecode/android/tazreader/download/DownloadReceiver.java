@@ -164,7 +164,7 @@ public class DownloadReceiver extends BroadcastReceiver {
                         Timber.e("Download failed");
                         DownloadException exception = new DownloadException(state.getStatusText() + ": " + state.getReasonText());
                         //AnalyticsWrapper.getInstance().logException(exception);
-                        resource.setDownloadId(0);
+                        resource.setDownloadID(0);
                         context.getContentResolver()
                                .update(Uri.withAppendedPath(Resource.CONTENT_URI, resource.getKey()), resource.getContentValues(), null, null);
                         EventBus.getDefault()

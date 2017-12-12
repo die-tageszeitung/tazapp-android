@@ -92,6 +92,25 @@ public class TazReaderApplication extends Application {
             FileUtils.deleteQuietly(oldLibImageDir);
         }
 
+        if (lastVersionCode < 3450) {
+            File oldDb = getDatabasePath("db");
+            if (oldDb.exists()) {
+
+                oldDb.delete();
+            }
+        }
+
+//        File oldDb = getDatabasePath("db");
+//        if (oldDb.exists()) {
+//            File newDb = getDatabasePath(TazappDatabase.DB_NAME);
+//            if (!newDb.exists()){
+//                try {
+//                    FileUtils.copyFile(oldDb,newDb);
+//                } catch (IOException e) {
+//                    Timber.e(e);
+//                }
+//            }
+//        }
 
         // MIGRATION BEENDET, setzten der aktuellen Version
         TazSettings.getInstance(this)

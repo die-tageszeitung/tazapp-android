@@ -1,24 +1,26 @@
 package de.thecode.android.tazreader.data;
 
+import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.PrimaryKey;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.net.Uri;
-import android.provider.BaseColumns;
+import android.support.annotation.NonNull;
 
 import com.dd.plist.NSDictionary;
 
 import de.thecode.android.tazreader.provider.TazProvider;
 import de.thecode.android.tazreader.utils.PlistHelper;
 
-
+@Entity(tableName = Publication.TABLE_NAME)
 public class Publication {
 
-    public static String TABLE_NAME = "PUBLICATION";
+    public static final String TABLE_NAME = "PUBLICATION";
     public static final Uri CONTENT_URI = Uri.parse("content://" + TazProvider.AUTHORITY + "/" + TABLE_NAME);
     public static final String CONTENT_TYPE = "vnd.android.cursor.dir/vnd.taz."+TABLE_NAME;
     public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/vnd.taz."+TABLE_NAME;
 
-    public static final class Columns implements BaseColumns {
+    public static final class Columns {
         public static final String ISSUENAME = "issueName";
         public static final String TYPENAME = "typeName";
         public static final String NAME = "name";
@@ -26,12 +28,10 @@ public class Publication {
         public static final String IMAGE = "image";
         public static final String CREATED = "created";
         public static final String VALIDUNTIL = "validUntil";
-        
-        public static final String FULL_ID=TABLE_NAME+"."+_ID;
-        //public static final String FULL_VALIDUNTIL = TABLE_NAME+"."+VALIDUNTIL;
     }
-    
-    private Long id;
+
+    @PrimaryKey
+    @NonNull
     private String issueName;
     private String typeName;
     private String name;
@@ -39,10 +39,13 @@ public class Publication {
     private String image;
     private long created;
     private long validUntil;
+
+    public Publication() {
+
+    }
     
     public Publication(Cursor cursor)
     {
-        this.id=cursor.getLong(cursor.getColumnIndex(Columns._ID));
         this.issueName=cursor.getString(cursor.getColumnIndex(Columns.ISSUENAME));
         this.typeName=cursor.getString(cursor.getColumnIndex(Columns.TYPENAME));
         this.name=cursor.getString(cursor.getColumnIndex(Columns.NAME));
@@ -66,7 +69,6 @@ public class Publication {
     public ContentValues getContentValues()
     {
         ContentValues cv = new ContentValues();
-        cv.put(Columns._ID, id);
         cv.put(Columns.CREATED, created);
         cv.put(Columns.IMAGE, image);
         cv.put(Columns.ISSUENAME, issueName);
@@ -111,11 +113,6 @@ public class Publication {
     public long getValidUntilInMillis() {
         return validUntil*1000;
     }
-    
-    public Long getId() {
-        return id;
-    }
-    
     
     public void setCreated(long created) {
         this.created = created;
