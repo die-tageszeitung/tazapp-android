@@ -1,6 +1,7 @@
 package de.thecode.android.tazreader.start;
 
 
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -25,12 +26,12 @@ import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.okhttp3.OkHttp3Helper;
 import de.thecode.android.tazreader.okhttp3.RequestHelper;
+import de.thecode.android.tazreader.start.viewmodel.StartViewModel;
 import de.thecode.android.tazreader.sync.AccountHelper;
 import de.thecode.android.tazreader.utils.BaseFragment;
 import de.thecode.android.tazreader.utils.RunnableExtended;
 
 import java.io.IOException;
-import java.lang.ref.WeakReference;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -41,14 +42,15 @@ import okhttp3.Response;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class LoginFragment extends BaseFragment {
+public class LoginFragment extends BaseFragment<StartActivity> {
 
     public static final String DIALOG_CHECK_CREDENTIALS = "checkCrd";
     public static final String DIALOG_ERROR_CREDENTIALS = "errorCrd";
     private EditText                      editUser;
     private EditText                      editPass;
-    private WeakReference<IStartCallback> callback;
+//    private WeakReference<IStartCallback> callback;
     private Button                        loginButton;
+    StartViewModel activityViewModel;
 
     public LoginFragment() {
         // Required empty public constructor
@@ -58,14 +60,13 @@ public class LoginFragment extends BaseFragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-
+        activityViewModel = ViewModelProviders.of(getActivity()).get(StartViewModel.class);
+        activityViewModel.getCurrentFragment().setValue(this.getClass());
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-        callback = new WeakReference<>((IStartCallback) getActivity());
-        if (hasCallback()) getCallback().onUpdateDrawer(this);
 
         View view = inflater.inflate(R.layout.start_login, container, false);
         loginButton = (Button) view.findViewById(R.id.buttonLogin);
@@ -106,13 +107,13 @@ public class LoginFragment extends BaseFragment {
         return view;
     }
 
-    private boolean hasCallback() {
-        return callback.get() != null;
-    }
-
-    private IStartCallback getCallback() {
-        return callback.get();
-    }
+//    private boolean hasCallback() {
+//        return callback.get() != null;
+//    }
+//
+//    private IStartCallback getCallback() {
+//        return callback.get();
+//    }
 
     private void blockUi(boolean block) {
         editUser.setEnabled(!block);
@@ -184,7 +185,7 @@ public class LoginFragment extends BaseFragment {
                                          .setUser((String) getObject(0), (String) getObject(1));
                             hideWaitingDialog();
                             blockUi(false);
-                            if (hasCallback()) getCallback().onSuccessfulCredentialsCheck();
+                            if (getActivity() != null) getMyActivity().onSuccessfulCredentialsCheck();
                             //if (hasCallback()) getCallback().onDemoModeChanged(false);
                             Snacky.builder()
                                   .setView(getActivity().findViewById(R.id.content_frame))

@@ -43,9 +43,7 @@ import de.thecode.android.tazreader.download.DownloadManager;
 import de.thecode.android.tazreader.download.PaperDownloadFailedEvent;
 import de.thecode.android.tazreader.download.PaperDownloadFinishedEvent;
 import de.thecode.android.tazreader.download.ResourceDownloadEvent;
-import de.thecode.android.tazreader.importer.ImportActivity;
 import de.thecode.android.tazreader.job.SyncJob;
-import de.thecode.android.tazreader.migration.MigrationActivity;
 import de.thecode.android.tazreader.notifications.NotificationUtils;
 import de.thecode.android.tazreader.reader.ReaderActivity;
 import de.thecode.android.tazreader.start.viewmodel.StartViewModel;
@@ -146,15 +144,7 @@ public class StartActivity extends BaseActivity
         super.onCreate(savedInstanceState);
         activityViewModel = ViewModelProviders.of(this)
                                               .get(StartViewModel.class);
-        if (TazSettings.getInstance(this)
-                       .getPrefInt(TazSettings.PREFKEY.PAPERMIGRATEFROM, 0) != 0) {
-            Intent migrationIntent = new Intent(this, MigrationActivity.class);
-            migrationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            startActivity(migrationIntent);
-            return;
-        }
-        TazSettings.getInstance(this)
-                   .removePref(TazSettings.PREFKEY.PAPERMIGRATEFROM);
+
 
         //Orientation.setActivityOrientationFromPrefs(this);
 
@@ -289,19 +279,6 @@ public class StartActivity extends BaseActivity
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        Timber.d("requestCode: %s, resultCode: %s, data: %s", requestCode, resultCode, data);
-        if (requestCode == ImportActivity.REQUEST_CODE_IMPORT_ACTIVITY) {
-            if (resultCode == RESULT_OK) {
-
-            }
-        }
-    }
-
-    //boolean firstFragmentLoaded = false;
-
-    @Override
     public void loadFragment(NavigationDrawerFragment.NavigationItem item) {
         if (item.getTarget() != null) {
             //noinspection TryWithIdenticalCatches
@@ -357,7 +334,6 @@ public class StartActivity extends BaseActivity
     }
 
 
-    @Override
     public void onSuccessfulCredentialsCheck() {
         mDrawerFragment.simulateClick(libraryItem, false);
     }
@@ -366,23 +342,11 @@ public class StartActivity extends BaseActivity
         updateTitle();
     }
 
-    @Override
+
     public Toolbar getToolbar() {
         return toolbar;
     }
 
-    //    public void updateUserInDrawer() {
-    //        if (mAccountHelper.isAuthenticated()) userItem.setText(mAccountHelper.getUser());
-    //        else userItem.setText(getString(R.string.drawer_no_account));
-    //        mDrawerFragment.handleChangedItem(userItem);
-    //    }
-
-
-    @Override
-    public void onUpdateDrawer(Fragment fragment) {
-        //TODO Remove
-        //mDrawerFragment.setActive(fragment.getClass());
-    }
 
     @Override
     public void startDownload(long paperId) throws Paper.PaperNotFoundException {
@@ -590,7 +554,7 @@ public class StartActivity extends BaseActivity
     }
 
 
-    @Override
+
     public void openReader(long id) {
 
         Paper openPaper;
@@ -784,13 +748,6 @@ public class StartActivity extends BaseActivity
             }
         } else if (DIALOG_ACCOUNT_ERROR.equals(tag)) {
             finish();
-        } else if (ImportFragment.DIALOG_PERMISSION_WRITE.equals(tag) && which == Dialog.BUTTON_POSITIVE) {
-            Fragment contentFragment = getSupportFragmentManager().findFragmentById(R.id.content_frame);
-            if (contentFragment != null && contentFragment instanceof ImportFragment) {
-                ((ImportFragment) contentFragment).startWithPermissionCheck();
-            } else {
-                onBackPressed();
-            }
         }
     }
 

@@ -1,9 +1,6 @@
 package de.thecode.android.tazreader.start;
 
 
-import android.support.v4.app.Fragment;
-import android.support.v7.widget.Toolbar;
-
 import de.thecode.android.tazreader.data.Paper;
 
 /**
@@ -16,15 +13,7 @@ public interface IStartCallback {
 
     void onNavigationClick(NavigationDrawerFragment.ClickItem item);
 
-    void onUpdateDrawer(Fragment fragement);
-
-    Toolbar getToolbar();
-
-    void onSuccessfulCredentialsCheck();
-
-
-
-    void openReader(long paperId);
+    //void openReader(long paperId);
 
     void startDownload(long paperId) throws Paper.PaperNotFoundException;
 

@@ -23,7 +23,6 @@ import de.thecode.android.tazreader.utils.BaseFragment;
 
 import org.greenrobot.eventbus.EventBus;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,7 +31,7 @@ import timber.log.Timber;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class NavigationDrawerFragment extends BaseFragment {
+public class NavigationDrawerFragment extends BaseFragment<StartActivity> {
 
     private static final String KEY_ACTIVE = "active";
     private static final int CLOSE_DRAWER_DELAY = 300;
@@ -48,7 +47,7 @@ public class NavigationDrawerFragment extends BaseFragment {
     private Item.ClickListener mClickListener;
     private NavigationAdapter navigationAdapter;
 
-    WeakReference<IStartCallback> startCallback;
+//    WeakReference<IStartCallback> startCallback;
 
     int mActive = -1;
 
@@ -63,7 +62,7 @@ public class NavigationDrawerFragment extends BaseFragment {
         super.onCreate(savedInstanceState);
 
 
-        startCallback = new WeakReference<>((IStartCallback) getActivity());
+//        startCallback = new WeakReference<>((IStartCallback) getActivity());
 
         if (savedInstanceState != null) mActive = savedInstanceState.getInt(KEY_ACTIVE);
 
@@ -98,13 +97,13 @@ public class NavigationDrawerFragment extends BaseFragment {
         return view;
     }
 
-    private boolean hasCallback() {
-        return startCallback.get() != null;
-    }
-
-    private IStartCallback getCallback() {
-        return startCallback.get();
-    }
+//    private boolean hasCallback() {
+//        return startCallback.get() != null;
+//    }
+//
+//    private IStartCallback getCallback() {
+//        return startCallback.get();
+//    }
 
 
     public void setUp(int drawerId, DrawerLayout drawerLayout, Toolbar toolbar) {
@@ -160,11 +159,12 @@ public class NavigationDrawerFragment extends BaseFragment {
     public void setEnabled(boolean bool) {
         if (!bool) {
             mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
-            if (hasCallback()) getCallback().getToolbar()
+            if (getActivity() != null)
+            if (checkActivity()) getMyActivity().getToolbar()
                                             .setVisibility(View.INVISIBLE);
         } else {
             mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
-            if (hasCallback()) getCallback().getToolbar()
+            if (checkActivity()) getMyActivity().getToolbar()
                                             .setVisibility(View.VISIBLE);
         }
     }
@@ -215,9 +215,9 @@ public class NavigationDrawerFragment extends BaseFragment {
         //navigationAdapter.setActive(position);
         Item item = navigationAdapter.getItem(position);
         if (item instanceof NavigationItem) {
-            if (hasCallback()) getCallback().loadFragment((NavigationItem) item);
+            if (checkActivity()) getMyActivity().loadFragment((NavigationItem) item);
         } else if (item instanceof ClickItem) {
-            if (hasCallback()) getCallback().onNavigationClick((ClickItem) item);
+            if (checkActivity()) getMyActivity().onNavigationClick((ClickItem) item);
         }
     }
 

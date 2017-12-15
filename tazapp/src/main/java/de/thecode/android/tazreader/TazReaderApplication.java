@@ -76,8 +76,6 @@ public class TazReaderApplication extends Application {
                        .removePref(TazSettings.PREFKEY.FONTSIZE);
             TazSettings.getInstance(this)
                        .removePref(TazSettings.PREFKEY.COLSIZE);
-            TazSettings.getInstance(this)
-                       .setPref(TazSettings.PREFKEY.PAPERMIGRATEFROM, lastVersionCode);
         }
         if (lastVersionCode < 52) {
             //Remvoing all dead prefs from crashlytics
@@ -95,7 +93,7 @@ public class TazReaderApplication extends Application {
         if (lastVersionCode < 3450) {
             File oldDb = getDatabasePath("db");
             if (oldDb.exists()) {
-
+                //TODO DATABASE WHAT TO DO WITH OLD ONE?
                 oldDb.delete();
             }
         }

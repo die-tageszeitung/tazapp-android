@@ -43,16 +43,11 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
         public static final  String LASTOPENPAPER               = "lastOpenPaper";
         public static final  String LASTVERSION                 = "lastVersion";
         public static final  String FISRTSTART                  = "firstStart";
-        //        public static final String PAGING = "paging";
         public static final  String ISSCROLL                    = "isScroll";
         public static final  String NOTIFICATION_SOUND_DOWNLOAD = "ringtone";
         public static final  String NOTIFICATION_SOUND_PUSH     = "ringtone_push";
         public static final  String VIBRATE                     = "vibrate";
         public static final  String NAVDRAWERLEARNED            = "navdrawerlearned";
-        // public static final  String FORCESYNC                   = "forcesync";
-        public static final  String PAPERMIGRATEFROM            = "paperMigrateFrom";
-        //        public static final String PAPERMIGRATERUNNING = "paperMigrateRunning";
-        public static final  String PAPERMIGRATEDIDS            = "paperMigratedIds";
         public static final  String PAPERNOTIFICATIONIDS        = "paperNotificationIds";
         public static final  String ISSOCIAL                    = "isSocial";
         public static final  String PAGEINDEXBUTTON             = "pageIndexButton";

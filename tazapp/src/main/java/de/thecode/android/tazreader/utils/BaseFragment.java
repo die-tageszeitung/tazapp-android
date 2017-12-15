@@ -13,4 +13,8 @@ public abstract class BaseFragment<T extends BaseActivity> extends Fragment {
         return (T) getActivity();
     }
 
+    public boolean checkActivity(){
+        return getActivity() != null;
+    }
+
 }

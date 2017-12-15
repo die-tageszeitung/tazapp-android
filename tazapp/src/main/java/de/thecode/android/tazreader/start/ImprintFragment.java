@@ -1,7 +1,9 @@
 package de.thecode.android.tazreader.start;
 
 
+import android.arch.lifecycle.ViewModelProviders;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,9 +13,8 @@ import android.widget.Button;
 
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.dialog.TechInfoDialog;
+import de.thecode.android.tazreader.start.viewmodel.StartViewModel;
 import de.thecode.android.tazreader.utils.BaseFragment;
-
-import java.lang.ref.WeakReference;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -23,17 +24,24 @@ public class ImprintFragment extends BaseFragment {
 
     public static final String DIALOG_TECHINFO = "dialogTechInfo";
 
-    private WeakReference<IStartCallback> callback;
+    StartViewModel activityViewModel;
 
     public ImprintFragment() {
         // Required empty public constructor
     }
 
     @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        activityViewModel = ViewModelProviders.of(getActivity()).get(StartViewModel.class);
+        activityViewModel.getCurrentFragment().setValue(this.getClass());
+
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-        callback = new WeakReference<>((IStartCallback) getActivity());
-        if (hasCallback()) getCallback().onUpdateDrawer(this);
+
 
 
 
@@ -57,11 +65,4 @@ public class ImprintFragment extends BaseFragment {
         return view;
     }
 
-    private boolean hasCallback() {
-        return callback.get() != null;
-    }
-
-    private IStartCallback getCallback() {
-        return callback.get();
-    }
 }
