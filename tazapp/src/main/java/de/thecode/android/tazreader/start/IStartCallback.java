@@ -22,13 +22,12 @@ public interface IStartCallback {
 
     void onSuccessfulCredentialsCheck();
 
-    void enableDrawer(boolean bool);
+
 
     void openReader(long paperId);
 
     void startDownload(long paperId) throws Paper.PaperNotFoundException;
 
-    void callArchive();
 
     void showWaitDialog(String tag, String message);
 

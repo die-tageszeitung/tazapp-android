@@ -1,6 +1,5 @@
 package de.thecode.android.tazreader.job;
 
-import android.database.Cursor;
 import android.database.sqlite.SQLiteConstraintException;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
@@ -28,9 +27,8 @@ import de.thecode.android.tazreader.start.ScrollToPaperEvent;
 import de.thecode.android.tazreader.sync.SyncErrorEvent;
 import de.thecode.android.tazreader.sync.SyncStateChangedEvent;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.greenrobot.eventbus.EventBus;
-import org.json.JSONArray;
-import org.json.JSONException;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -86,7 +84,7 @@ public class SyncJob extends Job {
                 return endJob(Result.RESCHEDULE);
             }
         } else {
-            if (!initByUser) autoDeleteTask();
+            autoDeleteTask();
             handlePlist(plist);
         }
 
@@ -99,7 +97,7 @@ public class SyncJob extends Job {
 
         if (moveToPaperAtEnd != null) {
             EventBus.getDefault()
-                    .post(new ScrollToPaperEvent(moveToPaperAtEnd.getId()));
+                    .post(new ScrollToPaperEvent(moveToPaperAtEnd.getBookId()));
             moveToPaperAtEnd = null;
         }
 
@@ -198,13 +196,32 @@ public class SyncJob extends Job {
                 TazappDatabase.getInstance(getContext())
                               .paperDao()
                               .insertPaper(newPaper);
+                setMoveToPaperAtEnd(newPaper);
+                preLoadImage(newPaper);
             } catch (SQLiteConstraintException e) {
                 //already existing
                 Paper oldPaper = TazappDatabase.getInstance(getContext()).paperDao().getPaperWithBookId(newPaper.getBookId());
+                newPaper.setDownloaded(oldPaper.isDownloaded());
+                newPaper.setDownloadId(oldPaper.getDownloadId());
+                newPaper.setImported(oldPaper.isImported());
+                newPaper.setKiosk(oldPaper.isKiosk());
+                if (!newPaper.equals(oldPaper)) {
+                    TazappDatabase.getInstance(getContext()).paperDao().updatePaper(newPaper);
+                    if (!new EqualsBuilder().append(oldPaper.getImageHash(), newPaper.getImageHash()).build()) {
+                        preLoadImage(newPaper);
+                    }
+                }
 
-                TazappDatabase.getInstance(getContext()).paperDao().updatePaper(newPaper);
 
                 Timber.i("Paper");
+            }
+            Resource resource = new Resource((NSDictionary) issue);
+            try {
+                TazappDatabase.getInstance(getContext())
+                              .resourceDao()
+                              .insert(resource);
+            } catch (SQLiteConstraintException ignore) {
+                //Resource exists
             }
 
 
@@ -361,41 +378,45 @@ public class SyncJob extends Job {
             int papersToKeep = TazSettings.getInstance(getContext())
                                           .getPrefInt(TazSettings.PREFKEY.AUTODELETE_VALUE, 0);
             if (papersToKeep > 0) {
-                Cursor deletePapersCursor = getContext().getContentResolver()
-                                                        .query(Paper.CONTENT_URI,
-                                                               null,
-                                                               Paper.Columns.ISDOWNLOADED + "=1 AND " + Paper.Columns.IMPORTED + "!=1 AND " + Paper.Columns.KIOSK + "!=1",
-                                                               null,
-                                                               Paper.Columns.DATE + " DESC");
-                try {
-                    int counter = 0;
-                    while (deletePapersCursor.moveToNext()) {
-                        if (counter >= papersToKeep) {
-                            Paper deletePaper = new Paper(deletePapersCursor);
-                            Timber.d("PaperId: %s (currentOpen:%s)", deletePaper.getId(), currentOpenPaperId);
-                            if (!deletePaper.getId()
-                                            .equals(currentOpenPaperId)) {
-                                boolean safeToDelete = true;
-                                String bookmarksJsonString = deletePaper.getStoreValue(getContext(), Paper.STORE_KEY_BOOKMARKS);
-                                if (!TextUtils.isEmpty(bookmarksJsonString)) {
-                                    try {
-                                        JSONArray bookmarks = new JSONArray(bookmarksJsonString);
-                                        if (bookmarks.length() > 0) safeToDelete = false;
-                                    } catch (JSONException e) {
-                                        // JSON Error, better don't delete
-                                        safeToDelete = false;
-                                    }
-                                }
-                                if (safeToDelete) {
-                                    deletePaper.delete(getContext());
-                                }
-                            }
-                        }
-                        counter++;
-                    }
-                } finally {
-                    deletePapersCursor.close();
-                }
+                //TODO Change to ROOM
+
+                List<Paper> papers = TazappDatabase.getInstance(getContext()).paperDao().getPapersAsList(true,false,false);
+
+//                Cursor deletePapersCursor = getContext().getContentResolver()
+//                                                        .query(Paper.CONTENT_URI,
+//                                                               null,
+//                                                               Paper.Columns.ISDOWNLOADED + "=1 AND " + Paper.Columns.IMPORTED + "!=1 AND " + Paper.Columns.KIOSK + "!=1",
+//                                                               null,
+//                                                               Paper.Columns.DATE + " DESC");
+//                try {
+//                    int counter = 0;
+//                    while (deletePapersCursor.moveToNext()) {
+//                        if (counter >= papersToKeep) {
+//                            Paper deletePaper = new Paper(deletePapersCursor);
+//                            Timber.d("PaperId: %s (currentOpen:%s)", deletePaper.getId(), currentOpenPaperId);
+//                            if (!deletePaper.getId()
+//                                            .equals(currentOpenPaperId)) {
+//                                boolean safeToDelete = true;
+//                                String bookmarksJsonString = deletePaper.getStoreValue(getContext(), Paper.STORE_KEY_BOOKMARKS);
+//                                if (!TextUtils.isEmpty(bookmarksJsonString)) {
+//                                    try {
+//                                        JSONArray bookmarks = new JSONArray(bookmarksJsonString);
+//                                        if (bookmarks.length() > 0) safeToDelete = false;
+//                                    } catch (JSONException e) {
+//                                        // JSON Error, better don't delete
+//                                        safeToDelete = false;
+//                                    }
+//                                }
+//                                if (safeToDelete) {
+//                                    deletePaper.delete(getContext());
+//                                }
+//                            }
+//                        }
+//                        counter++;
+//                    }
+//                } finally {
+//                    deletePapersCursor.close();
+//                }
             }
         }
     }

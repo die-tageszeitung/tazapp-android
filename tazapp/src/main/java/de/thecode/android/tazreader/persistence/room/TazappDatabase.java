@@ -37,5 +37,6 @@ public abstract class TazappDatabase extends RoomDatabase {
 
     public abstract PaperDao paperDao();
     public abstract PublicationDao publicationDao();
+    public abstract  ResourceDao resourceDao();
 
 }

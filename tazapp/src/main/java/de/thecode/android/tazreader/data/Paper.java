@@ -13,7 +13,6 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.net.Uri;
-import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
@@ -139,7 +138,7 @@ public class Paper {
     }
 
 
-    public static final class Columns implements BaseColumns {
+    public static final class Columns {
 
         public static final String DATE            = "date";
         public static final String IMAGE           = "image";
@@ -216,7 +215,7 @@ public class Paper {
     }
 
     private void setData(Cursor cursor) {
-        this.id = cursor.getLong(cursor.getColumnIndex(Columns._ID));
+       // this.id = cursor.getLong(cursor.getColumnIndex(Columns._ID));
         this.date = cursor.getString(cursor.getColumnIndex(Columns.DATE));
         this.image = cursor.getString(cursor.getColumnIndex(Columns.IMAGE));
         this.imageHash = cursor.getString(cursor.getColumnIndex(Columns.IMAGEHASH));
@@ -314,7 +313,7 @@ public class Paper {
 //        cv.put(Columns.RESOURCEURL, resourceUrl);
 //        cv.put(Columns.RESOURCELEN, resourceLen);
         cv.put(Columns.VALIDUNTIL, validUntil);
-        cv.put(Columns._ID, id);
+        //cv.put(Columns._ID, id);
         return cv;
     }
 

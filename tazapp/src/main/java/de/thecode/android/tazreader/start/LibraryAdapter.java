@@ -103,7 +103,7 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
     public void select(int position) {
 
         long paperId = getItemId(position);
-        //Log.v(position, paperId);
+        //Log.v(position, bookId);
 
         if (!isSelected(paperId)) getSelected().add(paperId);
 
@@ -112,7 +112,7 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
 
     public void deselect(int position) {
         long paperId = getItemId(position);
-        //Log.v(position, paperId);
+        //Log.v(position, bookId);
         if (isSelected(paperId)) getSelected().remove(paperId);
         notifyItemChanged(position);
     }

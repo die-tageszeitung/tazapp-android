@@ -23,6 +23,14 @@ public interface PaperDao {
     @Query("SELECT * FROM " + Paper.TABLE_NAME + " ORDER BY " + Paper.Columns.DATE + " DESC")
     LiveData<List<Paper>> getPapers();
 
+    @Query("SELECT * FROM " + Paper.TABLE_NAME + " WHERE " + Paper.Columns.VALIDUNTIL + " >= :validUntil ORDER BY " + Paper.Columns.DATE + " DESC")
+    LiveData<List<Paper>> getPapers(long validUntil);
+
+
+    @Query("SELECT * FROM " + Paper.TABLE_NAME + " WHERE " + Paper.Columns.ISDOWNLOADED + " = :isDownloaded AND " + Paper.Columns.KIOSK + " = :isKiosk AND " + Paper.Columns.IMPORTED + " = :isImported ORDER BY " + Paper.Columns.DATE + " DESC")
+    List<Paper> getPapersAsList(boolean isDownloaded, boolean isKiosk, boolean isImported);
+
+
     @Query("SELECT * FROM " + Paper.TABLE_NAME + " ORDER BY " + Paper.Columns.DATE + " DESC")
     Cursor getPapersAsCursor();
 

@@ -1,13 +1,13 @@
 package de.thecode.android.tazreader.data;
 
-import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.Ignore;
 import android.arch.persistence.room.PrimaryKey;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
-import android.provider.BaseColumns;
+import android.support.annotation.NonNull;
 
 import de.thecode.android.tazreader.provider.TazProvider;
 
@@ -24,15 +24,16 @@ public class Store {
     public static final String CONTENT_TYPE      = "vnd.android.cursor.dir/vnd.taz." + TABLE_NAME;
     public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/vnd.taz." + TABLE_NAME;
 
-    public static final class Columns implements BaseColumns {
+    public static final class Columns {
 
         public static final String KEY   = "key";
         public static final String VALUE = "value";
     }
 
-    @PrimaryKey
-    @ColumnInfo(name = BaseColumns._ID)
+    @Ignore
     private Long   id;
+    @PrimaryKey
+    @NonNull
     private String key;
     private String value;
 
@@ -47,14 +48,14 @@ public class Store {
     }
 
     public Store(Cursor cursor) {
-        this.id = cursor.getLong(cursor.getColumnIndex(Columns._ID));
+//        this.id = cursor.getLong(cursor.getColumnIndex(Columns._ID));
         this.key = cursor.getString(cursor.getColumnIndex(Columns.KEY));
         this.value = cursor.getString(cursor.getColumnIndex(Columns.VALUE));
     }
 
     public ContentValues getContentValues() {
         ContentValues cv = new ContentValues();
-        cv.put(Columns._ID, id);
+//        cv.put(Columns._ID, id);
         cv.put(Columns.KEY, key);
         cv.put(Columns.VALUE, value);
         return cv;

@@ -2,6 +2,7 @@ package de.thecode.android.tazreader.start;
 
 
 import android.annotation.SuppressLint;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
@@ -47,6 +48,7 @@ import de.thecode.android.tazreader.job.SyncJob;
 import de.thecode.android.tazreader.migration.MigrationActivity;
 import de.thecode.android.tazreader.notifications.NotificationUtils;
 import de.thecode.android.tazreader.reader.ReaderActivity;
+import de.thecode.android.tazreader.start.viewmodel.StartViewModel;
 import de.thecode.android.tazreader.sync.SyncErrorEvent;
 import de.thecode.android.tazreader.utils.BaseActivity;
 import de.thecode.android.tazreader.utils.BaseFragment;
@@ -108,6 +110,8 @@ public class StartActivity extends BaseActivity
     NavigationDrawerFragment.ClickItem      privacyTermsItem;
     // NavigationDrawerFragment.NavigationItem importItem;
 
+    StartViewModel activityViewModel;
+
     TazSettings.OnPreferenceChangeListener demoModeChanged = new TazSettings.OnPreferenceChangeListener<Boolean>() {
         @Override
         public void onPreferenceChanged(Boolean value) {
@@ -140,7 +144,8 @@ public class StartActivity extends BaseActivity
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        activityViewModel = ViewModelProviders.of(this)
+                                              .get(StartViewModel.class);
         if (TazSettings.getInstance(this)
                        .getPrefInt(TazSettings.PREFKEY.PAPERMIGRATEFROM, 0) != 0) {
             Intent migrationIntent = new Intent(this, MigrationActivity.class);
@@ -226,6 +231,14 @@ public class StartActivity extends BaseActivity
         // mDrawerFragment.addItem(settingsItem);
         mDrawerFragment.addItem(preferencesItem);
 
+
+        activityViewModel.getActionMode()
+                         .observe(this, aBoolean -> {
+                             if (aBoolean == null) return;
+                             mDrawerFragment.setEnabled(!aBoolean);
+                         });
+        activityViewModel.getCurrentFragment()
+                         .observe(this, aClass -> mDrawerFragment.setActive(aClass));
 
         //has to be after adding useritem
         //updateUserInDrawer();
@@ -364,15 +377,11 @@ public class StartActivity extends BaseActivity
     //        mDrawerFragment.handleChangedItem(userItem);
     //    }
 
-    @Override
-    public void enableDrawer(boolean bool) {
-        mDrawerFragment.setEnabled(bool);
-    }
-
 
     @Override
     public void onUpdateDrawer(Fragment fragment) {
-        mDrawerFragment.setActive(fragment.getClass());
+        //TODO Remove
+        //mDrawerFragment.setActive(fragment.getClass());
     }
 
     @Override
@@ -399,7 +408,7 @@ public class StartActivity extends BaseActivity
         //        //startDownload(paper.getId());
         //        DownloadHelper mDownloadHelper = new DownloadHelper(this);
         //        try {
-        //            mDownloadHelper.enquePaper(paperId);
+        //            mDownloadHelper.enquePaper(bookId);
         //        } catch (IllegalArgumentException e) {
         //            // errorDownloadManagerDialog();
         //        }
@@ -512,7 +521,8 @@ public class StartActivity extends BaseActivity
                             .show(getSupportFragmentManager(), tag);
     }
 
-    private void showArchiveYearPicker() {
+
+    void showArchiveYearPicker() {
         Calendar cal = Calendar.getInstance();
         ArrayList<ArchiveEntry> years = new ArrayList<>();
         for (int year = cal.get(Calendar.YEAR); year >= 2011; year--) {
@@ -579,10 +589,6 @@ public class StartActivity extends BaseActivity
         if (dialog != null) dialog.dismiss();
     }
 
-    @Override
-    public void callArchive() {
-        showArchiveYearPicker();
-    }
 
     @Override
     public void openReader(long id) {
@@ -605,7 +611,8 @@ public class StartActivity extends BaseActivity
             } else {
                 switch (Connection.getConnectionType(this)) {
                     case Connection.CONNECTION_NOT_AVAILABLE:
-                        showErrorDialog(getString(R.string.message_resource_not_downloaded_no_connection),DIALOG_ERROR_OPEN_PAPER);
+                        showErrorDialog(getString(R.string.message_resource_not_downloaded_no_connection),
+                                        DIALOG_ERROR_OPEN_PAPER);
                         break;
                     default:
                         showWaitDialog(DIALOG_WAIT + openPaper.getBookId(),
@@ -666,7 +673,7 @@ public class StartActivity extends BaseActivity
             if (paper == null) throw new Paper.PaperNotFoundException();
             showDownloadErrorDialog(paper.getTitelWithDate(this), null, event.getException());
 
-            //NotificationHelper.cancelDownloadErrorNotification(this, event.getPaperId());
+            //NotificationHelper.cancelDownloadErrorNotification(this, event.getBookId());
             new NotificationUtils(this).removeDownloadNotification(event.getPaperId());
         } catch (Paper.PaperNotFoundException e) {
             e.printStackTrace();
@@ -839,7 +846,7 @@ public class StartActivity extends BaseActivity
         private static final String TAG = "RetainDataFragment";
         public LruCache<String, Bitmap> cache;
         public List<Long> selectedInLibrary = new ArrayList<>();
-        boolean actionMode;
+
         List<Long> downloadQueue       = new ArrayList<>();
         boolean    allowMobileDownload = false;
         private long    openPaperIdAfterDownload     = -1;
@@ -883,14 +890,6 @@ public class StartActivity extends BaseActivity
 
         public List<Long> getSelectedInLibrary() {
             return selectedInLibrary;
-        }
-
-        public boolean isActionMode() {
-            return actionMode;
-        }
-
-        public void setActionMode(boolean actionMode) {
-            this.actionMode = actionMode;
         }
 
 

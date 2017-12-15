@@ -8,6 +8,7 @@ import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.provider.BaseColumns;
 import android.text.TextUtils;
 
 import de.thecode.android.tazreader.BuildConfig;
@@ -89,7 +90,7 @@ public class TazProvider extends ContentProvider {
 
                 queryCursor = mDb.query(Paper.TABLE_NAME,
                                         projection,
-                                        Paper.Columns._ID + " = " + paperId + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ")" : ""),
+                                        BaseColumns._ID + " = " + paperId + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ")" : ""),
                                         selectionArgs,
                                         null,
                                         null,
@@ -274,7 +275,7 @@ public class TazProvider extends ContentProvider {
             case PAPER_ID:
                 long paperId = ContentUris.parseId(uri);
                 affected = mDb.delete(Paper.TABLE_NAME,
-                                      Paper.Columns._ID + " = " + paperId + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ")" : ""),
+                                      BaseColumns._ID + " = " + paperId + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ")" : ""),
                                       selectionArgs);
                 break;
 
@@ -327,7 +328,7 @@ public class TazProvider extends ContentProvider {
                 long paperId = ContentUris.parseId(uri);
                 affected = mDb.update(Paper.TABLE_NAME,
                                       values,
-                                      Paper.Columns._ID + " = " + paperId + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ")" : ""),
+                                      BaseColumns._ID + " = " + paperId + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ")" : ""),
                                       selectionArgs);
                 break;
             case PAPER_DIR:

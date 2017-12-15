@@ -96,7 +96,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         Timber.d("Kopieren der Werte");
         db.execSQL("INSERT INTO " + Paper.TABLE_NAME + " (" +
-                Paper.Columns._ID + "," +
+                           BaseColumns._ID + "," +
                 Paper.Columns.BOOKID + "," +
                 Paper.Columns.DATE + "," +
                 Paper.Columns.LINK + "," +
@@ -115,7 +115,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 Paper.Columns.TITLE + "" +
                 ") " +
                 "SELECT " +
-                Paper.Columns._ID + "," +
+                           BaseColumns._ID + "," +
                 Paper.Columns.BOOKID + "," +
                 Paper.Columns.DATE + "," +
                 Paper.Columns.LINK + "," +
@@ -146,7 +146,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 
         Timber.d("Kopieren der Werte");
-        Cursor cursor = db.query(Store.TABLE_NAME + "_REN", null, null, null, null, null, Store.Columns._ID + " ASC");
+        Cursor cursor = db.query(Store.TABLE_NAME + "_REN", null, null, null, null, null, BaseColumns._ID + " ASC");
         try {
             while (cursor.moveToNext()) {
                 String oldKey = cursor.getString(cursor.getColumnIndex("KEY"));
@@ -185,7 +185,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     //---Version 6---
     private static final String CREATE_PAPER_V6 = "CREATE TABLE " + Paper.TABLE_NAME + " (" +
-            Paper.Columns._ID + " INTEGER PRIMARY KEY," +
+            BaseColumns._ID + " INTEGER PRIMARY KEY," +
             Paper.Columns.DATE + " TEXT," +
             Paper.Columns.IMAGE + " TEXT," +
             Paper.Columns.IMAGEHASH + " TEXT," +
@@ -210,7 +210,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             ");";
 
     private static final String CREATE_STORE_V6 = "CREATE TABLE " + Store.TABLE_NAME + " (" +
-            Store.Columns._ID + " INTEGER PRIMARY KEY," +
+            BaseColumns._ID + " INTEGER PRIMARY KEY," +
             Store.Columns.KEY + " TEXT," +
             Store.Columns.VALUE + " TEXT" +
             ");";
@@ -237,7 +237,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     //---Version 5---
     private static final String CREATE_PAPER_V5 = "CREATE TABLE " + Paper.TABLE_NAME + " (" +
-            Paper.Columns._ID + " INTEGER PRIMARY KEY," +
+            BaseColumns._ID + " INTEGER PRIMARY KEY," +
             Paper.Columns.DATE + " TEXT," +
             Paper.Columns.IMAGE + " TEXT," +
             Paper.Columns.IMAGEHASH + " TEXT," +
@@ -261,7 +261,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             ");";
 
     private static final String CREATE_STORE_V5 = "CREATE TABLE " + Store.TABLE_NAME + " (" +
-            Store.Columns._ID + " INTEGER PRIMARY KEY," +
+            BaseColumns._ID + " INTEGER PRIMARY KEY," +
             Store.Columns.KEY + " TEXT," +
             Store.Columns.VALUE + " TEXT" +
             ");";
@@ -286,7 +286,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     //---Version 4---
     private static final String CREATE_PAPER_V4 = "CREATE TABLE " + Paper.TABLE_NAME + " (" +
-            Paper.Columns._ID + " INTEGER PRIMARY KEY," +
+            BaseColumns._ID + " INTEGER PRIMARY KEY," +
             Paper.Columns.DATE + " TEXT," +
             Paper.Columns.IMAGE + " TEXT," +
             Paper.Columns.IMAGEHASH + " TEXT," +
@@ -309,7 +309,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             ");";
 
     private static final String CREATE_STORE_V4 = "CREATE TABLE " + Store.TABLE_NAME + " (" +
-            Store.Columns._ID + " INTEGER PRIMARY KEY," +
+            BaseColumns._ID + " INTEGER PRIMARY KEY," +
             Store.Columns.KEY + " TEXT," +
             Store.Columns.VALUE + " TEXT" +
             ");";
@@ -334,7 +334,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     //---Version 3---
     private static final String CREATE_PAPER_V3 = "CREATE TABLE " + Paper.TABLE_NAME + " (" +
-            Paper.Columns._ID + " INTEGER PRIMARY KEY," +
+            BaseColumns._ID + " INTEGER PRIMARY KEY," +
             Paper.Columns.DATE + " TEXT," +
             Paper.Columns.IMAGE + " TEXT," +
             Paper.Columns.IMAGEHASH + " TEXT," +
@@ -358,7 +358,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             ");";
 
     private static final String CREATE_STORE_V3 = "CREATE TABLE " + Store.TABLE_NAME + " (" +
-            Store.Columns._ID + " INTEGER PRIMARY KEY," +
+            BaseColumns._ID + " INTEGER PRIMARY KEY," +
             Store.Columns.KEY + " TEXT," +
             Store.Columns.VALUE + " TEXT" +
             ");";
@@ -377,7 +377,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     //---Version 2---
     private static final String CREATE_PAPER_V2 = "CREATE TABLE " + Paper.TABLE_NAME + " (" +
-            Paper.Columns._ID + " INTEGER PRIMARY KEY," +
+            BaseColumns._ID + " INTEGER PRIMARY KEY," +
             Paper.Columns.DATE + " TEXT," +
             Paper.Columns.IMAGE + " TEXT," +
             Paper.Columns.IMAGEHASH + " TEXT," +
@@ -401,7 +401,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             ");";
 
     private static final String CREATE_STORE_V2 = "CREATE TABLE " + Store.TABLE_NAME + " (" +
-            Store.Columns._ID + " INTEGER PRIMARY KEY," +
+            BaseColumns._ID + " INTEGER PRIMARY KEY," +
             Store.Columns.KEY + " TEXT," +
             Store.Columns.VALUE + " TEXT" +
             ");";

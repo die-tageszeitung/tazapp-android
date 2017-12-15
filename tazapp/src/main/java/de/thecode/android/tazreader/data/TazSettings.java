@@ -336,6 +336,7 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
         }
     }
 
+    @FunctionalInterface
     public interface OnPreferenceChangeListener<T> {
         void onPreferenceChanged(T changedValue);
     }
