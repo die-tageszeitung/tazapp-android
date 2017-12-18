@@ -77,17 +77,17 @@ public class Paper {
     public static final String CONTENT_PLIST_FILENAME = "content.plist";
 
     public static Paper getLatestPaper(Context context) {
-        Cursor cursor = context.getContentResolver()
-                               .query(CONTENT_URI, null, null, null, Columns.DATE + " DESC LIMIT 1");
-        if (cursor != null) {
-            try {
-                if (cursor.moveToNext()) {
-                    return new Paper(cursor);
-                }
-            } finally {
-                cursor.close();
-            }
-        }
+//        Cursor cursor = context.getContentResolver()
+//                               .query(CONTENT_URI, null, null, null, Columns.DATE + " DESC LIMIT 1");
+//        if (cursor != null) {
+//            try {
+//                if (cursor.moveToNext()) {
+//                    return new Paper(cursor);
+//                }
+//            } finally {
+//                cursor.close();
+//            }
+//        }
         return null;
     }
 
@@ -106,6 +106,7 @@ public class Paper {
         return result;
     }
 
+    @Deprecated
     public static Paper getPaperWithId(Context context, long id) {
         Cursor cursor = context.getApplicationContext()
                                .getContentResolver()
@@ -170,6 +171,7 @@ public class Paper {
     public final static int IS_DOWNLOADING        = 4;
     public final static int NOT_DOWNLOADED_IMPORT = 5;
 
+    @Deprecated
     @Ignore
     private Long    id;
     private String  date;
@@ -198,8 +200,7 @@ public class Paper {
 //    private long    resourceLen;
     private long   validUntil;
 
-    @Ignore
-    private int progress = 0;
+    private int progress;
     @Ignore
     private Map<String, Integer> articleCollectionOrder;
     @Ignore
@@ -322,10 +323,12 @@ public class Paper {
         return ContentUris.withAppendedId(Paper.CONTENT_URI, getId());
     }
 
+    @Deprecated
     public Long getId() {
         return id;
     }
 
+    @Deprecated
     public void setId(Long id) {
         this.id = id;
     }

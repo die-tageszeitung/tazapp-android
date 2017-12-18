@@ -55,12 +55,7 @@ public class LibraryFragment extends BaseFragment<StartActivity> {
     private AutofitRecyclerView  recyclerView;
     private FloatingActionButton fabArchive;
 
-    private TazSettings.OnPreferenceChangeListener demoModeChangedListener = new TazSettings.OnPreferenceChangeListener<Boolean>() {
-        @Override
-        public void onPreferenceChanged(Boolean value) {
-            onDemoModeChanged(value);
-        }
-    };
+    private TazSettings.OnPreferenceChangeListener<Boolean> demoModeChangedListener = value -> onDemoModeChanged(value);
 
     public LibraryFragment() {
         // Required empty public constructor
@@ -93,7 +88,28 @@ public class LibraryFragment extends BaseFragment<StartActivity> {
                 if (actionMode != null) {
                     onLongClick(paper);
                 } else {
+                    switch (paper.getState()) {
+                        case Paper.DOWNLOADED_READABLE:
+                        case Paper.DOWNLOADED_BUT_UPDATE:
+                            if (checkActivity()) getMyActivity().openReader(paper.getBookId());
+                            //openPlayer(paper.getId());
+                            //if (hasCallback()) getCallback().openReader(paper.getId());
+                            break;
+                        case Paper.IS_DOWNLOADING:
 
+                            break;
+
+                        case Paper.NOT_DOWNLOADED:
+                        case Paper.NOT_DOWNLOADED_IMPORT:
+                            try {
+                                if (checkActivity()) getMyActivity().startDownload(paper.getBookId());
+                                //if (hasCallback()) getCallback().startDownload(paper.getId());
+                            } catch (Paper.PaperNotFoundException e) {
+                                Timber.e(e);
+                            }
+                            break;
+
+                    }
                 }
             }
 

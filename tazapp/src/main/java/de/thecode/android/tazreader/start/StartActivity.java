@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -45,6 +46,7 @@ import de.thecode.android.tazreader.download.PaperDownloadFinishedEvent;
 import de.thecode.android.tazreader.download.ResourceDownloadEvent;
 import de.thecode.android.tazreader.job.SyncJob;
 import de.thecode.android.tazreader.notifications.NotificationUtils;
+import de.thecode.android.tazreader.persistence.room.TazappDatabase;
 import de.thecode.android.tazreader.reader.ReaderActivity;
 import de.thecode.android.tazreader.start.viewmodel.StartViewModel;
 import de.thecode.android.tazreader.sync.SyncErrorEvent;
@@ -55,8 +57,6 @@ import de.thecode.android.tazreader.widget.CustomToolbar;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-import org.json.JSONArray;
-import org.json.JSONException;
 
 import java.lang.ref.WeakReference;
 import java.text.DateFormatSymbols;
@@ -77,7 +77,7 @@ public class StartActivity extends BaseActivity
     //private static final String DIALOG_MISSING_RESOURCE = "dialogMissingResource";
     private static final String DIALOG_RESOURCE_DOWNLOADING  = "dialogResourceDownloading";
     private static final String DIALOG_NO_CONNECTION         = "dialogNoConnection";
-    private static final String DIALOG_MIGRATION_FINISHED    = "dialogMigrationFinished";
+    //private static final String DIALOG_MIGRATION_FINISHED    = "dialogMigrationFinished";
     private static final String DIALOG_DOWNLOAD_MOBILE       = "dialogDownloadMobile";
     private static final String DIALOG_ACCOUNT_ERROR         = "dialogAccountError";
     private static final String DIALOG_DOWNLOADMANAGER_ERROR = "dialogDownloadManagerError";
@@ -272,7 +272,8 @@ public class StartActivity extends BaseActivity
                 int type = intent.getIntExtra(NotificationUtils.NOTIFICATION_EXTRA_TYPE_ID, -1);
                 Paper paper = Paper.getPaperWithBookId(this, bookId);
                 if (type == NotificationUtils.DOWNLOAD_NOTIFICTAION_ID && paper != null) {
-                    openReader(paper.getId());
+                    //TODO
+                    //openReader(paper.getId());
                 }
             }
         }
@@ -347,35 +348,58 @@ public class StartActivity extends BaseActivity
         return toolbar;
     }
 
+    public void startDownload(@NonNull Paper paper) throws Paper.PaperNotFoundException {
+                if (!paper.isDownloading()) {
+                    switch (Connection.getConnectionType(StartActivity.this)) {
+                        case Connection.CONNECTION_NOT_AVAILABLE:
+                            showNoConnectionDialog();
+                            break;
+                        case Connection.CONNECTION_MOBILE:
+                        case Connection.CONNECTION_MOBILE_ROAMING:
+                            addToDownloadQueue(paper.getId());
+                            if (retainDataFragment.allowMobileDownload) startDownloadQueue();
+                            else showMobileConnectionDialog();
+                            break;
+                        default:
+                            addToDownloadQueue(paper.getId());
+                            startDownloadQueue();
+                    }
+                }
 
-    @Override
-    public void startDownload(long paperId) throws Paper.PaperNotFoundException {
-        Paper downloadPaper = Paper.getPaperWithId(this, paperId);
-        if (downloadPaper == null) throw new Paper.PaperNotFoundException();
-        if (!downloadPaper.isDownloading()) {
-            switch (Connection.getConnectionType(this)) {
-                case Connection.CONNECTION_NOT_AVAILABLE:
-                    showNoConnectionDialog();
-                    break;
-                case Connection.CONNECTION_MOBILE:
-                case Connection.CONNECTION_MOBILE_ROAMING:
-                    addToDownloadQueue(paperId);
-                    if (retainDataFragment.allowMobileDownload) startDownloadQueue();
-                    else showMobileConnectionDialog();
-                    break;
-                default:
-                    addToDownloadQueue(paperId);
-                    startDownloadQueue();
-            }
-        }
-        //        //TODO DIALOG
-        //        //startDownload(paper.getId());
-        //        DownloadHelper mDownloadHelper = new DownloadHelper(this);
-        //        try {
-        //            mDownloadHelper.enquePaper(bookId);
-        //        } catch (IllegalArgumentException e) {
-        //            // errorDownloadManagerDialog();
-        //        }
+
+//        Paper downloadPaper = TazappDatabase.getInstance(this).paperDao().getPaperWithBookId(bookId);
+//        long paperId = downloadPaper.getId();
+//
+//        if (downloadPaper == null) throw new Paper.PaperNotFoundException();
+//        if (!downloadPaper.isDownloading()) {
+//            switch (Connection.getConnectionType(this)) {
+//                case Connection.CONNECTION_NOT_AVAILABLE:
+//                    showNoConnectionDialog();
+//                    break;
+//                case Connection.CONNECTION_MOBILE:
+//                case Connection.CONNECTION_MOBILE_ROAMING:
+//                    addToDownloadQueue(paperId);
+//                    if (retainDataFragment.allowMobileDownload) startDownloadQueue();
+//                    else showMobileConnectionDialog();
+//                    break;
+//                default:
+//                    addToDownloadQueue(paperId);
+//                    startDownloadQueue();
+//            }
+//        }
+
+
+
+
+
+//                //TODO DIALOG
+//                //startDownload(paper.getId());
+//                DownloadHelper mDownloadHelper = new DownloadHelper(this);
+//                try {
+//                    mDownloadHelper.enquePaper(bookId);
+//                } catch (IllegalArgumentException e) {
+//                    // errorDownloadManagerDialog();
+//                }
     }
 
     private void addToDownloadQueue(long paperId) {
@@ -392,7 +416,7 @@ public class StartActivity extends BaseActivity
                 if (paper == null) throw new Paper.PaperNotFoundException();
                 try {
                     DownloadManager.getInstance(this)
-                                   .enquePaper(paperId, false);
+                                   .enquePaper(paper, false);
                 } catch (IllegalArgumentException e) {
                     showErrorDialog(getString(R.string.dialog_downloadmanager_error), DIALOG_DOWNLOADMANAGER_ERROR);
                 } catch (DownloadManager.DownloadNotAllowedException e) {
@@ -555,10 +579,12 @@ public class StartActivity extends BaseActivity
 
 
 
-    public void openReader(long id) {
+    public void openReader(String bookId) {
 
         Paper openPaper;
         try {
+            openPaper = TazappDatabase.getInstance(this).paperDao().getPaperWithBookId(bookId);
+            long id = openPaper.getId();
             openPaper = Paper.getPaperWithId(this, id);
             if (openPaper == null) throw new Paper.PaperNotFoundException();
             if (!openPaper.isDownloaded()) {
@@ -625,7 +651,8 @@ public class StartActivity extends BaseActivity
         Timber.d("event: %s", event);
         if (retainDataFragment.useOpenPaperafterDownload) {
             if (event.getPaperId() == retainDataFragment.openPaperIdAfterDownload) {
-                openReader(retainDataFragment.openPaperIdAfterDownload);
+                //TODO
+                //openReader(retainDataFragment.openPaperIdAfterDownload);
             }
         }
     }
@@ -657,7 +684,8 @@ public class StartActivity extends BaseActivity
                     long paperId = retainDataFragment.openPaperWaitingForRessource;
                     retainDataFragment.openPaperWaitingForRessource = -1;
                     if (event.isSuccessful()) {
-                        openReader(paperId);
+                        //TODO
+                        //openReader(paperId);
                     }
                 }
             } catch (Paper.PaperNotFoundException e) {
@@ -713,18 +741,6 @@ public class StartActivity extends BaseActivity
                 TazSettings.getInstance(this)
                            .setPref(TazSettings.PREFKEY.USERMIGRATIONNOTIFICATION, true);
                 mDrawerFragment.simulateClick(userItem, true);
-            }
-        } else if (DIALOG_MIGRATION_FINISHED.equals(tag)) {
-            if (which == Dialog.BUTTON_POSITIVE) {
-                try {
-                    JSONArray json = new JSONArray(arguments.getString(ARGUMENT_MIGRATED_IDS_JSONARRAY));
-                    for (int i = 0; i < json.length(); i++) {
-                        startDownload(json.getLong(i));
-                    }
-                } catch (JSONException | Paper.PaperNotFoundException e) {
-                    Timber.w(e);
-                }
-
             }
         } else if (ImprintFragment.DIALOG_TECHINFO.equals(tag)) {
             switch (which) {

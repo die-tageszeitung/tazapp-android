@@ -45,7 +45,7 @@ public class AutoDownloadJob extends Job {
                                                       .getPrefBoolean(TazSettings.PREFKEY.AUTOLOAD_WIFI, false);
                         if (!(paper.isDownloaded() || paper.isDownloading())) {
                             DownloadManager.getInstance(getContext())
-                                           .enquePaper(paper.getId(), wifiOnly);
+                                           .enquePaper(paper, wifiOnly);
                             paper = Paper.getPaperWithId(getContext(),paperId);
                             if (!(paper.isDownloading() || paper.isDownloaded())) {
                                 return Result.RESCHEDULE;

@@ -34,11 +34,11 @@ import timber.log.Timber;
 
 public class DownloadManager {
 
-    android.app.DownloadManager mDownloadManager;
-    Context                     mContext;
-    StorageManager              mStorage;
-    UserAgentHelper             userAgentHelper;
-    RequestHelper               requestHelper;
+    private android.app.DownloadManager mDownloadManager;
+    private Context                     mContext;
+    private StorageManager              mStorage;
+    private UserAgentHelper             userAgentHelper;
+    private RequestHelper               requestHelper;
 
     private static DownloadManager instance;
 
@@ -56,12 +56,8 @@ public class DownloadManager {
     }
 
     @SuppressLint("NewApi")
-    public void enquePaper(long paperId, boolean wifiOnly) throws IllegalArgumentException, Paper.PaperNotFoundException,
+    public void enquePaper(Paper paper, boolean wifiOnly) throws IllegalArgumentException, Paper.PaperNotFoundException,
             DownloadNotAllowedException, NotEnoughSpaceException {
-
-
-        Paper paper = Paper.getPaperWithId(mContext, paperId);
-        if (paper == null) throw new Paper.PaperNotFoundException();
 
         if (TazSettings.getInstance(mContext)
                        .isDemoMode() && !paper.isDemo()) throw new DownloadNotAllowedException();
