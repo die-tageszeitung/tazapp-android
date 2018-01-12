@@ -1,5 +1,8 @@
 package de.thecode.android.tazreader.data;
 
+import android.arch.persistence.room.ColumnInfo;
+import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.PrimaryKey;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.net.Uri;
@@ -10,10 +13,10 @@ import com.dd.plist.NSDictionary;
 import de.thecode.android.tazreader.provider.TazProvider;
 import de.thecode.android.tazreader.utils.PlistHelper;
 
-
+@Entity(tableName = Publication.TABLE_NAME)
 public class Publication {
 
-    public static String TABLE_NAME = "PUBLICATION";
+    public static final String TABLE_NAME = "PUBLICATION";
     public static final Uri CONTENT_URI = Uri.parse("content://" + TazProvider.AUTHORITY + "/" + TABLE_NAME);
     public static final String CONTENT_TYPE = "vnd.android.cursor.dir/vnd.taz."+TABLE_NAME;
     public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/vnd.taz."+TABLE_NAME;
@@ -30,7 +33,9 @@ public class Publication {
         public static final String FULL_ID=TABLE_NAME+"."+_ID;
         //public static final String FULL_VALIDUNTIL = TABLE_NAME+"."+VALIDUNTIL;
     }
-    
+
+    @PrimaryKey
+    @ColumnInfo(name = BaseColumns._ID)
     private Long id;
     private String issueName;
     private String typeName;
@@ -39,6 +44,10 @@ public class Publication {
     private String image;
     private long created;
     private long validUntil;
+
+    public Publication() {
+
+    }
     
     public Publication(Cursor cursor)
     {
@@ -111,7 +120,11 @@ public class Publication {
     public long getValidUntilInMillis() {
         return validUntil*1000;
     }
-    
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     public Long getId() {
         return id;
     }

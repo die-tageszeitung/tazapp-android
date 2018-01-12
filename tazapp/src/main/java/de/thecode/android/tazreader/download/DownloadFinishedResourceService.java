@@ -57,7 +57,7 @@ public class DownloadFinishedResourceService extends IntentService {
 
     private void saveResource(Resource resource, Exception e) {
         if (e == null) {
-            resource.setDownloadId(0);
+            resource.setDownloadID(0);
             resource.setDownloaded(true);
             getContentResolver().update(Uri.withAppendedPath(Resource.CONTENT_URI, resource.getKey()), resource.getContentValues(), null, null);
             EventBus.getDefault()

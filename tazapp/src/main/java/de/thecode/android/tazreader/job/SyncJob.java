@@ -214,7 +214,7 @@ public class SyncJob extends Job {
                                 oldPaper.setLastModified(newPaper.getLastModified());
                                 if (!new EqualsBuilder().append(oldPaper.getFileHash(), newPaper.getFileHash())
                                                         .isEquals() && (oldPaper.isDownloaded() || oldPaper.isDownloading()))
-                                    oldPaper.setHasupdate(true);
+                                    oldPaper.setHasUpdate(true);
                             }
                             oldPaper.setLink(newPaper.getLink());
                             oldPaper.setLen(newPaper.getLen());

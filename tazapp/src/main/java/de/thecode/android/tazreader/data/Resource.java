@@ -1,9 +1,12 @@
 package de.thecode.android.tazreader.data;
 
+import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.PrimaryKey;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 
 import com.dd.plist.NSDictionary;
 
@@ -18,9 +21,9 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import java.util.ArrayList;
 import java.util.List;
 
-
+@Entity(tableName = Resource.TABLE_NAME)
 public class Resource {
-    public static       String TABLE_NAME        = "RESOURCE";
+    public static   final    String TABLE_NAME        = "RESOURCE";
     public static final Uri    CONTENT_URI       = Uri.parse("content://" + TazProvider.AUTHORITY + "/" + TABLE_NAME);
     public static final String CONTENT_TYPE      = "vnd.android.cursor.dir/vnd.taz." + TABLE_NAME;
     public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/vnd.taz." + TABLE_NAME;
@@ -40,13 +43,18 @@ public class Resource {
         public static final String RESOURCELEN      = "resourceLen";
     }
 
+    @PrimaryKey
+    @NonNull
     private String  key;
-    private long    downloadId;
+    private long    downloadID;
     private boolean downloaded;
     private String  url;
     private String  fileHash;
     private long    len;
 
+    public Resource(){
+
+    }
 
     public Resource(Cursor cursor) {
         setData(cursor);
@@ -74,7 +82,7 @@ public class Resource {
 
     private void setData(Cursor cursor) {
         this.key = cursor.getString(cursor.getColumnIndex(Columns.KEY));
-        this.downloadId = cursor.getLong(cursor.getColumnIndex(Columns.DOWNLOADID));
+        this.downloadID = cursor.getLong(cursor.getColumnIndex(Columns.DOWNLOADID));
         this.downloaded = getBoolean(cursor, cursor.getColumnIndex(Columns.DOWNLOADED));
         this.len = cursor.getLong(cursor.getColumnIndex(Columns.LEN));
         this.fileHash = cursor.getString(cursor.getColumnIndex(Columns.FILEHASH));
@@ -84,7 +92,7 @@ public class Resource {
     public ContentValues getContentValues() {
         ContentValues cv = new ContentValues();
         cv.put(Columns.KEY, key);
-        cv.put(Columns.DOWNLOADID, downloadId);
+        cv.put(Columns.DOWNLOADID, downloadID);
         cv.put(Columns.DOWNLOADED, downloaded);
         cv.put(Columns.FILEHASH, fileHash);
         cv.put(Columns.LEN, len);
@@ -101,12 +109,12 @@ public class Resource {
     }
 
 
-    public void setKey(String key) {
+    public void setKey(@NonNull String key) {
         this.key = key;
     }
 
-    public void setDownloadId(long downloadId) {
-        this.downloadId = downloadId;
+    public void setDownloadID(long downloadID) {
+        this.downloadID = downloadID;
     }
 
     public void setDownloaded(boolean downloaded) {
@@ -125,6 +133,7 @@ public class Resource {
         this.len = len;
     }
 
+    @NonNull
     public String getKey() {
         return key;
     }
@@ -134,12 +143,12 @@ public class Resource {
     }
 
     public boolean isDownloading() {
-        if (downloadId == 0) return false;
+        if (downloadID == 0) return false;
         else return true;
     }
 
-    public long getDownloadId() {
-        return downloadId;
+    public long getDownloadID() {
+        return downloadID;
     }
 
     public String getUrl() {
@@ -157,7 +166,7 @@ public class Resource {
     public void delete(Context context){
         StorageManager storage = StorageManager.getInstance(context);
         storage.deleteResourceDir(getKey());
-        setDownloadId(0);
+        setDownloadID(0);
         setDownloaded(false);
         Uri resourceUri = CONTENT_URI.buildUpon()
                                      .appendPath(getKey())
@@ -180,7 +189,7 @@ public class Resource {
 
         Resource resource = (Resource) o;
 
-        return new EqualsBuilder().append(downloadId, resource.downloadId)
+        return new EqualsBuilder().append(downloadID, resource.downloadID)
                                   .append(downloaded, resource.downloaded)
                                   .append(len, resource.len)
                                   .append(key, resource.key)
@@ -192,7 +201,7 @@ public class Resource {
     @Override
     public int hashCode() {
         return new HashCodeBuilder(17, 37).append(key)
-                                          .append(downloadId)
+                                          .append(downloadID)
                                           .append(downloaded)
                                           .append(url)
                                           .append(fileHash)

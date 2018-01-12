@@ -110,8 +110,8 @@ public class DownloadManager {
 
         //paper.setDownloadprogress(0);
         paper.setDownloadId(downloadId);
-        paper.setIsdownloaded(false);
-        paper.setHasupdate(false);
+        paper.setDownloaded(false);
+        paper.setHasUpdate(false);
 
         mContext.getContentResolver()
                 .update(ContentUris.withAppendedId(Paper.CONTENT_URI, paper.getId()), paper.getContentValues(), null, null);
@@ -175,7 +175,7 @@ public class DownloadManager {
 
             Timber.i("... download requested at android download manager, id: %d", downloadId);
 
-            resource.setDownloadId(downloadId);
+            resource.setDownloadID(downloadId);
 
             mContext.getContentResolver()
                     .update(Uri.withAppendedPath(Resource.CONTENT_URI, resource.getKey()),

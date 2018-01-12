@@ -1,5 +1,6 @@
 package de.thecode.android.tazreader.provider;
 
+import android.arch.persistence.db.SupportSQLiteDatabase;
 import android.content.ContentProvider;
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -7,7 +8,9 @@ import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import de.thecode.android.tazreader.BuildConfig;
@@ -15,6 +18,9 @@ import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Publication;
 import de.thecode.android.tazreader.data.Resource;
 import de.thecode.android.tazreader.data.Store;
+import de.thecode.android.tazreader.room.AppDatabase;
+
+import java.util.Set;
 
 import timber.log.Timber;
 //import de.thecode.android.tazreader.utils.Log;
@@ -36,8 +42,8 @@ public class TazProvider extends ContentProvider {
     public static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".provider";
     private static UriMatcher sUriMatcher;
 
-    private DatabaseHelper mDatabaseHelper;
-    private SQLiteDatabase mDb;
+    //private SQLiteDatabase mDb;
+    private SupportSQLiteDatabase mDb;
 
     static {
         sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
@@ -56,10 +62,8 @@ public class TazProvider extends ContentProvider {
 
     @Override
     public boolean onCreate() {
-
-
-        mDatabaseHelper = new DatabaseHelper(getContext());
-        mDb = mDatabaseHelper.getWritableDatabase();
+        mDb = AppDatabase.getInstance(getContext()).getOpenHelper()
+                         .getWritableDatabase();
         return true;
     }
 
@@ -67,112 +71,68 @@ public class TazProvider extends ContentProvider {
     @Override
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
 
-        Cursor queryCursor;
         int match = sUriMatcher.match(uri);
 
-        //Log.d(match,uri);
-
+        SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
 
         switch (match) {
 
             case PAPER_DIR:
-
-                //queryCursor = mDb.query(Paper.TABLE_NAME + " LEFT OUTER JOIN "+ Publication.TABLE_NAME + " ON "+ Paper.Columns.PUBLICATIONID +" = "+Publication.Columns.FULL_ID, new String[]{Paper.TABLE_NAME+".*"}, selection, selectionArgs, null, null, sortOrder);
-
-                queryCursor = mDb.query(Paper.TABLE_NAME, projection, selection, selectionArgs, null, null, sortOrder);
-                queryCursor.setNotificationUri(getContext().getContentResolver(), uri);
+                queryBuilder.setTables(Paper.TABLE_NAME);
                 break;
 
             case PAPER_ID:
+                queryBuilder.setTables(Paper.TABLE_NAME);
                 long paperId = ContentUris.parseId(uri);
-//                queryCursor = mDb.query(Paper.TABLE_NAME + " LEFT OUTER JOIN "+ Publication.TABLE_NAME + " ON "+ Paper.Columns.PUBLICATIONID +" = "+Publication.Columns.FULL_ID, new String[]{Paper.TABLE_NAME+".*"},
-//                        Paper.Columns.FULL_ID + " = " + paperId + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ")" : ""),
-//                        selectionArgs, null, null, sortOrder);
-
-                queryCursor = mDb.query(Paper.TABLE_NAME,
-                                        projection,
-                                        Paper.Columns._ID + " = " + paperId + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ")" : ""),
-                                        selectionArgs,
-                                        null,
-                                        null,
-                                        sortOrder);
-
-                queryCursor.setNotificationUri(getContext().getContentResolver(), uri);
+                queryBuilder.appendWhere(Paper.Columns._ID + " = " + paperId);
                 break;
 
             case PAPER_BOOKID:
+                queryBuilder.setTables(Paper.TABLE_NAME);
                 String bookId = uri.getLastPathSegment();
-//                queryCursor = mDb.query(Paper.TABLE_NAME + " LEFT OUTER JOIN "+ Publication.TABLE_NAME + " ON "+ Paper.Columns.PUBLICATIONID +" = "+Publication.Columns.FULL_ID, new String[]{Paper.TABLE_NAME+".*"},
-//                        Paper.Columns.BOOKID + " LIKE '" + bookId + "'"+(!TextUtils.isEmpty(selection) ? " AND (" + selection + ")" : ""),
-//                        selectionArgs, null, null, sortOrder);
-
-                queryCursor = mDb.query(Paper.TABLE_NAME,
-                                        projection,
-                                        Paper.Columns.BOOKID + " LIKE '" + bookId + "'" + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ")" : ""),
-                                        selectionArgs,
-                                        null,
-                                        null,
-                                        sortOrder);
-
-                queryCursor.setNotificationUri(getContext().getContentResolver(), uri);
+                queryBuilder.appendWhere(Paper.Columns.BOOKID + " LIKE '" + bookId + "'");
                 break;
 
             case STORE_KEY:
+                queryBuilder.setTables(Store.TABLE_NAME);
                 String key = uri.toString();
                 key = key.replace(Store.CONTENT_URI.toString(), "");
-                queryCursor = mDb.query(Store.TABLE_NAME,
-                                        projection,
-                                        Store.Columns.KEY + " LIKE '" + key + "'",
-                                        selectionArgs,
-                                        null,
-                                        null,
-                                        sortOrder);
-                queryCursor.setNotificationUri(getContext().getContentResolver(), uri);
+                queryBuilder.appendWhere(Store.Columns.KEY + " LIKE '" + key + "'");
                 break;
 
             case STORE_DIR:
-                queryCursor = mDb.query(Store.TABLE_NAME, projection, selection, selectionArgs, null, null, sortOrder);
-                queryCursor.setNotificationUri(getContext().getContentResolver(), uri);
+                queryBuilder.setTables(Store.TABLE_NAME);
                 break;
 
             case PUBLICATION_DIR:
-                queryCursor = mDb.query(Publication.TABLE_NAME, projection, selection, selectionArgs, null, null, sortOrder);
-                queryCursor.setNotificationUri(getContext().getContentResolver(), uri);
+                queryBuilder.setTables(Publication.TABLE_NAME);
                 break;
 
             case PUBLICATION_ID:
+                queryBuilder.setTables(Publication.TABLE_NAME);
                 long publicationId = ContentUris.parseId(uri);
-                queryCursor = mDb.query(Publication.TABLE_NAME,
-                                        projection,
-                                        Publication.Columns._ID + " = " + publicationId + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ")" : ""),
-                                        selectionArgs,
-                                        null,
-                                        null,
-                                        sortOrder);
-                queryCursor.setNotificationUri(getContext().getContentResolver(), uri);
+                queryBuilder.appendWhere(Publication.Columns._ID + " = " + publicationId);
                 break;
 
             case RESOURCE_DIR:
-                queryCursor = mDb.query(Resource.TABLE_NAME, projection, selection, selectionArgs, null, null, sortOrder);
-                queryCursor.setNotificationUri(getContext().getContentResolver(), uri);
+                queryBuilder.setTables(Resource.TABLE_NAME);
                 break;
 
             case RESOURCE_KEY:
+                queryBuilder.setTables(Resource.TABLE_NAME);
                 String resourceKey = uri.getLastPathSegment();
-                queryCursor = mDb.query(Resource.TABLE_NAME,
-                                        projection,
-                                        Resource.Columns.KEY + " LIKE '" + resourceKey + "'",
-                                        selectionArgs,
-                                        null,
-                                        null,
-                                        sortOrder);
-                queryCursor.setNotificationUri(getContext().getContentResolver(), uri);
+                queryBuilder.appendWhere(Resource.Columns.KEY + " LIKE '" + resourceKey + "'");
                 break;
 
 
             default:
                 throw new IllegalArgumentException("unsupported uri: " + uri);
         }
+
+        String query = queryBuilder.buildQuery(projection, selection, null, null, sortOrder, null);
+        Timber.d("query: %s", query);
+        Cursor queryCursor = mDb.query(query);
+        queryCursor.setNotificationUri(getContext().getContentResolver(), uri);
         return queryCursor;
     }
 
@@ -202,23 +162,26 @@ public class TazProvider extends ContentProvider {
     }
 
     @Override
-    public Uri insert(Uri uri, ContentValues values) {
-        //Log.v();
+    public Uri insert(@NonNull Uri uri, ContentValues values) {
+
+        Timber.d("--------------------------------------------------------------------");
+        Timber.d("uri: %s", uri);
+
         int match = sUriMatcher.match(uri);
         long rowId = -1;
         switch (match) {
             case STORE_DIR:
                 //FIXME Prüfen ob Key vorhanden
-                rowId = mDb.insert(Store.TABLE_NAME, null, values);
+                rowId = mDb.insert(Store.TABLE_NAME, SQLiteDatabase.CONFLICT_REPLACE, values);
                 break;
             case PAPER_DIR:
-                rowId = mDb.insert(Paper.TABLE_NAME, null, values);
+                rowId = mDb.insert(Paper.TABLE_NAME, SQLiteDatabase.CONFLICT_REPLACE, values);
                 break;
             case PUBLICATION_DIR:
-                rowId = mDb.insert(Publication.TABLE_NAME, null, values);
+                rowId = mDb.insert(Publication.TABLE_NAME, SQLiteDatabase.CONFLICT_REPLACE, values);
                 break;
             case RESOURCE_DIR:
-                rowId = mDb.insert(Resource.TABLE_NAME, null, values);
+                rowId = mDb.insert(Resource.TABLE_NAME, SQLiteDatabase.CONFLICT_REPLACE, values);
                 if (rowId > -1) {
                     Uri contentUri = Uri.withAppendedPath(uri, values.getAsString(Resource.Columns.KEY));
                     return contentUri;
@@ -308,9 +271,27 @@ public class TazProvider extends ContentProvider {
         return affected;
     }
 
+
+
+
     @Override
     public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
-        //Log.v();
+        if (values != null) {
+            Set<String> keys = values.keySet();
+            for (String key : keys) {
+                if (values.get(key) instanceof Boolean) {
+                    Boolean value = values.getAsBoolean(key);
+                    values.put(key,value?1:0);
+                }
+            }
+        }
+
+
+
+        Timber.d("--------------------------------------------------------------------");
+        Timber.d("uri: %s", uri);
+        Timber.d("selection: %s", selection);
+        Timber.d("selectionArgs[]: %s", selectionArgs == null ? "null" : selectionArgs);
         int match = sUriMatcher.match(uri);
         int affected;
         switch (match) {
@@ -318,6 +299,7 @@ public class TazProvider extends ContentProvider {
                 String key = uri.toString();
                 key = key.replace(Store.CONTENT_URI.toString(), "");
                 affected = mDb.update(Store.TABLE_NAME,
+                                      SQLiteDatabase.CONFLICT_FAIL,
                                       values,
                                       Store.Columns.KEY + " LIKE '" + key + "'" + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ")" : ""),
                                       selectionArgs);
@@ -325,28 +307,31 @@ public class TazProvider extends ContentProvider {
             case PAPER_ID:
                 long paperId = ContentUris.parseId(uri);
                 affected = mDb.update(Paper.TABLE_NAME,
+                                      SQLiteDatabase.CONFLICT_FAIL,
                                       values,
                                       Paper.Columns._ID + " = " + paperId + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ")" : ""),
                                       selectionArgs);
                 break;
             case PAPER_DIR:
-                affected = mDb.update(Paper.TABLE_NAME, values, selection, selectionArgs);
+                affected = mDb.update(Paper.TABLE_NAME, SQLiteDatabase.CONFLICT_FAIL, values, selection, selectionArgs);
                 break;
             case PUBLICATION_ID:
                 long publicationId = ContentUris.parseId(uri);
                 affected = mDb.update(Publication.TABLE_NAME,
+                                      SQLiteDatabase.CONFLICT_FAIL,
                                       values,
                                       Publication.Columns._ID + " = " + publicationId + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ")" : ""),
                                       selectionArgs);
                 break;
 
             case RESOURCE_DIR:
-                affected = mDb.update(Resource.TABLE_NAME, values, selection, selectionArgs);
+                affected = mDb.update(Resource.TABLE_NAME, SQLiteDatabase.CONFLICT_FAIL, values, selection, selectionArgs);
                 break;
 
             case RESOURCE_KEY:
                 String resourceKey = uri.getLastPathSegment();
                 affected = mDb.update(Resource.TABLE_NAME,
+                                      SQLiteDatabase.CONFLICT_FAIL,
                                       values,
                                       Resource.Columns.KEY + " LIKE '" + resourceKey + "'" + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ")" : ""),
                                       selectionArgs);
@@ -362,5 +347,4 @@ public class TazProvider extends ContentProvider {
 
         return affected;
     }
-
 }

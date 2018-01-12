@@ -1,5 +1,9 @@
 package de.thecode.android.tazreader.data;
 
+import android.arch.persistence.room.ColumnInfo;
+import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.Ignore;
+import android.arch.persistence.room.PrimaryKey;
 import android.content.ComponentName;
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -57,6 +61,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import timber.log.Timber;
 
+@Entity(tableName = Paper.TABLE_NAME)
 public class Paper {
 
     public static final  String STORE_KEY_BOOKMARKS           = "bookmarks";
@@ -65,7 +70,7 @@ public class Paper {
     private static final String STORE_KEY_RESOURCE_PARTNER    = "resource";
     private static final String STORE_KEY_AUTO_DOWNLOADED    = "auto_download";
 
-    public static       String TABLE_NAME        = "PAPER";
+    public static final String TABLE_NAME        = "PAPER";
     public static final Uri    CONTENT_URI       = Uri.parse("content://" + TazProvider.AUTHORITY + "/" + TABLE_NAME);
     public static final String CONTENT_TYPE      = "vnd.android.cursor.dir/vnd.taz." + TABLE_NAME;
     public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/vnd.taz." + TABLE_NAME;
@@ -166,6 +171,8 @@ public class Paper {
     public final static int IS_DOWNLOADING        = 4;
     public final static int NOT_DOWNLOADED_IMPORT = 5;
 
+    @PrimaryKey
+    @ColumnInfo(name = BaseColumns._ID)
     private Long    id;
     private String  date;
     private String  image;
@@ -176,9 +183,9 @@ public class Paper {
     private long    lastModified;
     private String  bookId;
     private boolean isDemo;
-    private boolean hasupdate;
+    private boolean hasUpdate;
     private long    downloadId;
-    private boolean isdownloaded;
+    private boolean isDownloaded;
     private boolean kiosk;
     private boolean imported;
     private String  title;
@@ -188,9 +195,11 @@ public class Paper {
 //    private String  resourceUrl;
 //    private long    resourceLen;
     private long    validUntil;
+    @Ignore
     private int progress = 0;
-
+    @Ignore
     private Map<String, Integer> articleCollectionOrder;
+    @Ignore
     private Map<Integer, String> articleCollectionPositionIndex;
 
 
@@ -216,10 +225,10 @@ public class Paper {
         // this.filename = cursor.getString(cursor.getColumnIndex(Columns.FILENAME));
         // this.tempfilepath = cursor.getString(cursor.getColumnIndex(Columns.TEMPFILEPATH));
         // this.tempfilename = cursor.getString(cursor.getColumnIndex(Columns.TEMPFILENAME));
-        this.hasupdate = getBoolean(cursor, cursor.getColumnIndex(Columns.HASUPDATE));
+        this.hasUpdate = getBoolean(cursor, cursor.getColumnIndex(Columns.HASUPDATE));
         this.downloadId = cursor.getLong(cursor.getColumnIndex(Columns.DOWNLOADID));
         //this.downloadprogress = cursor.getInt(cursor.getColumnIndex(Columns.DOWNLOADPROGRESS));
-        this.isdownloaded = getBoolean(cursor, cursor.getColumnIndex(Columns.ISDOWNLOADED));
+        this.isDownloaded = getBoolean(cursor, cursor.getColumnIndex(Columns.ISDOWNLOADED));
         this.kiosk = getBoolean(cursor, cursor.getColumnIndex(Columns.KIOSK));
         this.imported = getBoolean(cursor, cursor.getColumnIndex(Columns.IMPORTED));
         this.title = cursor.getString(cursor.getColumnIndex(Columns.TITLE));
@@ -259,12 +268,12 @@ public class Paper {
         //cv.put(Columns.DOWNLOADPROGRESS, downloadprogress);
         cv.put(Columns.FILEHASH, fileHash);
         // cv.put(Columns.FILENAME, filename);
-        cv.put(Columns.HASUPDATE, hasupdate);
+        cv.put(Columns.HASUPDATE, hasUpdate);
         cv.put(Columns.IMAGE, image);
         cv.put(Columns.IMAGEHASH, imageHash);
         cv.put(Columns.IMPORTED, imported);
         cv.put(Columns.ISDEMO, isDemo);
-        cv.put(Columns.ISDOWNLOADED, isdownloaded);
+        cv.put(Columns.ISDOWNLOADED, isDownloaded);
         cv.put(Columns.DOWNLOADID, downloadId);
         cv.put(Columns.KIOSK, kiosk);
         cv.put(Columns.LASTMODIFIED, lastModified);
@@ -339,7 +348,7 @@ public class Paper {
     }
 
     public boolean isDownloaded() {
-        return isdownloaded;
+        return isDownloaded;
     }
 
     public boolean isDownloading() {
@@ -347,7 +356,7 @@ public class Paper {
     }
 
     public boolean hasUpdate() {
-        return hasupdate;
+        return hasUpdate;
     }
 
     public boolean isImported() {
@@ -434,16 +443,12 @@ public class Paper {
         return lastModified;
     }
 
-    public void setDownloaded(boolean isdownloaded) {
-        this.isdownloaded = isdownloaded;
+    public void setHasUpdate(boolean hasUpdate) {
+        this.hasUpdate = hasUpdate;
     }
 
-    public void setHasupdate(boolean hasupdate) {
-        this.hasupdate = hasupdate;
-    }
-
-    public void setIsdownloaded(boolean isdownloaded) {
-        this.isdownloaded = isdownloaded;
+    public void setDownloaded(boolean downloaded) {
+        this.isDownloaded = downloaded;
     }
 
     public void setBookId(String bookId) {
@@ -543,6 +548,7 @@ public class Paper {
         this.articleCollectionPositionIndex = articleCollectionPositionIndex;
     }
 
+    @Ignore
     private Plist plist;
 
     public void parsePlist(File file) throws IOException, PropertyListFormatException, ParseException,
@@ -1594,7 +1600,7 @@ public class Paper {
         } else {
             setDownloadId(0);
             setDownloaded(false);
-            setHasupdate(false);
+            setHasUpdate(false);
             if (BuildConfig.BUILD_TYPE.equals("staging"))
                 setValidUntil(0); //Wunsch von Ralf, damit besser im Staging getestet werden kann
             int affected = context.getContentResolver()
