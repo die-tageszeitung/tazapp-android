@@ -1,7 +1,10 @@
 package de.thecode.android.tazreader.reader.index;
 
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.NavUtils;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -29,6 +32,7 @@ import de.thecode.android.tazreader.data.Paper.Plist.Source;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.reader.IReaderCallback;
 import de.thecode.android.tazreader.reader.ReaderActivity;
+import de.thecode.android.tazreader.reader.ReaderViewModel;
 import de.thecode.android.tazreader.reader.SettingsDialog;
 import de.thecode.android.tazreader.utils.BaseFragment;
 import de.thecode.android.tazreader.utils.TintHelper;
@@ -63,6 +67,7 @@ public class IndexFragment extends BaseFragment {
 
     IReaderCallback mReaderCallback;
 
+    ReaderViewModel readerViewModel;
 
     public IndexFragment() {
 
@@ -93,12 +98,19 @@ public class IndexFragment extends BaseFragment {
         context.getResources()
                .getValue(R.dimen.icon_button_alpha, outValue, true);
         iconButtonAlpha = outValue.getFloat();
-        init(mReaderCallback.getPaper());
+        //init(mReaderCallback.getPaper());
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        readerViewModel = ViewModelProviders.of(getActivity()).get(ReaderViewModel.class);
+        readerViewModel.getUserIndexLiveData().observe(this, new Observer<List<IIndexItem>>() {
+            @Override
+            public void onChanged(@Nullable List<IIndexItem> iIndexItems) {
+                Timber.i("Hallo");
+            }
+        });
         //init(mReaderCallback.getPaper());
         adapter = new IndexRecyclerViewAdapter();
         adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
@@ -364,28 +376,28 @@ public class IndexFragment extends BaseFragment {
 
 
         void rebuildPositions() {
-            positions.clear();
-            boolean filter = false;
-            //Workaround
-            if (mReaderCallback != null) filter = mReaderCallback.isFilterBookmarks();
-            if (index != null) {
-                if (!filter) {
-                    for (Map.Entry<String, IIndexItem> entry : index.entrySet()) {
-                        if (entry.getValue()
-                                 .isVisible()) positions.add(entry.getKey());
-                    }
-                } else {
-                    for (Map.Entry<String, IIndexItem> entry : index.entrySet()) {
-                        if (entry.getValue()
-                                 .isVisible()) {
-                            if (entry.getValue()
-                                     .isBookmarked()) positions.add(entry.getKey());
-                            else if (entry.getValue()
-                                          .hasBookmarkedChilds()) positions.add(entry.getKey());
-                        }
-                    }
-                }
-            }
+//            positions.clear();
+//            boolean filter = false;
+//            //Workaround
+//            if (mReaderCallback != null) filter = mReaderCallback.isFilterBookmarks();
+//            if (index != null) {
+//                if (!filter) {
+//                    for (Map.Entry<String, IIndexItem> entry : index.entrySet()) {
+//                        if (entry.getValue()
+//                                 .isVisible()) positions.add(entry.getKey());
+//                    }
+//                } else {
+//                    for (Map.Entry<String, IIndexItem> entry : index.entrySet()) {
+//                        if (entry.getValue()
+//                                 .isVisible()) {
+//                            if (entry.getValue()
+//                                     .isBookmarked()) positions.add(entry.getKey());
+//                            else if (entry.getValue()
+//                                          .hasBookmarkedChilds()) positions.add(entry.getKey());
+//                        }
+//                    }
+//                }
+//            }
         }
 
 

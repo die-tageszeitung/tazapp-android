@@ -34,4 +34,10 @@ public abstract class AppDatabase extends RoomDatabase {
                    .addMigrations(Migrations.getAllmigrations())
                    .build();
     }
+
+    public abstract PaperDao getPaperDao();
+    public abstract StoreDao getStoreDao();
+    public abstract PublicationDao getPublicationDao();
+    public abstract ResourceDao getResourceDao();
+
 }

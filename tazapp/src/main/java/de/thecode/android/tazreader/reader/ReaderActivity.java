@@ -1,6 +1,7 @@
 package de.thecode.android.tazreader.reader;
 
 import android.annotation.SuppressLint;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
@@ -35,7 +36,6 @@ import de.thecode.android.tazreader.data.Resource;
 import de.thecode.android.tazreader.data.Store;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.dialog.HelpDialog;
-import de.thecode.android.tazreader.notifications.NotificationUtils;
 import de.thecode.android.tazreader.reader.article.ArticleFragment;
 import de.thecode.android.tazreader.reader.article.TopLinkFragment;
 import de.thecode.android.tazreader.reader.index.IIndexItem;
@@ -82,8 +82,9 @@ public class ReaderActivity extends BaseActivity
     private static final String TAG_FRAGMENT_PAGEINDEX      = "PageIndexFragment";
     public static final  String TAG_FRAGMENT_DIALOG_SETTING = "settingsDialog";
     public static final  String TAG_DIALOG_TTS_ERROR        = "ttsError";
-    public static final  String KEY_EXTRA_PAPER_ID          = "paperId";
+    //public static final  String KEY_EXTRA_PAPER_ID          = "paperId";
     public static final  String KEY_EXTRA_RESOURCE_KEY      = "resourceKey";
+    public static final  String KEY_EXTRA_PAPER_BOOKID          = "bookId";
 
     DrawerLayout mDrawerLayout;
     View         mDrawerLayoutIndex;
@@ -102,30 +103,37 @@ public class ReaderActivity extends BaseActivity
     PageIndexFragment       mPageIndexFragment;
     AbstractContentFragment mContentFragment;
 
+    ReaderViewModel readerViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        String bookId = getIntent().getStringExtra(KEY_EXTRA_PAPER_BOOKID);
+        if (TextUtils.isEmpty(bookId)) throw new IllegalStateException("Activity Reader has to be called with extra "+ KEY_EXTRA_PAPER_BOOKID);
+        String resourceKey = getIntent().getStringExtra(KEY_EXTRA_RESOURCE_KEY);
+        if (TextUtils.isEmpty(resourceKey)) throw new IllegalStateException("Activity Reader has to be called with extra "+KEY_EXTRA_RESOURCE_KEY);
+
+        ReaderViewModel.ReaderViewModelFactory readerViewModelFactory = new ReaderViewModel.ReaderViewModelFactory(getApplication(),bookId,resourceKey);
+
+        readerViewModel = ViewModelProviders.of(this,readerViewModelFactory).get(ReaderViewModel.class);
+
         //Orientation.setActivityOrientationFromPrefs(this);
 
         mStorage = StorageManager.getInstance(this);
 
-        long paperId;
-        if (!getIntent().hasExtra(KEY_EXTRA_PAPER_ID))
-            throw new IllegalStateException("Activity Reader has to be called with extra PaperId");
-        else paperId = getIntent().getLongExtra(KEY_EXTRA_PAPER_ID, -1);
-        if (paperId == -1) throw new IllegalStateException("paperId must not be " + paperId);
+        //long paperId;
+//
+//            if (!getIntent().hasExtra(KEY_EXTRA_RESOURCE_KEY))
+//            throw new IllegalStateException("Activity Reader has to be called with extra Resource Key");
+//        else {
+//            Resource resource = Resource.getWithKey(this, getIntent().getStringExtra(KEY_EXTRA_RESOURCE_KEY));
+//            if (resource == null) throw new IllegalStateException("Resource is null on loading reader");
+//            getReaderDataFragment().setResource(resource);
+//        }
 
-        if (!getIntent().hasExtra(KEY_EXTRA_RESOURCE_KEY))
-            throw new IllegalStateException("Activity Reader has to be called with extra Resource Key");
-        else {
-            Resource resource = Resource.getWithKey(this, getIntent().getStringExtra(KEY_EXTRA_RESOURCE_KEY));
-            if (resource == null) throw new IllegalStateException("Resource is null on loading reader");
-            getReaderDataFragment().setResource(resource);
-        }
-
-        new NotificationUtils(this).removeDownloadNotification(paperId);
+        //TODO remove DownloadNotifications
+        //new NotificationUtils(this).removeDownloadNotification(paperId);
 
         setContentView(R.layout.activity_reader);
 
@@ -148,41 +156,25 @@ public class ReaderActivity extends BaseActivity
 
         mFragmentManager = getSupportFragmentManager();
 
-        if (getReaderDataFragment().isPaperLoaded()) {
-            onPaperLoadFinished(new PaperLoadedEvent());
-        } else {
-            getReaderDataFragment().loadPaper(paperId);
-        }
-
-//        retainDataFragment = ReaderDataFragment.retainDataFragment(getSupportFragmentManager(), ReaderDataFragment.class);
-//        if (retainDataFragment != null) {
-//            Timber.i("Found data fragment");
-//            if (retainDataFragment.isPaperLoaded()) {
-//                onPaperLoadFinished(new PaperLoadedEvent());
-//            }
+//        if (getReaderDataFragment().isPaperLoaded()) {
+//            onPaperLoadFinished(new PaperLoadedEvent());
 //        } else {
-//            Timber.i("Did not find data fragment, initialising loading");
-//            retainDataFragment = ReaderDataFragment.createDataFragment(getSupportFragmentManager(), ReaderDataFragment.class);
-//            retainDataFragment.loadPaper(paperId);
+//            getReaderDataFragment().loadPaper(paperId);
 //        }
 
         audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         retainTtsFragment = ReaderTtsFragment.createOrRetainDataFragment(getSupportFragmentManager(), ReaderTtsFragment.class);
         retainTtsFragment.setCallback(this);
         if (retainTtsFragment.getTtsState() == ReaderTtsFragment.TTS.PLAYING) ttsPreparePlayingInActivty();
-    }
 
-    @Override
-    protected void onRestart() {
-        super.onRestart();
+        loadIndexFragment();
 
-    }
+        readerViewModel.getPlistLiveData().observe(this, plist -> {
 
-    @Override
-    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
+        });
 
     }
+
 
     @Override
     protected void onResume() {
@@ -575,12 +567,15 @@ public class ReaderActivity extends BaseActivity
 
     @Override
     public void setFilterBookmarks(boolean bool) {
-        getReaderDataFragment().setFilterBookmarks(bool);
+        //TODO implemnt logic
+        //getReaderDataFragment().setFilterBookmarks(bool);
     }
 
     @Override
     public boolean isFilterBookmarks() {
-        return getReaderDataFragment().isFilterBookmarks();
+        return false;
+        //TODO implement logic
+//        return getReaderDataFragment().isFilterBookmarks();
     }
 
 

@@ -15,7 +15,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.text.Html;
-import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -49,11 +48,7 @@ import de.thecode.android.tazreader.utils.TintHelper;
 import de.thecode.android.tazreader.widget.ReaderButton;
 import de.thecode.android.tazreader.widget.ShareButton;
 
-import org.apache.commons.io.IOUtils;
-
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -241,10 +236,12 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
     }
 
     private void loadArticleInWebview(Context context) {
-        String baseUrl = "file://" + StorageManager.getInstance(context)
-                                                   .getPaperDirectory(mArticle.getPaper()) + "/" + mArticle.getKey() + "?position=" + mPosition;
-        mWebView.loadDataWithBaseURL(baseUrl, getHtml(context), "text/html", "UTF-8", null);
-        mShareButton.setCallback(mArticle);
+        //TODO reactivate
+
+//        String baseUrl = "file://" + StorageManager.getInstance(context)
+//                                                   .getPaperDirectory(mArticle.getPaper()) + "/" + mArticle.getKey() + "?position=" + mPosition;
+//        mWebView.loadDataWithBaseURL(baseUrl, getHtml(context), "text/html", "UTF-8", null);
+//        mShareButton.setCallback(mArticle);
     }
 
 
@@ -638,42 +635,44 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
 
     public String getHtml(Context context) {
-        File articleFile = new File(StorageManager.getInstance(context)
-                                                  .getPaperDirectory(mArticle.getPaper())
-                                                  .getAbsolutePath(), mArticle.getKey());
-        File resourceDir = StorageManager.getInstance(context)
-                                         .getResourceDirectory(resource);
-
-        String resourceReplacement = "file://" + resourceDir.getAbsolutePath() + "/";
-        String tazapiReplacement = "file:///android_asset/js/TAZAPI.js";
-
-        String result = null;
-        try {
-            result = IOUtils.toString(new FileInputStream(articleFile), "UTF-8");
-
-            //            Pattern tazapiPattern = Pattern.compile("(<script.+?src\\s*?=\\s*?(?:\"|'))(res.+?TAZAPI.js)((?:\"|').*?>)", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
-
-            //            Matcher matcher = tazapiPattern.matcher(result);
-            //            result = matcher.replaceAll("$1" + tazapiReplacement + "$3");
-
-            Pattern resPattern = Pattern.compile("(<[^>]+?(?:href|src)\\s*?=\\s*?(?:\"|'))(res.+?)((?:\"|').*?>)",
-                                                 Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
-            Matcher matcher = resPattern.matcher(result);
-            result = matcher.replaceAll("$1" + resourceReplacement + "$2$3");
-
-            Pattern tazapiPattern = Pattern.compile("file://.+?TAZAPI.js", Pattern.CASE_INSENSITIVE);
-            Matcher matcher2 = tazapiPattern.matcher(result);
-            result = matcher2.replaceAll(tazapiReplacement);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        if (TextUtils.isEmpty(result)) result = "Fehler beim Laden des Artikels";
-
-        return result;
-
-        // (\<[^\>]+?(?:href|src)\=(?:\"|\'))(res)(.+?(?:\"|\')\>)
+        //TODO reactivate
+        return "";
+//        File articleFile = new File(StorageManager.getInstance(context)
+//                                                  .getPaperDirectory(mArticle.getPaper())
+//                                                  .getAbsolutePath(), mArticle.getKey());
+//        File resourceDir = StorageManager.getInstance(context)
+//                                         .getResourceDirectory(resource);
+//
+//        String resourceReplacement = "file://" + resourceDir.getAbsolutePath() + "/";
+//        String tazapiReplacement = "file:///android_asset/js/TAZAPI.js";
+//
+//        String result = null;
+//        try {
+//            result = IOUtils.toString(new FileInputStream(articleFile), "UTF-8");
+//
+//            //            Pattern tazapiPattern = Pattern.compile("(<script.+?src\\s*?=\\s*?(?:\"|'))(res.+?TAZAPI.js)((?:\"|').*?>)", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+//
+//            //            Matcher matcher = tazapiPattern.matcher(result);
+//            //            result = matcher.replaceAll("$1" + tazapiReplacement + "$3");
+//
+//            Pattern resPattern = Pattern.compile("(<[^>]+?(?:href|src)\\s*?=\\s*?(?:\"|'))(res.+?)((?:\"|').*?>)",
+//                                                 Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+//            Matcher matcher = resPattern.matcher(result);
+//            result = matcher.replaceAll("$1" + resourceReplacement + "$2$3");
+//
+//            Pattern tazapiPattern = Pattern.compile("file://.+?TAZAPI.js", Pattern.CASE_INSENSITIVE);
+//            Matcher matcher2 = tazapiPattern.matcher(result);
+//            result = matcher2.replaceAll(tazapiReplacement);
+//
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//
+//        if (TextUtils.isEmpty(result)) result = "Fehler beim Laden des Artikels";
+//
+//        return result;
+//
+//        // (\<[^\>]+?(?:href|src)\=(?:\"|\'))(res)(.+?(?:\"|\')\>)
     }
 
     @Override

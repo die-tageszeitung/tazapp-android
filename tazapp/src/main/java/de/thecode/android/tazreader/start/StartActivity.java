@@ -599,7 +599,8 @@ public class StartActivity extends BaseActivity
             if (paperResource.isDownloaded()) {
                 Timber.i("start reader for paper: %s", openPaper);
                 Intent intent = new Intent(this, ReaderActivity.class);
-                intent.putExtra(ReaderActivity.KEY_EXTRA_PAPER_ID, id);
+                //intent.putExtra(ReaderActivity.KEY_EXTRA_PAPER_ID, id);
+                intent.putExtra(ReaderActivity.KEY_EXTRA_PAPER_BOOKID, openPaper.getBookId());
                 intent.putExtra(ReaderActivity.KEY_EXTRA_RESOURCE_KEY, paperResource.getKey());
                 startActivity(intent);
             } else {

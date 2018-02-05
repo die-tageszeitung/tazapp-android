@@ -1,6 +1,5 @@
 package de.thecode.android.tazreader.reader.index;
 
-import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.widget.ShareButton;
 
 import java.util.List;
@@ -16,7 +15,6 @@ public interface IIndexItem extends ShareButton.ShareButtonCallback{
     void setIndexChildsVisible(boolean childsVisible);
     boolean areIndexChildsVisible() ;
     IIndexItem getIndexParent();
-    boolean isVisible();
     boolean hasIndexParent();
     boolean hasIndexChilds();
     List<IIndexItem> getIndexChilds();
@@ -24,7 +22,6 @@ public interface IIndexItem extends ShareButton.ShareButtonCallback{
     String getKey();
     boolean hasBookmarkedChilds();
     Type getType();
-    Paper getPaper();
     IIndexItem getIndexAncestorWithKey(String key);
     boolean isBookmarkable();
     void setBookmark(boolean bool);
