@@ -1,5 +1,7 @@
 package de.thecode.android.tazreader.reader.article;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
@@ -141,6 +143,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
         mBookmarkClickLayout = (FrameLayout) result.findViewById(R.id.bookmarkClickLayout);
 
         mWebView = (ArticleWebView) result.findViewById(R.id.webview);
+        mWebView.setAlpha(0F);
         mWebView.setArticleWebViewCallback(this);
 
         mWebView.setBackgroundColor(callback.onGetBackgroundColor(TazSettings.getInstance(getContext())
@@ -489,7 +492,17 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    mProgressBar.setVisibility(View.GONE);
+                    mWebView.animate()
+                            .alpha(1F)
+                            .setDuration(400)
+                            .start();
+                    mProgressBar.animate().alpha(0F).setListener(new AnimatorListenerAdapter() {
+                        @Override
+                        public void onAnimationEnd(Animator animation) {
+                            mProgressBar.setVisibility(View.GONE);
+                        }
+                    }).setDuration(400).start();
+                    //mProgressBar.setVisibility(View.GONE);
                 }
             });
         }

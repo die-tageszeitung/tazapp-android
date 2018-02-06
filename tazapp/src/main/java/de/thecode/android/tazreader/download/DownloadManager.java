@@ -407,8 +407,11 @@ public class DownloadManager {
 
                 int oldProgress = progress;
                 progress = downloadState.getDownloadProgress();
-                if (progress != oldProgress) EventBus.getDefault()
-                                                     .post(new DownloadProgressEvent(paperId, progress));
+
+                if (progress != oldProgress) {
+                    EventBus.getDefault()
+                            .post(new DownloadProgressEvent(paperId, progress));
+                }
                 try {
                     sleep(500);
                 } catch (InterruptedException e) {

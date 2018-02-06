@@ -151,16 +151,18 @@ public class PageIndexFragment extends BaseFragment {
         if (mReaderCallback == null || adapter == null) return;
         this.paper = mReaderCallback.getPaper();
         index = new ArrayList<>();
-        for (Source source : paper.getPlist()
-                                  .getSources()) {
-            index.add(source);
-            for (Book book : source.getBooks()) {
-                for (Category category : book.getCategories()) {
-                    index.addAll(category.getPages());
+        if (paper != null && paper.getPlist() != null) {
+            for (Source source : paper.getPlist()
+                                      .getSources()) {
+                index.add(source);
+                for (Book book : source.getBooks()) {
+                    for (Category category : book.getCategories()) {
+                        index.addAll(category.getPages());
+                    }
                 }
             }
+            adapter.notifyDataSetChanged();
         }
-        adapter.notifyDataSetChanged();
     }
 
     public void updateCurrentPosition(String key) {

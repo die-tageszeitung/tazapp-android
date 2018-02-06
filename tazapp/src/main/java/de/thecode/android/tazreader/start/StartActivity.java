@@ -2,8 +2,10 @@ package de.thecode.android.tazreader.start;
 
 
 import android.annotation.SuppressLint;
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
@@ -31,6 +33,7 @@ import de.mateware.dialog.listener.DialogDismissListener;
 import de.mateware.snacky.Snacky;
 import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.R;
+import de.thecode.android.tazreader.analytics.AnalyticsWrapper;
 import de.thecode.android.tazreader.data.DeleteTask;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Resource;
@@ -51,14 +54,18 @@ import de.thecode.android.tazreader.sync.SyncErrorEvent;
 import de.thecode.android.tazreader.utils.BaseActivity;
 import de.thecode.android.tazreader.utils.BaseFragment;
 import de.thecode.android.tazreader.utils.Connection;
+import de.thecode.android.tazreader.utils.UserDeviceInfo;
 import de.thecode.android.tazreader.widget.CustomToolbar;
 
+import org.apache.commons.io.IOUtils;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.net.ConnectException;
 import java.text.DateFormatSymbols;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -603,18 +610,23 @@ public class StartActivity extends BaseActivity
                 intent.putExtra(ReaderActivity.KEY_EXTRA_RESOURCE_KEY, paperResource.getKey());
                 startActivity(intent);
             } else {
+                AnalyticsWrapper.getInstance().logData("PAPER",openPaper.toString());
+                AnalyticsWrapper.getInstance().logData("RESOURCE",paperResource.toString());
                 switch (Connection.getConnectionType(this)) {
                     case Connection.CONNECTION_NOT_AVAILABLE:
+                        Timber.e(new ConnectException("Keine Verbindung"));
                         showErrorDialog(getString(R.string.message_resource_not_downloaded_no_connection),DIALOG_ERROR_OPEN_PAPER);
                         break;
                     default:
-                        showWaitDialog(DIALOG_WAIT + openPaper.getBookId(),
-                                       getString(R.string.dialog_meassage_loading_missing_resource));
                         try {
                             DownloadManager.getInstance(this)
                                            .enqueResource(paperResource, false);
                             retainDataFragment.openPaperWaitingForRessource = id;
+                            Timber.e(new Resource.MissingResourceException());
+                            showWaitDialog(DIALOG_WAIT + openPaper.getBookId(),
+                                           getString(R.string.dialog_meassage_loading_missing_resource));
                         } catch (DownloadManager.NotEnoughSpaceException e) {
+                            Timber.e(e);
                             showDownloadErrorDialog(getString(R.string.message_resourcedownload_error),
                                                     getString(R.string.message_not_enough_space),
                                                     e);
@@ -783,6 +795,30 @@ public class StartActivity extends BaseActivity
                 ((ImportFragment) contentFragment).startWithPermissionCheck();
             } else {
                 onBackPressed();
+            }
+        } else if (ImprintFragment.DIALOG_ERRORMAIL.equals(tag)) {
+            switch (which) {
+                case Dialog.BUTTON_POSITIVE:
+                    try {
+                        String body = IOUtils.toString(getAssets()
+                                                              .open("errorReportMail/body.txt"), "UTF-8");
+                        UserDeviceInfo userDeviceInfo = UserDeviceInfo.getInstance(this);
+
+                        body = body.replaceFirst("\\{appversion\\}", userDeviceInfo.getVersionName());
+                        body = body.replaceFirst("\\{installid\\}", userDeviceInfo.getInstallationId());
+                        String mailtoLink = IOUtils.toString(getAssets()
+                                                                     .open("errorReportMail/linktemplate.txt"), "UTF-8");
+                        mailtoLink = mailtoLink.replaceFirst("\\{body\\}", Uri.encode(body));
+                        Intent emailIntent = new Intent(Intent.ACTION_SENDTO);
+                        emailIntent.setData(Uri.parse(mailtoLink));
+                        startActivity(emailIntent);
+                    } catch (IOException | ActivityNotFoundException e ) {
+                        Timber.e(e);
+                    }
+                    break;
+                case Dialog.BUTTON_NEUTRAL:
+                    mDrawerFragment.simulateClick(preferencesItem,true);
+                    break;
             }
         }
     }
