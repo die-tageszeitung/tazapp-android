@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.widget.Button;
 
+import de.mateware.dialog.Dialog;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.dialog.TechInfoDialog;
 import de.thecode.android.tazreader.utils.BaseFragment;
@@ -21,7 +22,8 @@ import java.lang.ref.WeakReference;
 public class ImprintFragment extends BaseFragment {
 
 
-    public static final String DIALOG_TECHINFO = "dialogTechInfo";
+    public static final String DIALOG_TECHINFO  = "dialogTechInfo";
+    public static final String DIALOG_ERRORMAIL = "dialogErrorMail";
 
     private WeakReference<IStartCallback> callback;
 
@@ -36,7 +38,6 @@ public class ImprintFragment extends BaseFragment {
         if (hasCallback()) getCallback().onUpdateDrawer(this);
 
 
-
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.start_imprint, container, false);
         Button techInfoButton = (Button) view.findViewById(R.id.buttonTechInfo);
@@ -47,6 +48,19 @@ public class ImprintFragment extends BaseFragment {
                                             .setNeutralButton(R.string.imprint_licenses)
                                             .buildSupport()
                                             .show(getFragmentManager(), DIALOG_TECHINFO);
+            }
+        });
+
+        Button errorReportButton = view.findViewById(R.id.buttonErrorReport);
+        errorReportButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                new Dialog.Builder().setMessage(R.string.imprint_error_report_dialog_message)
+                                    .setNegativeButton()
+                                    .setPositiveButton()
+                                    .setNeutralButton(R.string.drawer_settings)
+                                    .buildSupport()
+                                    .show(getFragmentManager(),DIALOG_ERRORMAIL);
             }
         });
 

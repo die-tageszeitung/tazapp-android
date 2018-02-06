@@ -7,9 +7,12 @@ import com.crashlytics.android.Crashlytics;
 import com.crashlytics.android.core.CrashlyticsCore;
 
 import de.thecode.android.tazreader.BuildConfig;
+import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.secure.Installation;
 
+import net.ypresto.timbertreeutils.CrashlyticsLogExceptionTree;
 import net.ypresto.timbertreeutils.CrashlyticsLogTree;
+import net.ypresto.timbertreeutils.LogExclusionStrategy;
 
 import io.fabric.sdk.android.Fabric;
 import timber.log.Timber;
@@ -20,11 +23,14 @@ import timber.log.Timber;
 
 public class AnalyticsWrapper {
 
-    static AnalyticsWrapper instance;
+    private static AnalyticsWrapper instance;
+
+
 
     public static void initialize(Context context) {
         if (instance != null) throw new IllegalStateException("AnalyticsWrapper must only be initialized once");
         instance = new AnalyticsWrapper(context);
+
     }
 
     public static AnalyticsWrapper getInstance() {
@@ -32,15 +38,23 @@ public class AnalyticsWrapper {
         return instance;
     }
 
+    private TazSettings settings;
+
     private AnalyticsWrapper(Context context) {
         //TazAcraHelper.init((Application) context);
         initFabric(context);
+        settings = TazSettings.getInstance(context);
     }
 
     private void initFabric(Context context) {
         if (!BuildConfig.BUILD_TYPE.equalsIgnoreCase("debug")) {
-            //Timber.plant(new CrashlyticsLogExceptionTree());
             Timber.plant(new CrashlyticsLogTree(Log.INFO));
+            Timber.plant(new CrashlyticsLogExceptionTree(Log.ERROR, new LogExclusionStrategy() {
+                @Override
+                public boolean shouldSkipLog(int priority, String tag, String message, Throwable t) {
+                    return !settings.getCrashlyticsAlwaysSend();
+                }
+            }));
         }
 
         Crashlytics crashlyticsKit = new Crashlytics.Builder().core(
@@ -57,29 +71,7 @@ public class AnalyticsWrapper {
         Crashlytics.setUserIdentifier(Installation.id(context));
     }
 
-    public void logException(Throwable throwable) {
-//        if (ACRA.isInitialised()) {
-//            ACRA.getErrorReporter()
-//                .handleException(throwable);
-//        }
-    }
-
-    public void logExceptionSilent(Throwable throwable) {
-//        if (ACRA.isInitialised()) {
-//            ACRA.getErrorReporter()
-//                .handleSilentException(throwable);
-//        }
-    }
-
     public void logData(String key, String value) {
-//        if (ACRA.isInitialised()) {
-//            ACRA.getErrorReporter()
-//                .putCustomData(key, value);
-//        }
+        Crashlytics.setString(key,value);
     }
-
-//    public void trackBreadcrumb(String event) {
-//        logData("Event at " + System.currentTimeMillis(), event);
-//    }
-
 }

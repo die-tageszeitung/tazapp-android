@@ -1,6 +1,6 @@
 def versionMajor = 3
 def versionMinor = 4
-def versionPatch = 5
+def versionPatch = 6
 def versionBuild = 0
 
 def supportLibVer = "26.1.0"
@@ -39,6 +39,7 @@ def checkLoginUrl = "CHECKLOGINURL"
 def resourceUrl = "RESOURCEURL"
 def archiveUrl = "ARCHIVEURL"
 def pushRestUrl = "PUSHRESTURL"
+def errorReportMail = "ERRORREPORTMAIL"
 
 apply plugin: 'idea'
 
@@ -331,6 +332,7 @@ dependencies {
     compile 'com.evernote:android-job:1.2.0'
 
     compile 'com.google.code.gson:gson:2.8.1'
+    implementation 'com.android.support.constraint:constraint-layout:1.0.2'
 }
 
 class Download extends DefaultTask {

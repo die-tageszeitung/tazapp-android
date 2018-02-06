@@ -69,7 +69,7 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
         public static final  String ISSCROLLTONEXT              = "isScrollToNext";
         public static final  String PAGETAPTOARTICLE            = "pageTapToArticle";
         public static final  String PAGEDOUBLETAPZOOM           = "pageDoubleTapZoom";
-        private static final String PAGETAPBORDERTOTURN         = "pageTapBorderToTurn";
+        public static final String PAGETAPBORDERTOTURN         = "pageTapBorderToTurn";
         private static final String INDEXALWAYSEXPANDED         = "indexAlwaysExpanded";
         public static final  String FIREBASETOKEN               = "firebaseToken";
         private static final String FIREBASETOKENOLD            = "firebaseTokenOld";

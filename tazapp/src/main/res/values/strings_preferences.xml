@@ -57,7 +57,7 @@
     <bool name="pref_default_pageindex_button">false</bool>
     <!--  -->
     <string name="pref_key_page_tap_border_turn">pageTapBorderToTurn</string>
-    <string name="pref_title_page_tap_border_turn">Blättern durch einfaches Tippen am Bildschrimrand</string>
+    <string name="pref_title_page_tap_border_turn">Blättern durch einfaches Tippen am Bildschirmrand</string>
     <bool name="pref_default_page_tap_border_turn">true</bool>
     <!--  -->
     <string name="pref_key_page_tap_to_article">pageTapToArticle</string>

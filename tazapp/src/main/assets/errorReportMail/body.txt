@@ -1,0 +1,10 @@
+Version: {appversion}
+Installations-ID: {installid}
+
+Beschreiben Sie den Fehler:
+
+
+Was waren die letzten Aktionen, bevor der Fehler aufgetreten ist?
+
+
+Unter welchen äußeren Bedingungen ist der Fehler aufgetreten? Wichtig ist hier z.B. ob Sie im WLAN/Funknetz/Ohne Netz unterwegs waren.

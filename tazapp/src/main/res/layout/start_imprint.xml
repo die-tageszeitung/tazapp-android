@@ -1,44 +1,64 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                xmlns:tools="http://schemas.android.com/tools"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@color/start_fragment_background"
-                tools:context="de.thecode.android.tazreader.start.ImprintFragment">
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                                             xmlns:app="http://schemas.android.com/apk/res-auto"
+                                             xmlns:tools="http://schemas.android.com/tools"
+                                             android:layout_width="match_parent"
+                                             android:layout_height="match_parent"
+                                             android:background="@color/start_fragment_background"
+                                             tools:context="de.thecode.android.tazreader.start.ImprintFragment"
+                                             android:id="@+id/relativeLayout">
 
 
     <!--<Space-->
-            <!--android:id="@+id/space"-->
-            <!--android:layout_centerInParent="true"-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_alignParentBottom="true"-->
-            <!--android:layout_height="wrap_content"/>-->
+    <!--android:id="@+id/space"-->
+    <!--android:layout_centerInParent="true"-->
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_alignParentBottom="true"-->
+    <!--android:layout_height="wrap_content"/>-->
 
     <!--<Button-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:layout_toStartOf="@id/space"-->
-            <!--android:layout_alignParentBottom="true"-->
-            <!--android:id="@+id/buttonLicences"-->
-            <!--android:layout_margin="20dp"-->
-            <!--android:text="@string/imprint_licenses"-->
-            <!--android:layout_toLeftOf="@id/space"/>-->
-
-    <Button android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_centerInParent="true"
-            android:id="@+id/buttonTechInfo"
-            android:layout_margin="20dp"
-            android:text="@string/imprint_tech_info"/>
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:layout_toStartOf="@id/space"-->
+    <!--android:layout_alignParentBottom="true"-->
+    <!--android:id="@+id/buttonLicences"-->
+    <!--android:layout_margin="20dp"-->
+    <!--android:text="@string/imprint_licenses"-->
+    <!--android:layout_toLeftOf="@id/space"/>-->
 
 
     <WebView
             android:layout_gravity="center_vertical|center_horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
             android:id="@+id/webView"
-            android:layout_above="@+id/buttonTechInfo"
+            android:layout_marginBottom="8dp"
+            app:layout_constraintBottom_toTopOf="@+id/buttonErrorReport"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
             />
 
+    <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/buttonErrorReport"
+            android:text="@string/imprint_error_report"
+            app:layout_constraintBottom_toTopOf="@+id/buttonTechInfo"
+            app:layout_constraintEnd_toEndOf="@+id/buttonTechInfo"
+            app:layout_constraintStart_toStartOf="@+id/buttonTechInfo"
+            android:layout_marginBottom="8dp"/>
 
-</RelativeLayout>
+    <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/buttonTechInfo"
+            android:text="@string/imprint_tech_info"
+            android:layout_marginBottom="16dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginStart="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginEnd="8dp"/>
+
+
+</android.support.constraint.ConstraintLayout>

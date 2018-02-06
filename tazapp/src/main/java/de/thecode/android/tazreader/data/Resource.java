@@ -231,4 +231,8 @@ public class Resource {
         }
         return result;
     }
+
+    public static class MissingResourceException extends Exception {
+
+    }
 }
