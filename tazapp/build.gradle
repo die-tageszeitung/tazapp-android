@@ -1,6 +1,6 @@
 def versionMajor = 3
 def versionMinor = 4
-def versionPatch = 6
+def versionPatch = 7
 def versionBuild = 0
 
 def supportLibVer = "26.1.0"
@@ -39,7 +39,6 @@ def checkLoginUrl = "CHECKLOGINURL"
 def resourceUrl = "RESOURCEURL"
 def archiveUrl = "ARCHIVEURL"
 def pushRestUrl = "PUSHRESTURL"
-def errorReportMail = "ERRORREPORTMAIL"
 
 apply plugin: 'idea'
 

@@ -75,8 +75,8 @@ public class DownloadFinishedResourceJob extends Job {
             EventBus.getDefault()
                     .post(new ResourceDownloadEvent(resource.getKey()));
         } else {
-            getContext().getContentResolver()
-                        .delete(Uri.withAppendedPath(Resource.CONTENT_URI, resource.getKey()), null, null);
+            resource.setDownloadId(0);
+            resource.setDownloaded(false);
             Timber.e(e);
             //AnalyticsWrapper.getInstance().logException(e);
             EventBus.getDefault()

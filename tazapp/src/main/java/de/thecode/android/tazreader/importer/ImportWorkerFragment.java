@@ -14,6 +14,7 @@ import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.download.UnzipPaperTask;
 import de.thecode.android.tazreader.utils.AsyncTaskWithExecption;
 import de.thecode.android.tazreader.utils.BaseFragment;
+import de.thecode.android.tazreader.utils.ReadableException;
 import de.thecode.android.tazreader.utils.StorageManager;
 
 import java.io.File;
@@ -380,7 +381,7 @@ public class ImportWorkerFragment extends BaseFragment {
     }
 
 
-    public static class ImportException extends Exception {
+    public static class ImportException extends ReadableException {
         public ImportException() {
         }
 

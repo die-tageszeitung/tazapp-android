@@ -9,6 +9,7 @@ import com.dd.plist.NSDictionary;
 
 import de.thecode.android.tazreader.provider.TazProvider;
 import de.thecode.android.tazreader.utils.PlistHelper;
+import de.thecode.android.tazreader.utils.ReadableException;
 import de.thecode.android.tazreader.utils.StorageManager;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -232,7 +233,7 @@ public class Resource {
         return result;
     }
 
-    public static class MissingResourceException extends Exception {
+    public static class MissingResourceException extends ReadableException {
 
     }
 }
