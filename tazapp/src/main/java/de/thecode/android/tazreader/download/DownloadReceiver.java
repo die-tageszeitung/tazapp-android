@@ -15,6 +15,7 @@ import de.thecode.android.tazreader.notifications.NotificationUtils;
 import de.thecode.android.tazreader.secure.HashHelper;
 import de.thecode.android.tazreader.start.StartActivity;
 import de.thecode.android.tazreader.job.SyncJob;
+import de.thecode.android.tazreader.utils.ReadableException;
 import de.thecode.android.tazreader.utils.StorageManager;
 
 import org.greenrobot.eventbus.EventBus;
@@ -46,7 +47,7 @@ public class DownloadReceiver extends BroadcastReceiver {
             DownloadManager.DownloadState state = downloadHelper.getDownloadState(downloadId);
             boolean firstOccurrenceOfState = downloadHelper.isFirstOccurrenceOfState(state);
             if (!firstOccurrenceOfState) {
-                Timber.w("DownloadState already received: %s", state);
+                Timber.e("DownloadState already received: %s", state);
                 return;
             }
 
@@ -183,7 +184,7 @@ public class DownloadReceiver extends BroadcastReceiver {
         }
     }
 
-    public class DownloadException extends Exception {
+    public class DownloadException extends ReadableException {
         public DownloadException() {
         }
 

@@ -699,6 +699,10 @@ public class StartActivity extends BaseActivity
                     retainDataFragment.openPaperWaitingForRessource = -1;
                     if (event.isSuccessful()) {
                         openReader(paperId);
+                    } else {
+                        showDownloadErrorDialog(getString(R.string.message_resourcedownload_error),
+                                                String.format(getString(R.string.message_resourcedownload_late_error),event.getException().toString()),
+                                                null);
                     }
                 }
             } catch (Paper.PaperNotFoundException e) {

@@ -18,6 +18,7 @@ import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.okhttp3.RequestHelper;
 import de.thecode.android.tazreader.secure.Base64;
 import de.thecode.android.tazreader.sync.AccountHelper;
+import de.thecode.android.tazreader.utils.ReadableException;
 import de.thecode.android.tazreader.utils.StorageManager;
 import de.thecode.android.tazreader.utils.UserAgentHelper;
 
@@ -138,11 +139,28 @@ public class DownloadManager {
 //                    .insert(Resource.CONTENT_URI, resource.getContentValues());
 //        }
 
-        if (!resource.isDownloaded() && !resource.isDownloading()) {
+        if (!resource.isDownloaded()) {
 //            resource.setFileHash(paper.getResourceFileHash());
 //            resource.setUrl(paper.getResourceUrl());
 //            resource.setLen(paper.getResourceLen());
 //            resource.setUrl(paper.getResourceUrl());
+
+
+            if (resource.isDownloading()) {
+                Timber.w("Resource is downloading, checking for state");
+                DownloadState state = getDownloadState(resource.getDownloadId());
+                switch(state.getStatus()) {
+                    case DownloadState.STATUS_PENDING:
+                    case DownloadState.STATUS_RUNNING:
+                    case DownloadState.STATUS_PAUSED:
+                        Timber.e("Download already running");
+                        return;
+                    default:
+                        mDownloadManager.remove(resource.getDownloadId());
+                        break;
+                }
+            }
+
 
             Uri downloadUri;
             if (TextUtils.isEmpty(resource.getUrl())) {
@@ -445,7 +463,7 @@ public class DownloadManager {
     }
 
 
-    public class DownloadNotAllowedException extends Exception {
+    public class DownloadNotAllowedException extends ReadableException {
         public DownloadNotAllowedException() {
         }
 
@@ -454,7 +472,7 @@ public class DownloadManager {
         }
     }
 
-    public static class NotEnoughSpaceException extends Exception {
+    public static class NotEnoughSpaceException extends ReadableException {
         final long requestedByte;
         final long availableByte;
 

@@ -28,6 +28,7 @@ import de.thecode.android.tazreader.download.PaperDeletedEvent;
 import de.thecode.android.tazreader.provider.TazProvider;
 import de.thecode.android.tazreader.reader.index.IIndexItem;
 import de.thecode.android.tazreader.utils.PlistHelper;
+import de.thecode.android.tazreader.utils.ReadableException;
 import de.thecode.android.tazreader.utils.StorageManager;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -1642,7 +1643,7 @@ public class Paper {
         return equalsBuilder.isEquals();
     }
 
-    public static class PaperNotFoundException extends Exception {
+    public static class PaperNotFoundException extends ReadableException {
         public PaperNotFoundException() {
         }
 

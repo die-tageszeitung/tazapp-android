@@ -25,6 +25,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
+import de.thecode.android.tazreader.utils.ReadableException;
 
 /**
  * Created by mate on 17.04.2015.
@@ -222,7 +223,7 @@ public class ImportMetadata implements Parcelable {
     }
 
 
-    public static class NotReadableException extends Exception {
+    public static class NotReadableException extends ReadableException {
         public NotReadableException() {
         }
 
