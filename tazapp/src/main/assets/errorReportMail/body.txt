@@ -1,4 +1,5 @@
 Version: {appversion}
+Abo-ID: {aboid}
 Installations-ID: {installid}
 
 Beschreiben Sie den Fehler:

@@ -1,7 +1,7 @@
 def versionMajor = 3
 def versionMinor = 4
-def versionPatch = 7
-def versionBuild = 1
+def versionPatch = 8
+def versionBuild = 0
 
 def supportLibVer = "26.1.0"
 def buildToolsVer = "26.0.2"
@@ -95,6 +95,17 @@ if (overheadPath != null) {
     }
 } else {
     logger.error('overheadpath not set')
+}
+
+ribbonizer {
+    builder { variant, iconFile ->
+
+        def filter =  customColorRibbonFilter(variant, iconFile,"#c40b29")
+        filter.label = variant.buildType.name.toUpperCase(Locale.GERMAN)
+        filter.largeRibbon = true
+
+        return filter
+    }
 }
 
 

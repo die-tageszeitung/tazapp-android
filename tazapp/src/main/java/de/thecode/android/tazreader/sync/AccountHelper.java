@@ -3,6 +3,7 @@ package de.thecode.android.tazreader.sync;
 import android.content.Context;
 import android.content.SharedPreferences.Editor;
 
+import de.thecode.android.tazreader.analytics.AnalyticsWrapper;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.secure.Installation;
 
@@ -54,6 +55,7 @@ public class AccountHelper {
     }
 
     public void setUser(String user, String password) {
+        AnalyticsWrapper.getInstance().setUserEncrypted(user);
         preferences.setEncrytedPrefString(cipherPassword, TazSettings.PREFKEY.USER, user);
         preferences.setEncrytedPrefString(cipherPassword, TazSettings.PREFKEY.PASS, password);
 //        setAuthenticated(true);
