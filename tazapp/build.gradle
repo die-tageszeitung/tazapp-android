@@ -63,7 +63,7 @@ buildscript {
 
 apply plugin: 'com.android.application'
 apply plugin: 'io.fabric'
-apply plugin: 'com.github.gfx.ribbonizer'
+apply plugin: 'com.akaita.android.easylauncher'
 apply plugin: 'com.github.triplet.play'
 
 
@@ -97,17 +97,21 @@ if (overheadPath != null) {
     logger.error('overheadpath not set')
 }
 
-ribbonizer {
-    builder { variant, iconFile ->
-
-        def filter =  customColorRibbonFilter(variant, iconFile,"#c40b29")
-        filter.label = variant.buildType.name.toUpperCase(Locale.GERMAN)
-        filter.largeRibbon = true
-
-        return filter
+easylauncher {
+    iconNames "@mipmap/ic_launcher_foreground" // Traditional launcher icon
+    foregroundIconNames "@mipmap/ic_launcher_foreground" // Foreground of adaptive launcher icon
+    buildTypes {
+        debug {
+            filters = redRibbonFilter()
+        }
+        staging {
+            filters = blueRibbonFilter()
+        }
+        release {
+            enable false
+        }
     }
 }
-
 
 android {
 
