@@ -8,11 +8,16 @@ import com.crashlytics.android.core.CrashlyticsCore;
 
 import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.data.TazSettings;
+import de.thecode.android.tazreader.secure.HashHelper;
 import de.thecode.android.tazreader.secure.Installation;
+import de.thecode.android.tazreader.sync.AccountHelper;
 
 import net.ypresto.timbertreeutils.CrashlyticsLogExceptionTree;
 import net.ypresto.timbertreeutils.CrashlyticsLogTree;
 import net.ypresto.timbertreeutils.LogExclusionStrategy;
+
+import java.io.UnsupportedEncodingException;
+import java.security.NoSuchAlgorithmException;
 
 import io.fabric.sdk.android.Fabric;
 import timber.log.Timber;
@@ -69,6 +74,15 @@ public class AnalyticsWrapper {
 
         Fabric.with(fabric);
         Crashlytics.setUserIdentifier(Installation.id(context));
+        setUserEncrypted(AccountHelper.getInstance(context).getUser(""));
+    }
+
+    public void setUserEncrypted(String user){
+        try {
+            Crashlytics.setUserName(HashHelper.getHash(user,HashHelper.UTF_8,HashHelper.SHA_1));
+        } catch (UnsupportedEncodingException | NoSuchAlgorithmException e) {
+            Timber.e(e);
+        }
     }
 
     public void logData(String key, String value) {

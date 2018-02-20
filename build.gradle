@@ -7,8 +7,8 @@ buildscript {
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:3.0.1'
-        classpath 'com.github.gfx.ribbonizer:ribbonizer-plugin:2.1.0'
-        classpath 'com.github.triplet.gradle:play-publisher:1.2.0'
+        classpath 'com.akaita.android:easylauncher:1.1.0'
+        classpath 'com.github.Triple-T:gradle-play-publisher:8cda31a5d0' //Workaround for 50 Char Limt Bug, 'com.github.triplet.gradle:play-publisher:1.2.0'
         classpath 'com.google.gms:google-services:3.1.0'
     }
 }

@@ -1,6 +1,6 @@
 def versionMajor = 3
 def versionMinor = 4
-def versionPatch = 7
+def versionPatch = 8
 def versionBuild = 1
 
 def supportLibVer = "26.1.0"
@@ -63,7 +63,7 @@ buildscript {
 
 apply plugin: 'com.android.application'
 apply plugin: 'io.fabric'
-apply plugin: 'com.github.gfx.ribbonizer'
+apply plugin: 'com.akaita.android.easylauncher'
 apply plugin: 'com.github.triplet.play'
 
 
@@ -97,6 +97,21 @@ if (overheadPath != null) {
     logger.error('overheadpath not set')
 }
 
+easylauncher {
+    iconNames "@mipmap/ic_launcher_foreground" // Traditional launcher icon
+    foregroundIconNames "@mipmap/ic_launcher_foreground" // Foreground of adaptive launcher icon
+    buildTypes {
+        debug {
+            filters = redRibbonFilter()
+        }
+        staging {
+            filters = blueRibbonFilter()
+        }
+        release {
+            enable false
+        }
+    }
+}
 
 android {
 

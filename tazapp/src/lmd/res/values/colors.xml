@@ -14,6 +14,8 @@
     <item name="color_primary_dark" type="color">@color/lmd1</item>
     <item name="color_accent" type="color">@color/lmd2</item>
 
+    <color name="ic_launcher_background">@android:color/white</color>
+
     <item name="toolbar_background_color" type="color">@color/color_primary</item>
     <item name="toolbar_foreground_color" type="color">@android:color/white</item>
 

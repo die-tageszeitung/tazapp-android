@@ -34,6 +34,7 @@
     <item name="color_primary_dark" type="color">@color/taz_red_dark</item>
     <item name="color_accent" type="color">@color/taz_red</item>
 
+    <color name="ic_launcher_background">@color/taz_red</color>
 
     <item name="toolbar_background_color" type="color">@color/color_primary_dark</item>
     <item name="toolbar_foreground_color" type="color">@color/white</item>

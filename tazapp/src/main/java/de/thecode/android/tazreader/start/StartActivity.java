@@ -50,6 +50,7 @@ import de.thecode.android.tazreader.job.SyncJob;
 import de.thecode.android.tazreader.migration.MigrationActivity;
 import de.thecode.android.tazreader.notifications.NotificationUtils;
 import de.thecode.android.tazreader.reader.ReaderActivity;
+import de.thecode.android.tazreader.sync.AccountHelper;
 import de.thecode.android.tazreader.sync.SyncErrorEvent;
 import de.thecode.android.tazreader.utils.BaseActivity;
 import de.thecode.android.tazreader.utils.BaseFragment;
@@ -807,9 +808,11 @@ public class StartActivity extends BaseActivity
                         String body = IOUtils.toString(getAssets()
                                                               .open("errorReportMail/body.txt"), "UTF-8");
                         UserDeviceInfo userDeviceInfo = UserDeviceInfo.getInstance(this);
+                        AccountHelper accountHelper = AccountHelper.getInstance(this);
 
                         body = body.replaceFirst("\\{appversion\\}", userDeviceInfo.getVersionName());
                         body = body.replaceFirst("\\{installid\\}", userDeviceInfo.getInstallationId());
+                        body = body.replaceFirst("\\{aboid\\}", AccountHelper.getInstance(this).getUser(""));
                         String mailtoLink = IOUtils.toString(getAssets()
                                                                      .open("errorReportMail/linktemplate.txt"), "UTF-8");
                         mailtoLink = mailtoLink.replaceFirst("\\{body\\}", Uri.encode(body));
