@@ -36,7 +36,7 @@
     <string name="dialog_error_download">Beim Download %1$s ist ein Fehler aufgetreten.</string>
 
     <string name="message_resourcedownload_error">einer benötigten Ressource</string>
-    <string name="message_resourcedownload_late_error">Sollte der Fehler wiederholt auftreten, schicken Sie uns bitte einen Fehlerbericht [Impressum -> Fehler melden].\n\nDetails: %1$s</string>
+    <string name="message_resourcedownload_late_error">Sollte der Fehler wiederholt auftreten, schicken Sie uns bitte einen Fehlerbericht [Impressum -> Fehler melden], am besten mit Screenshot dieser Fehlermeldung.\n\nDetails: %1$s</string>
     <string name="message_not_enough_space">Nicht genügend Speicherplatz vorhanden.</string>
     <string name="message_download_not_allowed">Der Download ist nicht gestattet.</string>
     <string name="message_paper_not_found">Ausgabe nicht gefunden.</string>

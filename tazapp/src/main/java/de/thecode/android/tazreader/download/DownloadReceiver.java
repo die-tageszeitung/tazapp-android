@@ -150,7 +150,7 @@ public class DownloadReceiver extends BroadcastReceiver {
                                 Timber.e(e);
                                 downloadException = new DownloadException(e);
                             }
-                            if (downloadException != null) {
+                            if (downloadException == null) {
                                 DownloadFinishedResourceJob.scheduleJob(resource);
 //                                Intent unzipIntent = new Intent(context, DownloadFinishedResourceService.class);
 //                                unzipIntent.putExtra(DownloadFinishedResourceService.PARAM_RESOURCE_KEY, resource.getKey());
