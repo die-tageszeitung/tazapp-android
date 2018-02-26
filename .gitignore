@@ -152,3 +152,4 @@ hs_err_pid*
 tc_local.properties
 fabric.properties
 captures
+/archive

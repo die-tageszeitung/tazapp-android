@@ -1,7 +1,7 @@
 def versionMajor = 3
 def versionMinor = 4
-def versionPatch = 8
-def versionBuild = 1
+def versionPatch = 9
+def versionBuild = 0
 
 def supportLibVer = "26.1.0"
 def buildToolsVer = "26.0.2"
@@ -91,7 +91,7 @@ if (overheadPath != null) {
         logger.quiet('Found ' + extraGradleFile)
         apply from: extraGradleFile
     } else {
-        logger.error(extraGradleFile + " not found")
+        logger.error("${extraGradleFile} not found")
     }
 } else {
     logger.error('overheadpath not set')
