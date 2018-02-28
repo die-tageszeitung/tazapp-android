@@ -446,6 +446,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
         @JavascriptInterface
         public String getValue(String path) {
+            Timber.d("%s",path);
             String result = Store.getValueForKey(getContext(), path);
             Timber.d("%s %s %s", mArticle.getKey(), path, result);
             return result;
@@ -453,6 +454,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
         @JavascriptInterface
         public boolean setValue(String path, String value) {
+            Timber.d("%s=%s",path,value);
             boolean result = false;
             Store store = Store.getStoreForKey(getContext(), path);
             if (store == null) {
