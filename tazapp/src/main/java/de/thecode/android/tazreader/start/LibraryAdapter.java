@@ -27,7 +27,7 @@ import de.thecode.android.tazreader.download.DownloadManager;
 import de.thecode.android.tazreader.download.DownloadProgressEvent;
 import de.thecode.android.tazreader.download.PaperDownloadFailedEvent;
 import de.thecode.android.tazreader.download.UnzipProgressEvent;
-import de.thecode.android.tazreader.sync.SyncService;
+import de.thecode.android.tazreader.sync.PreloadImageCallback;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -562,7 +562,7 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
         public boolean onItemLongClick(View v, int position, Paper paper);
     }
 
-    private static abstract class MissingCoverCallback extends SyncService.PreloadImageCallback {
+    private static abstract class MissingCoverCallback extends PreloadImageCallback {
 
         final ImageView imageView;
 

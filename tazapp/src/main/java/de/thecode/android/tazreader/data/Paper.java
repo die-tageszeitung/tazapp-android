@@ -62,9 +62,9 @@ public class Paper {
 
     public static final  String STORE_KEY_BOOKMARKS           = "bookmarks";
     public static final  String STORE_KEY_CURRENTPOSITION     = "currentPosition";
-    private static final String STORE_KEY_POSITION_IN_ARTICLE = "positionInArticle";
-    private static final String STORE_KEY_RESOURCE_PARTNER    = "resource";
-    private static final String STORE_KEY_AUTO_DOWNLOADED    = "auto_download";
+    public static final String STORE_KEY_POSITION_IN_ARTICLE = "positionInArticle";
+    public static final String STORE_KEY_RESOURCE_PARTNER    = "resource";
+    public static final String STORE_KEY_AUTO_DOWNLOADED    = "auto_download";
 
     public static       String TABLE_NAME        = "PAPER";
     public static final Uri    CONTENT_URI       = Uri.parse("content://" + TazProvider.AUTHORITY + "/" + TABLE_NAME);
@@ -1536,59 +1536,68 @@ public class Paper {
         return array;
     }
 
-    public boolean savePositionInArticle(Context context, IIndexItem article, String position) {
-        return saveStoreValue(context, STORE_KEY_POSITION_IN_ARTICLE + "_" + article.getKey(), position);
+//    public boolean savePositionInArticle(Context context, IIndexItem article, String position) {
+//        return saveStoreValue(context, STORE_KEY_POSITION_IN_ARTICLE + "_" + article.getKey(), position);
+//    }
+
+//    public String getPositionInArticle(Context context, IIndexItem article) {
+//        String result = getStoreValue(context, STORE_KEY_POSITION_IN_ARTICLE + "_" + article.getKey());
+//        return (TextUtils.isEmpty(result)) ? "0" : result;
+//    }
+
+//    public boolean saveAutoDownloaded(Context context, boolean isAutoDownload) {
+//        return saveStoreValue(context, STORE_KEY_AUTO_DOWNLOADED, String.valueOf(isAutoDownload));
+//    }
+//
+//    public boolean isAutoDownloaded(Context context) {
+//        String resultString = getStoreValue(context, STORE_KEY_AUTO_DOWNLOADED);
+//        return Boolean.parseBoolean(resultString);
+//    }
+
+//    public boolean saveResourcePartner(Context context, Resource resource) {
+//        return saveStoreValue(context, STORE_KEY_RESOURCE_PARTNER, resource.getKey());
+//    }
+//
+//    public void deleteResourcePartner(Context context) {
+//        deleteStoreKey(context, STORE_KEY_RESOURCE_PARTNER);
+//    }
+//
+//    public Resource getResourcePartner(Context context) {
+//        String resource = getStoreValue(context, STORE_KEY_RESOURCE_PARTNER);
+//        if (TextUtils.isEmpty(resource)) resource = getResource(); //Fallback;
+//        return Resource.getWithKey(context, resource);
+//    }
+
+    public String getStorePath(String key) {
+        return getBookId() + "/" + key;
     }
 
-    public String getPositionInArticle(Context context, IIndexItem article) {
-        String result = getStoreValue(context, STORE_KEY_POSITION_IN_ARTICLE + "_" + article.getKey());
-        return (TextUtils.isEmpty(result)) ? "0" : result;
+    public String getStorePathForPositionInArticle(IIndexItem article){
+        return getStorePath(STORE_KEY_POSITION_IN_ARTICLE + "_" + article.getKey());
     }
 
-    public boolean saveAutoDownloaded(Context context, boolean isAutoDownload) {
-        return saveStoreValue(context, STORE_KEY_AUTO_DOWNLOADED, String.valueOf(isAutoDownload));
-    }
-
-    public boolean isAutoDownloaded(Context context) {
-        String resultString = getStoreValue(context, STORE_KEY_AUTO_DOWNLOADED);
-        return Boolean.parseBoolean(resultString);
-    }
-
-    public boolean saveResourcePartner(Context context, Resource resource) {
-        return saveStoreValue(context, STORE_KEY_RESOURCE_PARTNER, resource.getKey());
-    }
-
-    public void deleteResourcePartner(Context context) {
-        deleteStoreKey(context, STORE_KEY_RESOURCE_PARTNER);
-    }
-
-    public Resource getResourcePartner(Context context) {
-        String resource = getStoreValue(context, STORE_KEY_RESOURCE_PARTNER);
-        if (TextUtils.isEmpty(resource)) resource = getResource(); //Fallback;
-        return Resource.getWithKey(context, resource);
-    }
-
-    public String getStoreValue(Context context, String key) {
-        String path = getBookId() + "/" + key;
-        return Store.getValueForKey(context, path);
-    }
-
-    public void deleteStoreKey(Context context, String key) {
-        String path = getBookId() + "/" + key;
-        Store.deleteKey(context, path);
-    }
-
-    public boolean saveStoreValue(Context context, String key, String value) {
-        String path = getBookId() + "/" + key;
-        return Store.saveValueForKey(context, path, value);
-    }
+//    public String getStoreValue(Context context, String key) {
+//        String path = getBookId() + "/" + key;
+//        return StoreRepository.getInstance(context).getStoreForKey(path).getValue();
+//    }
+//
+//    public void deleteStoreKey(Context context, String key) {
+//        String path = getBookId() + "/" + key;
+//        StoreRepository.getInstance(context).deleteKey(path);
+//    }
+//
+//    public boolean saveStoreValue(Context context, String key, String value) {
+//        String path = getBookId() + "/" + key;
+//        return StoreRepository.getInstance(context).saveStore(new Store(path,value));
+//    }
 
     public void delete(Context context) {
         StorageManager storage = StorageManager.getInstance(context);
         storage.deletePaperDir(this);
         Picasso.with(context)
                .invalidate(getImage());
-        deleteResourcePartner(context);
+        StoreRepository.getInstance(context).deleteKey(getStorePath(Paper.STORE_KEY_RESOURCE_PARTNER));
+        //deleteResourcePartner(context);
         if (isImported() || isKiosk()) {
             context.getContentResolver()
                    .delete(ContentUris.withAppendedId(Paper.CONTENT_URI, getId()), null, null);

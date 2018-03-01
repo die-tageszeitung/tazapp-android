@@ -11,6 +11,7 @@ import com.evernote.android.job.util.support.PersistableBundleCompat;
 
 import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.data.Resource;
+import de.thecode.android.tazreader.data.ResourceRepository;
 import de.thecode.android.tazreader.download.ResourceDownloadEvent;
 import de.thecode.android.tazreader.download.UnzipCanceledException;
 import de.thecode.android.tazreader.download.UnzipResource;
@@ -42,7 +43,7 @@ public class DownloadFinishedResourceJob extends Job {
         PersistableBundleCompat extras = params.getExtras();
         String resourceKey = extras.getString(ARG_RESOURCE_KEY, null);
         if (!TextUtils.isEmpty(resourceKey)) {
-            Resource resource = Resource.getWithKey(getContext(), resourceKey);
+            Resource resource = ResourceRepository.getInstance(getContext()).getWithKey(resourceKey);
             Timber.i("%s", resource);
             if (resource != null && resource.isDownloading()) {
                 StorageManager storageManager = StorageManager.getInstance(getContext());

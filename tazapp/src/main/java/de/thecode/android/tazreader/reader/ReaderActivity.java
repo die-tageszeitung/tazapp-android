@@ -1,6 +1,7 @@
 package de.thecode.android.tazreader.reader;
 
 import android.annotation.SuppressLint;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
@@ -103,11 +104,16 @@ public class ReaderActivity extends BaseActivity
     AbstractContentFragment mContentFragment;
 
 
+    ReaderViewModel readerViewModel;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         //Orientation.setActivityOrientationFromPrefs(this);
+
+        readerViewModel = ViewModelProviders.of(this)
+                                            .get(ReaderViewModel.class);
 
         mStorage = StorageManager.getInstance(this);
 
@@ -120,7 +126,8 @@ public class ReaderActivity extends BaseActivity
         if (!getIntent().hasExtra(KEY_EXTRA_RESOURCE_KEY))
             throw new IllegalStateException("Activity Reader has to be called with extra Resource Key");
         else {
-            Resource resource = Resource.getWithKey(this, getIntent().getStringExtra(KEY_EXTRA_RESOURCE_KEY));
+            Resource resource = readerViewModel.getResourceRepository()
+                                               .getWithKey(getIntent().getStringExtra(KEY_EXTRA_RESOURCE_KEY));
             if (resource == null) throw new IllegalStateException("Resource is null on loading reader");
             getReaderDataFragment().setResource(resource);
         }
@@ -270,7 +277,10 @@ public class ReaderActivity extends BaseActivity
     private void loadArticleFragment(IIndexItem indexItem, DIRECTIONS direction, String position) {
 
 
-        if (TextUtils.isEmpty(position)) position = getPaper().getPositionInArticle(this, indexItem);
+        if (TextUtils.isEmpty(position)) position = readerViewModel.getStoreRepository()
+                                                                   .getStoreForKey(getPaper().getStorePathForPositionInArticle(
+                                                                           indexItem))
+                                                                   .getValue("0");
 
         FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
 
@@ -381,16 +391,12 @@ public class ReaderActivity extends BaseActivity
     @Override
     public boolean onLoadPrevArticle(DIRECTIONS fromDirection, String position) {
 
-        int prevPosition = getPaper()
-                                                  .getArticleCollectionOrderPosition(getReaderDataFragment().getCurrentKey()) - 1;
+        int prevPosition = getPaper().getArticleCollectionOrderPosition(getReaderDataFragment().getCurrentKey()) - 1;
 
         if (getReaderDataFragment().isFilterBookmarks()) {
             while (prevPosition >= 0) {
-                IIndexItem item = getPaper()
-                                                         .getPlist()
-                                                         .getIndexItem(getPaper()
-                                                                                              .getArticleCollectionOrderKey(
-                                                                                                      prevPosition));
+                IIndexItem item = getPaper().getPlist()
+                                            .getIndexItem(getPaper().getArticleCollectionOrderKey(prevPosition));
                 if (item != null) {
                     if (item.isBookmarked()) break;
                 }
@@ -399,8 +405,7 @@ public class ReaderActivity extends BaseActivity
         }
 
         if (prevPosition >= 0) {
-            loadArticleFragment(getPaper()
-                                                       .getArticleCollectionOrderKey(prevPosition), fromDirection, position);
+            loadArticleFragment(getPaper().getArticleCollectionOrderKey(prevPosition), fromDirection, position);
             return true;
         }
         return false;
@@ -463,12 +468,14 @@ public class ReaderActivity extends BaseActivity
             if (mContentFragment instanceof ArticleFragment) ((ArticleFragment) mContentFragment).initialBookmark();
         }
         JSONArray bookmarks = getPaper().getBookmarkJson();
+        Store bookmarkStore = new Store(getPaper().getStorePath(Paper.STORE_KEY_BOOKMARKS), bookmarks.toString());
         if (bookmarks.length() > 0) {
-            getPaper().saveStoreValue(this, Paper.STORE_KEY_BOOKMARKS, bookmarks.toString());
+            readerViewModel.getStoreRepository()
+                           .saveStore(bookmarkStore);
         } else {
-            getPaper().deleteStoreKey(this, Paper.STORE_KEY_BOOKMARKS);
+            readerViewModel.getStoreRepository()
+                           .deleteStore(bookmarkStore);
         }
-
     }
 
     @Override
@@ -556,9 +563,8 @@ public class ReaderActivity extends BaseActivity
         if (mIndexFragment != null) mIndexFragment.updateCurrentPosition(key);
         if (mPageIndexFragment != null) mPageIndexFragment.updateCurrentPosition(key);
         if (mContentFragment instanceof PagesFragment)
-            ((PagesFragment) mContentFragment).setShareButtonCallback(getPaper()
-                                                                                             .getPlist()
-                                                                                             .getIndexItem(key));
+            ((PagesFragment) mContentFragment).setShareButtonCallback(getPaper().getPlist()
+                                                                                .getIndexItem(key));
     }
 
 
@@ -569,8 +575,9 @@ public class ReaderActivity extends BaseActivity
 
     @Override
     public String getStoreValue(String path, String value) {
-        String result = Store.getValueForKey(this, "/" + getPaper().getBookId() + "/" + path);
-        return result;
+        return readerViewModel.getStoreRepository()
+                              .getStoreForKey("/" + getPaper().getBookId() + "/" + path)
+                              .getValue();
     }
 
     @Override
@@ -657,7 +664,7 @@ public class ReaderActivity extends BaseActivity
             // Sticky immersive mode differs in that it makes the navigation and status bars
             // semi-transparent, and the UI flag does not get cleared when the user interacts with
             // the screen.
-            if (Build.VERSION.SDK_INT >= 18) {
+            if (Build.VERSION.SDK_INT >= 19) {
                 newUiOptions |= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
             }
         } else {
@@ -733,6 +740,7 @@ public class ReaderActivity extends BaseActivity
         return false;
     }
 
+    @SuppressLint("StringFormatInvalid")
     private CharSequence makeTtsPlayingSpan(String text) {
         SpannableStringBuilder snackbarText = new SpannableStringBuilder();
         snackbarText.append(text);

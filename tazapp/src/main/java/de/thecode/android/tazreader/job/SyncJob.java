@@ -20,6 +20,9 @@ import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Publication;
 import de.thecode.android.tazreader.data.Resource;
+import de.thecode.android.tazreader.data.ResourceRepository;
+import de.thecode.android.tazreader.data.Store;
+import de.thecode.android.tazreader.data.StoreRepository;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.download.DownloadManager;
 import de.thecode.android.tazreader.okhttp3.OkHttp3Helper;
@@ -80,7 +83,8 @@ public class SyncJob extends Job {
 
         if (plist == null) {
             if (initByUser) {
-                EventBus.getDefault().post(new SyncErrorEvent(getContext().getString(R.string.sync_job_plist_empty)));
+                EventBus.getDefault()
+                        .post(new SyncErrorEvent(getContext().getString(R.string.sync_job_plist_empty)));
                 return endJob(Result.SUCCESS);
             } else {
                 return endJob(Result.RESCHEDULE);
@@ -122,14 +126,17 @@ public class SyncJob extends Job {
         if (allPapers != null) {
             for (Paper paper : allPapers) {
                 if (paper.isDownloaded() || paper.isDownloading()) {
-                    Resource resource = paper.getResourcePartner(getContext());
+                    Resource resource = ResourceRepository.getInstance(getContext())
+                                                          .getResourceForPaper(paper);
                     if (resource != null && !keepResources.contains(resource)) keepResources.add(resource);
                 }
             }
         }
-        List<Resource> deleteResources = Resource.getAllResources(getContext());
+        List<Resource> deleteResources = ResourceRepository.getInstance(getContext())
+                                                           .getAllResources();
         Paper latestPaper = Paper.getLatestPaper(getContext());
-        if (latestPaper != null) deleteResources.remove(Resource.getWithKey(getContext(), latestPaper.getResource()));
+        if (latestPaper != null) deleteResources.remove(ResourceRepository.getInstance(getContext())
+                                                                          .getWithKey(latestPaper.getResource()));
         for (Resource keepResource : keepResources) {
             if (deleteResources.contains(keepResource)) {
                 deleteResources.remove(keepResource);
@@ -244,7 +251,8 @@ public class SyncJob extends Job {
                     setMoveToPaperAtEnd(newPaper);
                     preLoadImage(newPaper);
                 }
-                Resource resource = Resource.getWithKey(getContext(), newPaper.getResource());
+                Resource resource = ResourceRepository.getInstance(getContext())
+                                                      .getWithKey(newPaper.getResource());
                 if (resource == null) {
                     resource = new Resource((NSDictionary) issue);
                     getContext().getContentResolver()
@@ -322,7 +330,8 @@ public class SyncJob extends Job {
     private void downloadLatestRessource() {
         Paper latestPaper = Paper.getLatestPaper(getContext());
         if (latestPaper != null) {
-            Resource latestResource = Resource.getWithKey(getContext(), latestPaper.getResource());
+            Resource latestResource = ResourceRepository.getInstance(getContext())
+                                                        .getWithKey(latestPaper.getResource());
             if (latestResource != null && !latestResource.isDownloaded() && !latestResource.isDownloading()) {
                 try {
                     DownloadManager.getInstance(getContext())
@@ -360,7 +369,9 @@ public class SyncJob extends Job {
                             if (!deletePaper.getId()
                                             .equals(currentOpenPaperId)) {
                                 boolean safeToDelete = true;
-                                String bookmarksJsonString = deletePaper.getStoreValue(getContext(), Paper.STORE_KEY_BOOKMARKS);
+                                String bookmarksJsonString = StoreRepository.getInstance(getContext())
+                                                                            .getStoreForKey(deletePaper.getStorePath(Paper.STORE_KEY_BOOKMARKS))
+                                                                            .getValue();
                                 if (!TextUtils.isEmpty(bookmarksJsonString)) {
                                     try {
                                         JSONArray bookmarks = new JSONArray(bookmarksJsonString);

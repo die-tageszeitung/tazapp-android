@@ -209,7 +209,7 @@ public class TazProvider extends ContentProvider {
         switch (match) {
             case STORE_DIR:
                 //FIXME Prüfen ob Key vorhanden
-                rowId = mDb.insert(Store.TABLE_NAME, null, values);
+                rowId = mDb.insertWithOnConflict(Store.TABLE_NAME, null, values,SQLiteDatabase.CONFLICT_REPLACE);
                 break;
             case PAPER_DIR:
                 rowId = mDb.insert(Paper.TABLE_NAME, null, values);

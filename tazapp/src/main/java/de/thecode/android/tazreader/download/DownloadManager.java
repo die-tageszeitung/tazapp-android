@@ -14,6 +14,9 @@ import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Resource;
+import de.thecode.android.tazreader.data.ResourceRepository;
+import de.thecode.android.tazreader.data.Store;
+import de.thecode.android.tazreader.data.StoreRepository;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.okhttp3.RequestHelper;
 import de.thecode.android.tazreader.secure.Base64;
@@ -118,9 +121,12 @@ public class DownloadManager {
                 .update(ContentUris.withAppendedId(Paper.CONTENT_URI, paper.getId()), paper.getContentValues(), null, null);
 
         if (!TextUtils.isEmpty(paper.getResource())) {
-            Resource resource = Resource.getWithKey(mContext, paper.getResource());
-            paper.saveResourcePartner(mContext, resource);
-            enqueResource(resource,wifiOnly);
+            Resource resource = ResourceRepository.getInstance(mContext)
+                                                  .getWithKey(paper.getResource());
+            StoreRepository.getInstance(mContext)
+                           .saveStore(new Store(paper.getStorePath(Paper.STORE_KEY_RESOURCE_PARTNER), paper.getResource()));
+//            paper.saveResourcePartner(mContext, resource);
+            enqueResource(resource, wifiOnly);
         }
     }
 
@@ -149,7 +155,7 @@ public class DownloadManager {
             if (resource.isDownloading()) {
                 Timber.w("Resource is downloading, checking for state");
                 DownloadState state = getDownloadState(resource.getDownloadId());
-                switch(state.getStatus()) {
+                switch (state.getStatus()) {
                     case DownloadState.STATUS_PENDING:
                     case DownloadState.STATUS_RUNNING:
                     case DownloadState.STATUS_PAUSED:

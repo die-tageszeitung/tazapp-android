@@ -248,14 +248,57 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
     }
 
 
-    private void callTazapi(String function, String value) {
-        mWebView.loadUrl("javascript:TAZAPI." + function + "(" + value + ")");
+//    private void callTazapi(String function, String value) {
+//        mWebView.loadUrl("javascript:TAZAPI." + function + "(" + value + ")");
+//    }
+
+    public void callTazapi(String methodname, Object... params) {
+
+        StringBuilder jsBuilder = new StringBuilder();
+        jsBuilder.append("TAZAPI")
+                 .append(".")
+                 .append(methodname)
+                 .append("(");
+        for (int i = 0; i < params.length; i++) {
+            Object param = params[i];
+            if (param instanceof String) {
+                jsBuilder.append("'");
+                jsBuilder.append(param);
+                jsBuilder.append("'");
+            } else jsBuilder.append(param);
+            if (i < params.length - 1) {
+                jsBuilder.append(",");
+            }
+        }
+        jsBuilder.append(");");
+        String call = jsBuilder.toString();
+        mUiThreadHandler.post(new Runnable() {
+
+            String call;
+
+            @Override
+            public void run() {
+                Timber.i("Calling javascript with %s", call);
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
+                    mWebView.evaluateJavascript(call, null);
+                } else {
+                    mWebView.loadUrl("javascript:" + call);
+                }
+            }
+
+            public Runnable setCall(String call) {
+                this.call = call;
+                return this;
+            }
+        }.setCall(call));
     }
+
+
 
     private void onGestureToTazapi(GESTURES gesture, MotionEvent e1) {
         //mOpenGesureResult = true;
-        Timber.d("%s %s", mArticle.getKey(), gesture);
-        callTazapi("onGesture", "'" + gesture.name() + "'," + e1.getX() + "," + e1.getY());
+        //callTazapi("onGesture", "'" + gesture.name() + "'," + e1.getX() + "," + e1.getY());
+        callTazapi("onGesture", gesture.name(),e1.getX(),e1.getY());
     }
 
     @Override
@@ -297,7 +340,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
     @Override
     public void onConfigurationChange(String key, String value) {
         Timber.d("%s %s", key, value);
-        callTazapi("onConfigurationChanged", "'" + key + "','" + value + "'");
+        callTazapi("onConfigurationChanged", key,value);
     }
 
     @Override
@@ -446,28 +489,32 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
         @JavascriptInterface
         public String getValue(String path) {
-            Timber.d("%s",path);
-            String result = Store.getValueForKey(getContext(), path);
+            Timber.d("%s", path);
+            Store store = getReaderViewModel().getStoreRepository()
+                                              .getStoreForKey(path);
+            String result = store.getValue();
             Timber.d("%s %s %s", mArticle.getKey(), path, result);
             return result;
         }
 
         @JavascriptInterface
         public boolean setValue(String path, String value) {
-            Timber.d("%s=%s",path,value);
+            Timber.d("%s=%s", path, value);
             boolean result = false;
-            Store store = Store.getStoreForKey(getContext(), path);
-            if (store == null) {
-                store = new Store(path, value);
-                Uri resultUri = getContext().getContentResolver()
-                                            .insert(Store.CONTENT_URI, store.getContentValues());
-                if (resultUri != null) result = true;
-            } else {
-                store.setValue(value);
-                int affected = getContext().getContentResolver()
-                                           .update(Store.getUriForKey(path), store.getContentValues(), null, null);
-                if (affected > 0) result = true;
-            }
+            Store store = new Store(path, value);
+            result = getReaderViewModel().getStoreRepository()
+                                         .saveStore(store);
+//            if (store == null) {
+//                store = new Store(path, value);
+//                Uri resultUri = getContext().getContentResolver()
+//                                            .insert(Store.CONTENT_URI, store.getContentValues());
+//                if (resultUri != null) result = true;
+//            } else {
+//                store.setValue(value);
+//                int affected = getContext().getContentResolver()
+//                                           .update(Store.getUriForKey(path), store.getContentValues(), null, null);
+//                if (affected > 0) result = true;
+//            }
             Timber.d("%s %s %s", mArticle.getKey(), path, value, result);
             return result;
         }
@@ -489,8 +536,11 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
         @JavascriptInterface
         public void pageReady(String percentSeen, String position, String numberOfPages) {
             Timber.d("%s %s %s", mArticle.getKey(), percentSeen, position, numberOfPages);
-            callback.getPaper()
-                    .savePositionInArticle(getContext(), mArticle, position);
+            getReaderViewModel().getStoreRepository()
+                                .saveStore(new Store(callback.getPaper()
+                                                             .getStorePathForPositionInArticle(mArticle), position));
+//            callback.getPaper()
+//                    .savePositionInArticle(getContext(), mArticle, position);
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -498,12 +548,16 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
                             .alpha(1F)
                             .setDuration(400)
                             .start();
-                    mProgressBar.animate().alpha(0F).setListener(new AnimatorListenerAdapter() {
-                        @Override
-                        public void onAnimationEnd(Animator animation) {
-                            mProgressBar.setVisibility(View.GONE);
-                        }
-                    }).setDuration(400).start();
+                    mProgressBar.animate()
+                                .alpha(0F)
+                                .setListener(new AnimatorListenerAdapter() {
+                                    @Override
+                                    public void onAnimationEnd(Animator animation) {
+                                        mProgressBar.setVisibility(View.GONE);
+                                    }
+                                })
+                                .setDuration(400)
+                                .start();
                     //mProgressBar.setVisibility(View.GONE);
                 }
             });

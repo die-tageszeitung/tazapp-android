@@ -10,6 +10,7 @@ import android.support.v4.app.FragmentManager;
 import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Store;
+import de.thecode.android.tazreader.data.StoreRepository;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.utils.AsyncTaskWithExecption;
 import de.thecode.android.tazreader.utils.BaseFragment;
@@ -128,7 +129,10 @@ public class MigrationWorkerFragment extends BaseFragment {
                     FileUtils.deleteQuietly(storage.getCache(null));//Utils.deleteDirContent(storage.getCache(null));
                 Timber.i("...finished");
 
-                List<Store> storeList = Store.getAllStores(applicationContext);
+                StoreRepository storeRepository = StoreRepository.getInstance(applicationContext);
+
+                List<Store> storeList = storeRepository.getAllStores();
+
                 for (Store store : storeList) {
                     Timber.i("Migrating Store %s", store.getKey());
                     if (store.getKey()
@@ -145,16 +149,17 @@ public class MigrationWorkerFragment extends BaseFragment {
                                     newBookmarksArray.put(bookmarkName);
                                 }
                             }
-                            Store.saveValueForKey(applicationContext, store.getKey(), newBookmarksArray.toString());
+                            store.setValue(newBookmarksArray.toString());
+                            storeRepository.saveStore(store);
                             Timber.i("...finished");
                         } catch (JSONException e) {
                             Timber.e("Error during migration, bookmarks will be deleted, sorry");
-                            Store.deleteKey(applicationContext, store.getKey());
+                            storeRepository.deleteStore(store);
                         }
 
                     } else {
                         Timber.i("...deleting");
-                        Store.deleteKey(applicationContext, store.getKey());
+                        storeRepository.deleteStore(store);
                     }
                 }
 

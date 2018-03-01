@@ -19,7 +19,6 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class Resource {
     public static       String TABLE_NAME        = "RESOURCE";
     public static final Uri    CONTENT_URI       = Uri.parse("content://" + TazProvider.AUTHORITY + "/" + TABLE_NAME);
@@ -52,19 +51,6 @@ public class Resource {
     public Resource(Cursor cursor) {
         setData(cursor);
     }
-
-//    public Resource(Context context, String key) {
-//        Cursor cursor = context.getContentResolver()
-//                               .query(Uri.withAppendedPath(CONTENT_URI, key), null, null, null, null);
-//        try {
-//            if (cursor.moveToNext()) {
-//                setData(cursor);
-//            }
-//        } finally {
-//            cursor.close();
-//        }
-//
-//    }
 
     public Resource(NSDictionary nsDictionary) {
         this.key = PlistHelper.getString(nsDictionary, Paper.Columns.RESOURCE);
@@ -199,38 +185,6 @@ public class Resource {
                                           .append(fileHash)
                                           .append(len)
                                           .toHashCode();
-    }
-
-    public static Resource getWithKey(Context context, String key) {
-        Uri resourceUri = CONTENT_URI.buildUpon()
-                                     .appendPath(key)
-                                     .build();
-        Cursor cursor = context.getApplicationContext()
-                               .getContentResolver()
-                               .query(resourceUri, null, null, null, null);
-        try {
-            if (cursor.moveToNext()) {
-                return new Resource(cursor);
-            }
-        } finally {
-            cursor.close();
-        }
-        return null;
-    }
-
-    public static List<Resource> getAllResources(Context context){
-        List<Resource> result = new ArrayList<>();
-        Cursor cursor = context.getApplicationContext()
-                               .getContentResolver()
-                               .query(CONTENT_URI, null, null, null, null);
-        try {
-            while (cursor.moveToNext()) {
-                result.add(new Resource(cursor));
-            }
-        } finally {
-            cursor.close();
-        }
-        return result;
     }
 
     public static class MissingResourceException extends ReadableException {

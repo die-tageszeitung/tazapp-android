@@ -11,6 +11,7 @@ import android.webkit.WebView;
 import de.mateware.dialog.DialogCustomView;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Resource;
+import de.thecode.android.tazreader.data.ResourceRepository;
 import de.thecode.android.tazreader.push.PushNotification;
 import de.thecode.android.tazreader.utils.StorageManager;
 
@@ -31,7 +32,8 @@ public class PushNotificationDialog extends DialogCustomView {
     @Override
     public View getView(LayoutInflater inflater, ViewGroup parent) {
         WebView webView = new WebView(inflater.getContext());
-        webView.getSettings().setJavaScriptEnabled(true);
+        webView.getSettings()
+               .setJavaScriptEnabled(true);
 
         pushNotification = getArguments().getParcelable(ARG_PUSH_NOTIFICATION);
         if (pushNotification != null) {
@@ -68,8 +70,6 @@ public class PushNotificationDialog extends DialogCustomView {
     private String getHtml(Context context) {
 
 
-
-
         String html;
 
         try {
@@ -79,7 +79,8 @@ public class PushNotificationDialog extends DialogCustomView {
             String cssfilepath = "file:///android_asset/push/simple.css";
             Paper latestPaper = Paper.getLatestPaper(context);
             if (latestPaper != null) {
-                Resource latestResource = Resource.getWithKey(context,latestPaper.getResource());
+                Resource latestResource = ResourceRepository.getInstance(context)
+                                                            .getWithKey(latestPaper.getResource());
                 if (latestResource != null && latestResource.isDownloaded()) {
                     File resourceDir = StorageManager.getInstance(context)
                                                      .getResourceDirectory(latestResource.getKey());
@@ -94,7 +95,10 @@ public class PushNotificationDialog extends DialogCustomView {
 
             if (pushNotification != null) {
 
-                String body = pushNotification.getType() == PushNotification.Type.debug ? "<pre>"+pushNotification.toString().replaceAll("\\n","<BR>")+"</pre>" : pushNotification.getBody();
+                String body = pushNotification.getType() == PushNotification.Type.debug ? "<pre>" + pushNotification.toString()
+                                                                                                                    .replaceAll(
+                                                                                                                            "\\n",
+                                                                                                                            "<BR>") + "</pre>" : pushNotification.getBody();
                 if (TextUtils.isEmpty(body)) {
                     body = "Kein Text";
                 }

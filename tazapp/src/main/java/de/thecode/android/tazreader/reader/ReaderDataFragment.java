@@ -6,6 +6,8 @@ import android.text.TextUtils;
 import de.mateware.datafragment.DataFragmentBase;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Resource;
+import de.thecode.android.tazreader.data.Store;
+import de.thecode.android.tazreader.data.StoreRepository;
 
 import org.apache.commons.lang3.StringUtils;
 import org.greenrobot.eventbus.EventBus;
@@ -17,11 +19,11 @@ import timber.log.Timber;
  */
 public class ReaderDataFragment extends DataFragmentBase {
 
-    private Paper   _paper;
+    private Paper    _paper;
     private Resource _resource;
-    private String  mCurrentKey;
+    private String   mCurrentKey;
     //private String  mPosition;
-    private boolean filterBookmarks;
+    private boolean  filterBookmarks;
 
     private PaperLoadingTask paperLoadingTask;
 
@@ -42,14 +44,20 @@ public class ReaderDataFragment extends DataFragmentBase {
             paperLoadingTask = new PaperLoadingTask(getContext(), paperId) {
                 @Override
                 protected void onPostError(Exception exception) {
-                    EventBus.getDefault().post(new PaperLoadedEvent(exception));
+                    EventBus.getDefault()
+                            .post(new PaperLoadedEvent(exception));
                 }
+
                 @Override
                 protected void onPostSuccess(Paper paper) {
                     _paper = paper;
                     if (!isCancelled()) {
-                        String currentKey = paper.getStoreValue(getContext(), Paper.STORE_KEY_CURRENTPOSITION);
-                        currentKey = StringUtils.substringBefore(currentKey,"?"); //Workaround for sometimes position saved in key, could ot figure out why
+
+                        String currentKey = StoreRepository.getInstance(getContext())
+                                                           .getStoreForKey(paper.getStorePath(Paper.STORE_KEY_CURRENTPOSITION))
+                                                           .getValue();
+                        currentKey = StringUtils.substringBefore(currentKey,
+                                                                 "?"); //Workaround for sometimes position saved in key, could ot figure out why
                         //String position = paper.getStoreValue(getContext(), ReaderActivity.STORE_KEY_POSITION_IN_ARTICLE);
                         if (TextUtils.isEmpty(currentKey)) {
                             currentKey = paper.getPlist()
@@ -80,7 +88,9 @@ public class ReaderDataFragment extends DataFragmentBase {
         mCurrentKey = currentKey;
         //mPosition = position;
         try {
-            _paper.saveStoreValue(getContext(), Paper.STORE_KEY_CURRENTPOSITION, mCurrentKey);
+            StoreRepository.getInstance(getContext())
+                           .saveStore(new Store(_paper.getStorePath(Paper.STORE_KEY_CURRENTPOSITION), mCurrentKey));
+            //_paper.saveStoreValue(getContext(), Paper.STORE_KEY_CURRENTPOSITION, mCurrentKey);
             //_paper.saveStoreValue(getContext(), ReaderActivity.STORE_KEY_POSITION_IN_ARTICLE, position);
         } catch (Exception e) {
             Timber.w(e);

@@ -1,7 +1,11 @@
 package de.thecode.android.tazreader.reader;
 
 
+import android.arch.lifecycle.ViewModel;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
+import android.os.Bundle;
+import android.support.annotation.Nullable;
 
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.utils.BaseFragment;
@@ -13,12 +17,20 @@ public abstract class AbstractContentFragment extends BaseFragment implements Re
 
     public IReaderCallback callback;
 
+    private ReaderViewModel readerViewModel;
 
     public AbstractContentFragment() {
 
     }
 
     //public abstract void init(Paper paper, String key, String position);
+
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        readerViewModel = ViewModelProviders.of(getActivity()).get(ReaderViewModel.class);
+    }
 
     @Override
     public void onAttach(Context context) {
@@ -65,6 +77,10 @@ public abstract class AbstractContentFragment extends BaseFragment implements Re
             result.append(TazSettings.getInstance(getContext()).getPrefBoolean(name, false) ? "on" : "off");
         }
         return result.toString();
+    }
+
+    public ReaderViewModel getReaderViewModel() {
+        return readerViewModel;
     }
 
     public abstract void onTtsStateChanged(ReaderTtsFragment.TTS state);

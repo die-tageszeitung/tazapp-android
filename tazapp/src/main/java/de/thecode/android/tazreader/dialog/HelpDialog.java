@@ -16,6 +16,7 @@ import de.mateware.dialog.DialogCustomView;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Resource;
+import de.thecode.android.tazreader.data.ResourceRepository;
 import de.thecode.android.tazreader.utils.StorageManager;
 
 import java.io.File;
@@ -43,14 +44,14 @@ public class HelpDialog extends DialogCustomView {
     public static final String HELP_ARTICLE = "artikel.html";
     public static final String HELP_PRIVACY = "datenschutz.html";
 
-    private static final String[] HELP_RESOURCE_SUBDIRS = {"res/android-help","res/ios-help"};
+    private static final String[] HELP_RESOURCE_SUBDIRS = {"res/android-help", "res/ios-help"};
 
-    private static final String ARG_HELPPAGE = "helpPage";
+    private static final String ARG_HELPPAGE   = "helpPage";
     private static final String ARG_CURRENTURL = "currentUrl";
 
-    String baseUrlPath;
+    String  baseUrlPath;
     WebView webView;
-    String currentUrl;
+    String  currentUrl;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -71,7 +72,8 @@ public class HelpDialog extends DialogCustomView {
             baseUrlPath = "file:///android_asset/help/";
 
             for (Paper paper : papers) {
-                Resource latestResource = Resource.getWithKey(inflater.getContext(), paper.getResource());
+                Resource latestResource = ResourceRepository.getInstance(inflater.getContext())
+                                                            .getWithKey(paper.getResource());
                 if (latestResource != null && latestResource.isDownloaded()) {
 
                     File latestResourceDir = StorageManager.getInstance(getContext())
@@ -95,7 +97,7 @@ public class HelpDialog extends DialogCustomView {
         webView = view.findViewById(R.id.help_web_view);
         webView.getSettings()
                .setJavaScriptEnabled(true);
-        webView.setWebViewClient(new WebViewClient(){
+        webView.setWebViewClient(new WebViewClient() {
 
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
@@ -104,7 +106,8 @@ public class HelpDialog extends DialogCustomView {
                     view.loadUrl(url);
                 } else {
                     Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-                    view.getContext().startActivity(i);
+                    view.getContext()
+                        .startActivity(i);
                 }
                 return true;
             }
@@ -116,8 +119,7 @@ public class HelpDialog extends DialogCustomView {
 
     @Override
     public Bundle onSaveInstanceState(Bundle outState) {
-        if (webView != null)
-            outState.putString(ARG_CURRENTURL,webView.getUrl());
+        if (webView != null) outState.putString(ARG_CURRENTURL, webView.getUrl());
         return super.onSaveInstanceState(outState);
     }
 
