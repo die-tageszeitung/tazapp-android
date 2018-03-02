@@ -32,11 +32,11 @@ public interface IReaderCallback {
 
     public Paper getPaper();
 
-    public Resource getResource();
+//    public Resource getResource();
 
     public String getCurrentKey();
 
-    public String getStoreValue(String path, String value);
+//    public String getStoreValue(String path, String value);
 
     public void setFilterBookmarks(boolean bool);
     public boolean isFilterBookmarks();

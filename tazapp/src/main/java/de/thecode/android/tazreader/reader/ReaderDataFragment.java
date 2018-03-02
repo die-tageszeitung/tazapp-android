@@ -20,7 +20,7 @@ import timber.log.Timber;
 public class ReaderDataFragment extends DataFragmentBase {
 
     private Paper    _paper;
-    private Resource _resource;
+//    private Resource _resource;
     private String   mCurrentKey;
     //private String  mPosition;
     private boolean  filterBookmarks;
@@ -97,13 +97,13 @@ public class ReaderDataFragment extends DataFragmentBase {
         }
     }
 
-    public void setResource(Resource _resource) {
-        this._resource = _resource;
-    }
-
-    public Resource getResource() {
-        return _resource;
-    }
+//    public void setResource(Resource _resource) {
+//        this._resource = _resource;
+//    }
+//
+//    public Resource getResource() {
+//        return _resource;
+//    }
 
     public String getCurrentKey() {
         return mCurrentKey;

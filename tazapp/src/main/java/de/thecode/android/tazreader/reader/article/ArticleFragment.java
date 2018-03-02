@@ -82,8 +82,8 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
     }
 
     IIndexItem mArticle;
-    Resource   resource;
-
+//    Resource   resource;
+//
     String mPosition = "0";
 
     ArticleWebView mWebView;
@@ -124,7 +124,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 //        mArticle = callback.getPaper()
 //                           .getPlist()
 //                           .getIndexItem(key);
-        resource = callback.getResource();
+//        resource = callback.getResource();
         callback.updateIndexes(key);
     }
 
@@ -640,7 +640,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
         @JavascriptInterface
         public String getAbsoluteResourcePath() {
             File resourceDir = StorageManager.getInstance(getContext())
-                                             .getResourceDirectory(resource);
+                                             .getResourceDirectory(getReaderViewModel().getResource());
             return "file://" + resourceDir.getAbsolutePath() + "/";
         }
 
@@ -698,7 +698,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
                                                   .getPaperDirectory(mArticle.getPaper())
                                                   .getAbsolutePath(), mArticle.getKey());
         File resourceDir = StorageManager.getInstance(context)
-                                         .getResourceDirectory(resource);
+                                         .getResourceDirectory(getReaderViewModel().getResource());
 
         String resourceReplacement = "file://" + resourceDir.getAbsolutePath() + "/";
         String tazapiReplacement = "file:///android_asset/js/TAZAPI.js";

@@ -129,7 +129,7 @@ public class ReaderActivity extends BaseActivity
             Resource resource = readerViewModel.getResourceRepository()
                                                .getWithKey(getIntent().getStringExtra(KEY_EXTRA_RESOURCE_KEY));
             if (resource == null) throw new IllegalStateException("Resource is null on loading reader");
-            getReaderDataFragment().setResource(resource);
+            readerViewModel.setResource(resource);
         }
 
         new NotificationUtils(this).removeDownloadNotification(paperId);
@@ -573,12 +573,12 @@ public class ReaderActivity extends BaseActivity
         return getReaderDataFragment().getCurrentKey();
     }
 
-    @Override
-    public String getStoreValue(String path, String value) {
-        return readerViewModel.getStoreRepository()
-                              .getStoreForKey("/" + getPaper().getBookId() + "/" + path)
-                              .getValue();
-    }
+//    @Override
+//    public String getStoreValue(String path, String value) {
+//        return readerViewModel.getStoreRepository()
+//                              .getStoreForKey("/" + getPaper().getBookId() + "/" + path)
+//                              .getValue();
+//    }
 
     @Override
     public void setFilterBookmarks(boolean bool) {
@@ -601,11 +601,11 @@ public class ReaderActivity extends BaseActivity
         }
         return paper;
     }
-
-    @Override
-    public Resource getResource() {
-        return getReaderDataFragment().getResource();
-    }
+//
+//    @Override
+//    public Resource getResource() {
+//        return getReaderDataFragment().getResource();
+//    }
 
     @Override
     public void onBackPressed() {
