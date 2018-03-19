@@ -3,16 +3,18 @@ package de.thecode.android.tazreader.reader.article;
 import android.os.Bundle;
 import android.view.MotionEvent;
 
+import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.reader.ReaderActivity.DIRECTIONS;
+import de.thecode.android.tazreader.reader.ReaderBaseFragment;
 
 public class TopLinkFragment extends ArticleFragment {
 
-    public static TopLinkFragment newInstance(String articleKey) {
-        TopLinkFragment fragment = new TopLinkFragment();
-        Bundle bundle = new Bundle();
-        bundle.putString(ArticleFragment.ARG_KEY, articleKey);
-        fragment.setArguments(bundle);
+    public static TopLinkFragment newInstance(String bookId, String resourceKey, String articleKey) {
+        TopLinkFragment fragment = ReaderBaseFragment.newInstance(TopLinkFragment.class,bookId,resourceKey);
+        Bundle arguments = fragment.getArguments();
+        arguments.putString(ArticleFragment.ARG_KEY, articleKey);
+        fragment.setArguments(arguments);
         return fragment;
     }
 
@@ -24,19 +26,19 @@ public class TopLinkFragment extends ArticleFragment {
     @Override
     public void onSwipeBottom(ArticleWebView view, MotionEvent e1, MotionEvent e2) {
 
-        if (callback != null) callback.onLoadPrevArticle(DIRECTIONS.TOP, "0");
+        if (getReaderActivity() != null) getReaderActivity().onLoadPrevArticle(DIRECTIONS.TOP, "0");
     }
 
     @Override
     public void onSwipeTop(ArticleWebView view, MotionEvent e1, MotionEvent e2) {
 
-        if (callback != null) callback.onLoadNextArticle(DIRECTIONS.BOTTOM, "0");
+        if (getReaderActivity() != null) getReaderActivity().onLoadNextArticle(DIRECTIONS.BOTTOM, "0");
     }
 
     @Override
     public void onSwipeLeft(ArticleWebView view, MotionEvent e1, MotionEvent e2) {
 
-        if (callback != null) callback.onLoadNextArticle(DIRECTIONS.RIGHT, "0");
+        if (getReaderActivity() != null) getReaderActivity().onLoadNextArticle(DIRECTIONS.RIGHT, "0");
     }
 
     @Override
@@ -44,7 +46,7 @@ public class TopLinkFragment extends ArticleFragment {
 
         String position = "0";
         if (!TazSettings.getInstance(getContext()).getPrefBoolean(TazSettings.PREFKEY.ISSCROLL, false)) position = "EOF";
-        if (callback != null) callback.onLoadPrevArticle(DIRECTIONS.LEFT, position);
+        if (getReaderActivity() != null) getReaderActivity().onLoadPrevArticle(DIRECTIONS.LEFT, position);
     }
 
     @Override

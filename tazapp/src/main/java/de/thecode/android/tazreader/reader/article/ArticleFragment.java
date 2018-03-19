@@ -3,6 +3,7 @@ package de.thecode.android.tazreader.reader.article;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.SuppressLint;
+import android.arch.lifecycle.Observer;
 import android.content.Context;
 import android.content.Intent;
 import android.net.MailTo;
@@ -35,15 +36,15 @@ import android.widget.Toast;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Paper.Plist.Page.Article;
-import de.thecode.android.tazreader.data.Resource;
 import de.thecode.android.tazreader.data.Store;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.reader.AbstractContentFragment;
 import de.thecode.android.tazreader.reader.ReaderActivity;
 import de.thecode.android.tazreader.reader.ReaderActivity.DIRECTIONS;
+import de.thecode.android.tazreader.reader.ReaderBaseFragment;
 import de.thecode.android.tazreader.reader.ReaderTtsFragment;
 import de.thecode.android.tazreader.reader.article.ArticleWebView.ArticleWebViewCallback;
-import de.thecode.android.tazreader.reader.index.IIndexItem;
+import de.thecode.android.tazreader.data.ITocItem;
 import de.thecode.android.tazreader.utils.StorageManager;
 import de.thecode.android.tazreader.utils.TintHelper;
 import de.thecode.android.tazreader.widget.ReaderButton;
@@ -67,12 +68,12 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
     protected static final String ARG_KEY      = "arg_article_key";
     protected static final String ARG_POSITION = "arg_article_position";
 
-    public static ArticleFragment newInstance(String articleKey, String position) {
-        ArticleFragment fragment = new ArticleFragment();
-        Bundle bundle = new Bundle();
-        bundle.putString(ARG_KEY, articleKey);
-        bundle.putString(ARG_POSITION, position);
-        fragment.setArguments(bundle);
+    public static ArticleFragment newInstance(String bookId, String resourceKey, String articleKey, String position) {
+        ArticleFragment fragment = ReaderBaseFragment.newInstance(ArticleFragment.class, bookId, resourceKey);
+        Bundle arguments = fragment.getArguments();
+        arguments.putString(ARG_KEY, articleKey);
+        arguments.putString(ARG_POSITION, position);
+        fragment.setArguments(arguments);
         return fragment;
     }
 
@@ -81,7 +82,8 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
         undefined, swipeUp, swipeDown, swipeRight, swipeLeft
     }
 
-    IIndexItem mArticle;
+    ITocItem mArticle;
+    String key;
 //    Resource   resource;
 //
     String mPosition = "0";
@@ -104,7 +106,6 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        String key = null;
         if (savedInstanceState != null) {
             key = savedInstanceState.getString(ARG_KEY);
             mPosition = savedInstanceState.getString(ARG_POSITION);
@@ -115,17 +116,20 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
             }
         }
 
-        Paper paper = callback.getPaper();
-        if (paper != null) {
-            mArticle = paper.getPlist()
-                            .getIndexItem(key);
-        }
+//        Paper paper = getReaderViewModel().getPaper();
+//        if (paper != null) {
+//            mArticle = paper.getPlist()
+//                            .getIndexItem(key);
+//        }
 
 //        mArticle = callback.getPaper()
 //                           .getPlist()
 //                           .getIndexItem(key);
 //        resource = callback.getResource();
-        callback.updateIndexes(key);
+
+
+//        callback.updateIndexes(key);
+
     }
 
     @Override
@@ -146,7 +150,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
         mWebView.setAlpha(0F);
         mWebView.setArticleWebViewCallback(this);
 
-        mWebView.setBackgroundColor(callback.onGetBackgroundColor(TazSettings.getInstance(getContext())
+        mWebView.setBackgroundColor(getReaderActivity().onGetBackgroundColor(TazSettings.getInstance(getContext())
                                                                              .getPrefString(TazSettings.PREFKEY.THEME,
                                                                                             "normal")));
 
@@ -219,16 +223,27 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
         //ttsActive = TazSettings.getPrefBoolean(getContext(), TazSettings.PREFKEY.TEXTTOSPEACH, false);
 
-        if (mArticle != null) {
-            initialBookmark();
-            loadArticleInWebview(inflater.getContext());
-        }
 
         return (result);
     }
 
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        getReaderViewModel().getPaperLiveData().observe(this, new Observer<Paper>() {
+            @Override
+            public void onChanged(@Nullable Paper paper) {
+                getReaderViewModel().setCurrentKey(key);
+                mArticle = paper.getPlist().getIndexItem(key);
+                if (mArticle != null) {
+                    initialBookmark();
+                    loadArticleInWebview(mWebView.getContext());
+                }
+            }
+        });
+    }
 
-//    @Override
+    //    @Override
 //    public void init(Paper paper, String key, String position) {
 //        Timber.d("initialising ArticleFragment %s and position %s", key, position);
 //        mArticle = paper.getPlist()
@@ -331,8 +346,8 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
     @Override
     public boolean onDoubleTap(MotionEvent e) {
-        if (callback != null) {
-            callback.speak(mArticle.getKey(), getTextToSpeech());
+        if (getReaderActivity() != null) {
+            getReaderActivity().speak(mArticle.getKey(), getTextToSpeech());
         }
         return true;
     }
@@ -384,7 +399,8 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
                 @Override
                 public void onClick(View v) {
-                    if (callback != null) callback.onBookmarkClick(mArticle);
+                    getReaderActivity().onBookmarkClick(mArticle);
+                    //if (callback != null) callback.onBookmarkClick(mArticle);
                 }
             });
 
@@ -482,7 +498,8 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
                 });
 
             } else {
-                if (callback != null) callback.onLoad(url);
+                getReaderActivity().loadContentFragment(url);
+                //if (callback != null) callback.onLoad(url);
             }
 
         }
@@ -491,7 +508,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
         public String getValue(String path) {
             Timber.d("%s", path);
             Store store = getReaderViewModel().getStoreRepository()
-                                              .getStoreForKey(path);
+                                              .getStoreForPath(path);
             String result = store.getValue();
             Timber.d("%s %s %s", mArticle.getKey(), path, result);
             return result;
@@ -536,11 +553,10 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
         @JavascriptInterface
         public void pageReady(String percentSeen, String position, String numberOfPages) {
             Timber.d("%s %s %s", mArticle.getKey(), percentSeen, position, numberOfPages);
-            getReaderViewModel().getStoreRepository()
-                                .saveStore(new Store(callback.getPaper()
-                                                             .getStorePathForPositionInArticle(mArticle), position));
-//            callback.getPaper()
-//                    .savePositionInArticle(getContext(), mArticle, position);
+            Store positionStore = getReaderViewModel().getStoreRepository().getStore(getReaderViewModel().getPaper().getBookId(),Paper.STORE_KEY_POSITION_IN_ARTICLE+"_"+mArticle.getKey());
+            positionStore.setValue(position);
+            getReaderViewModel().getStoreRepository().saveStore(positionStore);
+            mPosition = position;
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -597,7 +613,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
                             break;
                     }
 
-                    if (callback != null) callback.onLoadNextArticle(direction, String.valueOf(position));
+                    if (getReaderActivity() != null) getReaderActivity().onLoadNextArticle(direction, String.valueOf(position));
                 }
             });
 
@@ -632,7 +648,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
                             break;
                     }
 
-                    if (callback != null) callback.onLoadPrevArticle(direction, positionString);
+                    if (getReaderActivity() != null) getReaderActivity().onLoadPrevArticle(direction, positionString);
                 }
             });
         }
@@ -667,14 +683,15 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
                     Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
                     startActivity(browserIntent);
                 } else {
-                    if (callback != null) {
-                        IIndexItem indexItem = callback.getPaper()
-                                                       .getPlist()
-                                                       .getIndexItem(url);
-                        if (indexItem != null) {
-                            callback.onLoad(url);
+//                    if (callback != null) {
+                        ITocItem indexItem = getReaderViewModel().getPaper()
+                                                                 .getPlist()
+                                                                 .getIndexItem(url);
+                        if (indexItem != null && getReaderActivity() != null) {
+                            getReaderActivity().loadContentFragment(url);
+                            //callback.onLoad(url);
                         }
-                    }
+//                    }
                 }
             }
             return true;

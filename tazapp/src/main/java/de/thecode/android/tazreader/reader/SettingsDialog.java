@@ -20,22 +20,21 @@ import timber.log.Timber;
 
 public class SettingsDialog extends DialogCustomView {
 
-    private IReaderCallback mCallback;
-    private SeekBar seekBarColumns;
-    private Button btnNormal;
-    private Button btnSepia;
-    private Button btnNight;
+    private SettingsDialogCallback mCallback;
+    private SeekBar         seekBarColumns;
+    private Button          btnNormal;
+    private Button          btnSepia;
+    private Button          btnNight;
 
     @Override
     public View getView(LayoutInflater inflater, ViewGroup parent) {
 
-        boolean isScroll = TazSettings.getInstance(getContext()).getPrefBoolean(TazSettings.PREFKEY.ISSCROLL, false);
+        boolean isScroll = TazSettings.getInstance(getContext())
+                                      .getPrefBoolean(TazSettings.PREFKEY.ISSCROLL, false);
         //boolean isFullscreen = TazSettings.getPrefBoolean(getContext(), TazSettings.PREFKEY.FULLSCREEN, false);
-        mCallback = (IReaderCallback) getContext();
+        mCallback = (SettingsDialogCallback) getContext();
 
         View view = inflater.inflate(R.layout.reader_settings, parent);
-
-
 
 
         btnNormal = (Button) view.findViewById(R.id.btnNormal);
@@ -54,7 +53,7 @@ public class SettingsDialog extends DialogCustomView {
 
             @Override
             public void onClick(View v) {
-                Timber.d("v: %s",v);
+                Timber.d("v: %s", v);
                 mCallback.onConfigurationChange(TazSettings.PREFKEY.THEME, THEMES.sepia.name());
                 colorThemeButtonText(THEMES.sepia);
             }
@@ -65,12 +64,13 @@ public class SettingsDialog extends DialogCustomView {
 
             @Override
             public void onClick(View v) {
-                Timber.d("v: %s",v);
+                Timber.d("v: %s", v);
                 mCallback.onConfigurationChange(TazSettings.PREFKEY.THEME, THEMES.night.name());
                 colorThemeButtonText(THEMES.night);
             }
         });
-        colorThemeButtonText(THEMES.valueOf(TazSettings.getInstance(getContext()).getPrefString(TazSettings.PREFKEY.THEME, null)));
+        colorThemeButtonText(THEMES.valueOf(TazSettings.getInstance(getContext())
+                                                       .getPrefString(TazSettings.PREFKEY.THEME, null)));
 
         SwitchCompat switchIsScroll = (SwitchCompat) view.findViewById(R.id.switchIsScroll);
         switchIsScroll.setChecked(!isScroll);
@@ -78,14 +78,15 @@ public class SettingsDialog extends DialogCustomView {
 
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                Timber.d("buttonView: %s, isChecked: %s",buttonView, isChecked);
+                Timber.d("buttonView: %s, isChecked: %s", buttonView, isChecked);
                 if (mCallback != null) mCallback.onConfigurationChange(TazSettings.PREFKEY.ISSCROLL, !isChecked);
                 seekBarColumns.setEnabled(isChecked);
             }
         });
 
         SwitchCompat switchIsPaging = (SwitchCompat) view.findViewById(R.id.switchIsPaging);
-        switchIsPaging.setChecked(TazSettings.getInstance(getContext()).getPrefBoolean(TazSettings.PREFKEY.ISPAGING, false));
+        switchIsPaging.setChecked(TazSettings.getInstance(getContext())
+                                             .getPrefBoolean(TazSettings.PREFKEY.ISPAGING, false));
         switchIsPaging.setOnCheckedChangeListener(new OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -94,7 +95,8 @@ public class SettingsDialog extends DialogCustomView {
         });
 
         SwitchCompat switchIsScrollToNext = (SwitchCompat) view.findViewById(R.id.switchIsScrollToNext);
-        switchIsScrollToNext.setChecked(TazSettings.getInstance(getContext()).getPrefBoolean(TazSettings.PREFKEY.ISSCROLLTONEXT,false));
+        switchIsScrollToNext.setChecked(TazSettings.getInstance(getContext())
+                                                   .getPrefBoolean(TazSettings.PREFKEY.ISSCROLLTONEXT, false));
         switchIsScrollToNext.setOnCheckedChangeListener(new OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -103,7 +105,8 @@ public class SettingsDialog extends DialogCustomView {
         });
 
         SwitchCompat switchIsJustify = (SwitchCompat) view.findViewById(R.id.switchIsJustify);
-        switchIsJustify.setChecked(TazSettings.getInstance(getContext()).getPrefBoolean(TazSettings.PREFKEY.ISJUSTIFY,false));
+        switchIsJustify.setChecked(TazSettings.getInstance(getContext())
+                                              .getPrefBoolean(TazSettings.PREFKEY.ISJUSTIFY, false));
         switchIsJustify.setOnCheckedChangeListener(new OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -129,7 +132,8 @@ public class SettingsDialog extends DialogCustomView {
         seekBarColumns = (SeekBar) view.findViewById(R.id.seekBarColumn);
 
         seekBarColumns.setEnabled(!isScroll);
-        seekBarColumns.setProgress((int) (Float.valueOf(TazSettings.getInstance(getContext()).getPrefString(TazSettings.PREFKEY.COLSIZE, "0")) * 10));
+        seekBarColumns.setProgress((int) (Float.valueOf(TazSettings.getInstance(getContext())
+                                                                   .getPrefString(TazSettings.PREFKEY.COLSIZE, "0")) * 10));
         seekBarColumns.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
 
             @Override
@@ -144,7 +148,7 @@ public class SettingsDialog extends DialogCustomView {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 float colValue = ((float) progress) / 10;
                 String colValueString = String.valueOf(colValue);
-                Timber.d("color: %s",colValueString);
+                Timber.d("color: %s", colValueString);
                 if (fromUser) {
                     mCallback.onConfigurationChange(TazSettings.PREFKEY.COLSIZE, colValueString);
                 }
@@ -152,7 +156,8 @@ public class SettingsDialog extends DialogCustomView {
         });
 
         SeekBar seekBarFontSize = (SeekBar) view.findViewById(R.id.seekBarFontSize);
-        seekBarFontSize.setProgress(Integer.valueOf(TazSettings.getInstance(getContext()).getPrefString(TazSettings.PREFKEY.FONTSIZE, "0")));
+        seekBarFontSize.setProgress(Integer.valueOf(TazSettings.getInstance(getContext())
+                                                               .getPrefString(TazSettings.PREFKEY.FONTSIZE, "0")));
         seekBarFontSize.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
 
             @Override
@@ -165,8 +170,9 @@ public class SettingsDialog extends DialogCustomView {
 
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                Timber.d("seekBar: %s, progress: %s, fromUser: %s",seekBar, progress, fromUser);
+                Timber.d("seekBar: %s, progress: %s, fromUser: %s", seekBar, progress, fromUser);
                 if (fromUser) {
+
                     mCallback.onConfigurationChange(TazSettings.PREFKEY.FONTSIZE, String.valueOf(progress));
                 }
             }
@@ -174,10 +180,10 @@ public class SettingsDialog extends DialogCustomView {
 
         return view;
     }
-    
+
     private void colorThemeButtonText(THEMES theme) {
         if (theme == null) return;
-        btnNight.setTextColor(ContextCompat.getColor(getContext(),R.color.reader_settings_button_text));
+        btnNight.setTextColor(ContextCompat.getColor(getContext(), R.color.reader_settings_button_text));
         btnNormal.setTextColor(ContextCompat.getColor(getContext(), R.color.reader_settings_button_text));
         btnSepia.setTextColor(ContextCompat.getColor(getContext(), R.color.reader_settings_button_text));
         switch (theme) {
@@ -193,11 +199,14 @@ public class SettingsDialog extends DialogCustomView {
         }
     }
 
-    public static class Builder extends AbstractBuilder<Builder,SettingsDialog> {
+    public static class Builder extends AbstractBuilder<Builder, SettingsDialog> {
         public Builder() {
             super(SettingsDialog.class);
         }
     }
 
-
+    public interface SettingsDialogCallback {
+        void onConfigurationChange(String name, String value);
+        void onConfigurationChange(String name, boolean value);
+    }
 }

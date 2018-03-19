@@ -123,9 +123,10 @@ public class DownloadManager {
         if (!TextUtils.isEmpty(paper.getResource())) {
             Resource resource = ResourceRepository.getInstance(mContext)
                                                   .getWithKey(paper.getResource());
-            StoreRepository.getInstance(mContext)
-                           .saveStore(new Store(paper.getStorePath(Paper.STORE_KEY_RESOURCE_PARTNER), paper.getResource()));
-//            paper.saveResourcePartner(mContext, resource);
+            StoreRepository storeRepository = StoreRepository.getInstance(mContext);
+            Store resourcePartnerStore = storeRepository.getStore(paper.getBookId(),Paper.STORE_KEY_RESOURCE_PARTNER);
+            resourcePartnerStore.setValue(paper.getResource());
+            storeRepository.saveStore(resourcePartnerStore);
             enqueResource(resource, wifiOnly);
         }
     }
@@ -139,7 +140,7 @@ public class DownloadManager {
 //        Resource resource = Resource.getWithKey(mContext, paper.getResource());
         Timber.i("requesting resource download: %s", resource);
 
-//        if (resource.getKey() == null) {
+//        if (resource.getPath() == null) {
 //            resource.setKey(paper.getResource());
 //            mContext.getContentResolver()
 //                    .insert(Resource.CONTENT_URI, resource.getContentValues());

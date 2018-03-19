@@ -3,7 +3,7 @@ def versionMinor = 4
 def versionPatch = 9
 def versionBuild = 0
 
-def supportLibVer = "27.0.2"
+def supportLibVer = "27.1.0"
 def buildToolsVer = "27.0.3"
 def firebaseVer = "11.8.0"
 def compileSdkVer = 27
@@ -122,10 +122,10 @@ android {
             }
         }
     }
-
-    dexOptions {
-        jumboMode = true
-    }
+//
+//    dexOptions {
+//        jumboMode = true
+//    }
 
     compileSdkVersion compileSdkVer
     buildToolsVersion buildToolsVer
@@ -287,6 +287,10 @@ android {
         }
         tasks.preBuild.dependsOn unzipTask
     }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 }
 
 repositories {
@@ -300,55 +304,39 @@ dependencies {
     compile "com.android.support:design:$supportLibVer"
     compile "com.android.support:support-v4:$supportLibVer"
     compile "com.android.support:cardview-v7:$supportLibVer"
-
     compile "com.takisoft.fix:preference-v7:$supportLibVer" + ".0"
-
     compile 'com.squareup.okhttp3:okhttp:3.7.0'
     compile 'com.squareup.okhttp3:logging-interceptor:3.7.0'
     compile 'com.squareup.picasso:picasso:2.5.2'
     compile 'com.jakewharton.picasso:picasso2-okhttp3-downloader:1.1.0'
-
     compile 'com.googlecode.plist:dd-plist:1.8'
     compile 'com.commonsware.cwac:provider:0.2.3'
-
     compile 'org.greenrobot:eventbus:3.0.0'
     annotationProcessor 'org.greenrobot:eventbus-annotation-processor:3.0.1'
-
-    debugCompile 'com.facebook.stetho:stetho:1.4.1'
-    debugCompile 'com.facebook.stetho:stetho-js-rhino:1.4.1'
-    debugCompile 'com.facebook.stetho:stetho-okhttp3:1.4.1'
-    stagingCompile 'com.facebook.stetho:stetho:1.4.1'
-    stagingCompile 'com.facebook.stetho:stetho-js-rhino:1.4.1'
-    stagingCompile 'com.facebook.stetho:stetho-okhttp3:1.4.1'
-
+    debugCompile 'com.facebook.stetho:stetho:1.5.0'
+    debugCompile 'com.facebook.stetho:stetho-okhttp3:1.5.0'
+    stagingCompile 'com.facebook.stetho:stetho:1.5.0'
+    stagingCompile 'com.facebook.stetho:stetho-okhttp3:1.5.0'
     compile 'com.github.jrejaud:ViewPagerIndicator2:0.0.1'
     compile 'commons-io:commons-io:2.5'
-
     compile 'com.jakewharton.timber:timber:4.5.1'
-
     compile 'com.yqritc:recyclerview-flexibledivider:1.2.9'
-
     compile('com.crashlytics.sdk.android:crashlytics:2.7.0@aar') {
         transitive = true;
     }
     compile 'net.ypresto.timbertreeutils:timbertreeutils:1.0.0'
-
     compile 'com.scottyab:aescrypt:0.0.1'
-
     compile 'com.github.matecode:Snacky:1.0.2'
     compile 'com.github.matecode:DataFragment:1.0.2'
     compile 'com.github.matecode:androiddialog:1.2.32'
-
-    compile 'org.mightyfrog.centeringrecyclerview:centeringrecyclerview:1.1.6'
-
+//    compile 'org.mightyfrog.centeringrecyclerview:centeringrecyclerview:1.1.6'
     compile "com.google.firebase:firebase-messaging:$firebaseVer"
-
-    compile 'com.evernote:android-job:1.2.0'
-
+    compile 'com.evernote:android-job:1.2.4'
     compile 'com.google.code.gson:gson:2.8.1'
     implementation 'com.android.support.constraint:constraint-layout:1.0.2'
-    implementation "android.arch.lifecycle:extensions:1.1.0"
+    implementation 'android.arch.lifecycle:extensions:1.1.0'
 
+    implementation 'uk.com.robust-it:cloning:1.9.9'
 }
 
 class Download extends DefaultTask {

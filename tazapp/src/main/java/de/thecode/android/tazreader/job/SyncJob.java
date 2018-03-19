@@ -370,7 +370,8 @@ public class SyncJob extends Job {
                                             .equals(currentOpenPaperId)) {
                                 boolean safeToDelete = true;
                                 String bookmarksJsonString = StoreRepository.getInstance(getContext())
-                                                                            .getStoreForKey(deletePaper.getStorePath(Paper.STORE_KEY_BOOKMARKS))
+                                                                            .getStore(deletePaper.getBookId(),
+                                                                                      Paper.STORE_KEY_BOOKMARKS)
                                                                             .getValue();
                                 if (!TextUtils.isEmpty(bookmarksJsonString)) {
                                     try {

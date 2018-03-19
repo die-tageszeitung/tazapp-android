@@ -134,8 +134,8 @@ public class MigrationWorkerFragment extends BaseFragment {
                 List<Store> storeList = storeRepository.getAllStores();
 
                 for (Store store : storeList) {
-                    Timber.i("Migrating Store %s", store.getKey());
-                    if (store.getKey()
+                    Timber.i("Migrating Store %s", store.getPath());
+                    if (store.getPath()
                              .endsWith("/" + Paper.STORE_KEY_BOOKMARKS)) {
                         Timber.i("Migrating Bookmarks");
                         try {

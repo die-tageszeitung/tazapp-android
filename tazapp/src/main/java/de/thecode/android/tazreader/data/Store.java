@@ -1,18 +1,11 @@
 package de.thecode.android.tazreader.data;
 
 import android.content.ContentValues;
-import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
-import android.provider.BaseColumns;
 import android.text.TextUtils;
 
 import de.thecode.android.tazreader.provider.TazProvider;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import timber.log.Timber;
 
 public class Store {
 
@@ -27,29 +20,29 @@ public class Store {
         public static final String VALUE = "value";
     }
 
-    private String key;
+    private String path;
     private String value;
 
-    public Store(String key, String value) {
-        if (!key.startsWith("/")) key = "/" + key;
-        this.key = key;
+    public Store(String path, String value) {
+        if (!path.startsWith("/")) path = "/" + path;
+        this.path = path;
         this.value = value;
     }
 
     public Store(Cursor cursor) {
-        this.key = cursor.getString(cursor.getColumnIndex(Columns.KEY));
+        this.path = cursor.getString(cursor.getColumnIndex(Columns.KEY));
         this.value = cursor.getString(cursor.getColumnIndex(Columns.VALUE));
     }
 
     public ContentValues getContentValues() {
         ContentValues cv = new ContentValues();
-        cv.put(Columns.KEY, key);
+        cv.put(Columns.KEY, path);
         cv.put(Columns.VALUE, value);
         return cv;
     }
 
-    public String getKey() {
-        return key;
+    public String getPath() {
+        return path;
     }
 
     public String getValue() {
@@ -68,90 +61,8 @@ public class Store {
         return TextUtils.isEmpty(getValue());
     }
 
-//    public static Store getStoreForKey(Context context, String key) {
-//        Cursor cursor = context.getContentResolver()
-//                               .query(getUriForKey(key), null, null, null, null);
-//        Store store = null;
-//        try {
-//            if (cursor.moveToNext()) store = new Store(cursor);
-//        } finally {
-//            cursor.close();
-//        }
-//        Timber.d("key %s %s", key, store);
-//        return store;
-//    }
-//
-//    public static String getValueForKey(Context context, String key) {
-//        Store store = getStoreForKey(context, key);
-//        if (store != null) return store.getValue();
-//        return null;
-//    }
-//
-//    public static boolean hasKey(Context context, String key) {
-//        Cursor cursor = context.getContentResolver()
-//                               .query(getUriForKey(key), null, null, null, null);
-//        boolean result = false;
-//        try {
-//            if (cursor.getCount() > 0) result = true;
-//        } finally {
-//            cursor.close();
-//        }
-//        return result;
-//    }
-//
-//    public static void deleteKey(Context context, String key) {
-//        int affected = context.getContentResolver()
-//                              .delete(getUriForKey(key), null, null);
-//        Timber.d("key %s %d", key, affected);
-//    }
-//
-//    public static void deletePath(Context context, String path) {
-//        int affected = context.getContentResolver()
-//                              .delete(getUriForKey(path), null, null);
-//        Timber.d("key %s %d", path, affected);
-//    }
-//
-//    public static List<Store> getAllStores(Context context) {
-//        Cursor cursor = context.getContentResolver()
-//                               .query(CONTENT_URI, null, null, null, null);
-//        List<Store> result = new ArrayList<>();
-//        try {
-//            while (cursor.moveToNext()) {
-//                result.add(new Store(cursor));
-//            }
-//        } finally {
-//            cursor.close();
-//        }
-//        return result;
-//    }
-//
-//    public static boolean saveValueForKey(Context context, String key, String value) {
-//        boolean result = false;
-//        Store store = Store.getStoreForKey(context, key);
-//        if (store == null) {
-//            store = new Store(key, value);
-//            Uri resultUri = context.getContentResolver()
-//                                   .insert(Store.CONTENT_URI, store.getContentValues());
-//            if (resultUri != null) result = true;
-//        } else {
-//            store.setValue(value);
-//            int affected = context.getContentResolver()
-//                                  .update(Store.getUriForKey(key), store.getContentValues(), null, null);
-//            if (affected > 0) result = true;
-//        }
-//        Timber.d("key %s %s %s", key, value, result);
-//        return result;
-//    }
-//
-//    public static Uri getUriForKey(String key) {
-//        Uri.Builder uriBuilder = CONTENT_URI.buildUpon();
-//
-//        if (key != null) {
-//            while (key.startsWith("/")) key = key.replaceFirst("/", "");
-//        }
-//
-//        uriBuilder.appendEncodedPath(key);
-//
-//        return uriBuilder.build();
-//    }
+    public static String getPath(String bookId, String key) {
+        return bookId + "/" + key;
+    }
+
 }

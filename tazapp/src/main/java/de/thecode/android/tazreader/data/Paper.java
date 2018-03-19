@@ -26,7 +26,6 @@ import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper.Plist.Page.Article;
 import de.thecode.android.tazreader.download.PaperDeletedEvent;
 import de.thecode.android.tazreader.provider.TazProvider;
-import de.thecode.android.tazreader.reader.index.IIndexItem;
 import de.thecode.android.tazreader.utils.PlistHelper;
 import de.thecode.android.tazreader.utils.ReadableException;
 import de.thecode.android.tazreader.utils.StorageManager;
@@ -606,7 +605,7 @@ public class Paper {
 
         private List<Source>  sources;
         private List<TopLink> toplinks;
-        private Map<String, IIndexItem> indexMap = new LinkedHashMap<>();
+        private Map<String, ITocItem> indexMap = new LinkedHashMap<>();
 
         public Plist(InputStream is, boolean parseIndex) throws IOException, PropertyListFormatException, ParseException,
                 ParserConfigurationException, SAXException {
@@ -745,11 +744,11 @@ public class Paper {
             return result;
         }
 
-        public IIndexItem getIndexItem(String key) {
+        public ITocItem getIndexItem(String key) {
             return indexMap.get(key);
         }
 
-        public class Source extends IndexItemTemplate {
+        public class Source extends TocItemTemplate {
 
             String     key;
             NSArray    array;
@@ -790,7 +789,7 @@ public class Paper {
             }
 
             @Override
-            public IIndexItem getIndexParent() {
+            public ITocItem getIndexParent() {
                 return null;
             }
 
@@ -812,8 +811,8 @@ public class Paper {
             }
 
             @Override
-            public List<IIndexItem> getIndexChilds() {
-                List<IIndexItem> resultList = new ArrayList<>();
+            public List<ITocItem> getIndexChilds() {
+                List<ITocItem> resultList = new ArrayList<>();
                 if (hasIndexChilds()) {
                     for (Book book : getBooks()) {
                         resultList.addAll(book.getCategories());
@@ -871,7 +870,7 @@ public class Paper {
 
         }
 
-        public class Category extends IndexItemTemplate {
+        public class Category extends TocItemTemplate {
 
             Book       book;
             String     key;
@@ -946,7 +945,7 @@ public class Paper {
             }
 
             @Override
-            public IIndexItem getIndexParent() {
+            public ITocItem getIndexParent() {
                 return getBook().getSource();
             }
 
@@ -964,8 +963,8 @@ public class Paper {
             }
 
             @Override
-            public List<IIndexItem> getIndexChilds() {
-                List<IIndexItem> resultList = new ArrayList<>();
+            public List<ITocItem> getIndexChilds() {
+                List<ITocItem> resultList = new ArrayList<>();
                 if (hasIndexChilds()) {
                     for (Page page : getPages()) {
                         //resultList.add(page);
@@ -978,7 +977,7 @@ public class Paper {
 
         }
 
-        public class Page extends IndexItemTemplate {
+        public class Page extends TocItemTemplate {
 
             private static final String KEY_GEOMETRY    = "geometry";
             private static final String KEY_PAGINA      = "SeitenNummer";
@@ -1036,7 +1035,7 @@ public class Paper {
                         String key = sourceBookCategoryPageArticleDict.allKeys()[0];
                         Article article = new Article(key, (NSDictionary) sourceBookCategoryPageArticleDict.get(key));
 //                        for (Geometry geometry : getGeometries()) {
-//                            if (article.getKey()
+//                            if (article.getPath()
 //                                       .equals(geometry.getLink())) {
 //                                //geometry.article = article;
 //                                article.geometries.add(geometry);
@@ -1078,7 +1077,7 @@ public class Paper {
             }
 
             @Override
-            public IIndexItem getIndexParent() {
+            public ITocItem getIndexParent() {
                 return getCategory();
             }
 
@@ -1093,7 +1092,7 @@ public class Paper {
             }
 
             @Override
-            public List<IIndexItem> getIndexChilds() {
+            public List<ITocItem> getIndexChilds() {
                 return null;
             }
 
@@ -1212,7 +1211,7 @@ public class Paper {
                 //                }
             }
 
-            public class Article extends IndexItemTemplate //implements ArticleReaderItem
+            public class Article extends TocItemTemplate //implements ArticleReaderItem
             {
 
                 private static final String KEY_TITLE      = "Titel";
@@ -1280,7 +1279,7 @@ public class Paper {
                 }
 
                 @Override
-                public IIndexItem getIndexParent() {
+                public ITocItem getIndexParent() {
                     return getPage().getCategory();
                 }
 
@@ -1295,7 +1294,7 @@ public class Paper {
                 }
 
                 @Override
-                public List<IIndexItem> getIndexChilds() {
+                public List<ITocItem> getIndexChilds() {
                     return null;
                 }
 
@@ -1327,7 +1326,7 @@ public class Paper {
 
         }
 
-        public class TopLink extends IndexItemTemplate //implements ArticleReaderItem
+        public class TopLink extends TocItemTemplate //implements ArticleReaderItem
         {
 
             private String title;
@@ -1354,7 +1353,7 @@ public class Paper {
             }
 
             @Override
-            public IIndexItem getIndexParent() {
+            public ITocItem getIndexParent() {
                 return null;
             }
 
@@ -1369,46 +1368,46 @@ public class Paper {
             }
 
             @Override
-            public List<IIndexItem> getIndexChilds() {
+            public List<ITocItem> getIndexChilds() {
                 return null;
             }
 
         }
 
-        public abstract class IndexItemTemplate implements de.thecode.android.tazreader.reader.index.IIndexItem {
+        public abstract class TocItemTemplate implements ITocItem {
 
-            boolean childsVisible = true;
+//            boolean childsVisible = true;
 
             Type type;
 
-            private boolean    bookmarked;
-            private IIndexItem link;
+            private boolean  bookmarked;
+            private ITocItem link;
 
             public abstract String getTitle();
 
-            public void setIndexChildsVisible(boolean childsVisible) {
-
-                this.childsVisible = childsVisible;
-
-                if (!childsVisible && hasIndexChilds()) {
-                    for (IIndexItem childItem : getIndexChilds()) {
-                        childItem.setIndexChildsVisible(false);
-                    }
-                }
-            }
-
-            public boolean areIndexChildsVisible() {
-                return childsVisible;
-            }
-
-            public boolean isVisible() {
-                IIndexItem indexParent = getIndexParent();
-                return indexParent == null || indexParent.areIndexChildsVisible();
-            }
+//            public void setIndexChildsVisible(boolean childsVisible) {
+//
+//                this.childsVisible = childsVisible;
+//
+//                if (!childsVisible && hasIndexChilds()) {
+//                    for (IIndexItem childItem : getIndexChilds()) {
+//                        childItem.setIndexChildsVisible(false);
+//                    }
+//                }
+//            }
+//
+//            public boolean areIndexChildsVisible() {
+//                return childsVisible;
+//            }
+//
+//            public boolean isVisible() {
+//                IIndexItem indexParent = getIndexParent();
+//                return indexParent == null || indexParent.areIndexChildsVisible();
+//            }
 
             public boolean hasBookmarkedChilds() {
                 if (getIndexChilds() != null) {
-                    for (IIndexItem child : getIndexChilds()) {
+                    for (ITocItem child : getIndexChilds()) {
 
                         if (child.isBookmarked()) {
                             return true;
@@ -1420,7 +1419,7 @@ public class Paper {
                 return false;
             }
 
-            public IIndexItem getIndexAncestorWithKey(String key) {
+            public ITocItem getIndexAncestorWithKey(String key) {
                 if (hasIndexParent()) {
                     if (getIndexParent().getKey()
                                         .equals(key)) return getIndexParent();
@@ -1441,11 +1440,6 @@ public class Paper {
                     else type = Type.UNKNOWN;
                 }
                 return type;
-            }
-
-            public int getIndexChildCount() {
-                if (!hasIndexChilds()) return 0;
-                return getIndexChilds().size();
             }
 
             public Paper getPaper() {
@@ -1477,7 +1471,7 @@ public class Paper {
                 return null;
             }
 
-            public IIndexItem getLink() {
+            public ITocItem getLink() {
                 return link;
             }
 
@@ -1487,9 +1481,10 @@ public class Paper {
             }
 
             @Override
-            public void setLink(IIndexItem link) {
+            public void setLink(ITocItem link) {
                 this.link = link;
             }
+
         }
 
         @Override
@@ -1519,7 +1514,7 @@ public class Paper {
         try {
 
 
-            for (Map.Entry<String, IIndexItem> entry : getPlist().indexMap.entrySet()) {
+            for (Map.Entry<String, ITocItem> entry : getPlist().indexMap.entrySet()) {
                 switch (entry.getValue()
                              .getType()) {
                     case ARTICLE:
@@ -1537,11 +1532,11 @@ public class Paper {
     }
 
 //    public boolean savePositionInArticle(Context context, IIndexItem article, String position) {
-//        return saveStoreValue(context, STORE_KEY_POSITION_IN_ARTICLE + "_" + article.getKey(), position);
+//        return saveStoreValue(context, STORE_KEY_POSITION_IN_ARTICLE + "_" + article.getPath(), position);
 //    }
 
 //    public String getPositionInArticle(Context context, IIndexItem article) {
-//        String result = getStoreValue(context, STORE_KEY_POSITION_IN_ARTICLE + "_" + article.getKey());
+//        String result = getStoreValue(context, STORE_KEY_POSITION_IN_ARTICLE + "_" + article.getPath());
 //        return (TextUtils.isEmpty(result)) ? "0" : result;
 //    }
 
@@ -1555,7 +1550,7 @@ public class Paper {
 //    }
 
 //    public boolean saveResourcePartner(Context context, Resource resource) {
-//        return saveStoreValue(context, STORE_KEY_RESOURCE_PARTNER, resource.getKey());
+//        return saveStoreValue(context, STORE_KEY_RESOURCE_PARTNER, resource.getPath());
 //    }
 //
 //    public void deleteResourcePartner(Context context) {
@@ -1568,17 +1563,13 @@ public class Paper {
 //        return Resource.getWithKey(context, resource);
 //    }
 
-    public String getStorePath(String key) {
-        return getBookId() + "/" + key;
-    }
-
-    public String getStorePathForPositionInArticle(IIndexItem article){
-        return getStorePath(STORE_KEY_POSITION_IN_ARTICLE + "_" + article.getKey());
-    }
+//    public String getStorePathForPositionInArticle(IIndexItem article){
+//        return getStorePath(STORE_KEY_POSITION_IN_ARTICLE + "_" + article.getKey());
+//    }
 
 //    public String getStoreValue(Context context, String key) {
 //        String path = getBookId() + "/" + key;
-//        return StoreRepository.getInstance(context).getStoreForKey(path).getValue();
+//        return StoreRepository.getInstance(context).getStoreForPath(path).getValue();
 //    }
 //
 //    public void deleteStoreKey(Context context, String key) {
@@ -1596,7 +1587,7 @@ public class Paper {
         storage.deletePaperDir(this);
         Picasso.with(context)
                .invalidate(getImage());
-        StoreRepository.getInstance(context).deleteKey(getStorePath(Paper.STORE_KEY_RESOURCE_PARTNER));
+        StoreRepository.getInstance(context).deletePath(Store.getPath(getBookId(),Paper.STORE_KEY_RESOURCE_PARTNER));
         //deleteResourcePartner(context);
         if (isImported() || isKiosk()) {
             context.getContentResolver()

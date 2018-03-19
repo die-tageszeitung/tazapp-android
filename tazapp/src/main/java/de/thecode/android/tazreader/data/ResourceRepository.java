@@ -38,7 +38,7 @@ public class ResourceRepository {
     }
 
     public Resource getResourceForPaper(Paper paper) {
-        String resource = storeRepository.getStoreForKey(paper.getStorePath(Paper.STORE_KEY_RESOURCE_PARTNER))
+        String resource = storeRepository.getStore(paper.getBookId(), Paper.STORE_KEY_RESOURCE_PARTNER)
                                          .getValue(paper.getResource()); //default value as Fallback
         return getWithKey(resource);
 //        if (TextUtils.isEmpty(resource)) resource = getResource(); //Fallback;

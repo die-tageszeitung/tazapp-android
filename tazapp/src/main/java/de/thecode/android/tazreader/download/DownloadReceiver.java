@@ -153,7 +153,7 @@ public class DownloadReceiver extends BroadcastReceiver {
                             if (downloadException == null) {
                                 DownloadFinishedResourceJob.scheduleJob(resource);
 //                                Intent unzipIntent = new Intent(context, DownloadFinishedResourceService.class);
-//                                unzipIntent.putExtra(DownloadFinishedResourceService.PARAM_RESOURCE_KEY, resource.getKey());
+//                                unzipIntent.putExtra(DownloadFinishedResourceService.PARAM_RESOURCE_KEY, resource.getPath());
 //                                context.startService(unzipIntent);
                             }
                         }

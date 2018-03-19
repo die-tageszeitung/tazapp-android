@@ -43,7 +43,7 @@ public class AutoDownloadJob extends Job {
             if (paper != null) {
                 try {
                     Store autoDownloadedStore = StoreRepository.getInstance(getContext())
-                                                               .getStoreForKey(paper.getStorePath(Paper.STORE_KEY_AUTO_DOWNLOADED));
+                                                               .getStore(paper.getBookId(), Paper.STORE_KEY_AUTO_DOWNLOADED);
                     boolean isAutoDownloaded = Boolean.parseBoolean(autoDownloadedStore.getValue("false"));
                     if (!isAutoDownloaded && (System.currentTimeMillis() - TimeUnit.DAYS.toMillis(1)) < paper.getDateInMillis()) {
                         boolean wifiOnly = TazSettings.getInstance(getContext())

@@ -18,8 +18,8 @@ import com.artifex.mupdfdemo.PageView;
 import com.artifex.mupdfdemo.TextWord;
 
 import de.thecode.android.tazreader.data.Paper.Plist.Page;
-import de.thecode.android.tazreader.reader.IReaderCallback;
-import de.thecode.android.tazreader.reader.index.IIndexItem;
+import de.thecode.android.tazreader.reader.ReaderActivity;
+import de.thecode.android.tazreader.data.ITocItem;
 import de.thecode.android.tazreader.utils.StorageManager;
 
 import java.io.File;
@@ -31,12 +31,10 @@ public class TAZPageView extends PageView {
 
     TAZMuPDFCore mCore;
     Page _page;
-    Context _context;
+    //Context _context;
 
     public TAZPageView(Context c, Point parentSize, Bitmap sharedHqBm) {
         super(c, parentSize, sharedHqBm);
-
-        _context = c;
         mSize = parentSize;
     }
 
@@ -58,7 +56,7 @@ public class TAZPageView extends PageView {
 
         if (mCore != null) setPage();
         else {
-            new LoadCoreTask(_context, _page) {
+            new LoadCoreTask(getContext(), _page) {
 
                 @Override
                 protected void onPostExecute(TAZMuPDFCore result) {
@@ -178,30 +176,32 @@ public class TAZPageView extends PageView {
 
         Timber.d("relativeX: %s, relativeY: %s",relativeX, relativeY);
 
-        IReaderCallback readerCallback = ((TAZReaderView) getParent()).getReaderCallback();
+//        IReaderCallback readerCallback = ((TAZReaderView) getParent()).getReaderCallback();
+
+        ReaderActivity readerActivity = (ReaderActivity)getContext();
 
         for (Page.Geometry geometry : _page.getGeometries()) {
             if (geometry.checkCoordinates(relativeX, relativeY)) {
                 String link = geometry.getLink();
                 if (link != null) {
-                    IIndexItem indexItem = _page.getPaper()
-                                                .getPlist()
-                                                .getIndexItem(link);
+                    ITocItem indexItem = _page.getPaper()
+                                              .getPlist()
+                                              .getIndexItem(link);
                     if (indexItem != null) {
-                        if (readerCallback != null) readerCallback.onLoad(link);
+                        readerActivity.loadContentFragment(link);
                         return;
                     } else {
                         if (link.toLowerCase(Locale.getDefault())
                                 .startsWith("http")) {
                             Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(link));
-                            _context.startActivity(browserIntent);
+                            getContext().startActivity(browserIntent);
                             return;
                         }
                     }
                 }
             }
         }
-        if (readerCallback != null) readerCallback.onLoad(_page.getDefaultLink());
+       readerActivity.loadContentFragment(_page.getDefaultLink());
 
     }
 

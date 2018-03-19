@@ -35,42 +35,22 @@ public class StoreRepository {
         this.contentResolver = context.getContentResolver();
     }
 
+    public Store getStore(String bookId, String key){
+        return getStoreForPath(Store.getPath(bookId,key));
+    }
 
-    public Store getStoreForKey(String key) {
+
+    public Store getStoreForPath(String path) {
         Cursor cursor = contentResolver
-                .query(getUriForKey(key), null, null, null, null);
-        Store store = new Store(key,null);
+                .query(getUriForKey(path), null, null, null, null);
+        Store store = new Store(path,null);
         try {
             if (cursor.moveToNext()) store = new Store(cursor);
         } finally {
             cursor.close();
         }
-        Timber.d("key %s %s", key, store);
+        Timber.d("path %s %s", path, store);
         return store;
-    }
-
-//    public String getValueForKey(String key) {
-//        Store store = getStoreForKey(key);
-//        if (store != null) return store.getValue();
-//        return null;
-//    }
-
-//    public boolean hasKey(String key) {
-//        Cursor cursor = contentResolver
-//                .query(getUriForKey(key), null, null, null, null);
-//        boolean result = false;
-//        try {
-//            if (cursor.getCount() > 0) result = true;
-//        } finally {
-//            cursor.close();
-//        }
-//        return result;
-//    }
-
-    public void deleteKey(String key) {
-        int affected = contentResolver
-                .delete(getUriForKey(key), null, null);
-        Timber.d("key %s %d", key, affected);
     }
 
     public void deletePath(String path) {
@@ -80,7 +60,7 @@ public class StoreRepository {
     }
 
     public void deleteStore(Store store) {
-        deleteKey(store.getKey());
+        deletePath(store.getPath());
     }
 
     public List<Store> getAllStores() {
@@ -100,25 +80,7 @@ public class StoreRepository {
     public boolean saveStore(Store store) {
         return contentResolver.insert(Store.CONTENT_URI, store.getContentValues()) != null;
     }
-//
-//    public boolean saveValueForKey(String key, String value) {
-//        boolean result = false;
-//        Store store = getStoreForKey(key);
-//        if (store == null) {
-//            store = new Store(key, value);
-//            Uri resultUri = contentResolver
-//                    .insert(Store.CONTENT_URI, store.getContentValues());
-//            if (resultUri != null) result = true;
-//        } else {
-//            store.setValue(value);
-//            int affected = contentResolver
-//                    .update(Store.getUriForKey(key), store.getContentValues(), null, null);
-//            if (affected > 0) result = true;
-//        }
-//        Timber.d("key %s %s %s", key, value, result);
-//        return result;
-//    }
-//
+
     private Uri getUriForKey(String key) {
         Uri.Builder uriBuilder = Store.CONTENT_URI.buildUpon();
 
