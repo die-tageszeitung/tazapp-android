@@ -420,9 +420,8 @@ public class ReaderActivity extends BaseActivity
         Timber.d("%s", item.getKey());
         item.setBookmark(!item.isBookmarked());
         if (mUserTocFragment != null) mUserTocFragment.onBookmarkChange(item.getKey());
-        if (item.getKey()
-                .equals(readerViewModel.getCurrentKeyLiveData()
-                                       .getValue())) {
+        ITocItem currentItem = readerViewModel.getCurrentKeyLiveData().getValue();
+        if (currentItem.equals(item)) {
             if (mContentFragment instanceof ArticleFragment) ((ArticleFragment) mContentFragment).initialBookmark();
         }
         Store bookmarkStore = readerViewModel.getStoreRepository()

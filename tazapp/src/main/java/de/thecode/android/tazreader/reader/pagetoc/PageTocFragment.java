@@ -192,21 +192,18 @@ public class PageTocFragment extends ReaderBaseFragment {
                             }
                         }
                         makeOverlayBitmap(x1, y1, x2, y2);
-                        handler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                ITocItem oldCurrentItem = currentItem;
-                                currentItem = finalPage;
-                                int oldPos = indexOf(oldCurrentItem);
-                                int pos = indexOf(currentItem);
+                        handler.post(() -> {
+                            ITocItem oldCurrentItem = currentItem;
+                            currentItem = finalPage;
+                            int oldPos = indexOf(oldCurrentItem);
+                            int pos = indexOf(currentItem);
 
-                                if (oldPos != -1) {
-                                    notifyItemChanged(oldPos, PAYLOAD_OVERLAY);
-                                }
-                                if (pos != -1) notifyItemChanged(pos, PAYLOAD_OVERLAY);
-                                mRecyclerView.smoothScrollToPosition(pos);
-
+                            if (oldPos != -1) {
+                                notifyItemChanged(oldPos, PAYLOAD_OVERLAY);
                             }
+                            if (pos != -1) notifyItemChanged(pos, PAYLOAD_OVERLAY);
+                            mRecyclerView.smoothScrollToPosition(pos);
+
                         });
                     }).start();
 
