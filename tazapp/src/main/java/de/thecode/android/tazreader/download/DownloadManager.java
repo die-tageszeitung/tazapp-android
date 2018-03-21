@@ -59,6 +59,10 @@ public class DownloadManager {
         requestHelper = RequestHelper.getInstance(context);
     }
 
+    public Uri getUriForDownloadedFile(long downloadId){
+        return mDownloadManager.getUriForDownloadedFile(downloadId);
+    }
+
     @SuppressLint("NewApi")
     public void enquePaper(long paperId, boolean wifiOnly) throws IllegalArgumentException, Paper.PaperNotFoundException,
             DownloadNotAllowedException, NotEnoughSpaceException {
@@ -101,6 +105,8 @@ public class DownloadManager {
         assertEnougSpaceForDownload(destinationFile.getParentFile(), calculateBytesNeeded(paper.getLen()));
 
         request.setDestinationUri(Uri.fromFile(destinationFile));
+
+        request.setMimeType("application/zip");
 
         request.setTitle(paper.getTitelWithDate(mContext));
 
@@ -195,6 +201,7 @@ public class DownloadManager {
             if (wifiOnly) request.setAllowedNetworkTypes(Request.NETWORK_WIFI);
             request.setNotificationVisibility(Request.VISIBILITY_VISIBLE);
             request.setVisibleInDownloadsUi(false);
+            request.setMimeType("application/zip");
 
             long downloadId = mDownloadManager.enqueue(request);
 
@@ -285,17 +292,21 @@ public class DownloadManager {
         public static final int STATUS_RUNNING    = android.app.DownloadManager.STATUS_RUNNING;
         public static final int STATUS_NOTFOUND   = 0;
 
-        int    mStatus;
-        int    mReason;
-        long   mBytesTotal;
-        long   mBytesDownloaded;
-        String mUri;
-        String mTitle;
-        String mDescription;
-        long   mDownloadId;
+        private  int    status;
+        private  int    reason;
+        private  long   bytesTotal;
+        private  long   bytesDownloaded;
+        private  String uri;
+        private  String title;
+        private  String description;
+        private  long   downloadId;
+        private  long   lastModified;
+        private  Uri localUri;
+        private  Uri mediaProviderUri;
+        private  String mediaType;
 
         public DownloadState(long downloadId) {
-            mDownloadId = downloadId;
+            this.downloadId = downloadId;
             android.app.DownloadManager.Query q = new android.app.DownloadManager.Query();
 
             q.setFilterById(downloadId);
@@ -303,13 +314,18 @@ public class DownloadManager {
             try {
                 cursor = mDownloadManager.query(q);
                 if (cursor != null && cursor.moveToFirst()) {
-                    mStatus = cursor.getInt(cursor.getColumnIndex(android.app.DownloadManager.COLUMN_STATUS));
-                    mReason = cursor.getInt(cursor.getColumnIndex(android.app.DownloadManager.COLUMN_REASON));
-                    mBytesDownloaded = cursor.getLong(cursor.getColumnIndex(android.app.DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR));
-                    mBytesTotal = cursor.getLong(cursor.getColumnIndex(android.app.DownloadManager.COLUMN_TOTAL_SIZE_BYTES));
-                    mUri = cursor.getString(cursor.getColumnIndex(android.app.DownloadManager.COLUMN_URI));
-                    mTitle = cursor.getString(cursor.getColumnIndex(android.app.DownloadManager.COLUMN_TITLE));
-                    mDescription = cursor.getString(cursor.getColumnIndex(android.app.DownloadManager.COLUMN_DESCRIPTION));
+                    status = cursor.getInt(cursor.getColumnIndex(android.app.DownloadManager.COLUMN_STATUS));
+                    reason = cursor.getInt(cursor.getColumnIndex(android.app.DownloadManager.COLUMN_REASON));
+                    bytesDownloaded = cursor.getLong(cursor.getColumnIndex(android.app.DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR));
+                    bytesTotal = cursor.getLong(cursor.getColumnIndex(android.app.DownloadManager.COLUMN_TOTAL_SIZE_BYTES));
+                    uri = cursor.getString(cursor.getColumnIndex(android.app.DownloadManager.COLUMN_URI));
+                    title = cursor.getString(cursor.getColumnIndex(android.app.DownloadManager.COLUMN_TITLE));
+                    description = cursor.getString(cursor.getColumnIndex(android.app.DownloadManager.COLUMN_DESCRIPTION));
+                    lastModified = cursor.getLong(cursor.getColumnIndex(android.app.DownloadManager.COLUMN_LAST_MODIFIED_TIMESTAMP));
+                    localUri = parseUriWithoutException(cursor.getString(cursor.getColumnIndex(android.app.DownloadManager.COLUMN_LOCAL_URI)));
+                    mediaProviderUri = parseUriWithoutException(cursor.getString(cursor.getColumnIndex(android.app.DownloadManager.COLUMN_MEDIAPROVIDER_URI)));
+                    mediaType = cursor.getString(cursor.getColumnIndex(android.app.DownloadManager.COLUMN_MEDIA_TYPE));
+
                 }
             } finally {
                 if (cursor != null) cursor.close();
@@ -318,7 +334,7 @@ public class DownloadManager {
         }
 
         public long getDownloadId() {
-            return mDownloadId;
+            return downloadId;
         }
 
         /**
@@ -326,7 +342,7 @@ public class DownloadManager {
          * @see android.app.DownloadManager
          */
         public int getStatus() {
-            return mStatus;
+            return status;
         }
 
         /**
@@ -334,32 +350,48 @@ public class DownloadManager {
          * @see android.app.DownloadManager
          */
         public int getReason() {
-            return mReason;
+            return reason;
         }
 
         public long getBytesTotal() {
-            return mBytesTotal;
+            return bytesTotal;
         }
 
         public long getBytesDownloaded() {
-            return mBytesDownloaded;
+            return bytesDownloaded;
         }
 
         public int getDownloadProgress() {
-            if (mBytesTotal > 0) return (int) (mBytesDownloaded * 100 / mBytesTotal);
+            if (bytesTotal > 0) return (int) (bytesDownloaded * 100 / bytesTotal);
             else return 0;
         }
 
         public Uri getUri() {
-            return Uri.parse(mUri);
+            return Uri.parse(uri);
         }
 
         public String getDescription() {
-            return mDescription;
+            return description;
         }
 
         public String getTitle() {
-            return mTitle;
+            return title;
+        }
+
+        public long getLastModified() {
+            return lastModified;
+        }
+
+        public Uri getLocalUri() {
+            return localUri;
+        }
+
+        public Uri getMediaProviderUri() {
+            return mediaProviderUri;
+        }
+
+        public String getMediaType() {
+            return mediaType;
         }
 
         /**
@@ -394,6 +426,14 @@ public class DownloadManager {
                     return mContext.getString(R.string.download_status_running);
                 default:
                     return mContext.getString(R.string.download_status_unknown);
+            }
+        }
+
+        private Uri parseUriWithoutException(String uri){
+            try {
+                return Uri.parse(uri);
+            } catch (Exception e) {
+                return null;
             }
         }
 

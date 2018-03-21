@@ -277,9 +277,11 @@ public class ReaderViewModel extends AndroidViewModel {
                                       .getIndexItem(key);
             if (item != null) {
                 ITocItem parent = item.getIndexParent();
-                UserTocItem tocItem = userTocMap.get(parent.getKey());
-                if (tocItem != null) {
-                    tocItem.setChildsVisible(true);
+                if (parent != null) {
+                    UserTocItem tocItem = userTocMap.get(parent.getKey());
+                    if (tocItem != null) {
+                        tocItem.setChildsVisible(true);
+                    }
                 }
             }
         }

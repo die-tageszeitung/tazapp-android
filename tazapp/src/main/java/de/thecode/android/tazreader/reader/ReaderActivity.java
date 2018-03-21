@@ -737,7 +737,7 @@ public class ReaderActivity extends BaseActivity
 
     public void showTtsSnackbar(CharSequence message, String action, View.OnClickListener actionListener) {
         Snacky.builder()
-              .setActivty(this)
+              .setActivity(this)
               .setText(message)
               .setIcon(TintHelper.tintAndReturnDrawable(ContextCompat.getDrawable(this,
                                                                                   R.drawable.ic_record_voice_over_black_24dp),

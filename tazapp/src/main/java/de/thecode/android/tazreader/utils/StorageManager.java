@@ -66,7 +66,7 @@ public class StorageManager {
 
     public File getDownloadFile(Paper paper) {
         try {
-            return getDownloadFile(HashHelper.getHash(paper.getBookId(), HashHelper.UTF_8, HashHelper.SHA_1));
+            return getDownloadFile(HashHelper.getHash(paper.getBookId(), HashHelper.UTF_8, HashHelper.SHA_1)+".paper.zip");
         } catch (UnsupportedEncodingException | NoSuchAlgorithmException e) {
             Timber.e(e, "Error");
         }
@@ -74,7 +74,7 @@ public class StorageManager {
     }
 
     public File getDownloadFile(Resource resource) {
-        return getDownloadFile(resource.getKey());
+        return getDownloadFile(resource.getKey()+".res.zip");
     }
 
     private File getDownloadFile(String key) {
