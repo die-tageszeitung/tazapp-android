@@ -10,6 +10,7 @@ import de.thecode.android.tazreader.secure.HashHelper;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 
@@ -36,6 +37,19 @@ public class StorageManager {
 
     private StorageManager(Context context) {
         mApplicationContext = context;
+        createNoMediaFileInDir(getCache(null));
+        createNoMediaFileInDir(get(null));
+    }
+
+    private void createNoMediaFileInDir(File dir) {
+        File noMediaFile = new File(dir, ".nomedia");
+        if (!noMediaFile.exists()) {
+            try {
+                if (!noMediaFile.createNewFile()) Timber.w("cannot create file: %s", noMediaFile.getAbsolutePath());
+            } catch (IOException e) {
+                Timber.w(e);
+            }
+        }
     }
 
     public File get(String type) {
@@ -51,6 +65,7 @@ public class StorageManager {
         if (result != null) {
             if (subDir != null) result = new File(result, subDir);
             result.mkdirs();
+
         }
         return result;
     }
@@ -66,7 +81,7 @@ public class StorageManager {
 
     public File getDownloadFile(Paper paper) {
         try {
-            return getDownloadFile(HashHelper.getHash(paper.getBookId(), HashHelper.UTF_8, HashHelper.SHA_1)+".paper.zip");
+            return getDownloadFile(HashHelper.getHash(paper.getBookId(), HashHelper.UTF_8, HashHelper.SHA_1) + ".paper.zip");
         } catch (UnsupportedEncodingException | NoSuchAlgorithmException e) {
             Timber.e(e, "Error");
         }
@@ -74,7 +89,7 @@ public class StorageManager {
     }
 
     public File getDownloadFile(Resource resource) {
-        return getDownloadFile(resource.getKey()+".res.zip");
+        return getDownloadFile(resource.getKey() + ".res.zip");
     }
 
     private File getDownloadFile(String key) {

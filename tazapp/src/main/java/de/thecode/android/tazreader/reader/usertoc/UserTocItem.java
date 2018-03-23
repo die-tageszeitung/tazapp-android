@@ -11,8 +11,10 @@ import java.util.List;
  * Created by mate on 08.03.18.
  */
 
-public class UserTocItem {
+public class UserTocItem implements Cloneable {
 
+    private boolean active;
+    private boolean bookmarked;
     private boolean childsVisible;
 
     private UserTocItem parent;
@@ -23,9 +25,15 @@ public class UserTocItem {
     public UserTocItem(UserTocItem parent, @NonNull ITocItem indexItem) {
         this.parent = parent;
         this.indexItem = indexItem;
+        setBookmarkedStateFromIndex();
         if (parent != null) {
             parent.addChild(this);
         }
+    }
+
+    @Override
+    public UserTocItem clone() throws CloneNotSupportedException {
+        return (UserTocItem) super.clone();
     }
 
     public void setChildsVisible(boolean childsVisible) {
@@ -41,7 +49,15 @@ public class UserTocItem {
         return childsVisible;
     }
 
-    public boolean isVisible(){
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+
+    public boolean isVisible() {
         return parent == null || parent.areChildsVisible();
     }
 
@@ -50,14 +66,14 @@ public class UserTocItem {
     }
 
     public boolean hasParent() {
-        return parent!=null;
+        return parent != null;
     }
 
     public UserTocItem getParent() {
         return parent;
     }
 
-    private void addChild(UserTocItem child){
+    private void addChild(UserTocItem child) {
         childs.add(child);
     }
 
@@ -78,5 +94,13 @@ public class UserTocItem {
 
     public String getKey() {
         return indexItem.getKey();
+    }
+
+    public void setBookmarkedStateFromIndex() {
+        if (indexItem != null) bookmarked = indexItem.isBookmarked();
+    }
+
+    public boolean isBookmarked() {
+        return bookmarked;
     }
 }

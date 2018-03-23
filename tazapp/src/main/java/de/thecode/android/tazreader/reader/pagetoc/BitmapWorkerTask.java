@@ -45,17 +45,21 @@ public class BitmapWorkerTask extends AsyncTask<Void, Void, Bitmap> {
     }
 
     private final WeakReference<ImageView> imageViewReference;
-    private       String                   key;
+    private final Paper.Plist.Page         page;
+    private final String                   key;
     private       MuPDFCore.Cookie         cookie;
 
-    private int                     mThumbnailImageHeight;
-    private int                     mThumbnailImageWidth;
-    private FileCachePDFThumbHelper pdfThumbHelper;
-    private File                    paperDirectory;
+    private final int                     mThumbnailImageHeight;
+    private final int                     mThumbnailImageWidth;
+    private final FileCachePDFThumbHelper pdfThumbHelper;
+    private final File                    paperDirectory;
 
-    public BitmapWorkerTask(ImageView imageView, Paper paper, String key) {
+    private static Bitmap placeHolderBitmap = null;
+
+    public BitmapWorkerTask(ImageView imageView, Paper.Plist.Page page) {
         // Use a WeakReference to ensure the ImageView can be garbage collected
-        this.key = key;
+        this.key = page.getKey();
+        this.page = page;
         imageViewReference = new WeakReference<>(imageView);
         Context context = imageView.getContext();
         mThumbnailImageHeight = context.getResources()
@@ -66,9 +70,20 @@ public class BitmapWorkerTask extends AsyncTask<Void, Void, Bitmap> {
                                       .getDimensionPixelSize(R.dimen.pageindex_thumbnail_image_width) - (2 * context.getResources()
                                                                                                                     .getDimensionPixelSize(
                                                                                                                             R.dimen.pageindex_padding));
-        pdfThumbHelper = new FileCachePDFThumbHelper(StorageManager.getInstance(context), paper.getFileHash());
-        paperDirectory = StorageManager.getInstance(context)
-                                       .getPaperDirectory(paper);
+        StorageManager storageManager = StorageManager.getInstance(context);
+        this.paperDirectory = storageManager.getPaperDirectory(page.getPaper());
+        this.pdfThumbHelper = new FileCachePDFThumbHelper(storageManager,
+                                                          page.getPaper()
+                                                              .getFileHash());
+        if (placeHolderBitmap == null) {
+            placeHolderBitmap = Bitmap.createBitmap(mThumbnailImageWidth, mThumbnailImageHeight, Bitmap.Config.ARGB_8888);
+            placeHolderBitmap.eraseColor(imageView.getResources()
+                                                  .getColor(R.color.pageindex_loadingpage_bitmapbackground));
+        }
+    }
+
+    public Bitmap getPlaceHolderBitmap() {
+        return placeHolderBitmap;
     }
 
     // Decode image in background.

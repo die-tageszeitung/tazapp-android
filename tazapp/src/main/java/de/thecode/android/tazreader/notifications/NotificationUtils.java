@@ -13,7 +13,6 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.net.Uri;
 import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 
@@ -55,7 +54,7 @@ public class NotificationUtils extends ContextWrapper {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             NotificationChannel downloadChannel = new NotificationChannel(DOWNLOAD_CHANNEL_ID,
                                                                           downloadChannelName,
-                                                                          NotificationManagerCompat.IMPORTANCE_DEFAULT);
+                                                                          NotificationManager.IMPORTANCE_DEFAULT);
             downloadChannel.enableLights(true);
             downloadChannel.enableVibration(true);
             downloadChannel.setLightColor(ContextCompat.getColor(this, R.color.color_primary));
@@ -98,6 +97,8 @@ public class NotificationUtils extends ContextWrapper {
                                                                                                 .setContentIntent(contentIntent)
                                                                                                 .setAutoCancel(true)
                                                                                                 .setContentText(message.toString())
+                                                                                                .setStyle(new NotificationCompat.BigTextStyle()
+                                                                                                                  .bigText(message.toString()))
                                                                                                 .setSound(ringtoneUri);
         int defaults = Notification.DEFAULT_LIGHTS;
         if (withVibration) defaults |= Notification.DEFAULT_VIBRATE;
@@ -130,6 +131,9 @@ public class NotificationUtils extends ContextWrapper {
                                                                                                 .setAutoCancel(true)
                                                                                                 .setContentText(paper.getTitelWithDate(
                                                                                                         this))
+                                                                                                .setStyle(new NotificationCompat.BigTextStyle()
+                                                                                                                  .bigText(paper.getTitelWithDate(
+                                                                                                                          this)))
                                                                                                 .setSound(ringtoneUri)
                                                                                                 .setGroup(DOWNLOAD_GROUP_KEY);
         int defaults = Notification.DEFAULT_LIGHTS;

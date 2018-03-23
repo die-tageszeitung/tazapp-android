@@ -343,7 +343,7 @@ public class ReaderActivity extends BaseActivity
         int prevPosition = readerViewModel.getPaper()
                                           .getArticleCollectionOrderPosition(readerViewModel.getCurrentKey()) - 1;
 
-        if (readerViewModel.isFilterBookmarks()) {
+        if (readerViewModel.getUserTocLiveData().isFilterBookmarks()) {
             while (prevPosition >= 0) {
                 ITocItem item = readerViewModel.getPaper()
                                                .getPlist()
@@ -369,7 +369,7 @@ public class ReaderActivity extends BaseActivity
         int nextPositiion = readerViewModel.getPaper()
                                            .getArticleCollectionOrderPosition(readerViewModel.getCurrentKey()) + 1;
 
-        if (readerViewModel.isFilterBookmarks()) {
+        if (readerViewModel.getUserTocLiveData().isFilterBookmarks()) {
             while (nextPositiion < readerViewModel.getPaper()
                                                   .getArticleCollectionSize()) {
                 ITocItem item = readerViewModel.getPaper()
@@ -419,7 +419,10 @@ public class ReaderActivity extends BaseActivity
     public void onBookmarkClick(ITocItem item) {
         Timber.d("%s", item.getKey());
         item.setBookmark(!item.isBookmarked());
-        if (mUserTocFragment != null) mUserTocFragment.onBookmarkChange(item.getKey());
+
+        readerViewModel.getUserTocLiveData().onBookmarkChanged(item);
+
+//        if (mUserTocFragment != null) mUserTocFragment.onBookmarkChange(item.getKey());
         ITocItem currentItem = readerViewModel.getCurrentKeyLiveData().getValue();
         if (currentItem.equals(item)) {
             if (mContentFragment instanceof ArticleFragment) ((ArticleFragment) mContentFragment).initialBookmark();
@@ -461,7 +464,7 @@ public class ReaderActivity extends BaseActivity
     }
 
     public void closeDrawers() {
-        mDrawerLayout.postDelayed(() -> mDrawerLayout.closeDrawers(), 1000);
+        mDrawerLayout.postDelayed(() -> mDrawerLayout.closeDrawers(), 500);
     }
 
     public void openPageIndexDrawer() {

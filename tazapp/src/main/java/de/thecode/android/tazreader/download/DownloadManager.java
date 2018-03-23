@@ -59,7 +59,7 @@ public class DownloadManager {
         requestHelper = RequestHelper.getInstance(context);
     }
 
-    public Uri getUriForDownloadedFile(long downloadId){
+    public Uri getUriForDownloadedFile(long downloadId) {
         return mDownloadManager.getUriForDownloadedFile(downloadId);
     }
 
@@ -101,8 +101,12 @@ public class DownloadManager {
         File destinationFile = mStorage.getDownloadFile(paper);
 
         if (destinationFile == null) throw new DownloadNotAllowedException("Fehler beim Ermitteln des Downloadverzeichnisses.");
+        if (destinationFile.exists()) {
+            if (!destinationFile.delete()) Timber.w("Cannot delete file %s",destinationFile.getAbsolutePath());
+        }
 
-        assertEnougSpaceForDownload(destinationFile.getParentFile(), calculateBytesNeeded(paper.getLen()));
+
+        assertEnoughSpaceForDownload(destinationFile.getParentFile(), calculateBytesNeeded(paper.getLen()));
 
         request.setDestinationUri(Uri.fromFile(destinationFile));
 
@@ -130,7 +134,7 @@ public class DownloadManager {
             Resource resource = ResourceRepository.getInstance(mContext)
                                                   .getWithKey(paper.getResource());
             StoreRepository storeRepository = StoreRepository.getInstance(mContext);
-            Store resourcePartnerStore = storeRepository.getStore(paper.getBookId(),Paper.STORE_KEY_RESOURCE_PARTNER);
+            Store resourcePartnerStore = storeRepository.getStore(paper.getBookId(), Paper.STORE_KEY_RESOURCE_PARTNER);
             resourcePartnerStore.setValue(paper.getResource());
             storeRepository.saveStore(resourcePartnerStore);
             enqueResource(resource, wifiOnly);
@@ -194,8 +198,11 @@ public class DownloadManager {
             addUserAgent(request);
 
             File destinationFile = mStorage.getDownloadFile(resource);
+            if (destinationFile.exists()) {
+                if (!destinationFile.delete()) Timber.w("Cannot delete file %s",destinationFile.getAbsolutePath());
+            }
 
-            assertEnougSpaceForDownload(destinationFile.getParentFile(), calculateBytesNeeded(resource.getLen()));
+            assertEnoughSpaceForDownload(destinationFile.getParentFile(), calculateBytesNeeded(resource.getLen()));
 
             request.setDestinationUri(Uri.fromFile(destinationFile));
             if (wifiOnly) request.setAllowedNetworkTypes(Request.NETWORK_WIFI);
@@ -292,18 +299,18 @@ public class DownloadManager {
         public static final int STATUS_RUNNING    = android.app.DownloadManager.STATUS_RUNNING;
         public static final int STATUS_NOTFOUND   = 0;
 
-        private  int    status;
-        private  int    reason;
-        private  long   bytesTotal;
-        private  long   bytesDownloaded;
-        private  String uri;
-        private  String title;
-        private  String description;
-        private  long   downloadId;
-        private  long   lastModified;
-        private  Uri localUri;
-        private  Uri mediaProviderUri;
-        private  String mediaType;
+        private int    status;
+        private int    reason;
+        private long   bytesTotal;
+        private long   bytesDownloaded;
+        private String uri;
+        private String title;
+        private String description;
+        private long   downloadId;
+        private long   lastModified;
+        private Uri    localUri;
+        private Uri    mediaProviderUri;
+        private String mediaType;
 
         public DownloadState(long downloadId) {
             this.downloadId = downloadId;
@@ -429,7 +436,7 @@ public class DownloadManager {
             }
         }
 
-        private Uri parseUriWithoutException(String uri){
+        private Uri parseUriWithoutException(String uri) {
             try {
                 return Uri.parse(uri);
             } catch (Exception e) {
@@ -496,7 +503,7 @@ public class DownloadManager {
         } else return Math.min(oneHundred, fiveDownloads);
     }
 
-    private static void assertEnougSpaceForDownload(File dir, long requested) throws NotEnoughSpaceException {
+    private static void assertEnoughSpaceForDownload(File dir, long requested) throws NotEnoughSpaceException {
         if (requested <= 0) return;
         StatFs statFs = new StatFs(dir.getAbsolutePath());
         long available;

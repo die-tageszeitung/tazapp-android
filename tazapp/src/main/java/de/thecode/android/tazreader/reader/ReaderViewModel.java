@@ -16,17 +16,13 @@ import de.thecode.android.tazreader.data.Store;
 import de.thecode.android.tazreader.data.StoreRepository;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.data.ITocItem;
-import de.thecode.android.tazreader.reader.usertoc.UserTocItem;
+import de.thecode.android.tazreader.reader.pagetoc.PageTocLiveData;
+import de.thecode.android.tazreader.reader.usertoc.UserTocLiveData;
 
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-
-import timber.log.Timber;
 
 /**
  * Created by mate on 01.03.18.
@@ -36,52 +32,49 @@ public class ReaderViewModel extends AndroidViewModel {
 
     private StoreRepository storeRepository;
 
-    private Resource      resource;
-    private Store         currentKeyStore;
-    private PaperLiveData paperLiveData;
-    private boolean       filterBookmarks;
-    private boolean       expanded;
-    MutableLiveData<Boolean> indexVerboseLiveData;
-    TazSettings              settings;
-    private UserTocLiveData           userTocLiveData;
-    private MutableLiveData<ITocItem> currentKeyLiveData;
-    private PagesTocLiveData          pagesTocLiveData;
-    private PagesLiveData pagesLiveData;
-
+    private       Resource                  resource;
+    private       Store                     currentKeyStore;
+    private       PaperLiveData             paperLiveData;
+    private       MutableLiveData<Boolean>  indexVerboseLiveData;
+    private       TazSettings               settings;
+    private       MutableLiveData<ITocItem> currentKeyLiveData;
+    private       PagesLiveData             pagesLiveData;
+    private final UserTocLiveData           userTocLiveData;
+    private final PageTocLiveData           pageTocLiveData;
 
     public ReaderViewModel(@NonNull Application application, String bookId, String resourceKey) {
         super(application);
         settings = TazSettings.getInstance(application);
-        expanded = settings.isIndexAlwaysExpanded();
         storeRepository = StoreRepository.getInstance(application);
         resource = ResourceRepository.getInstance(application)
                                      .getWithKey(resourceKey);
         currentKeyStore = storeRepository.getStore(bookId, Paper.STORE_KEY_CURRENTPOSITION);
         currentKeyLiveData = new MutableLiveData<>();
-        userTocLiveData = new UserTocLiveData();
-        pagesTocLiveData = new PagesTocLiveData();
+        userTocLiveData = new UserTocLiveData(currentKeyLiveData, settings.isIndexAlwaysExpanded());
+        pageTocLiveData = new PageTocLiveData(application, currentKeyLiveData);
         pagesLiveData = new PagesLiveData();
         paperLiveData = new PaperLiveData(application, bookId);
         paperLiveData.observeForever(new Observer<Paper>() {
             @Override
             public void onChanged(@Nullable Paper paper) {
-                pagesLiveData.create();
-                userTocLiveData.create();
-                pagesTocLiveData.create();
-                userTocLiveData.expand(expanded);
-                String currentKey = currentKeyStore.getValue(paper.getPlist()
-                                                                  .getSources()
-                                                                  .get(0)
-                                                                  .getBooks()
-                                                                  .get(0)
-                                                                  .getCategories()
-                                                                  .get(0)
-                                                                  .getPages()
-                                                                  .get(0)
-                                                                  .getKey());
-                currentKey = StringUtils.substringBefore(currentKey, "?");
-                currentKeyLiveData.setValue(paper.getPlist()
-                                                 .getIndexItem(currentKey));
+                if (paper != null) {
+                    userTocLiveData.create(paper.getPlist());
+                    pageTocLiveData.create(paper.getPlist());
+                    pagesLiveData.create();
+                    String currentKey = currentKeyStore.getValue(paper.getPlist()
+                                                                      .getSources()
+                                                                      .get(0)
+                                                                      .getBooks()
+                                                                      .get(0)
+                                                                      .getCategories()
+                                                                      .get(0)
+                                                                      .getPages()
+                                                                      .get(0)
+                                                                      .getKey());
+                    currentKey = StringUtils.substringBefore(currentKey, "?");
+                    currentKeyLiveData.setValue(paper.getPlist()
+                                                     .getIndexItem(currentKey));
+                }
             }
         });
         settings = TazSettings.getInstance(application);
@@ -112,9 +105,6 @@ public class ReaderViewModel extends AndroidViewModel {
     public void setCurrentKey(String currentKey) {
         currentKeyStore.setValue(currentKey);
         storeRepository.saveStore(currentKeyStore);
-        if (!expanded) userTocLiveData.expand(false);
-        userTocLiveData.expandParent(currentKey);
-        userTocLiveData.publish();
         ITocItem item = getPaper().getPlist()
                                   .getIndexItem(currentKey);
         currentKeyLiveData.setValue(item);
@@ -132,29 +122,13 @@ public class ReaderViewModel extends AndroidViewModel {
         return null;
     }
 
-    public boolean isFilterBookmarks() {
-        return filterBookmarks;
-    }
-
-    public void setFilterBookmarks(boolean filterBookmarks) {
-        if (filterBookmarks == this.filterBookmarks) return;
-        this.filterBookmarks = filterBookmarks;
-        userTocLiveData.publish();
-    }
-
-    public boolean isExpanded() {
-        return expanded;
-    }
-
     public void setExpanded(boolean expanded) {
-        this.expanded = expanded;
         settings.setIndexAlwaysExpanded(expanded);
-        userTocLiveData.expand(expanded);
-        userTocLiveData.publish();
+        userTocLiveData.setExpandAll(expanded);
     }
 
-    public static ReaderViewModelFactory createFactory(@NonNull Application application, String bookId, String resourceKey){
-        return new ReaderViewModelFactory(application,bookId,resourceKey);
+    public static ReaderViewModelFactory createFactory(@NonNull Application application, String bookId, String resourceKey) {
+        return new ReaderViewModelFactory(application, bookId, resourceKey);
     }
 
     public static class ReaderViewModelFactory implements ViewModelProvider.Factory {
@@ -193,12 +167,16 @@ public class ReaderViewModel extends AndroidViewModel {
         indexVerboseLiveData.setValue(indexVerbose);
     }
 
+//    public UserTocLiveData getUserTocLiveData() {
+//        return userTocLiveData;
+//    }
+
     public UserTocLiveData getUserTocLiveData() {
         return userTocLiveData;
     }
 
-    public PagesTocLiveData getPagesTocLiveData() {
-        return pagesTocLiveData;
+    public PageTocLiveData getPageTocLiveData() {
+        return pageTocLiveData;
     }
 
     public PagesLiveData getPagesLiveData() {
@@ -217,107 +195,6 @@ public class ReaderViewModel extends AndroidViewModel {
                 }
             }
             setValue(pages);
-        }
-    }
-
-    public class PagesTocLiveData extends LiveData<List<ITocItem>> {
-        public void create() {
-            List<ITocItem> index = new ArrayList<>();
-            for (Paper.Plist.Source source : getPaper().getPlist()
-                                                       .getSources()) {
-                index.add(source);
-                for (Paper.Plist.Book book : source.getBooks()) {
-                    for (Paper.Plist.Category category : book.getCategories()) {
-                        index.addAll(category.getPages());
-                    }
-                }
-            }
-            setValue(index);
-        }
-    }
-
-    public class UserTocLiveData extends LiveData<ArrayList<UserTocItem>> {
-
-        private Map<String,UserTocItem> userTocMap = new LinkedHashMap<>();
-        private Map<String,Integer> keyPositionMap = new HashMap<>();
-
-        public void create() {
-            Timber.d("creating Index");
-            userTocMap.clear();
-            for (Paper.Plist.Source source : getPaper().getPlist()
-                                                       .getSources()) {
-                for (Paper.Plist.Book book : source.getBooks()) {
-                    for (Paper.Plist.Category category : book.getCategories()) {
-                        UserTocItem first = new UserTocItem(null, category);
-                        userTocMap.put(first.getKey(),first);
-                        if (category.hasIndexChilds()) {
-                            for (ITocItem indexItemChild : category.getIndexChilds()) {
-                                UserTocItem child = new UserTocItem(first,indexItemChild);
-                                userTocMap.put(child.getKey(),child);
-                            }
-                        }
-                    }
-                }
-            }
-            for (ITocItem toplink : getPaper().getPlist()
-                                              .getToplinks()) {
-                UserTocItem item = new UserTocItem(null, toplink);
-                userTocMap.put("toplink_"+item.getKey(),item);
-            }
-        }
-
-        public void expand(boolean expand) {
-            for (Map.Entry<String, UserTocItem> tocMapEntry: userTocMap.entrySet()) {
-                tocMapEntry.getValue().setChildsVisible(expand);
-            }
-        }
-
-        public void expandParent(String key) {
-            ITocItem item = getPaper().getPlist()
-                                      .getIndexItem(key);
-            if (item != null) {
-                ITocItem parent = item.getIndexParent();
-                if (parent != null) {
-                    UserTocItem tocItem = userTocMap.get(parent.getKey());
-                    if (tocItem != null) {
-                        tocItem.setChildsVisible(true);
-                    }
-                }
-            }
-        }
-
-        public void toogleExpantion(String key) {
-            UserTocItem tocItem = userTocMap.get(key);
-            if (tocItem != null) {
-                tocItem.setChildsVisible(!tocItem.areChildsVisible());
-            }
-        }
-
-        public void publish() {
-            keyPositionMap.clear();
-            ArrayList<UserTocItem> shownIndex = new ArrayList<>();
-            for (Map.Entry<String,UserTocItem> tocItemEntry : userTocMap.entrySet()) {
-                UserTocItem tocItem = tocItemEntry.getValue();
-                if (tocItem.isVisible() || (filterBookmarks && tocItem.getIndexItem()
-                                                                      .hasBookmarkedChilds())) {
-                    if (!filterBookmarks || tocItem.getIndexItem()
-                                                   .isBookmarked() || tocItem.getIndexItem()
-                                                                             .hasBookmarkedChilds()) {
-                        keyPositionMap.put(tocItemEntry.getKey(),shownIndex.size());
-                        shownIndex.add(tocItem);
-                    }
-                }
-            }
-            setValue(shownIndex);
-        }
-
-        public int getPositionForKey(String key) {
-            Integer result = keyPositionMap.get(key);
-            return result != null ? result : -1;
-        }
-
-        public UserTocItem getUserTocItemForKey (String key) {
-            return userTocMap.get(key);
         }
     }
 }

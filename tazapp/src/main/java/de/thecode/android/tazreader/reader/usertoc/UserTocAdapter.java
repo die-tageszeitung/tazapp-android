@@ -17,6 +17,8 @@ import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.utils.TazListAdapter;
 import de.thecode.android.tazreader.utils.TintHelper;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+
 /**
  * Created by mate on 16.03.18.
  */
@@ -34,20 +36,20 @@ public class UserTocAdapter extends TazListAdapter<UserTocItem, UserTocAdapter.V
 
     private UserTocAdapterClickListener clickListener;
 
-    private UserTocItem currentItem;
+//    private UserTocItem currentItem;
 
     public void setShowSubtitles(boolean showSubtitles) {
         this.showSubtitles = showSubtitles;
         if (getItemCount() > 0) notifyDataSetChanged();
     }
 
-    public void setCurrentItem(UserTocItem currentItem) {
-        this.currentItem = currentItem;
-    }
-
-    public UserTocItem getCurrentItem() {
-        return currentItem;
-    }
+//    public void setCurrentItem(UserTocItem currentItem) {
+//        this.currentItem = currentItem;
+//    }
+//
+//    public UserTocItem getCurrentItem() {
+//        return currentItem;
+//    }
 
     @SuppressWarnings("incomplete-switch")
     @Override
@@ -56,8 +58,11 @@ public class UserTocAdapter extends TazListAdapter<UserTocItem, UserTocAdapter.V
         ITocItem item = tocItem.getIndexItem();
 
         if (viewholder.mCurrentMarker != null) {
-            viewholder.mCurrentMarker.setVisibility(currentItem != null && item.getKey()
-                                                                               .equals(currentItem.getKey()) ? View.VISIBLE : View.INVISIBLE);
+            viewholder.mCurrentMarker.setVisibility(tocItem.isActive() ? View.VISIBLE : View.INVISIBLE);
+
+
+//            viewholder.mCurrentMarker.setVisibility(currentItem != null && item.getKey()
+//                                                                               .equals(currentItem.getKey()) ? View.VISIBLE : View.INVISIBLE);
         }
 
         switch (ITocItem.Type.values()[viewholder.getItemViewType()]) {
@@ -148,7 +153,10 @@ public class UserTocAdapter extends TazListAdapter<UserTocItem, UserTocAdapter.V
 
         @Override
         public boolean areContentsTheSame(UserTocItem oldItem, UserTocItem newItem) {
-            return false;
+            return new EqualsBuilder().append(oldItem.isActive(), newItem.isActive())
+                                      .append(oldItem.areChildsVisible(), newItem.areChildsVisible())
+                                      .append(oldItem.isBookmarked(), newItem.isBookmarked())
+                                      .build();
         }
     }
 
@@ -207,6 +215,7 @@ public class UserTocAdapter extends TazListAdapter<UserTocItem, UserTocAdapter.V
 
     public interface UserTocAdapterClickListener {
         void onItemClick(int adapterPosition);
+
         void onBookmarkClick(int adapterPosition);
     }
 }

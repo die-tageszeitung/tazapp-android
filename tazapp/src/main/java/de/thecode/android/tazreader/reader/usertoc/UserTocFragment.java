@@ -21,13 +21,14 @@ import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.reader.ReaderActivity;
 import de.thecode.android.tazreader.reader.ReaderBaseFragment;
 import de.thecode.android.tazreader.reader.SettingsDialog;
+import de.thecode.android.tazreader.utils.ParametrizedRunnable;
 import de.thecode.android.tazreader.widget.CustomToolbar;
 import de.thecode.android.tazreader.widget.SnapLayoutManager;
 
 public class UserTocFragment extends ReaderBaseFragment {
 
-    CustomToolbar toolbar;
-    UserTocAdapter newAdapter;
+    CustomToolbar     toolbar;
+    UserTocAdapter    newAdapter;
     RecyclerView      mRecyclerView;
     SnapLayoutManager layoutManager;
 
@@ -43,10 +44,8 @@ public class UserTocFragment extends ReaderBaseFragment {
                 UserTocItem clickedItem = newAdapter.getItem(adapterPosition);
                 if (clickedItem.getIndexItem() instanceof Paper.Plist.Category) {
                     getReaderViewModel().getUserTocLiveData()
-                                        .toogleExpantion(clickedItem.getKey());
-                    getReaderViewModel().getUserTocLiveData().publish();
-                }
-                else {
+                                        .setExpanded(clickedItem.getKey(), !clickedItem.areChildsVisible());
+                } else {
                     getReaderActivity().closeDrawers();
                     getReaderActivity().loadContentFragment(clickedItem.getKey());
                 }
@@ -128,7 +127,8 @@ public class UserTocFragment extends ReaderBaseFragment {
         });
 
 
-        setFilterBookmarksToolbarItems(getReaderViewModel().isFilterBookmarks());
+        setFilterBookmarksToolbarItems(getReaderViewModel().getUserTocLiveData()
+                                                           .isFilterBookmarks());
 
         mRecyclerView = view.findViewById(R.id.recycler);
         mRecyclerView.setHasFixedSize(true);
@@ -160,46 +160,14 @@ public class UserTocFragment extends ReaderBaseFragment {
                                 menuItemFull.setVisible(!aBoolean);
                                 menuItemShort.setVisible(aBoolean);
                             });
+
         getReaderViewModel().getUserTocLiveData()
-                            .observe(this, userTocItems -> {
-                                newAdapter.submitList(userTocItems);
-                            });
-
-        getReaderViewModel().getCurrentKeyLiveData()
-                            .observe(this, item -> {
-                                if (item != null) {
-                                    UserTocItem userTocItem;
-                                    if (item instanceof Paper.Plist.Page) {
-                                        layoutManager.setSnapPreference(SnapLayoutManager.SNAP_TO_START);
-                                        userTocItem = getReaderViewModel().getUserTocLiveData()
-                                                                          .getUserTocItemForKey(item.getIndexParent()
-                                                                                                    .getKey());
-                                    } else {
-                                        layoutManager.setSnapPreference(SnapLayoutManager.SNAP_TO_CENTER);
-                                        userTocItem = getReaderViewModel().getUserTocLiveData()
-                                                                          .getUserTocItemForKey(item.getKey());
-                                    }
-                                    if (userTocItem != null) {
-                                        int oldPosition = newAdapter.indexOf(newAdapter.getCurrentItem());
-                                        newAdapter.setCurrentItem(userTocItem);
-                                        int position = newAdapter.indexOf(userTocItem);
-                                        if (oldPosition != -1) newAdapter.notifyItemChanged(oldPosition);
-                                        if (position != -1) {
-                                            newAdapter.notifyItemChanged(position);
-                                            mRecyclerView.postDelayed(new Runnable() {
-                                                int pos;
-
-                                                @Override
-                                                public void run() {
-                                                    mRecyclerView.smoothScrollToPosition(pos);
-                                                }
-
-                                                private Runnable setPos(int pos) {
-                                                    this.pos = pos;
-                                                    return this;
-                                                }
-                                            }.setPos(position), 1000);
-                                        }
+                            .observe(this, userTocResultWrapper -> {
+                                if (userTocResultWrapper != null) {
+                                    newAdapter.submitList(userTocResultWrapper.getList());
+                                    if (userTocResultWrapper.getScrollToPosition() != -1) {
+                                        layoutManager.setSnapPreference(userTocResultWrapper.isCenterScroll() ? SnapLayoutManager.SNAP_TO_CENTER : SnapLayoutManager.SNAP_TO_START);
+                                        mRecyclerView.smoothScrollToPosition(userTocResultWrapper.getScrollToPosition());
                                     }
                                 }
                             });
@@ -212,16 +180,9 @@ public class UserTocFragment extends ReaderBaseFragment {
         super.onDestroyView();
     }
 
-    public void onBookmarkChange(String key) {
-        UserTocItem tocItem = getReaderViewModel().getUserTocLiveData().getUserTocItemForKey(key);
-        if (tocItem != null) {
-            int pos = newAdapter.indexOf(tocItem);
-            if (pos != -1) newAdapter.notifyItemChanged(pos);
-        }
-    }
-
     public void setFilterBookmarksToolbarItems(boolean bool) {
-        getReaderViewModel().setFilterBookmarks(bool);
+        getReaderViewModel().getUserTocLiveData()
+                            .setFilterBookmarks(bool);
         Menu menu = toolbar.getMenu();
         MenuItem menuItemOn = menu.findItem(R.id.toolbar_bookmark_on);
         MenuItem menuItemOff = menu.findItem(R.id.toolbar_bookmark_off);

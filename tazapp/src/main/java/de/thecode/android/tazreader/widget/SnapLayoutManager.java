@@ -14,10 +14,10 @@ import android.view.View;
 
 public class SnapLayoutManager extends LinearLayoutManager {
 
-    private static final float MILLISECONDS_PER_INCH = 100F;
+    private static final float MILLISECONDS_PER_INCH = 50F;
 
-    public static final int SNAP_TO_START = LinearSmoothScroller.SNAP_TO_START;
-    public static final int SNAP_TO_END = LinearSmoothScroller.SNAP_TO_END;
+    public static final int SNAP_TO_START  = LinearSmoothScroller.SNAP_TO_START;
+    public static final int SNAP_TO_END    = LinearSmoothScroller.SNAP_TO_END;
     public static final int SNAP_TO_CENTER = 2;
 
     private int snapPreference = SNAP_TO_START;
@@ -61,9 +61,9 @@ public class SnapLayoutManager extends LinearLayoutManager {
 
         @Override
         public int calculateDtToFit(int viewStart, int viewEnd, int boxStart, int boxEnd, int snapPreference) {
-            if (snapPreference == SNAP_TO_CENTER) return (boxStart + (boxEnd - boxStart) / 2) - (viewStart + (viewEnd - viewStart) / 2);
-            else
-                return super.calculateDtToFit(viewStart,viewEnd,boxStart,boxEnd,snapPreference);
+            if (snapPreference == SNAP_TO_CENTER)
+                return (boxStart + (boxEnd - boxStart) / 2) - (viewStart + (viewEnd - viewStart) / 2);
+            else return super.calculateDtToFit(viewStart, viewEnd, boxStart, boxEnd, snapPreference);
         }
 
         @Override
