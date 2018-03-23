@@ -315,10 +315,10 @@ dependencies {
     compile 'com.github.matecode:DataFragment:1.0.2'
     compile 'com.github.matecode:androiddialog:1.2.32'
     compile "com.google.firebase:firebase-messaging:$firebaseVer"
-    compile 'com.evernote:android-job:1.2.4'
+    compile 'com.evernote:android-job:1.2.5'
     compile 'com.google.code.gson:gson:2.8.2'
     implementation 'com.android.support.constraint:constraint-layout:1.0.2'
-    implementation 'android.arch.lifecycle:extensions:1.1.0'
+    implementation 'android.arch.lifecycle:extensions:1.1.1'
 }
 
 class Download extends DefaultTask {
