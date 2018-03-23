@@ -1,9 +1,11 @@
 package de.thecode.android.tazreader.reader.page;
 
+import android.arch.lifecycle.Observer;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -19,7 +21,7 @@ import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.reader.AbstractContentFragment;
 import de.thecode.android.tazreader.reader.ReaderActivity;
 import de.thecode.android.tazreader.reader.ReaderTtsFragment;
-import de.thecode.android.tazreader.reader.index.IIndexItem;
+import de.thecode.android.tazreader.data.ITocItem;
 import de.thecode.android.tazreader.widget.ReaderButton;
 import de.thecode.android.tazreader.widget.ShareButton;
 
@@ -30,28 +32,20 @@ import timber.log.Timber;
 
 public class PagesFragment extends AbstractContentFragment {
 
-    private static final String ARG_STARTKEY = "start_key";
-
-    public static PagesFragment newInstance(String startKey) {
-        PagesFragment fragment = new PagesFragment();
-        Bundle bundle = new Bundle();
-        bundle.putString(ARG_STARTKEY, startKey);
-        fragment.setArguments(bundle);
-        return fragment;
-    }
 
     TAZReaderView _readerView;
     ShareButton   mShareButton;
 
     TazReaderViewAdaper _adapter;
 
-    List<Page> pages;
+//    List<Page> pages;
 
-    String _startKey;
+//    String _startKey;
+
+    String currentKey;
 
 
     public PagesFragment() {
-        super();
     }
 
     @Override
@@ -59,34 +53,34 @@ public class PagesFragment extends AbstractContentFragment {
         super.onCreate(savedInstanceState);
 //        AnalyticsWrapper.getInstance()
 //                        .trackBreadcrumb("onCreate in PagesFragment");
-        if (savedInstanceState == null) {
-            if (getArguments() != null) _startKey = getArguments().getString(ARG_STARTKEY);
-        } else {
-            _startKey = savedInstanceState.getString(ARG_STARTKEY);
-        }
-        pages = new ArrayList<>();
-        Paper paper = callback.getPaper();
-        if (paper != null){
-            for (Paper.Plist.Source source : paper
-                                                     .getPlist()
-                                                     .getSources()) {
-                for (Paper.Plist.Book book : source.getBooks()) {
-                    for (Paper.Plist.Category category : book.getCategories()) {
-                        pages.addAll(category.getPages());
-                    }
-                }
-            }
-
-        }
+//        if (savedInstanceState == null) {
+//            if (getArguments() != null) _startKey = getArguments().getString(ARG_STARTKEY);
+//        } else {
+//            _startKey = savedInstanceState.getString(ARG_STARTKEY);
+//        }
+//        pages = new ArrayList<>();
+//        Paper paper = getReaderViewModel().getPaper();
+//        if (paper != null){
+//            for (Paper.Plist.Source source : paper
+//                                                     .getPlist()
+//                                                     .getSources()) {
+//                for (Paper.Plist.Book book : source.getBooks()) {
+//                    for (Paper.Plist.Category category : book.getCategories()) {
+//                        pages.addAll(category.getPages());
+//                    }
+//                }
+//            }
+//
+//        }
         _adapter = new TazReaderViewAdaper();
         //setRetainInstance(true);
     }
 
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putString(ARG_STARTKEY, _startKey);
-    }
+//    @Override
+//    public void onSaveInstanceState(Bundle outState) {
+//        super.onSaveInstanceState(outState);
+//        outState.putString(ARG_STARTKEY, _startKey);
+//    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -94,6 +88,12 @@ public class PagesFragment extends AbstractContentFragment {
 //                        .trackBreadcrumb("onCreateView in PagesFragment");
         View view = inflater.inflate(R.layout.reader_pagereader, container, false);
         _readerView = (TAZReaderView) view.findViewById(R.id.readerview);
+        _readerView.setListener(new TAZReaderView.TAZReaderViewListener() {
+            @Override
+            public void onMoveToChild(String key) {
+                getReaderViewModel().setCurrentKey(key);
+            }
+        });
         _readerView.setAdapter(_adapter);
         mShareButton = (ShareButton) view.findViewById(R.id.share);
         ReaderButton mPageIndexButton = (ReaderButton) view.findViewById(R.id.pageindex);
@@ -139,61 +139,56 @@ public class PagesFragment extends AbstractContentFragment {
         } else mIndexButton.setVisibility(View.GONE);
 
 
-        if (!TextUtils.isEmpty(_startKey)) setPage(_startKey);
+//        if (!TextUtils.isEmpty(_startKey)) setPage(_startKey);
 
         return view;
     }
 
     @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-//        AnalyticsWrapper.getInstance()
-//                        .trackBreadcrumb("onActivityCreated in PagesFragment");
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        getReaderViewModel().getPagesLiveData()
+                            .observe(this, new Observer<List<Page>>() {
+                                @Override
+                                public void onChanged(@Nullable List<Page> pages) {
+                                    _adapter.update(pages);
+                                }
+                            });
+        getReaderViewModel().getCurrentKeyLiveData()
+                            .observe(this, new Observer<ITocItem>() {
+                                @Override
+                                public void onChanged(@Nullable ITocItem tocItem) {
+                                    if (tocItem != null && _adapter.pages.size() > 0 && tocItem instanceof Page) {
+                                        setShareButtonCallback(tocItem);
+                                        int moveToPos = _adapter.pages.indexOf(tocItem);
+                                        int readerPos = _readerView.getDisplayedViewIndex();
+                                        if (moveToPos != -1 && readerPos != moveToPos) {
+                                            _readerView.resetScale();
+                                            _readerView.setDisplayedViewIndex(moveToPos);
+                                        }
+                                    }
+                                }
+                            });
     }
 
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-//        AnalyticsWrapper.getInstance()
-//                        .trackBreadcrumb("onAttach in PagesFragment");
-    }
-
-//    @Override
-//    public void init(Paper paper, String key, String postion) {
-//        AnalyticsWrapper.getInstance()
-//                        .trackBreadcrumb("init in PagesFragment");
-//        Timber.d("paper: %s, key: %s, postion: %s", paper, key, postion);
-//        _startKey = key;
-//        pages = new ArrayList<>();
-//        for (Source source : paper.getPlist()
-//                                  .getSources()) {
-//            for (Book book : source.getBooks()) {
-//                for (Category category : book.getCategories()) {
-//                    pages.addAll(category.getPages());
-//                }
-//            }
-//        }
-//        _adapter = new TazReaderViewAdaper();
+//    public void setPage(String key) {
+////        Timber.d("key: %s", key);
+////        if (_readerView != null) {
+////            for (Page page : pages) {
+////                if (page.getKey()
+////                        .equals(key)) {
+////                    Timber.d("setting page with key: %s", key);
+////                    _readerView.resetScale();
+////                    _readerView.setDisplayedViewIndex(pages.indexOf(page));
+////                    break;
+////                }
+////            }
+////        } else {
+////            _startKey = key;
+////        }
 //    }
 
-    public void setPage(String key) {
-        Timber.d("key: %s", key);
-        if (_readerView != null) {
-            for (Page page : pages) {
-                if (page.getKey()
-                        .equals(key)) {
-                    Timber.d("setting page with key: %s", key);
-                    _readerView.resetScale();
-                    _readerView.setDisplayedViewIndex(pages.indexOf(page));
-                    break;
-                }
-            }
-        } else {
-            _startKey = key;
-        }
-    }
-
-    public void setShareButtonCallback(IIndexItem item) {
+    public void setShareButtonCallback(ITocItem item) {
         if (mShareButton != null) mShareButton.setCallback(item);
     }
 
@@ -222,6 +217,13 @@ public class PagesFragment extends AbstractContentFragment {
     public class TazReaderViewAdaper extends BaseAdapter {
 
         private Bitmap mSharedHqBm;
+        private List<Page> pages = new ArrayList<>();
+
+        public void update(List<Page> newPages) {
+            pages.clear();
+            pages.addAll(newPages);
+            notifyDataSetChanged();
+        }
 
         @Override
         public int getCount() {
@@ -256,7 +258,11 @@ public class PagesFragment extends AbstractContentFragment {
                 pageView = (TAZPageView) convertView;
             }
 
-            pageView.init(pages.get(position));
+            try {
+                pageView.init(pages.get(position));
+            } catch (IndexOutOfBoundsException e) {
+                Timber.w(e);
+            }
 
             return pageView;
         }

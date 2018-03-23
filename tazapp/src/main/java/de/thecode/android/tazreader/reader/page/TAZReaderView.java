@@ -17,7 +17,7 @@ import com.artifex.mupdfdemo.ReaderView;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper.Plist.Page;
 import de.thecode.android.tazreader.data.TazSettings;
-import de.thecode.android.tazreader.reader.IReaderCallback;
+//import de.thecode.android.tazreader.reader.IReaderCallback;
 
 import java.lang.ref.WeakReference;
 
@@ -27,9 +27,10 @@ import timber.log.Timber;
 public class TAZReaderView extends ReaderView implements GestureDetector.OnDoubleTapListener {
 
     private boolean tapDisabled = false;
-    private IReaderCallback mReaderCallback;
+//    private IReaderCallback mReaderCallback;
     private boolean         mScrolling;
     private int             tapPageMargin;
+    private TAZReaderViewListener listener;
 
     public TAZReaderView(Context context) {
         super(context);
@@ -51,7 +52,7 @@ public class TAZReaderView extends ReaderView implements GestureDetector.OnDoubl
     private void init(Context context) {
 //        AnalyticsWrapper.getInstance()
 //                        .trackBreadcrumb("init in TazReaderView");
-        if (!isInEditMode()) mReaderCallback = (IReaderCallback) context;
+//        if (!isInEditMode()) mReaderCallback = (IReaderCallback) context;
         tapPageMargin = context.getResources()
                                .getDimensionPixelSize(R.dimen.reader_page_tapmargin);
     }
@@ -61,6 +62,10 @@ public class TAZReaderView extends ReaderView implements GestureDetector.OnDoubl
 //        AnalyticsWrapper.getInstance()
 //                        .trackBreadcrumb("setAdapter in TazReaderView");
         super.setAdapter(adapter);
+    }
+
+    public void setListener(TAZReaderViewListener listener) {
+        this.listener = listener;
     }
 
     @Override
@@ -100,7 +105,9 @@ public class TAZReaderView extends ReaderView implements GestureDetector.OnDoubl
     protected void onMoveToChild(int i) {
         Timber.d("i: %s", i);
         Page page = (Page) getAdapter().getItem(i);
-        mReaderCallback.updateIndexes(page.getKey());
+        if (listener != null) listener.onMoveToChild(page.getKey());
+//        mReaderCallback.updateIndexes(page.getKey());
+
     }
 
     @Override
@@ -150,10 +157,10 @@ public class TAZReaderView extends ReaderView implements GestureDetector.OnDoubl
     }
 
 
-    public IReaderCallback getReaderCallback() {
-        return mReaderCallback;
-    }
-
+//    public IReaderCallback getReaderCallback() {
+//        return mReaderCallback;
+//    }
+//
 
     @Override
     public boolean onSingleTapConfirmed(MotionEvent e) {
@@ -316,5 +323,9 @@ public class TAZReaderView extends ReaderView implements GestureDetector.OnDoubl
         }
 
         public abstract void onAnimationUpdate(float newScale, View view, MotionEvent event);
+    }
+
+    public interface TAZReaderViewListener {
+        void onMoveToChild(String key);
     }
 }

@@ -106,7 +106,8 @@ public class ArticleWebView extends WebView {
 
     @Override
     public void loadDataWithBaseURL(String baseUrl, String data, String mimeType, String encoding, String failUrl) {
-        Timber.i("baseUrl: %s, data: %s, mimeType: %s, encoding: %s, failUrl: %s", baseUrl, data, mimeType, encoding, failUrl);
+        Timber.i("baseUrl: %s, mimeType: %s, encoding: %s, failUrl: %s", baseUrl, mimeType, encoding, failUrl);
+        Timber.d("data: %s", data);
         gestureDetector = new GestureDetector(mContext, simpleOnGestureListener);
         setIsScroll();
         super.loadDataWithBaseURL(baseUrl, data, mimeType, encoding, failUrl);

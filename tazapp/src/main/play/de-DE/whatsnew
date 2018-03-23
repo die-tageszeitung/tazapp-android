@@ -1,4 +1,6 @@
+* Bugfix Abstürze beim starten der App aus dem Hintergrund
+* Bugfix Downloads
+* kleinere Bugfixes
 * Adaptive Icons für Android 8
-* Genauere Fehlermeldung beim Nachladen von Ressourcen
 * Bilder werden jetzt auch beim Blättern angezeigt
 * Möglichkeit Fehler per Mail zu melden (Impressum)

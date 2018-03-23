@@ -37,6 +37,7 @@ import de.thecode.android.tazreader.analytics.AnalyticsWrapper;
 import de.thecode.android.tazreader.data.DeleteTask;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Resource;
+import de.thecode.android.tazreader.data.ResourceRepository;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.dialog.ArchiveDialog;
 import de.thecode.android.tazreader.dialog.ArchiveEntry;
@@ -602,21 +603,26 @@ public class StartActivity extends BaseActivity
             if (!openPaper.isDownloaded()) {
                 showErrorDialog(getString(R.string.message_paper_not_downloaded), DIALOG_ERROR_OPEN_PAPER);
             }
-            Resource paperResource = openPaper.getResourcePartner(this);
+            Resource paperResource = ResourceRepository.getInstance(this)
+                                                       .getResourceForPaper(openPaper);
             //TODO Check for null resource and handle it, ask for sync / delete and redownload
             if (paperResource.isDownloaded()) {
                 Timber.i("start reader for paper: %s", openPaper);
                 Intent intent = new Intent(this, ReaderActivity.class);
                 intent.putExtra(ReaderActivity.KEY_EXTRA_PAPER_ID, id);
+                intent.putExtra(ReaderActivity.KEY_EXTRA_BOOK_ID, openPaper.getBookId());
                 intent.putExtra(ReaderActivity.KEY_EXTRA_RESOURCE_KEY, paperResource.getKey());
                 startActivity(intent);
             } else {
-                AnalyticsWrapper.getInstance().logData("PAPER",openPaper.toString());
-                AnalyticsWrapper.getInstance().logData("RESOURCE",paperResource.toString());
+                AnalyticsWrapper.getInstance()
+                                .logData("PAPER", openPaper.toString());
+                AnalyticsWrapper.getInstance()
+                                .logData("RESOURCE", paperResource.toString());
                 switch (Connection.getConnectionType(this)) {
                     case Connection.CONNECTION_NOT_AVAILABLE:
                         Timber.e(new ConnectException("Keine Verbindung"));
-                        showErrorDialog(getString(R.string.message_resource_not_downloaded_no_connection),DIALOG_ERROR_OPEN_PAPER);
+                        showErrorDialog(getString(R.string.message_resource_not_downloaded_no_connection),
+                                        DIALOG_ERROR_OPEN_PAPER);
                         break;
                     default:
                         try {
@@ -693,8 +699,9 @@ public class StartActivity extends BaseActivity
                 Paper waitingPaper = Paper.getPaperWithId(this, retainDataFragment.openPaperWaitingForRessource);
                 if (waitingPaper == null) throw new Paper.PaperNotFoundException();
                 if (event.getKey()
-                         .equals(waitingPaper.getResourcePartner(this)
-                                             .getKey())) {
+                         .equals(ResourceRepository.getInstance(this)
+                                                   .getResourceForPaper(waitingPaper)
+                                                   .getKey())) {
                     hideWaitDialog(DIALOG_WAIT + waitingPaper.getBookId());
                     long paperId = retainDataFragment.openPaperWaitingForRessource;
                     retainDataFragment.openPaperWaitingForRessource = -1;
@@ -702,7 +709,9 @@ public class StartActivity extends BaseActivity
                         openReader(paperId);
                     } else {
                         showDownloadErrorDialog(getString(R.string.message_resourcedownload_error),
-                                                String.format(getString(R.string.message_resourcedownload_late_error),event.getException().toString()),
+                                                String.format(getString(R.string.message_resourcedownload_late_error),
+                                                              event.getException()
+                                                                   .toString()),
                                                 null);
                     }
                 }
@@ -805,26 +814,26 @@ public class StartActivity extends BaseActivity
             switch (which) {
                 case Dialog.BUTTON_POSITIVE:
                     try {
-                        String body = IOUtils.toString(getAssets()
-                                                              .open("errorReportMail/body.txt"), "UTF-8");
+                        String body = IOUtils.toString(getAssets().open("errorReportMail/body.txt"), "UTF-8");
                         UserDeviceInfo userDeviceInfo = UserDeviceInfo.getInstance(this);
                         AccountHelper accountHelper = AccountHelper.getInstance(this);
 
                         body = body.replaceFirst("\\{appversion\\}", userDeviceInfo.getVersionName());
                         body = body.replaceFirst("\\{installid\\}", userDeviceInfo.getInstallationId());
-                        body = body.replaceFirst("\\{aboid\\}", AccountHelper.getInstance(this).getUser(""));
-                        String mailtoLink = IOUtils.toString(getAssets()
-                                                                     .open("errorReportMail/linktemplate.txt"), "UTF-8");
+                        body = body.replaceFirst("\\{aboid\\}",
+                                                 AccountHelper.getInstance(this)
+                                                              .getUser(""));
+                        String mailtoLink = IOUtils.toString(getAssets().open("errorReportMail/linktemplate.txt"), "UTF-8");
                         mailtoLink = mailtoLink.replaceFirst("\\{body\\}", Uri.encode(body));
                         Intent emailIntent = new Intent(Intent.ACTION_SENDTO);
                         emailIntent.setData(Uri.parse(mailtoLink));
                         startActivity(emailIntent);
-                    } catch (IOException | ActivityNotFoundException e ) {
+                    } catch (IOException | ActivityNotFoundException e) {
                         Timber.e(e);
                     }
                     break;
                 case Dialog.BUTTON_NEUTRAL:
-                    mDrawerFragment.simulateClick(preferencesItem,true);
+                    mDrawerFragment.simulateClick(preferencesItem, true);
                     break;
             }
         }

@@ -4,7 +4,8 @@ import android.content.Context;
 import android.text.TextUtils;
 
 import de.thecode.android.tazreader.data.Paper;
-import de.thecode.android.tazreader.reader.index.IIndexItem;
+import de.thecode.android.tazreader.data.StoreRepository;
+import de.thecode.android.tazreader.data.ITocItem;
 import de.thecode.android.tazreader.utils.AsyncTaskWithExecption;
 import de.thecode.android.tazreader.utils.StorageManager;
 
@@ -24,7 +25,7 @@ import java.util.Map;
 public abstract class PaperLoadingTask extends AsyncTaskWithExecption<Void, Void, Paper> {
 
     private final Context mContext;
-    private final long mPaperId;
+    private final long    mPaperId;
 
     public PaperLoadingTask(Context context, long paperId) {
         this.mContext = context;
@@ -36,14 +37,16 @@ public abstract class PaperLoadingTask extends AsyncTaskWithExecption<Void, Void
         Paper paper = Paper.getPaperWithId(mContext, mPaperId);
         if (paper == null) throw new Paper.PaperNotFoundException();
         //paper.parsePlist(mStorage.getPaperFile(paper));
-        paper.parsePlist(new File(StorageManager.getInstance(mContext).getPaperDirectory(paper), Paper.CONTENT_PLIST_FILENAME));
-
-        String bookmarkJsonString = paper.getStoreValue(mContext, Paper.STORE_KEY_BOOKMARKS);
+        paper.parsePlist(new File(StorageManager.getInstance(mContext)
+                                                .getPaperDirectory(paper), Paper.CONTENT_PLIST_FILENAME));
+        String bookmarkJsonString = StoreRepository.getInstance(mContext)
+                                                   .getStore(paper.getBookId(),Paper.STORE_KEY_BOOKMARKS)
+                                                   .getValue();
         if (!TextUtils.isEmpty(bookmarkJsonString)) {
             JSONArray bookmarksJsonArray = new JSONArray(bookmarkJsonString);
             for (int i = 0; i < bookmarksJsonArray.length(); i++) {
-                IIndexItem item = paper.getPlist()
-                                       .getIndexItem(bookmarksJsonArray.getString(i));
+                ITocItem item = paper.getPlist()
+                                     .getIndexItem(bookmarksJsonArray.getString(i));
                 if (item != null) {
                     item.setBookmark(true);
                 }
