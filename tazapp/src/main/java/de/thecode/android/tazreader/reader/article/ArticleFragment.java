@@ -163,7 +163,6 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
         webviewSettings.setBuiltInZoomControls(true);
         webviewSettings.setSupportZoom(true);
         webviewSettings.setUseWideViewPort(true);
-        webviewSettings.setUseWideViewPort(true);
 
         mWebView.addJavascriptInterface(new ANDROIDAPI(), JAVASCRIPT_API_NAME);
 
