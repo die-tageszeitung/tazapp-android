@@ -306,7 +306,7 @@ dependencies {
     compile 'com.github.jrejaud:ViewPagerIndicator2:0.0.1'
     compile 'com.jakewharton.timber:timber:4.5.1'
     compile 'com.yqritc:recyclerview-flexibledivider:1.2.9'
-    compile('com.crashlytics.sdk.android:crashlytics:2.7.0@aar') {
+    compile('com.crashlytics.sdk.android:crashlytics:2.9.1@aar') {
         transitive = true;
     }
     compile 'net.ypresto.timbertreeutils:timbertreeutils:1.0.0'
