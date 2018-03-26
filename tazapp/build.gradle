@@ -1,7 +1,7 @@
 def versionMajor = 3
 def versionMinor = 5
-def versionPatch = 0
-def versionBuild = 0
+def versionPatch = 1
+def versionBuild = 1
 
 def supportLibVer = "27.1.0"
 def buildToolsVer = "27.0.3"
@@ -129,7 +129,7 @@ android {
         resConfigs "en", "de"
         minSdkVersion minSdkVer
         targetSdkVersion targetSdkVer
-        versionCode versionMajor * 1000 + versionMinor * 100 + versionPatch * 10 + versionBuild
+        versionCode versionMajor * 1000000 + versionMinor * 10000 + versionPatch * 100 + versionBuild
         versionName "${versionMajor}.${versionMinor}.${versionPatch}"
         javaCompileOptions {
             annotationProcessorOptions {
@@ -242,7 +242,7 @@ android {
     applicationVariants.all { variant ->
         variant.outputs.each { output ->
             def baseAbiVersionCode = abiCodes.get(output.getFilter(com.android.build.OutputFile.ABI))
-            output.versionCodeOverride = baseAbiVersionCode * 100000 + variant.versionCode;
+            output.versionCodeOverride = baseAbiVersionCode * 100000000 + variant.versionCode;
             output.versionNameOverride = variant.versionName + " " + abiCodes.find { it.value == baseAbiVersionCode }.key
         }
     }
@@ -306,7 +306,7 @@ dependencies {
     compile 'com.github.jrejaud:ViewPagerIndicator2:0.0.1'
     compile 'com.jakewharton.timber:timber:4.5.1'
     compile 'com.yqritc:recyclerview-flexibledivider:1.2.9'
-    compile('com.crashlytics.sdk.android:crashlytics:2.7.0@aar') {
+    compile('com.crashlytics.sdk.android:crashlytics:2.9.1@aar') {
         transitive = true;
     }
     compile 'net.ypresto.timbertreeutils:timbertreeutils:1.0.0'

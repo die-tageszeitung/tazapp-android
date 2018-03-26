@@ -1,6 +1,5 @@
 package de.thecode.android.tazreader.reader.pagetoc;
 
-import android.graphics.Bitmap;
 import android.support.annotation.NonNull;
 import android.support.v7.util.DiffUtil;
 import android.support.v7.widget.RecyclerView;
@@ -18,8 +17,6 @@ import de.thecode.android.tazreader.utils.TazListAdapter;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 
 import java.util.List;
-
-import timber.log.Timber;
 
 /**
  * Created by mate on 22.03.18.
@@ -177,17 +174,12 @@ public class PageTocAdapter extends TazListAdapter<PageTocItem, PageTocAdapter.V
 
         @Override
         public boolean areContentsTheSame(PageTocItem oldItem, PageTocItem newItem) {
-            boolean result =  new EqualsBuilder().append(oldItem.hasOverlayBitmap(), newItem.hasOverlayBitmap())
-                                             .build();
-            if (!result) {
-                Timber.i("xxx");
-            }
-            return result;
+            return new EqualsBuilder().append(oldItem.hasOverlayBitmap(), newItem.hasOverlayBitmap())
+                                      .build();
         }
 
         @Override
         public Object getChangePayload(PageTocItem oldItem, PageTocItem newItem) {
-            Timber.i("xxxx");
             return PAYLOAD_OVERLAY;
         }
     }

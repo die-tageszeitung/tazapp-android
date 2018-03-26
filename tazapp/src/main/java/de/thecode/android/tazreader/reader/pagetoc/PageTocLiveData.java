@@ -46,7 +46,6 @@ public class PageTocLiveData extends LiveData<PageTocLiveData.ResultWrapper> {
     private final int    overlayBitmapPadding;
 
     private final Observer<ITocItem> currentKeyObserver = tocItem -> {
-        Timber.i("X");
         executor.execute(new ParametrizedRunnable<ITocItem>() {
             @Override
             public void run(ITocItem tocItem) {
