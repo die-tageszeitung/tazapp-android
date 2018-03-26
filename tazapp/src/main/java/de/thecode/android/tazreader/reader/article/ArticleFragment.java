@@ -26,6 +26,7 @@ import android.webkit.ConsoleMessage;
 import android.webkit.JavascriptInterface;
 import android.webkit.JsResult;
 import android.webkit.WebChromeClient;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
@@ -83,8 +84,8 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
     }
 
     ITocItem mArticle;
-    String key;
-//    Resource   resource;
+    String   key;
+    //    Resource   resource;
 //
     String mPosition = "0";
 
@@ -151,13 +152,19 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
         mWebView.setArticleWebViewCallback(this);
 
         mWebView.setBackgroundColor(getReaderActivity().onGetBackgroundColor(TazSettings.getInstance(getContext())
-                                                                             .getPrefString(TazSettings.PREFKEY.THEME,
-                                                                                            "normal")));
+                                                                                        .getPrefString(TazSettings.PREFKEY.THEME,
+                                                                                                       "normal")));
 
         mWebView.setWebViewClient(new ArticleWebViewClient());
         mWebView.setWebChromeClient(new ArticleWebChromeClient());
-        mWebView.getSettings()
-                .setJavaScriptEnabled(true);
+        WebSettings webviewSettings = mWebView.getSettings();
+        webviewSettings.setAllowFileAccessFromFileURLs(true);
+        webviewSettings.setJavaScriptEnabled(true);
+        webviewSettings.setBuiltInZoomControls(true);
+        webviewSettings.setSupportZoom(true);
+        webviewSettings.setUseWideViewPort(true);
+        webviewSettings.setUseWideViewPort(true);
+
         mWebView.addJavascriptInterface(new ANDROIDAPI(), JAVASCRIPT_API_NAME);
 
 
@@ -166,14 +173,6 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
         mWebView.setHorizontalScrollBarEnabled(true);
         mWebView.setVerticalScrollBarEnabled(true);
         mWebView.setScrollbarFadingEnabled(true);
-
-        mWebView.getSettings()
-                .setBuiltInZoomControls(true);
-        mWebView.getSettings()
-                .setSupportZoom(true);
-        mWebView.getSettings()
-                .setUseWideViewPort(true);
-
 
         mProgressBar = (ProgressBar) result.findViewById(R.id.progressBar);
 
@@ -230,17 +229,19 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        getReaderViewModel().getPaperLiveData().observe(this, new Observer<Paper>() {
-            @Override
-            public void onChanged(@Nullable Paper paper) {
-                getReaderViewModel().setCurrentKey(key);
-                mArticle = paper.getPlist().getIndexItem(key);
-                if (mArticle != null) {
-                    initialBookmark();
-                    loadArticleInWebview(mWebView.getContext());
-                }
-            }
-        });
+        getReaderViewModel().getPaperLiveData()
+                            .observe(this, new Observer<Paper>() {
+                                @Override
+                                public void onChanged(@Nullable Paper paper) {
+                                    getReaderViewModel().setCurrentKey(key);
+                                    mArticle = paper.getPlist()
+                                                    .getIndexItem(key);
+                                    if (mArticle != null) {
+                                        initialBookmark();
+                                        loadArticleInWebview(mWebView.getContext());
+                                    }
+                                }
+                            });
     }
 
     //    @Override
@@ -258,6 +259,11 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
     private void loadArticleInWebview(Context context) {
         String baseUrl = "file://" + StorageManager.getInstance(context)
                                                    .getPaperDirectory(mArticle.getPaper()) + "/" + mArticle.getKey() + "?position=" + mPosition;
+
+
+//        String baseUrl = "file://" + StorageManager.getInstance(context)
+//                                                   .getPaperDirectory(mArticle.getPaper()) + "/";
+
         mWebView.loadDataWithBaseURL(baseUrl, getHtml(context), "text/html", "UTF-8", null);
         mShareButton.setCallback(mArticle);
     }
@@ -309,11 +315,10 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
     }
 
 
-
     private void onGestureToTazapi(GESTURES gesture, MotionEvent e1) {
         //mOpenGesureResult = true;
         //callTazapi("onGesture", "'" + gesture.name() + "'," + e1.getX() + "," + e1.getY());
-        callTazapi("onGesture", gesture.name(),e1.getX(),e1.getY());
+        callTazapi("onGesture", gesture.name(), e1.getX(), e1.getY());
     }
 
     @Override
@@ -355,7 +360,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
     @Override
     public void onConfigurationChange(String key, String value) {
         Timber.d("%s %s", key, value);
-        callTazapi("onConfigurationChanged", key,value);
+        callTazapi("onConfigurationChanged", key, value);
     }
 
     @Override
@@ -553,9 +558,13 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
         @JavascriptInterface
         public void pageReady(String percentSeen, String position, String numberOfPages) {
             Timber.d("%s %s %s", mArticle.getKey(), percentSeen, position, numberOfPages);
-            Store positionStore = getReaderViewModel().getStoreRepository().getStore(getReaderViewModel().getPaper().getBookId(),Paper.STORE_KEY_POSITION_IN_ARTICLE+"_"+mArticle.getKey());
+            Store positionStore = getReaderViewModel().getStoreRepository()
+                                                      .getStore(getReaderViewModel().getPaper()
+                                                                                    .getBookId(),
+                                                                Paper.STORE_KEY_POSITION_IN_ARTICLE + "_" + mArticle.getKey());
             positionStore.setValue(position);
-            getReaderViewModel().getStoreRepository().saveStore(positionStore);
+            getReaderViewModel().getStoreRepository()
+                                .saveStore(positionStore);
             mPosition = position;
             runOnUiThread(new Runnable() {
                 @Override
@@ -684,13 +693,13 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
                     startActivity(browserIntent);
                 } else {
 //                    if (callback != null) {
-                        ITocItem indexItem = getReaderViewModel().getPaper()
-                                                                 .getPlist()
-                                                                 .getIndexItem(url);
-                        if (indexItem != null && getReaderActivity() != null) {
-                            getReaderActivity().loadContentFragment(url);
-                            //callback.onLoad(url);
-                        }
+                    ITocItem indexItem = getReaderViewModel().getPaper()
+                                                             .getPlist()
+                                                             .getIndexItem(url);
+                    if (indexItem != null && getReaderActivity() != null) {
+                        getReaderActivity().loadContentFragment(url);
+                        //callback.onLoad(url);
+                    }
 //                    }
                 }
             }

@@ -1,6 +1,6 @@
 def versionMajor = 3
 def versionMinor = 5
-def versionPatch = 0
+def versionPatch = 1
 def versionBuild = 0
 
 def supportLibVer = "27.1.0"
@@ -129,7 +129,7 @@ android {
         resConfigs "en", "de"
         minSdkVersion minSdkVer
         targetSdkVersion targetSdkVer
-        versionCode versionMajor * 1000 + versionMinor * 100 + versionPatch * 10 + versionBuild
+        versionCode versionMajor * 1000000 + versionMinor * 10000 + versionPatch * 100 + versionBuild
         versionName "${versionMajor}.${versionMinor}.${versionPatch}"
         javaCompileOptions {
             annotationProcessorOptions {
@@ -242,7 +242,7 @@ android {
     applicationVariants.all { variant ->
         variant.outputs.each { output ->
             def baseAbiVersionCode = abiCodes.get(output.getFilter(com.android.build.OutputFile.ABI))
-            output.versionCodeOverride = baseAbiVersionCode * 100000 + variant.versionCode;
+            output.versionCodeOverride = baseAbiVersionCode * 100000000 + variant.versionCode;
             output.versionNameOverride = variant.versionName + " " + abiCodes.find { it.value == baseAbiVersionCode }.key
         }
     }

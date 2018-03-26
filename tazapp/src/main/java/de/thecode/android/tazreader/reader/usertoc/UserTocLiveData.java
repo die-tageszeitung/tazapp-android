@@ -34,7 +34,6 @@ public class UserTocLiveData extends LiveData<UserTocLiveData.ResultWrapper> {
     private       boolean            expanded;
 
     private final Observer<ITocItem> currentKeyObserver = tocItem -> {
-        Timber.i("X");
         executor.execute(new ParametrizedRunnable<ITocItem>() {
             @Override
             public void run(ITocItem tocItem) {
