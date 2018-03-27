@@ -15,7 +15,7 @@ public class PlistHelper {
     }
 
     public static Integer getInt(NSDictionary dict, String key) {
-        if (dict.containsKey(key))
+        if (dict != null && dict.containsKey(key))
             return getInt(dict.get(key));
         return null;
     }
