@@ -4,6 +4,7 @@ import android.content.Context;
 import android.text.TextUtils;
 
 import de.thecode.android.tazreader.BuildConfig;
+import de.thecode.android.tazreader.data.Publication;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.utils.UserDeviceInfo;
 
@@ -33,7 +34,6 @@ public class UpdateHelper {
         setStoreVersion(context);
         settings = TazSettings.getInstance(context);
         UserDeviceInfo userDeviceInfo = UserDeviceInfo.getInstance(context);
-
     }
 
     public boolean isStoreVersion() {

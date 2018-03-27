@@ -30,6 +30,7 @@ import de.thecode.android.tazreader.okhttp3.RequestHelper;
 import de.thecode.android.tazreader.start.ScrollToPaperEvent;
 import de.thecode.android.tazreader.sync.SyncErrorEvent;
 import de.thecode.android.tazreader.sync.SyncStateChangedEvent;
+import de.thecode.android.tazreader.update.UpdateHelper;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.greenrobot.eventbus.EventBus;
@@ -151,48 +152,49 @@ public class SyncJob extends Job {
     public void handlePlist(NSDictionary root) {
         Publication publication = new Publication(root);
 
-        Cursor pubCursor = getContext().getContentResolver()
-                                       .query(Publication.CONTENT_URI,
-                                              null,
-                                              Publication.Columns.ISSUENAME + " LIKE '" + publication.getIssueName() + "'",
-                                              null,
-                                              null);
+//        Cursor pubCursor = getContext().getContentResolver()
+//                                       .query(Publication.CONTENT_URI,
+//                                              null,
+//                                              Publication.Columns.ISSUENAME + " LIKE '" + publication.getIssueName() + "'",
+//                                              null,
+//                                              null);
 
-        long publicationId;
         String publicationTitle = publication.getName();
         long validUntil = publication.getValidUntil();
         SyncJob.scheduleJobIn(TimeUnit.SECONDS.toMillis(validUntil) - System.currentTimeMillis());
         //minDataValidUntil = Math.min(minDataValidUntil, validUntil * 1000);
 
-        try {
-            if (pubCursor.moveToNext()) {
-                Publication oldPupdata = new Publication(pubCursor);
-                publicationId = oldPupdata.getId();
+        getContext().getContentResolver().insert(Publication.CONTENT_URI,publication.getContentValues());
 
-                oldPupdata.setCreated(publication.getCreated());
-                oldPupdata.setImage(publication.getImage());
-                oldPupdata.setIssueName(publication.getIssueName());
-                oldPupdata.setName(publication.getName());
-                oldPupdata.setTypeName(publication.getTypeName());
-                oldPupdata.setUrl(publication.getUrl());
-                oldPupdata.setValidUntil(publication.getValidUntil());
-
-                Uri updateUri = ContentUris.withAppendedId(Publication.CONTENT_URI, publicationId);
-                getContext().getContentResolver()
-                            .update(updateUri, oldPupdata.getContentValues(), null, null);
-            } else {
-                Uri newPublicationUri = getContext().getContentResolver()
-                                                    .insert(Publication.CONTENT_URI, publication.getContentValues());
-                publicationId = ContentUris.parseId(newPublicationUri);
-            }
-        } finally {
-            pubCursor.close();
-        }
+//        try {
+//            if (pubCursor.moveToNext()) {
+//                Publication oldPupdata = new Publication(pubCursor);
+//                publicationId = oldPupdata.getId();
+//
+//                oldPupdata.setCreated(publication.getCreated());
+//                oldPupdata.setImage(publication.getImage());
+//                oldPupdata.setIssueName(publication.getIssueName());
+//                oldPupdata.setName(publication.getName());
+//                oldPupdata.setTypeName(publication.getTypeName());
+//                oldPupdata.setUrl(publication.getUrl());
+//                oldPupdata.setValidUntil(publication.getValidUntil());
+//
+//                Uri updateUri = ContentUris.withAppendedId(Publication.CONTENT_URI, publicationId);
+//                getContext().getContentResolver()
+//                            .update(updateUri, oldPupdata.getContentValues(), null, null);
+//            } else {
+//                Uri newPublicationUri = getContext().getContentResolver()
+//                                                    .insert(Publication.CONTENT_URI, publication.getContentValues());
+//                publicationId = ContentUris.parseId(newPublicationUri);
+//            }
+//        } finally {
+//            pubCursor.close();
+//        }
 
         NSObject[] issues = ((NSArray) root.objectForKey(PLIST_KEY_ISSUES)).getArray();
         for (NSObject issue : issues) {
             Paper newPaper = new Paper((NSDictionary) issue);
-            newPaper.setPublicationId(publicationId);
+            newPaper.setPublication(publication.getIssueName());
             newPaper.setTitle(publicationTitle);
             newPaper.setValidUntil(validUntil);
 
@@ -233,8 +235,8 @@ public class SyncJob extends Job {
                             oldPaper.setDemo(newPaper.isDemo());
                             oldPaper.setValidUntil(newPaper.getValidUntil());
                         }
-                        if (oldPaper.getPublicationId() == null) {
-                            oldPaper.setPublicationId(publicationId);
+                        if (TextUtils.isEmpty(oldPaper.getPublication())) {
+                            oldPaper.setPublication(publication.getIssueName());
                         }
                         getContext().getContentResolver()
                                     .update(oldPaper.getContentUri(), oldPaper.getContentValues(), null, null);

@@ -151,7 +151,8 @@ public class Paper {
         public static final String KIOSK           = "kiosk";
         public static final String IMPORTED        = "imported";
         public static final String TITLE           = "title";
-        public static final String PUBLICATIONID   = "publicationId";
+//        public static final String PUBLICATIONID   = "publicationId";
+        public static final String PUBLICATION = "publication";
         public static final String RESOURCE        = "resource";
         //        public static final String RESOURCEFILEHASH = "resourceFileHash";
 //        public static final String RESOURCEURL      = "resourceUrl";
@@ -182,7 +183,8 @@ public class Paper {
     private boolean kiosk;
     private boolean imported;
     private String  title;
-    private Long    publicationId;
+//    private Long    publicationId;
+    private String publication;
     private String  resource;
     //    private String  resourceFileHash;
 //    private String  resourceUrl;
@@ -223,7 +225,8 @@ public class Paper {
         this.kiosk = getBoolean(cursor, cursor.getColumnIndex(Columns.KIOSK));
         this.imported = getBoolean(cursor, cursor.getColumnIndex(Columns.IMPORTED));
         this.title = cursor.getString(cursor.getColumnIndex(Columns.TITLE));
-        this.publicationId = cursor.getLong(cursor.getColumnIndex(Columns.PUBLICATIONID));
+//        this.publicationId = cursor.getLong(cursor.getColumnIndex(Columns.PUBLICATIONID));
+        this.publication = cursor.getString(cursor.getColumnIndex(Columns.PUBLICATION));
         //if (cursor.getColumnIndex(Publication.Columns.VALIDUNTIL) != -1)
         this.validUntil = cursor.getLong(cursor.getColumnIndex(Columns.VALIDUNTIL));
         this.resource = cursor.getString(cursor.getColumnIndex(Columns.RESOURCE));
@@ -273,7 +276,8 @@ public class Paper {
         // cv.put(Columns.TEMPFILENAME, tempfilename);
         // cv.put(Columns.TEMPFILEPATH, tempfilepath);
         cv.put(Columns.TITLE, title);
-        cv.put(Columns.PUBLICATIONID, publicationId);
+//        cv.put(Columns.PUBLICATIONID, publicationId);
+        cv.put(Columns.PUBLICATION, publication);
         cv.put(Columns.RESOURCE, resource);
 //        cv.put(Columns.RESOURCEFILEHASH, resourceFileHash);
 //        cv.put(Columns.RESOURCEURL, resourceUrl);
@@ -463,12 +467,21 @@ public class Paper {
         return title;
     }
 
-    public Long getPublicationId() {
-        return publicationId;
+//    public Long getPublicationId() {
+//        return publicationId;
+//    }
+//
+//    public void setPublicationId(Long publicationId) {
+//        this.publicationId = publicationId;
+//    }
+
+
+    public void setPublication(String publication) {
+        this.publication = publication;
     }
 
-    public void setPublicationId(Long publicationId) {
-        this.publicationId = publicationId;
+    public String getPublication() {
+        return publication;
     }
 
     public void setTitle(String title) {
@@ -1638,7 +1651,7 @@ public class Paper {
         equalsBuilder.append(lastModified, rhs.lastModified);
         equalsBuilder.append(bookId, rhs.bookId);
         equalsBuilder.append(isDemo, rhs.isDemo);
-        equalsBuilder.append(publicationId, rhs.publicationId);
+        equalsBuilder.append(publication, rhs.publication);
         equalsBuilder.append(validUntil, rhs.validUntil);
         return equalsBuilder.isEquals();
     }

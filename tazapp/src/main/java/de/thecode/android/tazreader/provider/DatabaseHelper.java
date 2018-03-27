@@ -17,7 +17,7 @@ import timber.log.Timber;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "db";
-    private static final int    DB_VERSION    = 7;
+    private static final int    DB_VERSION    = 8;
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DB_VERSION);
@@ -26,9 +26,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL(CREATE_PAPER_V6);
+        db.execSQL(CREATE_PAPER_V8);
         db.execSQL(CREATE_STORE_V7);
-        db.execSQL(CREATE_PUBLICATION_V6);
+        db.execSQL(CREATE_PUBLICATION_V8);
         db.execSQL(CREATE_RESOURCE_V6);
     }
 
@@ -54,9 +54,39 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             case 6:
                 upgradeFrom6To7(db);
                 if (newVersion == 7) break;
+            case 7:
+                upgradeFrom7To8(db);
+                if (newVersion == 8) break;
+
             default:
                 break;
         }
+    }
+
+    private void upgradeFrom7To8(SQLiteDatabase db) {
+        //TODO Update PAPER / muss zuerst
+        db.execSQL("ALTER TABLE PAPER RENAME TO PAPER_REN;");
+        db.execSQL(CREATE_PAPER_V8);
+        db.execSQL(
+                "INSERT INTO PAPER (_id,date,image,imageHash,link,fileHash,len,lastModified,bookId,resource,isDemo,hasUpdate,downloadId,isDownloaded,kiosk,imported,title,validUntil,publication) SELECT _id,date,image,imageHash,link,fileHash,len,lastModified,bookId,resource,isDemo,hasUpdate,downloadId,isDownloaded,kiosk,imported,title,validUntil,publicationId FROM PAPER_REN;");
+        db.execSQL("DROP TABLE PAPER_REN;");
+        Cursor cursor = db.query("PUBLICATION", null, null, null, null, null, "_id ASC");
+        try {
+            while (cursor.moveToNext()) {
+                long publicationId = cursor.getLong(cursor.getColumnIndex(BaseColumns._ID));
+                String issueName = cursor.getString(cursor.getColumnIndex("issueName"));
+                db.execSQL("UPDATE PAPER SET publication = '" + issueName + "' WHERE publication LIKE '" + publicationId + "';");
+            }
+        } finally {
+            cursor.close();
+        }
+
+        //TODO Update Publication
+        db.execSQL("ALTER TABLE PUBLICATION RENAME TO PUBLICATION_REN;");
+        db.execSQL(CREATE_PUBLICATION_V8);
+        db.execSQL(
+                "INSERT INTO PUBLICATION (issueName,created,image,name,typeName,url,validUntil) SELECT issueName,created,image,name,typeName,url,validUntil FROM PUBLICATION_REN");
+        db.execSQL("DROP TABLE PUBLICATION_REN;");
     }
 
     private void upgradeFrom6To7(SQLiteDatabase db) {
@@ -64,97 +94,82 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("ALTER TABLE STORE RENAME TO STORE_REN;");
         Timber.d("Anlegen der neuen Store Tabelle");
         db.execSQL(CREATE_STORE_V7);
-        db.execSQL("INSERT INTO " + Store.TABLE_NAME + " (" + Store.Columns.KEY + ", " + Store.Columns.VALUE + ") SELECT key, value FROM STORE_REN;");
+        db.execSQL("INSERT INTO STORE (key, value) SELECT key, value FROM STORE_REN;");
         db.execSQL("DROP TABLE STORE_REN;");
     }
 
     private void upgradeFrom5To6(SQLiteDatabase db) {
-        db.execSQL("ALTER TABLE " + Resource.TABLE_NAME + " ADD COLUMN " + Resource.Columns.FILEHASH + " TEXT;");
-        db.execSQL("ALTER TABLE " + Resource.TABLE_NAME + " ADD COLUMN " + Resource.Columns.LEN + " INTEGER;");
-        db.execSQL("ALTER TABLE " + Resource.TABLE_NAME + " ADD COLUMN " + Resource.Columns.URL + " TEXT;");
-//        db.execSQL("ALTER TABLE " + Paper.TABLE_NAME + " ADD COLUMN " + Paper.Columns.RESOURCELEN + " INTEGER;");
+        db.execSQL("ALTER TABLE RESOURCE ADD COLUMN fileHash TEXT;");
+        db.execSQL("ALTER TABLE RESOURCE ADD COLUMN len INTEGER;");
+        db.execSQL("ALTER TABLE RESOURCE ADD COLUMN url TEXT;");
+//        db.execSQL("ALTER TABLE PAPER ADD COLUMN " + Paper.Columns.RESOURCELEN + " INTEGER;");
     }
 
     private void upgradeFrom4To5(SQLiteDatabase db) {
-        db.execSQL("ALTER TABLE " + Paper.TABLE_NAME + " ADD COLUMN " + Paper.Columns.VALIDUNTIL + " INTEGER;");
+        db.execSQL("ALTER TABLE PAPER ADD COLUMN validUntil INTEGER;");
     }
 
     private void upgradeFrom3To4(SQLiteDatabase db) {
-        db.execSQL("ALTER TABLE " + Paper.TABLE_NAME + " ADD COLUMN " + Paper.Columns.RESOURCE + " TEXT;");
-//        db.execSQL("ALTER TABLE " + Paper.TABLE_NAME + " ADD COLUMN " + Paper.Columns.RESOURCEFILEHASH + " TEXT;");
-//        db.execSQL("ALTER TABLE " + Paper.TABLE_NAME + " ADD COLUMN " + Paper.Columns.RESOURCEURL + " TEXT;");
+        db.execSQL("ALTER TABLE PAPER ADD COLUMN resource TEXT;");
+//        db.execSQL("ALTER TABLE PAPER ADD COLUMN " + Paper.Columns.RESOURCEFILEHASH + " TEXT;");
+//        db.execSQL("ALTER TABLE PAPER ADD COLUMN " + Paper.Columns.RESOURCEURL + " TEXT;");
         db.execSQL(CREATE_RESOURCE_V4);
     }
 
     private void upgradeFrom2To3(SQLiteDatabase db) {
-        db.execSQL("ALTER TABLE " + Paper.TABLE_NAME + " ADD COLUMN " + Paper.Columns.DOWNLOADID + " INTEGER;");
+        db.execSQL("ALTER TABLE PAPER ADD COLUMN downloadId INTEGER;");
     }
 
 
     private void upgradeFrom1To2(SQLiteDatabase db) {
         Timber.d("Umbenennen der alten Paper Tabelle");
-        db.execSQL("ALTER TABLE " + Paper.TABLE_NAME + " RENAME TO " + Paper.TABLE_NAME + "_REN;");
+        db.execSQL("ALTER TABLE PAPER RENAME TO PAPER_REN;");
 
         Timber.d("Anlegen der neuen Paper Tabelle");
         db.execSQL(CREATE_PAPER_V2);
 
-        db.execSQL("UPDATE " + Paper.TABLE_NAME + "_REN SET DEMO=0 WHERE DEMO IS NULL;");
-        db.execSQL("UPDATE " + Paper.TABLE_NAME + "_REN SET KIOSK=0 WHERE KIOSK IS NULL;");
-        db.execSQL("UPDATE " + Paper.TABLE_NAME + "_REN SET IMPORTED=0 WHERE IMPORTED IS NULL;");
-        db.execSQL("UPDATE " + Paper.TABLE_NAME + "_REN SET DOWNLOADPROGRESS=0 WHERE DOWNLOADPROGRESS IS NULL;");
-        db.execSQL("UPDATE " + Paper.TABLE_NAME + "_REN SET DOWNLOADPROGRESS=100 WHERE ISDOWNLOADED=1;");
+        db.execSQL("UPDATE PAPER_REN SET DEMO=0 WHERE DEMO IS NULL;");
+        db.execSQL("UPDATE PAPER_REN SET KIOSK=0 WHERE KIOSK IS NULL;");
+        db.execSQL("UPDATE PAPER_REN SET IMPORTED=0 WHERE IMPORTED IS NULL;");
+        db.execSQL("UPDATE PAPER_REN SET DOWNLOADPROGRESS=0 WHERE DOWNLOADPROGRESS IS NULL;");
+        db.execSQL("UPDATE PAPER_REN SET DOWNLOADPROGRESS=100 WHERE ISDOWNLOADED=1;");
 
-        db.execSQL("DELETE FROM " + Paper.TABLE_NAME + "_REN WHERE " + Paper.Columns.ISDOWNLOADED + " != 1 AND " + "isDownloading" + " != 1 AND " + Paper.Columns.IMPORTED + " != 1 AND " + Paper.Columns.KIOSK + " != 1;");
+        db.execSQL("DELETE FROM PAPER_REN WHERE isDownloaded != 1 AND isDownloading != 1 AND imported != 1 AND kiosk != 1;");
 
         Timber.d("Kopieren der Werte");
-        db.execSQL("INSERT INTO " + Paper.TABLE_NAME + " (" + Paper.Columns._ID + "," + Paper.Columns.BOOKID + "," + Paper.Columns.DATE + "," + Paper.Columns.LINK + "," + "filename" + "," +
-                           //                Paper.Columns.TEMPFILEPATH + "," +
-                           //                Paper.Columns.TEMPFILENAME + "," +
-                           Paper.Columns.HASUPDATE + "," + "isDownloading" + "," + "downloadProgress" + "," + Paper.Columns.ISDOWNLOADED + "," + Paper.Columns.KIOSK + "," + Paper.Columns.IMPORTED + "," + Paper.Columns.LEN + "," + Paper.Columns.IMAGE + "," + Paper.Columns.ISDEMO + "," + Paper.Columns.TITLE + "" + ") " + "SELECT " + Paper.Columns._ID + "," + Paper.Columns.BOOKID + "," + Paper.Columns.DATE + "," + Paper.Columns.LINK + "," + "filename" + "," +
-                           //                Paper.Columns.TEMPFILEPATH + "," +
-                           //                Paper.Columns.TEMPFILENAME + "," +
-                           Paper.Columns.HASUPDATE + "," + "isDownloading" + "," + "downloadProgress" + "," + Paper.Columns.ISDOWNLOADED + "," + Paper.Columns.KIOSK + "," + Paper.Columns.IMPORTED + "," + "SIZE," + "IMAGELINK," + "DEMO," + Paper.Columns.TITLE + " FROM " + Paper.TABLE_NAME + "_REN;");
+        db.execSQL(
+                "INSERT INTO PAPER (_id,bookId,date,link,filename,hasUpdate,isDownloading,downloadProgress,isDownloaded,kiosk,imported,len,image,isDemo,title) SELECT _id,bookId,date,link,filename,hasUpdate,isDownloading,downloadProgress,isDownloaded,kiosk,imported,SIZE,IMAGELINK,DEMO,title FROM PAPER_REN;");
 
         Timber.d("Löschen der alten PaperTabelle");
-        db.execSQL("DROP TABLE " + Paper.TABLE_NAME + "_REN;");
+        db.execSQL("DROP TABLE PAPER_REN;");
 
 
         Timber.d("Umbenennen der alten Store Tabelle");
-        db.execSQL("ALTER TABLE " + Store.TABLE_NAME + " RENAME TO " + Store.TABLE_NAME + "_REN;");
+        db.execSQL("ALTER TABLE STORE RENAME TO STORE_REN;");
 
         Timber.d("Anlegen der neuen Store Tabelle");
         db.execSQL(CREATE_STORE_V2);
 
 
         Timber.d("Kopieren der Werte");
-        Cursor cursor = db.query(Store.TABLE_NAME + "_REN", null, null, null, null, null, BaseColumns._ID + " ASC");
+        Cursor cursor = db.query("STORE_REN", null, null, null, null, null, "_id ASC");
         try {
             while (cursor.moveToNext()) {
                 String oldKey = cursor.getString(cursor.getColumnIndex("KEY"));
                 String oldValue = cursor.getString(cursor.getColumnIndex("VALUE"));
 
-
                 String newKey = oldKey.substring(oldKey.indexOf("/"));
                 Timber.d(newKey);
 
-                Cursor cursorNew = db.query(Store.TABLE_NAME,
-                                            null,
-                                            Store.Columns.KEY + " LIKE '" + newKey + "'",
-                                            null,
-                                            null,
-                                            null,
-                                            null);
+                Cursor cursorNew = db.query("STORE", null, "key LIKE '" + newKey + "'", null, null, null, null);
                 try {
                     if (cursorNew.moveToNext()) {
                         Store newStore = new Store(cursorNew);
                         newStore.setValue(oldValue);
-                        db.update(Store.TABLE_NAME,
-                                  newStore.getContentValues(),
-                                  Store.Columns.KEY + " LIKE '" + newKey + "'",
-                                  null);
+                        db.update("STORE", newStore.getContentValues(), "key LIKE '" + newKey + "'", null);
                     } else {
                         Store newStore = new Store(newKey, oldValue);
-                        db.insert(Store.TABLE_NAME, null, newStore.getContentValues());
+                        db.insert("STORE", null, newStore.getContentValues());
                     }
                 } finally {
                     cursorNew.close();
@@ -166,79 +181,71 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 
         Timber.d("Löschen der alten Store Tabelle");
-        db.execSQL("DROP TABLE " + Store.TABLE_NAME + "_REN;");
+        db.execSQL("DROP TABLE STORE_REN;");
 
 
         Timber.d("Anlegen der Publications Tabelle");
         db.execSQL(CREATE_PUBLICATION_V2);
     }
 
+    //---Version 8---
+    private static final String CREATE_PUBLICATION_V8 = "CREATE TABLE IF NOT EXISTS PUBLICATION (issueName TEXT PRIMARY KEY,created INTEGER,image TEXT,name TEXT,typeName TEXT,url TEXT,validUntil INTEGER, appAndroidVersion INTEGER);";
+    private static final String CREATE_PAPER_V8       = "CREATE TABLE PAPER (_id INTEGER PRIMARY KEY,date TEXT,image TEXT,imageHash TEXT,link TEXT,fileHash TEXT,len INTEGER,lastModified INTEGER,bookId TEXT,resource TEXT,isDemo INTEGER,hasUpdate INTEGER,downloadId INTEGER,isDownloaded INTEGER,kiosk INTEGER,imported INTEGER,title TEXT,validUntil INTEGER,publication TEXT);";
+
     //---Version 7---
-    private static final String CREATE_STORE_V7 = "CREATE TABLE IF NOT EXISTS " + Store.TABLE_NAME + " (" + Store.Columns.KEY + " TEXT NOT NULL PRIMARY KEY, " + Store.Columns.VALUE + " TEXT);";
+    private static final String CREATE_STORE_V7 = "CREATE TABLE IF NOT EXISTS STORE (key TEXT NOT NULL PRIMARY KEY, value TEXT);";
 
 
     //---Version 6---
-    private static final String CREATE_PAPER_V6 = "CREATE TABLE " + Paper.TABLE_NAME + " (" + Paper.Columns._ID + " INTEGER PRIMARY KEY," + Paper.Columns.DATE + " TEXT," + Paper.Columns.IMAGE + " TEXT," + Paper.Columns.IMAGEHASH + " TEXT," + Paper.Columns.LINK + " TEXT," + Paper.Columns.FILEHASH + " TEXT," + Paper.Columns.LEN + " INTEGER," + Paper.Columns.LASTMODIFIED + " INTEGER," + Paper.Columns.BOOKID + " TEXT," + Paper.Columns.RESOURCE + " TEXT," +
-//            Paper.Columns.RESOURCEFILEHASH + " TEXT," +
-//            Paper.Columns.RESOURCEURL + " TEXT," +
-//            Paper.Columns.RESOURCELEN + " INTEGER," +
-            Paper.Columns.ISDEMO + " INTEGER," + Paper.Columns.HASUPDATE + " INTEGER," + Paper.Columns.DOWNLOADID + " INTEGER," + Paper.Columns.ISDOWNLOADED + " INTEGER," + Paper.Columns.KIOSK + " INTEGER," + Paper.Columns.IMPORTED + " INTEGER," + Paper.Columns.TITLE + " TEXT," + Paper.Columns.VALIDUNTIL + " INTEGER," + Paper.Columns.PUBLICATIONID + " INTEGER" + ");";
+    private static final String CREATE_PAPER_V6 = "CREATE TABLE PAPER (_id INTEGER PRIMARY KEY,date TEXT,image TEXT,imageHash TEXT,link TEXT,fileHash TEXT,len INTEGER,lastModified INTEGER,bookId TEXT,resource TEXT,isDemo INTEGER,hasUpdate INTEGER,downloadId INTEGER,isDownloaded INTEGER,kiosk INTEGER,imported INTEGER,title TEXT,validUntil INTEGER,publicationId INTEGER);";
 
-    private static final String CREATE_STORE_V6 = "CREATE TABLE " + Store.TABLE_NAME + " (" + BaseColumns._ID + " INTEGER PRIMARY KEY," + Store.Columns.KEY + " TEXT," + Store.Columns.VALUE + " TEXT" + ");";
+    private static final String CREATE_STORE_V6 = "CREATE TABLE STORE (_id INTEGER PRIMARY KEY,key TEXT,value TEXT" + ");";
 
-    private static final String CREATE_PUBLICATION_V6 = "CREATE TABLE " + Publication.TABLE_NAME + " (" + Publication.Columns._ID + " INTEGER PRIMARY KEY," + Publication.Columns.CREATED + " INTEGER," + Publication.Columns.IMAGE + " TEXT," + Publication.Columns.ISSUENAME + " TEXT," + Publication.Columns.NAME + " TEXT," + Publication.Columns.TYPENAME + " TEXT," + Publication.Columns.URL + " TEXT," + Publication.Columns.VALIDUNTIL + " INTEGER" + ");";
+    private static final String CREATE_PUBLICATION_V6 = "CREATE TABLE PUBLICATION (_id INTEGER PRIMARY KEY,created INTEGER,image TEXT,issueName TEXT,name TEXT,typeName TEXT,url TEXT,validUntil INTEGER);";
 
-    private static final String CREATE_RESOURCE_V6 = "CREATE TABLE " + Resource.TABLE_NAME + " (" + Resource.Columns.KEY + " TEXT PRIMARY KEY," + Resource.Columns.DOWNLOADID + " INTEGER," + Resource.Columns.DOWNLOADED + " INTEGER," + Resource.Columns.LEN + " INTEGER," + Resource.Columns.FILEHASH + " TEXT," + Resource.Columns.URL + " TEXT" + ")";
+    private static final String CREATE_RESOURCE_V6 = "CREATE TABLE RESOURCE (key TEXT PRIMARY KEY,downloadID INTEGER,downloaded INTEGER,len INTEGER,fileHash TEXT,url TEXT)";
 
     //---Version 5---
-    private static final String CREATE_PAPER_V5 = "CREATE TABLE " + Paper.TABLE_NAME + " (" + Paper.Columns._ID + " INTEGER PRIMARY KEY," + Paper.Columns.DATE + " TEXT," + Paper.Columns.IMAGE + " TEXT," + Paper.Columns.IMAGEHASH + " TEXT," + Paper.Columns.LINK + " TEXT," + Paper.Columns.FILEHASH + " TEXT," + Paper.Columns.LEN + " INTEGER," + Paper.Columns.LASTMODIFIED + " INTEGER," + Paper.Columns.BOOKID + " TEXT," + Paper.Columns.RESOURCE + " TEXT," +
-//            Paper.Columns.RESOURCEFILEHASH + " TEXT," +
-//            Paper.Columns.RESOURCEURL + " TEXT," +
-            Paper.Columns.ISDEMO + " INTEGER," + Paper.Columns.HASUPDATE + " INTEGER," + Paper.Columns.DOWNLOADID + " INTEGER," + Paper.Columns.ISDOWNLOADED + " INTEGER," + Paper.Columns.KIOSK + " INTEGER," + Paper.Columns.IMPORTED + " INTEGER," + Paper.Columns.TITLE + " TEXT," + Paper.Columns.VALIDUNTIL + " INTEGER," + Paper.Columns.PUBLICATIONID + " INTEGER" + ");";
+    private static final String CREATE_PAPER_V5 = "CREATE TABLE PAPER (_id INTEGER PRIMARY KEY,date TEXT,image TEXT,imageHash TEXT,link TEXT,fileHash TEXT,len INTEGER,lastModified INTEGER,bookId TEXT,resource TEXT,isDemo INTEGER,hasUpdate INTEGER,downloadId INTEGER,isDownloaded INTEGER,kiosk INTEGER,imported INTEGER,title TEXT,validUntil INTEGER,publicationId INTEGER);";
 
-    private static final String CREATE_STORE_V5 = "CREATE TABLE " + Store.TABLE_NAME + " (" + BaseColumns._ID + " INTEGER PRIMARY KEY," + Store.Columns.KEY + " TEXT," + Store.Columns.VALUE + " TEXT" + ");";
+    private static final String CREATE_STORE_V5 = "CREATE TABLE STORE (_id INTEGER PRIMARY KEY,key TEXT,value TEXT" + ");";
 
-    private static final String CREATE_PUBLICATION_V5 = "CREATE TABLE " + Publication.TABLE_NAME + " (" + Publication.Columns._ID + " INTEGER PRIMARY KEY," + Publication.Columns.CREATED + " INTEGER," + Publication.Columns.IMAGE + " TEXT," + Publication.Columns.ISSUENAME + " TEXT," + Publication.Columns.NAME + " TEXT," + Publication.Columns.TYPENAME + " TEXT," + Publication.Columns.URL + " TEXT," + Publication.Columns.VALIDUNTIL + " INTEGER" + ");";
+    private static final String CREATE_PUBLICATION_V5 = "CREATE TABLE PUBLICATION (_id INTEGER PRIMARY KEY,created INTEGER,image TEXT,issueName TEXT,name TEXT,typeName TEXT,url TEXT,validUntil INTEGER" + ");";
 
-    private static final String CREATE_RESOURCE_V5 = "CREATE TABLE " + Resource.TABLE_NAME + " (" + Resource.Columns.KEY + " TEXT PRIMARY KEY," + Resource.Columns.DOWNLOADID + " INTEGER," + Resource.Columns.DOWNLOADED + " INTEGER" + ")";
+    private static final String CREATE_RESOURCE_V5 = "CREATE TABLE RESOURCE (key TEXT PRIMARY KEY,downloadID INTEGER,downloaded INTEGER" + ")";
 
 
     //---Version 4---
-    private static final String CREATE_PAPER_V4 = "CREATE TABLE " + Paper.TABLE_NAME + " (" + Paper.Columns._ID + " INTEGER PRIMARY KEY," + Paper.Columns.DATE + " TEXT," + Paper.Columns.IMAGE + " TEXT," + Paper.Columns.IMAGEHASH + " TEXT," + Paper.Columns.LINK + " TEXT," + Paper.Columns.FILEHASH + " TEXT," + Paper.Columns.LEN + " INTEGER," + Paper.Columns.LASTMODIFIED + " INTEGER," + Paper.Columns.BOOKID + " TEXT," + Paper.Columns.RESOURCE + " TEXT," +
+    private static final String CREATE_PAPER_V4 = "CREATE TABLE PAPER (_id INTEGER PRIMARY KEY,date TEXT,image TEXT,imageHash TEXT,link TEXT,fileHash TEXT,len INTEGER,lastModified INTEGER,bookId TEXT,resource TEXT," +
 //            Paper.Columns.RESOURCEFILEHASH + " TEXT," +
 //            Paper.Columns.RESOURCEURL + " TEXT," +
-            Paper.Columns.ISDEMO + " INTEGER," + Paper.Columns.HASUPDATE + " INTEGER," + Paper.Columns.DOWNLOADID + " INTEGER," + Paper.Columns.ISDOWNLOADED + " INTEGER," + Paper.Columns.KIOSK + " INTEGER," + Paper.Columns.IMPORTED + " INTEGER," + Paper.Columns.TITLE + " TEXT," + Paper.Columns.PUBLICATIONID + " INTEGER" + ");";
+            Paper.Columns.ISDEMO + " INTEGER,hasUpdate INTEGER,downloadId INTEGER,isDownloaded INTEGER,kiosk INTEGER,imported INTEGER,title TEXT,publicationId INTEGER" + ");";
 
-    private static final String CREATE_STORE_V4 = "CREATE TABLE " + Store.TABLE_NAME + " (" + BaseColumns._ID + " INTEGER PRIMARY KEY," + Store.Columns.KEY + " TEXT," + Store.Columns.VALUE + " TEXT" + ");";
+    private static final String CREATE_STORE_V4 = "CREATE TABLE STORE (_id INTEGER PRIMARY KEY,key TEXT,value TEXT" + ");";
 
-    private static final String CREATE_PUBLICATION_V4 = "CREATE TABLE " + Publication.TABLE_NAME + " (" + Publication.Columns._ID + " INTEGER PRIMARY KEY," + Publication.Columns.CREATED + " INTEGER," + Publication.Columns.IMAGE + " TEXT," + Publication.Columns.ISSUENAME + " TEXT," + Publication.Columns.NAME + " TEXT," + Publication.Columns.TYPENAME + " TEXT," + Publication.Columns.URL + " TEXT," + Publication.Columns.VALIDUNTIL + " INTEGER" + ");";
+    private static final String CREATE_PUBLICATION_V4 = "CREATE TABLE PUBLICATION (_id INTEGER PRIMARY KEY,created INTEGER,image TEXT,issueName TEXT,name TEXT,typeName TEXT,url TEXT,validUntil INTEGER" + ");";
 
-    private static final String CREATE_RESOURCE_V4 = "CREATE TABLE " + Resource.TABLE_NAME + " (" + Resource.Columns.KEY + " TEXT PRIMARY KEY," + Resource.Columns.DOWNLOADID + " INTEGER," + Resource.Columns.DOWNLOADED + " INTEGER" + ")";
+    private static final String CREATE_RESOURCE_V4 = "CREATE TABLE RESOURCE (key TEXT PRIMARY KEY,downloadID INTEGER,downloaded INTEGER" + ")";
 
 
     //---Version 3---
-    private static final String CREATE_PAPER_V3 = "CREATE TABLE " + Paper.TABLE_NAME + " (" + Paper.Columns._ID + " INTEGER PRIMARY KEY," + Paper.Columns.DATE + " TEXT," + Paper.Columns.IMAGE + " TEXT," + Paper.Columns.IMAGEHASH + " TEXT," + Paper.Columns.LINK + " TEXT," + Paper.Columns.FILEHASH + " TEXT," + Paper.Columns.LEN + " INTEGER," + Paper.Columns.LASTMODIFIED + " INTEGER," + Paper.Columns.BOOKID + " TEXT," + Paper.Columns.ISDEMO + " INTEGER," + "filename" + " TEXT," +
+    private static final String CREATE_PAPER_V3 = "CREATE TABLE PAPER (_id INTEGER PRIMARY KEY,date TEXT,image TEXT,imageHash TEXT,link TEXT,fileHash TEXT,len INTEGER,lastModified INTEGER,bookId TEXT,isDemo INTEGER," + "filename" + " TEXT," +
             //                    Paper.Columns.TEMPFILEPATH + " TEXT," +
             //                    Paper.Columns.TEMPFILENAME + " TEXT," +
-            Paper.Columns.HASUPDATE + " INTEGER," + Paper.Columns.DOWNLOADID + " INTEGER," +
+            Paper.Columns.HASUPDATE + " INTEGER,downloadId INTEGER," +
             //                    Paper.Columns.DOWNLOADPROGRESS + " INTEGER," +
-            Paper.Columns.ISDOWNLOADED + " INTEGER," + Paper.Columns.KIOSK + " INTEGER," + Paper.Columns.IMPORTED + " INTEGER," + Paper.Columns.TITLE + " TEXT," + Paper.Columns.PUBLICATIONID + " INTEGER" + ");";
+            Paper.Columns.ISDOWNLOADED + " INTEGER,kiosk INTEGER,imported INTEGER,title TEXT,publicationId INTEGER" + ");";
 
-    private static final String CREATE_STORE_V3 = "CREATE TABLE " + Store.TABLE_NAME + " (" + BaseColumns._ID + " INTEGER PRIMARY KEY," + Store.Columns.KEY + " TEXT," + Store.Columns.VALUE + " TEXT" + ");";
+    private static final String CREATE_STORE_V3 = "CREATE TABLE STORE (_id INTEGER PRIMARY KEY,key TEXT,value TEXT" + ");";
 
-    private static final String CREATE_PUBLICATION_V3 = "CREATE TABLE " + Publication.TABLE_NAME + " (" + Publication.Columns._ID + " INTEGER PRIMARY KEY," + Publication.Columns.CREATED + " INTEGER," + Publication.Columns.IMAGE + " TEXT," + Publication.Columns.ISSUENAME + " TEXT," + Publication.Columns.NAME + " TEXT," + Publication.Columns.TYPENAME + " TEXT," + Publication.Columns.URL + " TEXT," + Publication.Columns.VALIDUNTIL + " INTEGER" + ");";
+    private static final String CREATE_PUBLICATION_V3 = "CREATE TABLE PUBLICATION (_id INTEGER PRIMARY KEY,created INTEGER,image TEXT,issueName TEXT,name TEXT,typeName TEXT,url TEXT,validUntil INTEGER" + ");";
 
 
     //---Version 2---
-    private static final String CREATE_PAPER_V2 = "CREATE TABLE " + Paper.TABLE_NAME + " (" + Paper.Columns._ID + " INTEGER PRIMARY KEY," + Paper.Columns.DATE + " TEXT," + Paper.Columns.IMAGE + " TEXT," + Paper.Columns.IMAGEHASH + " TEXT," + Paper.Columns.LINK + " TEXT," + Paper.Columns.FILEHASH + " TEXT," + Paper.Columns.LEN + " INTEGER," + Paper.Columns.LASTMODIFIED + " INTEGER," + Paper.Columns.BOOKID + " TEXT," + Paper.Columns.ISDEMO + " INTEGER," + "filename" + " TEXT," +
-            //                    Paper.Columns.TEMPFILEPATH + " TEXT," +
-            //                    Paper.Columns.TEMPFILENAME + " TEXT," +
-            Paper.Columns.HASUPDATE + " INTEGER," + "isDownloading" + " INTEGER," +
-            //                    Paper.Columns.DOWNLOADPROGRESS + " INTEGER," +
-            Paper.Columns.ISDOWNLOADED + " INTEGER," + Paper.Columns.KIOSK + " INTEGER," + Paper.Columns.IMPORTED + " INTEGER," + Paper.Columns.TITLE + " TEXT," + Paper.Columns.PUBLICATIONID + " INTEGER" + ");";
+    private static final String CREATE_PAPER_V2 = "CREATE TABLE PAPER (_id INTEGER PRIMARY KEY,date TEXT,image TEXT,imageHash TEXT,link TEXT,fileHash TEXT,len INTEGER,lastModified INTEGER,bookId TEXT,isDemo INTEGER,filename TEXT,hasUpdate INTEGER,isDownloading INTEGER,isDownloaded INTEGER,kiosk INTEGER,imported INTEGER,title TEXT,publicationId INTEGER);";
 
-    private static final String CREATE_STORE_V2 = "CREATE TABLE " + Store.TABLE_NAME + " (" + BaseColumns._ID + " INTEGER PRIMARY KEY," + Store.Columns.KEY + " TEXT," + Store.Columns.VALUE + " TEXT" + ");";
+    private static final String CREATE_STORE_V2 = "CREATE TABLE STORE (_id INTEGER PRIMARY KEY,key TEXT,value TEXT);";
 
-    private static final String CREATE_PUBLICATION_V2 = "CREATE TABLE " + Publication.TABLE_NAME + " (" + Publication.Columns._ID + " INTEGER PRIMARY KEY," + Publication.Columns.CREATED + " INTEGER," + Publication.Columns.IMAGE + " TEXT," + Publication.Columns.ISSUENAME + " TEXT," + Publication.Columns.NAME + " TEXT," + Publication.Columns.TYPENAME + " TEXT," + Publication.Columns.URL + " TEXT," + Publication.Columns.VALIDUNTIL + " INTEGER" + ");";
+    private static final String CREATE_PUBLICATION_V2 = "CREATE TABLE PUBLICATION (_id INTEGER PRIMARY KEY,created INTEGER,image TEXT,issueName TEXT,name TEXT,typeName TEXT,url TEXT,validUntil INTEGER);";
 
 }

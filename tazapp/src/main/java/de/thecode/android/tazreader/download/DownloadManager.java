@@ -88,7 +88,7 @@ public class DownloadManager {
         }
         addUserAgent(request);
 
-        if (paper.getPublicationId() > 0) {
+        if (!TextUtils.isEmpty(paper.getPublication())) {
             request.addRequestHeader("Authorization",
                                      "Basic " + Base64.encodeToString((AccountHelper.getInstance(mContext)
                                                                                     .getUser(AccountHelper.ACCOUNT_DEMO_USER) + ":" + AccountHelper.getInstance(

@@ -8,6 +8,7 @@ import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.provider.BaseColumns;
 import android.text.TextUtils;
 
 import de.thecode.android.tazreader.BuildConfig;
@@ -29,7 +30,8 @@ public class TazProvider extends ContentProvider {
     private static final int STORE_PATH      = 10;
     private static final int PAPER_BOOKID    = 5;
     private static final int PUBLICATION_DIR = 6;
-    private static final int PUBLICATION_ID  = 7;
+//    private static final int PUBLICATION_ID  = 7;
+    private static final int PUBLICATION_ISSUE  = 7;
     private static final int RESOURCE_DIR    = 8;
     private static final int RESOURCE_KEY    = 9;
 
@@ -48,7 +50,7 @@ public class TazProvider extends ContentProvider {
         sUriMatcher.addURI(AUTHORITY, Store.TABLE_NAME + "/*", STORE_PATH);
         sUriMatcher.addURI(AUTHORITY, Store.TABLE_NAME, STORE_DIR);
         sUriMatcher.addURI(AUTHORITY, Publication.TABLE_NAME, PUBLICATION_DIR);
-        sUriMatcher.addURI(AUTHORITY, Publication.TABLE_NAME + "/#", PUBLICATION_ID);
+        sUriMatcher.addURI(AUTHORITY, Publication.TABLE_NAME + "/*", PUBLICATION_ISSUE);
         sUriMatcher.addURI(AUTHORITY, Resource.TABLE_NAME, RESOURCE_DIR);
         sUriMatcher.addURI(AUTHORITY, Resource.TABLE_NAME + "/*", RESOURCE_KEY);
 
@@ -140,11 +142,11 @@ public class TazProvider extends ContentProvider {
                 queryCursor.setNotificationUri(getContext().getContentResolver(), uri);
                 break;
 
-            case PUBLICATION_ID:
-                long publicationId = ContentUris.parseId(uri);
+            case PUBLICATION_ISSUE:
+                String publicationIssueName = uri.toString().replace(Publication.CONTENT_URI.toString(),"");
                 queryCursor = mDb.query(Publication.TABLE_NAME,
                                         projection,
-                                        Publication.Columns._ID + " = " + publicationId + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ")" : ""),
+                                        Publication.Columns.ISSUENAME + " LIKE '" + publicationIssueName + "'" + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ")" : ""),
                                         selectionArgs,
                                         null,
                                         null,
@@ -190,7 +192,7 @@ public class TazProvider extends ContentProvider {
                 return Store.CONTENT_ITEM_TYPE;
             case PUBLICATION_DIR:
                 return Publication.CONTENT_TYPE;
-            case PUBLICATION_ID:
+            case PUBLICATION_ISSUE:
                 return Publication.CONTENT_ITEM_TYPE;
             case RESOURCE_DIR:
                 return Resource.CONTENT_TYPE;
@@ -215,7 +217,7 @@ public class TazProvider extends ContentProvider {
                 rowId = mDb.insert(Paper.TABLE_NAME, null, values);
                 break;
             case PUBLICATION_DIR:
-                rowId = mDb.insert(Publication.TABLE_NAME, null, values);
+                rowId = mDb.insertWithOnConflict(Publication.TABLE_NAME, null, values,SQLiteDatabase.CONFLICT_REPLACE);
                 break;
             case RESOURCE_DIR:
                 rowId = mDb.insert(Resource.TABLE_NAME, null, values);
@@ -281,10 +283,10 @@ public class TazProvider extends ContentProvider {
                 affected = mDb.delete(Publication.TABLE_NAME, selection, selectionArgs);
                 break;
 
-            case PUBLICATION_ID:
-                long publicationId = ContentUris.parseId(uri);
+            case PUBLICATION_ISSUE:
+                String publicationIssueName = uri.toString().replace(Publication.CONTENT_URI.toString(),"");
                 affected = mDb.delete(Publication.TABLE_NAME,
-                                      Publication.Columns._ID + " = " + publicationId + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ")" : ""),
+                                      Publication.Columns.ISSUENAME + " LIKE '" + publicationIssueName + "'" + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ")" : ""),
                                       selectionArgs);
                 break;
 
@@ -332,11 +334,12 @@ public class TazProvider extends ContentProvider {
             case PAPER_DIR:
                 affected = mDb.update(Paper.TABLE_NAME, values, selection, selectionArgs);
                 break;
-            case PUBLICATION_ID:
-                long publicationId = ContentUris.parseId(uri);
+            case PUBLICATION_ISSUE:
+                String publicationIssueName = uri.toString().replace(Publication.CONTENT_URI.toString(),"");
+//                long publicationId = ContentUris.parseId(uri);
                 affected = mDb.update(Publication.TABLE_NAME,
                                       values,
-                                      Publication.Columns._ID + " = " + publicationId + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ")" : ""),
+                                      Publication.Columns.ISSUENAME + " LIKE '" + publicationIssueName + "'" + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ")" : ""),
                                       selectionArgs);
                 break;
 
