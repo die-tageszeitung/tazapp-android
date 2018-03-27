@@ -12,6 +12,7 @@ import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Store;
 import de.thecode.android.tazreader.data.StoreRepository;
 import de.thecode.android.tazreader.data.TazSettings;
+import de.thecode.android.tazreader.provider.TazProvider;
 import de.thecode.android.tazreader.utils.AsyncTaskWithExecption;
 import de.thecode.android.tazreader.utils.BaseFragment;
 import de.thecode.android.tazreader.utils.StorageManager;
@@ -201,8 +202,9 @@ public class MigrationWorkerFragment extends BaseFragment {
 
 
                         } catch (NullPointerException | IllegalStateException e) {
+
                             applicationContext.getContentResolver()
-                                              .delete(ContentUris.withAppendedId(Paper.CONTENT_URI, paper.getId()), null, null);
+                                              .delete(TazProvider.getContentUri(Paper.CONTENT_URI, paper.getBookId()), null, null);
                         }
 
 

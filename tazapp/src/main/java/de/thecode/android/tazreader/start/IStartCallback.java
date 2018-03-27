@@ -24,9 +24,9 @@ public interface IStartCallback {
 
     void enableDrawer(boolean bool);
 
-    void openReader(long paperId);
+    void openReader(String bookId);
 
-    void startDownload(long paperId) throws Paper.PaperNotFoundException;
+    void startDownload(String bookId) throws Paper.PaperNotFoundException;
 
     void callArchive();
 

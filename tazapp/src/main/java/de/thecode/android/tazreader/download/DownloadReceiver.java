@@ -15,6 +15,7 @@ import de.thecode.android.tazreader.job.DownloadFinishedPaperJob;
 import de.thecode.android.tazreader.job.DownloadFinishedResourceJob;
 import de.thecode.android.tazreader.job.SyncJob;
 import de.thecode.android.tazreader.notifications.NotificationUtils;
+import de.thecode.android.tazreader.provider.TazProvider;
 import de.thecode.android.tazreader.secure.HashHelper;
 import de.thecode.android.tazreader.start.StartActivity;
 import de.thecode.android.tazreader.utils.ReadableException;
@@ -103,7 +104,7 @@ public class DownloadReceiver extends BroadcastReceiver {
                         //AnalyticsWrapper.getInstance().logException(exception);
                         paper.setDownloadId(0);
                         context.getContentResolver()
-                               .update(ContentUris.withAppendedId(Paper.CONTENT_URI, paper.getId()),
+                               .update(TazProvider.getContentUri(Paper.CONTENT_URI, paper.getBookId()),
                                        paper.getContentValues(),
                                        null,
                                        null);
@@ -115,7 +116,7 @@ public class DownloadReceiver extends BroadcastReceiver {
                         //NotificationHelper.showDownloadErrorNotification(context, null, paper.getId());
 
                         EventBus.getDefault()
-                                .post(new PaperDownloadFailedEvent(paper.getId(), e));
+                                .post(new PaperDownloadFailedEvent(paper.getBookId(), e));
 
                     }
                 }

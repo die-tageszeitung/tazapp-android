@@ -395,7 +395,7 @@ public class LibraryFragment extends BaseFragment
             try {
                 Paper paper = Paper.getPaperWithId(getContext(), paperId);
                 if (paper == null) throw new Paper.PaperNotFoundException();
-                if (hasCallback()) getCallback().startDownload(paper.getId());
+                if (hasCallback()) getCallback().startDownload(paper.getBookId());
             } catch (Paper.PaperNotFoundException e) {
                 Timber.e(e);
             }

@@ -85,7 +85,7 @@ public class ReaderActivity extends BaseActivity
     private static final String TAG_FRAGMENT_PAGEINDEX      = "PageIndexFragment";
     public static final  String TAG_FRAGMENT_DIALOG_SETTING = "settingsDialog";
     public static final  String TAG_DIALOG_TTS_ERROR        = "ttsError";
-    public static final  String KEY_EXTRA_PAPER_ID          = "paperId";
+//    public static final  String KEY_EXTRA_PAPER_ID          = "paperId";
     public static final  String KEY_EXTRA_RESOURCE_KEY      = "resourceKey";
     public static final  String KEY_EXTRA_BOOK_ID           = "bookId";
 
@@ -118,15 +118,15 @@ public class ReaderActivity extends BaseActivity
         resourceKey = getIntent().getStringExtra(KEY_EXTRA_RESOURCE_KEY);
         if (TextUtils.isEmpty(resourceKey))
             throw new IllegalStateException("Activity Reader has to be called with extra Resource Key");
-        long paperId = getIntent().getLongExtra(KEY_EXTRA_PAPER_ID, -1L);
-        if (paperId == -1L) throw new IllegalStateException("Activity Reader has to be called with extra PaperId");
+//        long paperId = getIntent().getLongExtra(KEY_EXTRA_PAPER_ID, -1L);
+//        if (paperId == -1L) throw new IllegalStateException("Activity Reader has to be called with extra PaperId");
 
         readerViewModel = ViewModelProviders.of(this, ReaderViewModel.createFactory(getApplication(), bookId, resourceKey))
                                             .get(ReaderViewModel.class);
 
         mStorage = StorageManager.getInstance(this);
 
-        new NotificationUtils(this).removeDownloadNotification(paperId);
+        new NotificationUtils(this).removeDownloadNotification(bookId);
 
         setContentView(R.layout.activity_reader);
 

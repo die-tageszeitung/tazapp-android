@@ -64,7 +64,7 @@ public class DownloadManager {
     }
 
     @SuppressLint("NewApi")
-    public void enquePaper(long paperId, boolean wifiOnly) throws IllegalArgumentException, Paper.PaperNotFoundException,
+    public void enquePaper(String bookId, boolean wifiOnly) throws IllegalArgumentException, Paper.PaperNotFoundException,
             DownloadNotAllowedException, NotEnoughSpaceException {
 
 

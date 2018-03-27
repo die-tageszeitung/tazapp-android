@@ -102,24 +102,22 @@ public class Paper {
         return result;
     }
 
-    public static Paper getPaperWithId(Context context, long id) {
-        Cursor cursor = context.getApplicationContext()
-                               .getContentResolver()
-                               .query(ContentUris.withAppendedId(CONTENT_URI, id), null, null, null, null);
-        try {
-            if (cursor.moveToNext()) {
-                return new Paper(cursor);
-            }
-        } finally {
-            cursor.close();
-        }
-        return null;
-    }
+//    public static Paper getPaperWithId(Context context, long id) {
+//        Cursor cursor = context.getApplicationContext()
+//                               .getContentResolver()
+//                               .query(ContentUris.withAppendedId(CONTENT_URI, id), null, null, null, null);
+//        try {
+//            if (cursor.moveToNext()) {
+//                return new Paper(cursor);
+//            }
+//        } finally {
+//            cursor.close();
+//        }
+//        return null;
+//    }
 
     public static Paper getPaperWithBookId(Context context, String bookId) {
-        Uri bookIdUri = CONTENT_URI.buildUpon()
-                                   .appendPath(bookId)
-                                   .build();
+        Uri bookIdUri = TazProvider.getContentUri(CONTENT_URI,bookId);
         Cursor cursor = context.getApplicationContext()
                                .getContentResolver()
                                .query(bookIdUri, null, null, null, null);
@@ -167,7 +165,7 @@ public class Paper {
     public final static int IS_DOWNLOADING        = 4;
     public final static int NOT_DOWNLOADED_IMPORT = 5;
 
-    private Long    id;
+//    private Long    id;
     private String  date;
     private String  image;
     private String  imageHash;
@@ -205,7 +203,7 @@ public class Paper {
     }
 
     private void setData(Cursor cursor) {
-        this.id = cursor.getLong(cursor.getColumnIndex(Columns._ID));
+//        this.id = cursor.getLong(cursor.getColumnIndex(Columns._ID));
         this.date = cursor.getString(cursor.getColumnIndex(Columns.DATE));
         this.image = cursor.getString(cursor.getColumnIndex(Columns.IMAGE));
         this.imageHash = cursor.getString(cursor.getColumnIndex(Columns.IMAGEHASH));
@@ -283,21 +281,21 @@ public class Paper {
 //        cv.put(Columns.RESOURCEURL, resourceUrl);
 //        cv.put(Columns.RESOURCELEN, resourceLen);
         cv.put(Columns.VALIDUNTIL, validUntil);
-        cv.put(Columns._ID, id);
+//        cv.put(Columns._ID, id);
         return cv;
     }
 
     public Uri getContentUri() {
-        return ContentUris.withAppendedId(Paper.CONTENT_URI, getId());
+        return TazProvider.getContentUri(CONTENT_URI, getBookId());
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
+//    public Long getId() {
+//        return id;
+//    }
+//
+//    public void setId(Long id) {
+//        this.id = id;
+//    }
 
     public String getBookId() {
         return bookId;
@@ -1604,7 +1602,7 @@ public class Paper {
         //deleteResourcePartner(context);
         if (isImported() || isKiosk()) {
             context.getContentResolver()
-                   .delete(ContentUris.withAppendedId(Paper.CONTENT_URI, getId()), null, null);
+                   .delete(getContentUri(), null, null);
         } else {
             setDownloadId(0);
             setDownloaded(false);
@@ -1612,9 +1610,9 @@ public class Paper {
             if (BuildConfig.BUILD_TYPE.equals("staging"))
                 setValidUntil(0); //Wunsch von Ralf, damit besser im Staging getestet werden kann
             int affected = context.getContentResolver()
-                                  .update(ContentUris.withAppendedId(Paper.CONTENT_URI, getId()), getContentValues(), null, null);
+                                  .update(getContentUri(), getContentValues(), null, null);
             if (affected >= 1) EventBus.getDefault()
-                                       .post(new PaperDeletedEvent(getId()));
+                                       .post(new PaperDeletedEvent(getBookId()));
         }
 
     }

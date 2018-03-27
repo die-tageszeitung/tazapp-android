@@ -278,7 +278,7 @@ public class StartActivity extends BaseActivity
                 int type = intent.getIntExtra(NotificationUtils.NOTIFICATION_EXTRA_TYPE_ID, -1);
                 Paper paper = Paper.getPaperWithBookId(this, bookId);
                 if (type == NotificationUtils.DOWNLOAD_NOTIFICTAION_ID && paper != null) {
-                    openReader(paper.getId());
+                    openReader(paper.getBookId());
                 }
             }
         }
@@ -385,8 +385,8 @@ public class StartActivity extends BaseActivity
     }
 
     @Override
-    public void startDownload(long paperId) throws Paper.PaperNotFoundException {
-        Paper downloadPaper = Paper.getPaperWithId(this, paperId);
+    public void startDownload(String bookId) throws Paper.PaperNotFoundException {
+        Paper downloadPaper = Paper.getPaperWithBookId(this, bookId);
         if (downloadPaper == null) throw new Paper.PaperNotFoundException();
         if (!downloadPaper.isDownloading()) {
             switch (Connection.getConnectionType(this)) {
@@ -395,12 +395,12 @@ public class StartActivity extends BaseActivity
                     break;
                 case Connection.CONNECTION_MOBILE:
                 case Connection.CONNECTION_MOBILE_ROAMING:
-                    addToDownloadQueue(paperId);
+                    addToDownloadQueue(bookId);
                     if (retainDataFragment.allowMobileDownload) startDownloadQueue();
                     else showMobileConnectionDialog();
                     break;
                 default:
-                    addToDownloadQueue(paperId);
+                    addToDownloadQueue(bookId);
                     startDownloadQueue();
             }
         }
@@ -414,21 +414,21 @@ public class StartActivity extends BaseActivity
         //        }
     }
 
-    private void addToDownloadQueue(long paperId) {
-        retainDataFragment.downloadQueue.add(paperId);
-        retainDataFragment.setOpenPaperIdAfterDownload(paperId);
+    private void addToDownloadQueue(String bookId) {
+        retainDataFragment.downloadQueue.add(bookId);
+        retainDataFragment.setOpenPaperIdAfterDownload(bookId);
     }
 
     private void startDownloadQueue() {
         //DownloadHelper mDownloadHelper = new DownloadHelper(this);
         while (retainDataFragment.downloadQueue.size() > 0) {
-            long paperId = retainDataFragment.downloadQueue.get(0);
+            String bookId = retainDataFragment.downloadQueue.get(0);
             try {
-                Paper paper = Paper.getPaperWithId(this, paperId);
+                Paper paper = Paper.getPaperWithBookId(this, bookId);
                 if (paper == null) throw new Paper.PaperNotFoundException();
                 try {
                     DownloadManager.getInstance(this)
-                                   .enquePaper(paperId, false);
+                                   .enquePaper(bookId, false);
                 } catch (IllegalArgumentException e) {
                     showErrorDialog(getString(R.string.dialog_downloadmanager_error), DIALOG_DOWNLOADMANAGER_ERROR);
                 } catch (DownloadManager.DownloadNotAllowedException e) {
@@ -594,11 +594,11 @@ public class StartActivity extends BaseActivity
     }
 
     @Override
-    public void openReader(long id) {
+    public void openReader(String bookId) {
 
         Paper openPaper;
         try {
-            openPaper = Paper.getPaperWithId(this, id);
+            openPaper = Paper.getPaperWithBookId(this, bookId);
             if (openPaper == null) throw new Paper.PaperNotFoundException();
             if (!openPaper.isDownloaded()) {
                 showErrorDialog(getString(R.string.message_paper_not_downloaded), DIALOG_ERROR_OPEN_PAPER);
@@ -609,7 +609,7 @@ public class StartActivity extends BaseActivity
             if (paperResource.isDownloaded()) {
                 Timber.i("start reader for paper: %s", openPaper);
                 Intent intent = new Intent(this, ReaderActivity.class);
-                intent.putExtra(ReaderActivity.KEY_EXTRA_PAPER_ID, id);
+//                intent.putExtra(ReaderActivity.KEY_EXTRA_PAPER_ID, id);
                 intent.putExtra(ReaderActivity.KEY_EXTRA_BOOK_ID, openPaper.getBookId());
                 intent.putExtra(ReaderActivity.KEY_EXTRA_RESOURCE_KEY, paperResource.getKey());
                 startActivity(intent);
@@ -890,11 +890,11 @@ public class StartActivity extends BaseActivity
 
         private static final String TAG = "RetainDataFragment";
         public LruCache<String, Bitmap> cache;
-        public List<Long> selectedInLibrary = new ArrayList<>();
+        public List<String> selectedInLibrary = new ArrayList<>();
         boolean actionMode;
-        List<Long> downloadQueue       = new ArrayList<>();
+        List<String> downloadQueue       = new ArrayList<>();
         boolean    allowMobileDownload = false;
-        private long    openPaperIdAfterDownload     = -1;
+        private String    openPaperIdAfterDownload   ;
         private long    openPaperWaitingForRessource = -1;
         private boolean useOpenPaperafterDownload    = true;
         List<NavigationDrawerFragment.NavigationItem> navBackstack = new ArrayList<>();
@@ -933,7 +933,7 @@ public class StartActivity extends BaseActivity
             return cache;
         }
 
-        public List<Long> getSelectedInLibrary() {
+        public List<String> getSelectedInLibrary() {
             return selectedInLibrary;
         }
 
@@ -946,9 +946,9 @@ public class StartActivity extends BaseActivity
         }
 
 
-        public void setOpenPaperIdAfterDownload(long paperId) {
-            if (openPaperIdAfterDownload == -1) {
-                openPaperIdAfterDownload = paperId;
+        public void setOpenPaperIdAfterDownload(String bookId) {
+            if (TextUtils.isEmpty(openPaperIdAfterDownload)) {
+                openPaperIdAfterDownload = bookId;
                 useOpenPaperafterDownload = true;
             } else {
                 useOpenPaperafterDownload = false;
@@ -956,7 +956,7 @@ public class StartActivity extends BaseActivity
         }
 
         public void removeOpenPaperIdAfterDownload() {
-            openPaperIdAfterDownload = -1;
+            openPaperIdAfterDownload = null;
             useOpenPaperafterDownload = true;
         }
 

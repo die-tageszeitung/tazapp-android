@@ -159,8 +159,8 @@ public class NotificationUtils extends ContextWrapper {
         }
     }
 
-    public void removeDownloadNotification(long paperId) {
-        removeDownloadNotification(Paper.getPaperWithId(this, paperId));
+    public void removeDownloadNotification(String bookId) {
+        removeDownloadNotification(Paper.getPaperWithBookId(this, bookId));
     }
 
 
