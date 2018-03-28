@@ -56,7 +56,7 @@ public class DownloadFinishedPaperJob extends Job implements UnzipStream.UnzipSt
                 try {
                     Timber.i("%s", paper);
                     StorageManager storageManager = StorageManager.getInstance(getContext());
-                    currentPaperId = paperId;
+                    currentPaperBookId = bookId;
                     currentUnzipPaper = new UnzipPaper(paper,
                                                        storageManager.getDownloadFile(paper),
                                                        storageManager.getPaperDirectory(paper),
@@ -76,11 +76,11 @@ public class DownloadFinishedPaperJob extends Job implements UnzipStream.UnzipSt
     @Override
     public void onProgress(UnzipStream.Progress progress) {
         EventBus.getDefault()
-                .post(new UnzipProgressEvent(currentPaperId, progress.getPercentage()));
+                .post(new UnzipProgressEvent(currentPaperBookId, progress.getPercentage()));
     }
 
-    public long getCurrentPaperId() {
-        return currentPaperId;
+    public String getCurrentPaperBookId() {
+        return currentPaperBookId;
     }
 
     public void cancelIt() {
@@ -97,8 +97,10 @@ public class DownloadFinishedPaperJob extends Job implements UnzipStream.UnzipSt
             paper.setDownloaded(true);
         }
 
+
+
         getContext().getContentResolver()
-                    .update(ContentUris.withAppendedId(Paper.CONTENT_URI, paper.getId()), paper.getContentValues(), null, null);
+                    .insert(Paper.CONTENT_URI, paper.getContentValues());
 
         if (exception == null) {
 
@@ -107,7 +109,7 @@ public class DownloadFinishedPaperJob extends Job implements UnzipStream.UnzipSt
             new NotificationUtils(getContext()).showDownloadFinishedNotification(paper);
 
             EventBus.getDefault()
-                    .post(new PaperDownloadFinishedEvent(paper.getId()));
+                    .post(new PaperDownloadFinishedEvent(paper.getBookId()));
 
 
         } else if (exception instanceof UnzipCanceledException) {
@@ -118,7 +120,7 @@ public class DownloadFinishedPaperJob extends Job implements UnzipStream.UnzipSt
             new NotificationUtils(getContext()).showDownloadErrorNotification(paper, null);
             //NotificationHelper.showDownloadErrorNotification(getContext(), null, paper.getId());
             EventBus.getDefault()
-                    .post(new PaperDownloadFailedEvent(paper.getId(), exception));
+                    .post(new PaperDownloadFailedEvent(paper.getBookId(), exception));
         }
     }
 

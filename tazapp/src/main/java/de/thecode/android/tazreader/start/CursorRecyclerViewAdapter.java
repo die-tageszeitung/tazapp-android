@@ -61,8 +61,6 @@ public abstract class CursorRecyclerViewAdapter<VH extends RecyclerView.ViewHold
         return -1;
     }
 
-    ;
-
     @Override
     public void setHasStableIds(boolean hasStableIds) {
         super.setHasStableIds(true);

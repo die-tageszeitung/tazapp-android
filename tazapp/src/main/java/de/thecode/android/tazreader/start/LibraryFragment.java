@@ -347,7 +347,7 @@ public class LibraryFragment extends BaseFragment
                 case Paper.DOWNLOADED_READABLE:
                 case Paper.DOWNLOADED_BUT_UPDATE:
                     //openPlayer(paper.getId());
-                    if (hasCallback()) getCallback().openReader(paper.getId());
+                    if (hasCallback()) getCallback().openReader(paper.getBookId());
                     break;
                 case Paper.IS_DOWNLOADING:
 
@@ -356,7 +356,7 @@ public class LibraryFragment extends BaseFragment
                 case Paper.NOT_DOWNLOADED:
                 case Paper.NOT_DOWNLOADED_IMPORT:
                     try {
-                        if (hasCallback()) getCallback().startDownload(paper.getId());
+                        if (hasCallback()) getCallback().startDownload(paper.getBookId());
                     } catch (Paper.PaperNotFoundException e) {
                         Timber.e(e);
                     }
@@ -372,8 +372,7 @@ public class LibraryFragment extends BaseFragment
     public boolean onItemLongClick(View v, int position, Paper paper) {
         setActionMode();
         Timber.d("v: %s, position: %s, paper: %s", v, position, paper);
-        ;
-        if (!adapter.isSelected(paper.getId())) selectPaper(paper.getId());
+        if (!adapter.isSelected(paper.getBookId())) selectPaper(paper.getBookId());
         else deselectPaper(paper.getId());
         return true;
     }
@@ -424,8 +423,8 @@ public class LibraryFragment extends BaseFragment
         if (actionMode == null) getActivity().startActionMode(new ActionModeCallback());
     }
 
-    public void selectPaper(long paperId) {
-        if (adapter != null) adapter.select(paperId);
+    public void selectPaper(String bookId) {
+        if (adapter != null) adapter.select(bookId);
         if (actionMode != null) actionMode.invalidate();
     }
 

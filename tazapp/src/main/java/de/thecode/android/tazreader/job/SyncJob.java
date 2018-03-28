@@ -104,7 +104,7 @@ public class SyncJob extends Job {
 
         if (moveToPaperAtEnd != null) {
             EventBus.getDefault()
-                    .post(new ScrollToPaperEvent(moveToPaperAtEnd.getId()));
+                    .post(new ScrollToPaperEvent(moveToPaperAtEnd.getBookId()));
             moveToPaperAtEnd = null;
         }
 

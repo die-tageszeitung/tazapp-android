@@ -16,7 +16,7 @@ import timber.log.Timber;
 /**
  * Created by mate on 11.08.2015.
  */
-public abstract class DeleteTask extends AsyncTaskWithExecption<Long, Void, Void> {
+public abstract class DeleteTask extends AsyncTaskWithExecption<String, Void, Void> {
 
     private Context context;
 
@@ -25,11 +25,11 @@ public abstract class DeleteTask extends AsyncTaskWithExecption<Long, Void, Void
     }
 
     @Override
-    public Void doInBackgroundWithException(Long... params) throws Exception {
+    public Void doInBackgroundWithException(String... params) throws Exception {
         if (params != null) {
-            for (Long paperId : params) {
+            for (String bookId : params) {
                 try {
-                    Paper deletePaper = Paper.getPaperWithId(context, paperId);
+                    Paper deletePaper = Paper.getPaperWithBookId(context, bookId);
                     if (deletePaper == null) throw new Paper.PaperNotFoundException();
                     if (deletePaper.isDownloading()) {
                         DownloadManager downloadManager = DownloadManager.getInstance(context);
@@ -38,7 +38,7 @@ public abstract class DeleteTask extends AsyncTaskWithExecption<Long, Void, Void
                             Set<Job> unzipJobSet = JobManager.instance().getAllJobsForTag(DownloadFinishedPaperJob.TAG);
                             for (Job unzipJob : unzipJobSet) {
                                 if (unzipJob != null && unzipJob instanceof DownloadFinishedPaperJob) {
-                                    if (((DownloadFinishedPaperJob) unzipJob).getCurrentPaperId() == paperId) {
+                                    if (((DownloadFinishedPaperJob) unzipJob).getCurrentPaperBookId().equals(bookId)) {
                                         ((DownloadFinishedPaperJob) unzipJob).cancelIt();
                                     }
                                 }

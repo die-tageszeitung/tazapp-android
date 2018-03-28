@@ -86,7 +86,7 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
                 .unregister(this);
     }
 
-    public List<Long> getSelected() {
+    public List<String> getSelected() {
         if (hasCallback()) return getCallback().getRetainData()
                                                .getSelectedInLibrary();
         return null;
@@ -117,8 +117,8 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
         notifyItemChanged(position);
     }
 
-    public boolean isSelected(long paperId) {
-        return getSelected().contains(paperId);
+    public boolean isSelected(String bookId) {
+        return getSelected().contains(bookId);
     }
 
     public void selectAll() {
@@ -150,7 +150,7 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
                 if (cursor.moveToPosition(i)) {
                     Paper paper = new Paper(cursor);
                     if (!(paper.isDownloaded() || paper.isDownloading())) {
-                        if (!isSelected(paper.getId())) select(paper.getId());
+                        if (!isSelected(paper.getBookId())) select(paper.getBookId());
                     }
                 }
             }

@@ -4,13 +4,13 @@ package de.thecode.android.tazreader.start;
  * Created by mate on 27.03.2015.
  */
 public class ScrollToPaperEvent {
-    long paperId;
+    private final String bookId;
 
-    public ScrollToPaperEvent(long paperId) {
-        this.paperId = paperId;
+    public ScrollToPaperEvent(String bookId) {
+        this.bookId = bookId;
     }
 
-    public long getPaperId() {
-        return paperId;
+    public String getBookId() {
+        return bookId;
     }
 }

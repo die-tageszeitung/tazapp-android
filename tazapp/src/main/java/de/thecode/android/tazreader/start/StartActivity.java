@@ -437,7 +437,7 @@ public class StartActivity extends BaseActivity
                     showDownloadErrorDialog(paper.getTitelWithDate(this), getString(R.string.message_not_enough_space), e);
                 }
             } catch (Paper.PaperNotFoundException e) {
-                showDownloadErrorDialog(String.valueOf(paperId), getString(R.string.message_paper_not_found), e);
+                showDownloadErrorDialog(bookId, getString(R.string.message_paper_not_found), e);
             }
 
 
@@ -628,7 +628,7 @@ public class StartActivity extends BaseActivity
                         try {
                             DownloadManager.getInstance(this)
                                            .enqueResource(paperResource, false);
-                            retainDataFragment.openPaperWaitingForRessource = id;
+                            retainDataFragment.openPaperWaitingForRessource = bookId;
                             Timber.e(new Resource.MissingResourceException());
                             showWaitDialog(DIALOG_WAIT + openPaper.getBookId(),
                                            getString(R.string.dialog_meassage_loading_missing_resource));
@@ -672,7 +672,8 @@ public class StartActivity extends BaseActivity
     public void onPaperDownloadFinished(PaperDownloadFinishedEvent event) {
         Timber.d("event: %s", event);
         if (retainDataFragment.useOpenPaperafterDownload) {
-            if (event.getPaperId() == retainDataFragment.openPaperIdAfterDownload) {
+            if (event.getBookId()
+                     .equals(retainDataFragment.openPaperIdAfterDownload)) {
                 openReader(retainDataFragment.openPaperIdAfterDownload);
             }
         }
@@ -681,12 +682,12 @@ public class StartActivity extends BaseActivity
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onPaperDownloadFailed(PaperDownloadFailedEvent event) {
         try {
-            Paper paper = Paper.getPaperWithId(this, event.getPaperId());
+            Paper paper = Paper.getPaperWithBookId(this, event.getBookId());
             if (paper == null) throw new Paper.PaperNotFoundException();
             showDownloadErrorDialog(paper.getTitelWithDate(this), null, event.getException());
 
             //NotificationHelper.cancelDownloadErrorNotification(this, event.getPaperId());
-            new NotificationUtils(this).removeDownloadNotification(event.getPaperId());
+            new NotificationUtils(this).removeDownloadNotification(event.getBookId());
         } catch (Paper.PaperNotFoundException e) {
             e.printStackTrace();
         }
@@ -694,19 +695,19 @@ public class StartActivity extends BaseActivity
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onResourceDownload(ResourceDownloadEvent event) {
-        if (retainDataFragment.openPaperWaitingForRessource != -1) {
+        if (!TextUtils.isEmpty(retainDataFragment.openPaperWaitingForRessource)) {
             try {
-                Paper waitingPaper = Paper.getPaperWithId(this, retainDataFragment.openPaperWaitingForRessource);
+                Paper waitingPaper = Paper.getPaperWithBookId(this, retainDataFragment.openPaperWaitingForRessource);
                 if (waitingPaper == null) throw new Paper.PaperNotFoundException();
                 if (event.getKey()
                          .equals(ResourceRepository.getInstance(this)
                                                    .getResourceForPaper(waitingPaper)
                                                    .getKey())) {
                     hideWaitDialog(DIALOG_WAIT + waitingPaper.getBookId());
-                    long paperId = retainDataFragment.openPaperWaitingForRessource;
-                    retainDataFragment.openPaperWaitingForRessource = -1;
+                    String bookId = retainDataFragment.openPaperWaitingForRessource;
+                    retainDataFragment.openPaperWaitingForRessource = null;
                     if (event.isSuccessful()) {
-                        openReader(paperId);
+                        openReader(bookId);
                     } else {
                         showDownloadErrorDialog(getString(R.string.message_resourcedownload_error),
                                                 String.format(getString(R.string.message_resourcedownload_late_error),
@@ -716,7 +717,7 @@ public class StartActivity extends BaseActivity
                     }
                 }
             } catch (Paper.PaperNotFoundException e) {
-                retainDataFragment.openPaperWaitingForRessource = -1;
+                retainDataFragment.openPaperWaitingForRessource = null;
             }
         }
     }
@@ -774,7 +775,7 @@ public class StartActivity extends BaseActivity
                 try {
                     JSONArray json = new JSONArray(arguments.getString(ARGUMENT_MIGRATED_IDS_JSONARRAY));
                     for (int i = 0; i < json.length(); i++) {
-                        startDownload(json.getLong(i));
+                        startDownload(json.getString(i));
                     }
                 } catch (JSONException | Paper.PaperNotFoundException e) {
                     Timber.w(e);
@@ -895,7 +896,7 @@ public class StartActivity extends BaseActivity
         List<String> downloadQueue       = new ArrayList<>();
         boolean    allowMobileDownload = false;
         private String    openPaperIdAfterDownload   ;
-        private long    openPaperWaitingForRessource = -1;
+        private String    openPaperWaitingForRessource ;
         private boolean useOpenPaperafterDownload    = true;
         List<NavigationDrawerFragment.NavigationItem> navBackstack = new ArrayList<>();
         WeakReference<IStartCallback> callback;
