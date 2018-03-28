@@ -2,6 +2,7 @@ package de.thecode.android.tazreader.job;
 
 import android.content.ContentUris;
 import android.support.annotation.NonNull;
+import android.text.TextUtils;
 
 import com.dd.plist.PropertyListFormatException;
 import com.evernote.android.job.Job;
@@ -35,36 +36,40 @@ import timber.log.Timber;
 
 public class DownloadFinishedPaperJob extends Job implements UnzipStream.UnzipStreamProgressListener {
 
-    public static final  String TAG          = BuildConfig.FLAVOR + "_" + "download_finished_paper_job";
-    private static final String ARG_PAPER_ID = "paper_id";
+    public static final  String TAG              = BuildConfig.FLAVOR + "_" + "download_finished_paper_job";
+    private static final String ARG_PAPER_BOOKID = "paper_bookid";
+    //    private static final String ARG_PAPER_ID = "paper_id";
+//
+//    private long       currentPaperId = -1;
+    private String currentPaperBookId;
 
-    private long       currentPaperId = -1;
     private UnzipPaper currentUnzipPaper;
 
     @NonNull
     @Override
     protected Result onRunJob(Params params) {
         PersistableBundleCompat extras = params.getExtras();
-        long paperId = extras.getLong(ARG_PAPER_ID, -1L);
-        Paper paper = Paper.getPaperWithId(getContext(), paperId);
-        if (paper != null) {
-            try {
-                Timber.i("%s", paper);
-                StorageManager storageManager = StorageManager.getInstance(getContext());
-                currentPaperId = paperId;
-                currentUnzipPaper = new UnzipPaper(paper,
-                                                   storageManager.getDownloadFile(paper),
-                                                   storageManager.getPaperDirectory(paper),
-                                                   true);
-                currentUnzipPaper.getUnzipFile()
-                                 .addProgressListener(this);
-                currentUnzipPaper.start();
-                savePaper(paper, null);
-            } catch (ParserConfigurationException | IOException | SAXException | ParseException | PropertyListFormatException | UnzipCanceledException e) {
-                savePaper(paper, e);
+        String bookId = extras.getString(ARG_PAPER_BOOKID, null);
+        if (!TextUtils.isEmpty(bookId)) {
+            Paper paper = Paper.getPaperWithBookId(getContext(), bookId);
+            if (paper != null) {
+                try {
+                    Timber.i("%s", paper);
+                    StorageManager storageManager = StorageManager.getInstance(getContext());
+                    currentPaperId = paperId;
+                    currentUnzipPaper = new UnzipPaper(paper,
+                                                       storageManager.getDownloadFile(paper),
+                                                       storageManager.getPaperDirectory(paper),
+                                                       true);
+                    currentUnzipPaper.getUnzipFile()
+                                     .addProgressListener(this);
+                    currentUnzipPaper.start();
+                    savePaper(paper, null);
+                } catch (ParserConfigurationException | IOException | SAXException | ParseException | PropertyListFormatException | UnzipCanceledException e) {
+                    savePaper(paper, e);
+                }
             }
         }
-
         return Result.SUCCESS;
     }
 
@@ -105,14 +110,12 @@ public class DownloadFinishedPaperJob extends Job implements UnzipStream.UnzipSt
                     .post(new PaperDownloadFinishedEvent(paper.getId()));
 
 
-
-
         } else if (exception instanceof UnzipCanceledException) {
             Timber.w(exception);
         } else {
             Timber.e(exception);
             //AnalyticsWrapper.getInstance().logException(exception);
-            new NotificationUtils(getContext()).showDownloadErrorNotification(paper,null);
+            new NotificationUtils(getContext()).showDownloadErrorNotification(paper, null);
             //NotificationHelper.showDownloadErrorNotification(getContext(), null, paper.getId());
             EventBus.getDefault()
                     .post(new PaperDownloadFailedEvent(paper.getId(), exception));
@@ -122,7 +125,7 @@ public class DownloadFinishedPaperJob extends Job implements UnzipStream.UnzipSt
 
     public static void scheduleJob(Paper paper) {
         PersistableBundleCompat extras = new PersistableBundleCompat();
-        extras.putLong(ARG_PAPER_ID, paper.getId());
+        extras.putString(ARG_PAPER_BOOKID, paper.getBookId());
 
         new JobRequest.Builder(TAG).setExtras(extras)
                                    .startNow()

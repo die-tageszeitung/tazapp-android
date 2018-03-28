@@ -218,7 +218,8 @@ public class TazProvider extends ContentProvider {
                 rowId = mDb.insertWithOnConflict(Store.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE);
                 break;
             case PAPER_DIR:
-                rowId = mDb.insert(Paper.TABLE_NAME, null, values);
+//                rowId = mDb.insert(Paper.TABLE_NAME, null, values);
+                rowId = mDb.insertWithOnConflict(Paper.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE);
                 break;
             case PUBLICATION_DIR:
                 rowId = mDb.insertWithOnConflict(Publication.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE);
@@ -392,6 +393,13 @@ public class TazProvider extends ContentProvider {
 
     public static Uri getContentUri(Uri tableUri, String key){
         return tableUri.buildUpon().appendEncodedPath(key).build();
+    }
+
+    public static String getKeyInUri (Uri uri) {
+        if (uri != null) {
+            return uri.getLastPathSegment();
+        }
+        return null;
     }
 
 }

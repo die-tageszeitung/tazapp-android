@@ -280,20 +280,25 @@ public class ImportWorkerFragment extends BaseFragment {
 //        paper.setResourceUrl(null);
 //        paper.setResourceFileHash(null);
         paper.setResource(null);
-        if (paper.getId() != null) {
-            int affected = getActivity().getApplicationContext()
-                                        .getContentResolver()
-                                        .update(ContentUris.withAppendedId(Paper.CONTENT_URI, paper.getId()), paper.getContentValues(), null, null);
-            if (affected == 0) {
-                throw new ImportException("Could not update " + metadata.getBookId());
-            }
-        } else {
-            long newId = ContentUris.parseId(getActivity().getApplicationContext()
-                                                          .getContentResolver()
-                                                          .insert(Paper.CONTENT_URI, paper.getContentValues()));
-            if (newId == -1) throw new ImportException("Could not insert " + metadata.getBookId());
-            else paper.setId(newId);
-        }
+
+        getActivity().getApplicationContext()
+                     .getContentResolver()
+                     .insert(Paper.CONTENT_URI, paper.getContentValues());
+
+//        if (!TextUtils.isEmpty(paper.getBookId())) {
+//            int affected = getActivity().getApplicationContext()
+//                                        .getContentResolver()
+//                                        .update(paper.getContentUri(), paper.getContentValues(), null, null);
+//            if (affected == 0) {
+//                throw new ImportException("Could not update " + metadata.getBookId());
+//            }
+//        } else {
+//            long newId = ContentUris.parseId(getActivity().getApplicationContext()
+//                                                          .getContentResolver()
+//                                                          .insert(Paper.CONTENT_URI, paper.getContentValues()));
+//            if (newId == -1) throw new ImportException("Could not insert " + metadata.getBookId());
+//            else paper.setId(newId);
+//        }
         importedPaperStack.add(paper);
         onFinished(dataUri, cacheFile, deleteFile);
     }
@@ -346,28 +351,31 @@ public class ImportWorkerFragment extends BaseFragment {
             @Override
             protected void onPostSuccess(File destinationFile) {
                 super.onPostSuccess(destinationFile);
-                try {
+//                try {
                     Paper paper = getUnzipPaper().getPaper();
                     paper.parseMissingAttributes(false);
-                    if (paper.getId() != null) {
-                        int affected = getActivity().getApplicationContext()
-                                                    .getContentResolver()
-                                                    .update(ContentUris.withAppendedId(Paper.CONTENT_URI, paper.getId()), paper.getContentValues(), null, null);
-                        if (affected == 0) {
-                            throw new ImportException("Could not update " + paper.getBookId());
-                        }
-                    } else {
-                        long newId = ContentUris.parseId(getActivity().getApplicationContext()
-                                                                      .getContentResolver()
-                                                                      .insert(Paper.CONTENT_URI, paper.getContentValues()));
-                        if (newId == -1) throw new ImportException("Could not insert " + paper.getBookId());
-                        else paper.setId(newId);
-                    }
+                    getActivity().getApplicationContext()
+                                 .getContentResolver()
+                                 .insert(Paper.CONTENT_URI, paper.getContentValues());
+//                    if (paper.getId() != null) {
+//                        int affected = getActivity().getApplicationContext()
+//                                                    .getContentResolver()
+//                                                    .update(ContentUris.withAppendedId(Paper.CONTENT_URI, paper.getId()), paper.getContentValues(), null, null);
+//                        if (affected == 0) {
+//                            throw new ImportException("Could not update " + paper.getBookId());
+//                        }
+//                    } else {
+//                        long newId = ContentUris.parseId(getActivity().getApplicationContext()
+//                                                                      .getContentResolver()
+//                                                                      .insert(Paper.CONTENT_URI, paper.getContentValues()));
+//                        if (newId == -1) throw new ImportException("Could not insert " + paper.getBookId());
+//                        else paper.setId(newId);
+//                    }
                     importedPaperStack.add(paper);
                     onFinished(dataUri, cacheFile, deleteFile);
-                } catch (ImportException e) {
-                    onError(dataUri, e, cacheFile, deleteFile);
-                }
+//                } catch (ImportException e) {
+//                    onError(dataUri, e, cacheFile, deleteFile);
+//                }
             }
         }.execute(getActivity().getApplicationContext(), dataUri, cacheFile, deleteFile);
     }

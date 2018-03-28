@@ -68,7 +68,7 @@ public class DownloadManager {
             DownloadNotAllowedException, NotEnoughSpaceException {
 
 
-        Paper paper = Paper.getPaperWithId(mContext, paperId);
+        Paper paper = Paper.getPaperWithBookId(mContext, bookId);
         if (paper == null) throw new Paper.PaperNotFoundException();
 
         if (TazSettings.getInstance(mContext)
@@ -128,7 +128,9 @@ public class DownloadManager {
         paper.setHasupdate(false);
 
         mContext.getContentResolver()
-                .update(ContentUris.withAppendedId(Paper.CONTENT_URI, paper.getId()), paper.getContentValues(), null, null);
+                .insert(Paper.CONTENT_URI,paper.getContentValues());
+//        mContext.getContentResolver()
+//                .update(ContentUris.withAppendedId(Paper.CONTENT_URI, paper.getId()), paper.getContentValues(), null, null);
 
         if (!TextUtils.isEmpty(paper.getResource())) {
             Resource resource = ResourceRepository.getInstance(mContext)

@@ -1,6 +1,7 @@
 package de.thecode.android.tazreader.job;
 
 import android.support.annotation.NonNull;
+import android.text.TextUtils;
 
 import com.evernote.android.job.Job;
 import com.evernote.android.job.JobRequest;
@@ -28,7 +29,7 @@ public class AutoDownloadJob extends Job {
 
     public static final String TAG = BuildConfig.FLAVOR + "_autodownload_job";
 
-    private static final String ARG_PAPER_ID = "paper_id";
+    private static final String ARG_PAPER_BOOKID = "paper_bookid";
 
     @NonNull
     @Override
@@ -38,35 +39,37 @@ public class AutoDownloadJob extends Job {
         if (settings.getPrefBoolean(TazSettings.PREFKEY.AUTOLOAD, false)) {
 
             PersistableBundleCompat extras = params.getExtras();
-            long paperId = extras.getLong(ARG_PAPER_ID, -1L);
-            Paper paper = Paper.getPaperWithId(getContext(), paperId);
-            if (paper != null) {
-                try {
-                    Store autoDownloadedStore = StoreRepository.getInstance(getContext())
-                                                               .getStore(paper.getBookId(), Paper.STORE_KEY_AUTO_DOWNLOADED);
-                    boolean isAutoDownloaded = Boolean.parseBoolean(autoDownloadedStore.getValue("false"));
-                    if (!isAutoDownloaded && (System.currentTimeMillis() - TimeUnit.DAYS.toMillis(1)) < paper.getDateInMillis()) {
-                        boolean wifiOnly = TazSettings.getInstance(getContext())
-                                                      .getPrefBoolean(TazSettings.PREFKEY.AUTOLOAD_WIFI, false);
-                        if (!(paper.isDownloaded() || paper.isDownloading())) {
-                            DownloadManager.getInstance(getContext())
-                                           .enquePaper(paper.getId(), wifiOnly);
-                            paper = Paper.getPaperWithId(getContext(), paperId);
-                            if (!(paper.isDownloading() || paper.isDownloaded())) {
-                                return Result.RESCHEDULE;
-                            } else {
-                                autoDownloadedStore.setValue("true");
-                                StoreRepository.getInstance(getContext()).saveStore(autoDownloadedStore);
-                                //paper.saveAutoDownloaded(getContext(), true);
+            String bookId = extras.getString(ARG_PAPER_BOOKID,null);
+            if (!TextUtils.isEmpty(bookId)) {
+                Paper paper = Paper.getPaperWithBookId(getContext(), bookId);
+                if (paper != null) {
+                    try {
+                        Store autoDownloadedStore = StoreRepository.getInstance(getContext())
+                                                                   .getStore(paper.getBookId(), Paper.STORE_KEY_AUTO_DOWNLOADED);
+                        boolean isAutoDownloaded = Boolean.parseBoolean(autoDownloadedStore.getValue("false"));
+                        if (!isAutoDownloaded && (System.currentTimeMillis() - TimeUnit.DAYS.toMillis(1)) < paper.getDateInMillis()) {
+                            boolean wifiOnly = TazSettings.getInstance(getContext())
+                                                          .getPrefBoolean(TazSettings.PREFKEY.AUTOLOAD_WIFI, false);
+                            if (!(paper.isDownloaded() || paper.isDownloading())) {
+                                DownloadManager.getInstance(getContext())
+                                               .enquePaper(bookId, wifiOnly);
+                                paper = Paper.getPaperWithBookId(getContext(), bookId);
+                                if (!(paper.isDownloading() || paper.isDownloaded())) {
+                                    return Result.RESCHEDULE;
+                                } else {
+                                    autoDownloadedStore.setValue("true");
+                                    StoreRepository.getInstance(getContext())
+                                                   .saveStore(autoDownloadedStore);
+                                    //paper.saveAutoDownloaded(getContext(), true);
+                                }
                             }
                         }
+                    } catch (ParseException | Paper.PaperNotFoundException | DownloadManager.DownloadNotAllowedException e) {
+                        Timber.w(e);
+                    } catch (DownloadManager.NotEnoughSpaceException e) {
+                        Timber.w(e);
+                        new NotificationUtils(getContext()).showDownloadErrorNotification(paper, getContext().getString(R.string.message_not_enough_space));
                     }
-                } catch (ParseException | Paper.PaperNotFoundException | DownloadManager.DownloadNotAllowedException e) {
-                    Timber.w(e);
-                } catch (DownloadManager.NotEnoughSpaceException e) {
-                    Timber.w(e);
-                    new NotificationUtils(getContext()).showDownloadErrorNotification(paper,
-                                                                                      getContext().getString(R.string.message_not_enough_space));
                 }
             }
         }
@@ -75,7 +78,7 @@ public class AutoDownloadJob extends Job {
 
     public static void scheduleJob(@NonNull Paper paper) {
         PersistableBundleCompat extras = new PersistableBundleCompat();
-        extras.putLong(ARG_PAPER_ID, paper.getId());
+        extras.putString(ARG_PAPER_BOOKID, paper.getBookId());
 
         new JobRequest.Builder(TAG).setExtras(extras)
                                    .startNow()
