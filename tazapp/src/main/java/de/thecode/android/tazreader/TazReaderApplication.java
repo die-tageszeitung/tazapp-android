@@ -15,6 +15,7 @@ import de.thecode.android.tazreader.job.TazJobCreator;
 import de.thecode.android.tazreader.job.TazJobLogger;
 import de.thecode.android.tazreader.picasso.PicassoHelper;
 import de.thecode.android.tazreader.reader.ReaderActivity;
+import de.thecode.android.tazreader.room.AppDatabase;
 import de.thecode.android.tazreader.timber.TazTimberTree;
 import de.thecode.android.tazreader.utils.BuildTypeProvider;
 import de.thecode.android.tazreader.utils.StorageManager;
@@ -39,6 +40,8 @@ public class TazReaderApplication extends Application {
         AnalyticsWrapper.initialize(this);
 
         BuildTypeProvider.installStetho(this);
+
+        AppDatabase.getInstance(this);
 
         EventBus.builder()
                 .addIndex(new EventBusIndex())

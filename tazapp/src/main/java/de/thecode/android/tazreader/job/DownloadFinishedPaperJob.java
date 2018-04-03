@@ -1,6 +1,5 @@
 package de.thecode.android.tazreader.job;
 
-import android.content.ContentUris;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
@@ -93,7 +92,7 @@ public class DownloadFinishedPaperJob extends Job implements UnzipStream.UnzipSt
 
         if (exception == null) {
             paper.parseMissingAttributes(false);
-            paper.setHasupdate(false);
+            paper.setHasUpdate(false);
             paper.setDownloaded(true);
         }
 

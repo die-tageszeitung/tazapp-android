@@ -970,7 +970,7 @@ public class StartActivity extends BaseActivity
             return navBackstack;
         }
 
-        public void deletePaper(Long... ids) {
+        public void deletePaper(String... bookIds) {
             if (hasCallback())
                 getCallback().showWaitDialog(DIALOG_WAIT + "delete", getString(R.string.dialog_message_delete_wait));
             new DeleteTask(getActivity()) {
@@ -986,7 +986,7 @@ public class StartActivity extends BaseActivity
                 protected void onPostSuccess(Void aVoid) {
                     if (hasCallback()) getCallback().hideWaitDialog(DIALOG_WAIT + "delete");
                 }
-            }.execute(ids);
+            }.execute(bookIds);
         }
     }
 }

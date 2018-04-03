@@ -1,9 +1,12 @@
 package de.thecode.android.tazreader.data;
 
+import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.PrimaryKey;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 
 import com.dd.plist.NSDictionary;
 
@@ -19,6 +22,7 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import java.util.ArrayList;
 import java.util.List;
 
+@Entity(tableName = "RESOURCE")
 public class Resource {
     public static       String TABLE_NAME        = "RESOURCE";
     public static final Uri    CONTENT_URI       = Uri.parse("content://" + TazProvider.AUTHORITY + "/" + TABLE_NAME);
@@ -27,7 +31,7 @@ public class Resource {
 
     public static final class Columns {
         public static final String KEY        = "key";
-        public static final String DOWNLOADID = "downloadID";
+        public static final String DOWNLOADID = "downloadId";
         public static final String DOWNLOADED = "downloaded";
         public static final String FILEHASH   = "fileHash";
         public static final String LEN        = "len";
@@ -40,6 +44,9 @@ public class Resource {
         public static final String RESOURCELEN      = "resourceLen";
     }
 
+
+    @PrimaryKey
+    @NonNull
     private String  key;
     private long    downloadId;
     private boolean downloaded;
@@ -47,6 +54,8 @@ public class Resource {
     private String  fileHash;
     private long    len;
 
+    public Resource() {
+    }
 
     public Resource(Cursor cursor) {
         setData(cursor);
@@ -146,11 +155,12 @@ public class Resource {
         storage.deleteResourceDir(getKey());
         setDownloadId(0);
         setDownloaded(false);
-        Uri resourceUri = CONTENT_URI.buildUpon()
-                                     .appendPath(getKey())
-                                     .build();
-        int affected = context.getContentResolver()
-                              .update(resourceUri, getContentValues(), null, null);
+//        Uri resourceUri = CONTENT_URI.buildUpon()
+//                                     .appendPath(getKey())
+//                                     .build();
+//        int affected = context.getContentResolver()
+//                              .update(resourceUri, getContentValues(), null, null);
+        context.getContentResolver().insert(CONTENT_URI,getContentValues());
     }
 
     @Override

@@ -44,7 +44,7 @@ public class LibraryFragment extends BaseFragment
         implements LoaderManager.LoaderCallbacks<Cursor>, LibraryAdapter.OnItemClickListener,
         LibraryAdapter.OnItemLongClickListener {
     WeakReference<IStartCallback> callback;
-    LibraryAdapter                adapter;
+//    LibraryAdapter                adapter;
     SwipeRefreshLayout            swipeRefresh;
 
     ActionMode actionMode;
@@ -92,8 +92,8 @@ public class LibraryFragment extends BaseFragment
         recyclerView = (AutofitRecyclerView) view.findViewById(R.id.recycler);
         recyclerView.setHasFixedSize(true);
 
-        adapter = new LibraryAdapter(getActivity(), null, getCallback());
-        adapter.setHasStableIds(true);
+//        adapter = new LibraryAdapter(getActivity(), null, getCallback());
+//        adapter.setHasStableIds(true);
 
         fabArchive = (FloatingActionButton) view.findViewById(R.id.fabArchive);
         fabArchive.setOnClickListener(new View.OnClickListener() {
@@ -105,9 +105,9 @@ public class LibraryFragment extends BaseFragment
 
         showFab();
 
-        adapter.setOnItemClickListener(this);
-        adapter.setOnItemLongClickListener(this);
-        recyclerView.setAdapter(adapter);
+//        adapter.setOnItemClickListener(this);
+//        adapter.setOnItemLongClickListener(this);
+//        recyclerView.setAdapter(adapter);
 
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -232,13 +232,13 @@ public class LibraryFragment extends BaseFragment
                         .unregister(vh);
             }
         }
-        adapter.destroy();
+//        adapter.destroy();
         super.onDestroyView();
     }
 
     @Override
     public void onDestroy() {
-        adapter.removeClickLIstener();
+//        adapter.removeClickLIstener();
         super.onDestroy();
     }
 
@@ -266,12 +266,12 @@ public class LibraryFragment extends BaseFragment
 
         if (demo) {
             selection.append(" AND ");
-            selection.append(Paper.Columns.ISDEMO)
+            selection.append(Paper.Columns.DEMO)
                      .append("=1");
             selection.append(")");
         }
         selection.append(" OR ")
-                 .append(Paper.Columns.ISDOWNLOADED)
+                 .append(Paper.Columns.DOWNLOADED)
                  .append("=1");
         selection.append(" OR ")
                  .append(Paper.Columns.DOWNLOADID)
@@ -292,7 +292,7 @@ public class LibraryFragment extends BaseFragment
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         Timber.i("loader: %s, data: %s", loader, data);
-        adapter.swapCursor(data);
+//        adapter.swapCursor(data);
     }
 
     @Override
@@ -316,7 +316,7 @@ public class LibraryFragment extends BaseFragment
             LibraryAdapter.ViewHolder viewHolder = (LibraryAdapter.ViewHolder) recyclerView.findViewHolderForItemId(
                     event.getPaperId());
             if (viewHolder != null) viewHolder.image.setTag(null);
-            adapter.notifyItemChanged(adapter.getItemPosition(event.getPaperId()));
+//            adapter.notifyItemChanged(adapter.getItemPosition(event.getPaperId()));
         } catch (IllegalStateException e) {
             Timber.w(e);
         }
@@ -324,10 +324,10 @@ public class LibraryFragment extends BaseFragment
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onScrollToPaper(ScrollToPaperEvent event) {
-        Timber.d("event: %s", event);
-        if (recyclerView != null && adapter != null) {
-            recyclerView.smoothScrollToPosition(adapter.getItemPosition(event.getPaperId()));
-        }
+//        Timber.d("event: %s", event);
+//        if (recyclerView != null && adapter != null) {
+//            recyclerView.smoothScrollToPosition(adapter.getItemPosition(event.getPaperId()));
+//        }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -372,34 +372,34 @@ public class LibraryFragment extends BaseFragment
     public boolean onItemLongClick(View v, int position, Paper paper) {
         setActionMode();
         Timber.d("v: %s, position: %s, paper: %s", v, position, paper);
-        if (!adapter.isSelected(paper.getBookId())) selectPaper(paper.getBookId());
-        else deselectPaper(paper.getId());
+//        if (!adapter.isSelected(paper.getBookId())) selectPaper(paper.getBookId());
+//        else deselectPaper(paper.getId());
         return true;
     }
 
 
     private void deleteSelected() {
-        if (adapter.getSelected() != null && adapter.getSelected()
-                                                    .size() > 0) {
-            Long[] ids = adapter.getSelected()
-                                .toArray(new Long[adapter.getSelected()
-                                                         .size()]);
-            if (hasCallback()) getCallback().getRetainData()
-                                            .deletePaper(ids);
-        }
+//        if (adapter.getSelected() != null && adapter.getSelected()
+//                                                    .size() > 0) {
+//            Long[] ids = adapter.getSelected()
+//                                .toArray(new Long[adapter.getSelected()
+//                                                         .size()]);
+//            if (hasCallback()) getCallback().getRetainData()
+//                                            .deletePaper(ids);
+//        }
     }
 
     private void downloadSelected() {
-        for (Long paperId : adapter.getSelected()) {
-            try {
-                Paper paper = Paper.getPaperWithId(getContext(), paperId);
-                if (paper == null) throw new Paper.PaperNotFoundException();
-                if (hasCallback()) getCallback().startDownload(paper.getBookId());
-            } catch (Paper.PaperNotFoundException e) {
-                Timber.e(e);
-            }
-        }
-        adapter.deselectAll();
+//        for (Long paperId : adapter.getSelected()) {
+//            try {
+//                Paper paper = Paper.getPaperWithId(getContext(), paperId);
+//                if (paper == null) throw new Paper.PaperNotFoundException();
+//                if (hasCallback()) getCallback().startDownload(paper.getBookId());
+//            } catch (Paper.PaperNotFoundException e) {
+//                Timber.e(e);
+//            }
+//        }
+//        adapter.deselectAll();
     }
 
 
@@ -424,12 +424,12 @@ public class LibraryFragment extends BaseFragment
     }
 
     public void selectPaper(String bookId) {
-        if (adapter != null) adapter.select(bookId);
-        if (actionMode != null) actionMode.invalidate();
+//        if (adapter != null) adapter.select(bookId);
+//        if (actionMode != null) actionMode.invalidate();
     }
 
     public void deselectPaper(long paperId) {
-        if (adapter != null) adapter.deselect(paperId);
+//        if (adapter != null) adapter.deselect(paperId);
         if (actionMode != null) actionMode.invalidate();
     }
 
@@ -450,17 +450,17 @@ public class LibraryFragment extends BaseFragment
         public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
             Timber.d("mode: %s, menu: %s", mode, menu);
             menu.clear();
-            int countSelected = adapter.getSelected()
-                                       .size();
-            mode.setTitle(getActivity().getString(R.string.string_library_selected, countSelected));
-            mode.getMenuInflater()
-                .inflate(R.menu.start_library_selectmode, menu);
-            if (countSelected == 0) {
-                menu.findItem(R.id.ic_action_download)
-                    .setEnabled(false);
-                menu.findItem(R.id.ic_action_delete)
-                    .setEnabled(false);
-            }
+//            int countSelected = adapter.getSelected()
+//                                       .size();
+//            mode.setTitle(getActivity().getString(R.string.string_library_selected, countSelected));
+//            mode.getMenuInflater()
+//                .inflate(R.menu.start_library_selectmode, menu);
+//            if (countSelected == 0) {
+//                menu.findItem(R.id.ic_action_download)
+//                    .setEnabled(false);
+//                menu.findItem(R.id.ic_action_delete)
+//                    .setEnabled(false);
+//            }
             return true;
         }
 
@@ -477,19 +477,19 @@ public class LibraryFragment extends BaseFragment
                     mode.finish();
                     return true;
                 case R.id.ic_action_selectnone:
-                    adapter.deselectAll();
+//                    adapter.deselectAll();
                     mode.invalidate();
                     return true;
                 case R.id.ic_action_selectall:
-                    adapter.selectAll();
+//                    adapter.selectAll();
                     mode.invalidate();
                     return true;
                 case R.id.ic_action_selectinvert:
-                    adapter.selectionInvert();
+//                    adapter.selectionInvert();
                     mode.invalidate();
                     return true;
                 case R.id.ic_action_selectnotloaded:
-                    adapter.selectNotLoaded();
+//                    adapter.selectNotLoaded();
                     mode.invalidate();
                     return true;
             }
@@ -500,7 +500,7 @@ public class LibraryFragment extends BaseFragment
         @Override
         public void onDestroyActionMode(ActionMode mode) {
             Timber.d("mode: %s", mode);
-            adapter.deselectAll();
+//            adapter.deselectAll();
             if (hasCallback()) getCallback().getRetainData()
                                             .setActionMode(false);
             if (hasCallback()) getCallback().enableDrawer(true);

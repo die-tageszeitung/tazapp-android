@@ -102,19 +102,19 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
 
     public void select(int position) {
 
-        long paperId = getItemId(position);
-        //Log.v(position, paperId);
-
-        if (!isSelected(paperId)) getSelected().add(paperId);
-
-        notifyItemChanged(position);
+//        long paperId = getItemId(position);
+//        //Log.v(position, paperId);
+//
+//        if (!isSelected(paperId)) getSelected().add(paperId);
+//
+//        notifyItemChanged(position);
     }
 
     public void deselect(int position) {
-        long paperId = getItemId(position);
-        //Log.v(position, paperId);
-        if (isSelected(paperId)) getSelected().remove(paperId);
-        notifyItemChanged(position);
+//        long paperId = getItemId(position);
+//        //Log.v(position, paperId);
+//        if (isSelected(paperId)) getSelected().remove(paperId);
+//        notifyItemChanged(position);
     }
 
     public boolean isSelected(String bookId) {
@@ -135,26 +135,26 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
 
 
     public void selectionInvert() {
-        for (int i = 0; i < getItemCount(); i++) {
-            long paperId = getItemId(i);
-            if (isSelected(paperId)) deselect(i);
-            else select(i);
-        }
+//        for (int i = 0; i < getItemCount(); i++) {
+//            long paperId = getItemId(i);
+//            if (isSelected(paperId)) deselect(i);
+//            else select(i);
+//        }
     }
 
     public void selectNotLoaded() {
-        Cursor cursor = getCursor();
-
-        if (cursor != null) {
-            for (int i = 0; i < getItemCount(); i++) {
-                if (cursor.moveToPosition(i)) {
-                    Paper paper = new Paper(cursor);
-                    if (!(paper.isDownloaded() || paper.isDownloading())) {
-                        if (!isSelected(paper.getBookId())) select(paper.getBookId());
-                    }
-                }
-            }
-        }
+//        Cursor cursor = getCursor();
+//
+//        if (cursor != null) {
+//            for (int i = 0; i < getItemCount(); i++) {
+//                if (cursor.moveToPosition(i)) {
+//                    Paper paper = new Paper(cursor);
+//                    if (!(paper.isDownloaded() || paper.isDownloading())) {
+//                        if (!isSelected(paper.getBookId())) select(paper.getBookId());
+//                    }
+//                }
+//            }
+//        }
     }
 
     public void setOnItemClickListener(OnItemClickListener onItemClickListener) {
@@ -173,7 +173,7 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onPaperDownloadFailed(PaperDownloadFailedEvent event) {
         try {
-            notifyItemChanged(getItemPosition(event.getPaperId()));
+//            notifyItemChanged(getItemPosition(event.getPaperId()));
         } catch (IllegalStateException e) {
             Timber.w(e);
         }
@@ -183,9 +183,6 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
     public void onBindViewHolder(ViewHolder viewHolder, Cursor cursor) {
 
         Paper paper = new Paper(cursor);
-        //Log.d(paper.getBookId());
-
-        //        inititializeProgress(paper);
 
         viewHolder.setPaper(paper);
         try {
@@ -193,8 +190,6 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
         } catch (ParseException e) {
             viewHolder.date.setText(e.getMessage());
         }
-
-        //TODO insert Picasso here, Policy only memory and disk
 
         Picasso.with(viewHolder.image.getContext())
                .load(paper.getImage())
@@ -215,40 +210,18 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
                    }
                });
 
-//        String hash = paper.getImageHash();
-//        if (!Strings.isNullOrEmpty(hash)) {
-//            if (!hash.equals(viewHolder.image.getTag())) {
-//                loadBitmap(hash, viewHolder.image);
-//
-//                viewHolder.image.setTag(hash);
-//            }
-//        } else {
-//            viewHolder.image.setImageResource(R.drawable.dummy);
-//        }
-
-        //        viewHolder.progress.setProgress(100 - progressMap.get(paper.getId()));
-
         if (paper.isDownloading()) {
             viewHolder.wait.setVisibility(View.VISIBLE);
         } else {
             viewHolder.wait.setVisibility(View.GONE);
         }
 
-//        if (paper.hasUpdate() /*&& paper.isDownloaded()*/) {
-//            viewHolder.badge.setText(R.string.string_badge_update);
-//            viewHolder.badge.setVisibility(View.VISIBLE);
-//        }
-
-        //        else if (paper.isImported()) {
-        //            viewHolder.badge.setText(R.string.string_badge_import);
-        //            viewHolder.badge.setVisibility(View.VISIBLE);
-        //        }
         if (paper.isKiosk()) {
             viewHolder.badge.setText(R.string.string_badge_kiosk);
             viewHolder.badge.setVisibility(View.VISIBLE);
         } else viewHolder.badge.setVisibility(View.GONE);
 
-        if (getSelected().contains(paper.getId())) viewHolder.selected.setVisibility(View.VISIBLE);
+        if (getSelected().contains(paper.getBookId())) viewHolder.selected.setVisibility(View.VISIBLE);
         else viewHolder.selected.setVisibility(View.INVISIBLE);
 
         try {
@@ -506,20 +479,20 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
         }
 
         public void setPaper(Paper paper) {
-            if (paper != _paper) {
-                if (downloadProgressThread != null) downloadProgressThread.interrupt();
-                this._paper = paper;
-                if (paper.isDownloaded()) setProgress(100);
-                else {
-                    if (paper.isDownloading()) {
-                        DownloadManager.DownloadState downloadState = downloadHelper.getDownloadState(paper.getDownloadId());
-                        setDownloadProgress(downloadState.getDownloadProgress());
-                        downloadProgressThread = downloadHelper.new DownloadProgressThread(paper.getDownloadId(), paper.getId());
-                        downloadProgressThread.start();
-                    } else setProgress(0);
-                }
-
-            }
+//            if (paper != _paper) {
+//                if (downloadProgressThread != null) downloadProgressThread.interrupt();
+//                this._paper = paper;
+//                if (paper.isDownloaded()) setProgress(100);
+//                else {
+//                    if (paper.isDownloading()) {
+//                        DownloadManager.DownloadState downloadState = downloadHelper.getDownloadState(paper.getDownloadId());
+//                        setDownloadProgress(downloadState.getDownloadProgress());
+//                        downloadProgressThread = downloadHelper.new DownloadProgressThread(paper.getDownloadId(), paper.getId());
+//                        downloadProgressThread.start();
+//                    } else setProgress(0);
+//                }
+//
+//            }
         }
 
 
@@ -537,20 +510,20 @@ public class LibraryAdapter extends CursorRecyclerViewAdapter<LibraryAdapter.Vie
 
         @Subscribe(threadMode = ThreadMode.MAIN)
         public void onDownloadProgress(DownloadProgressEvent event) {
-            if (_paper != null) {
-                if (_paper.getId() == event.getPaperId()) {
-                    setDownloadProgress(event.getProgress());
-                }
-            }
+//            if (_paper != null) {
+//                if (_paper.getId() == event.getPaperId()) {
+//                    setDownloadProgress(event.getProgress());
+//                }
+//            }
         }
 
         @Subscribe(threadMode = ThreadMode.MAIN)
         public void onUnzipProgress(UnzipProgressEvent event) {
-            if (_paper != null) {
-                if (_paper.getId() == event.getPaperId()) {
-                    setUnzipProgress(event.getProgress());
-                }
-            }
+//            if (_paper != null) {
+//                if (_paper.getId() == event.getPaperId()) {
+//                    setUnzipProgress(event.getProgress());
+//                }
+//            }
         }
     }
 

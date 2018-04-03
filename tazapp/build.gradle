@@ -133,7 +133,8 @@ android {
         versionName "${versionMajor}.${versionMinor}.${versionPatch}"
         javaCompileOptions {
             annotationProcessorOptions {
-                arguments = [eventBusIndex: 'de.thecode.android.tazreader.eventbus.EventBusIndex']
+                arguments = [eventBusIndex        : 'de.thecode.android.tazreader.eventbus.EventBusIndex',
+                             "room.schemaLocation": "$projectDir/schemas".toString()]
             }
         }
     }
@@ -313,7 +314,7 @@ dependencies {
     implementation 'com.scottyab:aescrypt:0.0.1'
     implementation 'com.github.matecode:Snacky:1.0.3'
     implementation 'com.github.matecode:DataFragment:1.0.2'
-    implementation ('com.github.matecode:androiddialog:1.2.32'){
+    implementation('com.github.matecode:androiddialog:1.2.32') {
         exclude group: 'commons-io', module: 'commons-io'
     }
     implementation 'commons-io:commons-io:2.6'
@@ -323,8 +324,10 @@ dependencies {
     implementation 'com.android.support.constraint:constraint-layout:1.0.2'
 
     implementation 'android.arch.lifecycle:extensions:1.1.1'
-    implementation "android.arch.lifecycle:common-java8:1.1.1"
     implementation "android.arch.persistence.room:runtime:1.0.0"
+    annotationProcessor "android.arch.persistence.room:compiler:1.0.0"
+    implementation "android.arch.lifecycle:common-java8:1.1.1"
+
 }
 
 class Download extends DefaultTask {

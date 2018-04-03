@@ -43,7 +43,8 @@ public class DownloadFinishedResourceJob extends Job {
         PersistableBundleCompat extras = params.getExtras();
         String resourceKey = extras.getString(ARG_RESOURCE_KEY, null);
         if (!TextUtils.isEmpty(resourceKey)) {
-            Resource resource = ResourceRepository.getInstance(getContext()).getWithKey(resourceKey);
+            Resource resource = ResourceRepository.getInstance(getContext())
+                                                  .getWithKey(resourceKey);
             Timber.i("%s", resource);
             if (resource != null && resource.isDownloading()) {
                 StorageManager storageManager = StorageManager.getInstance(getContext());
@@ -69,10 +70,12 @@ public class DownloadFinishedResourceJob extends Job {
             resource.setDownloadId(0);
             resource.setDownloaded(true);
             getContext().getContentResolver()
-                        .update(Uri.withAppendedPath(Resource.CONTENT_URI, resource.getKey()),
-                                resource.getContentValues(),
-                                null,
-                                null);
+                        .insert(Resource.CONTENT_URI, resource.getContentValues());
+//            getContext().getContentResolver()
+//                        .update(Uri.withAppendedPath(Resource.CONTENT_URI, resource.getKey()),
+//                                resource.getContentValues(),
+//                                null,
+//                                null);
             EventBus.getDefault()
                     .post(new ResourceDownloadEvent(resource.getKey()));
         } else {

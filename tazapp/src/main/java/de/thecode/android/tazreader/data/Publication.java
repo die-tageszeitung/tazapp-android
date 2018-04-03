@@ -8,6 +8,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.BaseColumns;
+import android.support.annotation.NonNull;
 
 import com.dd.plist.NSDictionary;
 
@@ -37,6 +38,7 @@ public class Publication {
     }
 
     @PrimaryKey
+    @NonNull
     private String issueName;
     private String typeName;
     private String name;
@@ -45,7 +47,10 @@ public class Publication {
     private long created;
     private long validUntil;
     private String appAndroidVersion;
-    
+
+    public Publication() {
+    }
+
     public Publication(Cursor cursor)
     {
 //        this.id=cursor.getLong(cursor.getColumnIndex(Columns._ID));

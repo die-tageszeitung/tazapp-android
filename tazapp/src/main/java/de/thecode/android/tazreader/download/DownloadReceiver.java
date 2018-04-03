@@ -104,15 +104,19 @@ public class DownloadReceiver extends BroadcastReceiver {
                         //AnalyticsWrapper.getInstance().logException(exception);
                         paper.setDownloadId(0);
                         context.getContentResolver()
-                               .update(TazProvider.getContentUri(Paper.CONTENT_URI, paper.getBookId()),
-                                       paper.getContentValues(),
-                                       null,
-                                       null);
+                               .insert(Paper.CONTENT_URI, paper.getContentValues() );
+
+//                        context.getContentResolver()
+//                               .update(TazProvider.getContentUri(Paper.CONTENT_URI, paper.getBookId()),
+//                                       paper.getContentValues(),
+//                                       null,
+//                                       null);
                         if (externalStorage.getDownloadFile(paper)
                                            .exists()) //noinspection ResultOfMethodCallIgnored
                             externalStorage.getDownloadFile(paper)
                                            .delete();
-                        new NotificationUtils(context).showDownloadErrorNotification(paper, context.getString(R.string.download_error_hints));
+                        new NotificationUtils(context).showDownloadErrorNotification(paper,
+                                                                                     context.getString(R.string.download_error_hints));
                         //NotificationHelper.showDownloadErrorNotification(context, null, paper.getId());
 
                         EventBus.getDefault()
@@ -166,11 +170,12 @@ public class DownloadReceiver extends BroadcastReceiver {
                     } catch (DownloadException e) {
                         Timber.e(e);
                         resource.setDownloadId(0);
-                        context.getContentResolver()
-                               .update(Uri.withAppendedPath(Resource.CONTENT_URI, resource.getKey()),
-                                       resource.getContentValues(),
-                                       null,
-                                       null);
+                        context.getContentResolver().insert(Resource.CONTENT_URI,resource.getContentValues());
+//                        context.getContentResolver()
+//                               .update(Uri.withAppendedPath(Resource.CONTENT_URI, resource.getKey()),
+//                                       resource.getContentValues(),
+//                                       null,
+//                                       null);
                         EventBus.getDefault()
                                 .post(new ResourceDownloadEvent(resource.getKey(), e));
                     }

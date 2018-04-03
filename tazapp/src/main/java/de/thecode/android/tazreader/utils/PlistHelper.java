@@ -9,14 +9,12 @@ import com.dd.plist.NSString;
 public class PlistHelper {
 
     public static String getString(NSDictionary dict, String key) {
-        if (dict.containsKey(key))
-            return getString(dict.get(key));
-        return null;
+        if (dict.containsKey(key)) return getString(dict.get(key));
+        throw new NullPointerException("key " + key + "is not Allowed to be null");
     }
 
     public static Integer getInt(NSDictionary dict, String key) {
-        if (dict != null && dict.containsKey(key))
-            return getInt(dict.get(key));
+        if (dict != null && dict.containsKey(key)) return getInt(dict.get(key));
         return null;
     }
 
@@ -25,14 +23,12 @@ public class PlistHelper {
     }
 
     public static Long getLong(NSDictionary dict, String key) {
-        if (dict.containsKey(key))
-            return getLong(dict.get(key));
+        if (dict.containsKey(key)) return getLong(dict.get(key));
         return null;
     }
 
     public static Float getFloat(NSDictionary dict, String key) {
-        if (dict.containsKey(key))
-            return getFloat(dict.get(key));
+        if (dict.containsKey(key)) return getFloat(dict.get(key));
         return null;
     }
 
@@ -47,8 +43,7 @@ public class PlistHelper {
     public static Integer getInt(NSObject object) {
         NSNumber temp = getNumber(object);
         if (temp != null) {
-            if (temp.isInteger())
-                return temp.intValue();
+            if (temp.isInteger()) return temp.intValue();
         }
         return null;
     }
@@ -56,8 +51,7 @@ public class PlistHelper {
     public static boolean getBoolean(NSObject object) {
         NSNumber temp = getNumber(object);
         if (temp != null) {
-            if (temp.isBoolean())
-                return temp.boolValue();
+            if (temp.isBoolean()) return temp.boolValue();
         }
         return false;
     }
@@ -65,8 +59,7 @@ public class PlistHelper {
     public static Long getLong(NSObject object) {
         NSNumber temp = getNumber(object);
         if (temp != null) {
-            if (temp.isReal())
-                return temp.longValue();
+            if (temp.isReal()) return temp.longValue();
         }
         return null;
     }
@@ -74,10 +67,8 @@ public class PlistHelper {
     public static Float getFloat(NSObject object) {
         NSNumber temp = getNumber(object);
         if (temp != null) {
-            if (temp.isReal())
-                return temp.floatValue();
-            else
-                return (float)temp.intValue();
+            if (temp.isReal()) return temp.floatValue();
+            else return (float) temp.intValue();
         }
         return null;
     }

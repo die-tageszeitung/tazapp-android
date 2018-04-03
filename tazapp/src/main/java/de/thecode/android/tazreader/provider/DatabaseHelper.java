@@ -27,9 +27,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(CREATE_PAPER_V8);
-        db.execSQL(CREATE_STORE_V7);
+        db.execSQL(CREATE_STORE_V8);
         db.execSQL(CREATE_PUBLICATION_V8);
-        db.execSQL(CREATE_RESOURCE_V6);
+        db.execSQL(CREATE_RESOURCE_V8);
     }
 
     @Override
@@ -68,7 +68,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("ALTER TABLE PAPER RENAME TO PAPER_REN;");
         db.execSQL(CREATE_PAPER_V8);
         db.execSQL(
-                "INSERT INTO PAPER (_id,date,image,imageHash,link,fileHash,len,lastModified,bookId,resource,isDemo,hasUpdate,downloadId,isDownloaded,kiosk,imported,title,validUntil,publication) SELECT _id,date,image,imageHash,link,fileHash,len,lastModified,bookId,resource,isDemo,hasUpdate,downloadId,isDownloaded,kiosk,imported,title,validUntil,publicationId FROM PAPER_REN;");
+                "INSERT INTO PAPER (bookId,date,image,imageHash,link,fileHash,len,lastModified,resource,demo,hasUpdate,downloadId,downloaded,kiosk,imported,title,validUntil,publication) SELECT bookId,date,image,imageHash,link,fileHash,len,lastModified,resource,isDemo,hasUpdate,downloadId,isDownloaded,kiosk,imported,title,validUntil,publicationId FROM PAPER_REN;");
         db.execSQL("DROP TABLE PAPER_REN;");
         Cursor cursor = db.query("PUBLICATION", null, null, null, null, null, "_id ASC");
         try {
@@ -87,6 +87,20 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(
                 "INSERT INTO PUBLICATION (issueName,created,image,name,typeName,url,validUntil) SELECT issueName,created,image,name,typeName,url,validUntil FROM PUBLICATION_REN");
         db.execSQL("DROP TABLE PUBLICATION_REN;");
+
+
+        Timber.d("Umbenennen der alten Store Tabelle");
+        db.execSQL("ALTER TABLE STORE RENAME TO STORE_REN;");
+        Timber.d("Anlegen der neuen Store Tabelle");
+        db.execSQL(CREATE_STORE_V8);
+        db.execSQL("INSERT INTO STORE (path, value) SELECT key, value FROM STORE_REN;");
+        db.execSQL("DROP TABLE STORE_REN;");
+
+        db.execSQL("ALTER TABLE RESOURCE RENAME TO RESOURCE_REN;");
+        db.execSQL(CREATE_RESOURCE_V8);
+        db.execSQL("INSERT INTO RESOURCE (key,downloadId,downloaded,len,fileHash,url) SELECT key,downloadID,downloaded,len,fileHash,url FROM RESOURCE_REN");
+        db.execSQL("DROP TABLE RESOURCE_REN;");
+
     }
 
     private void upgradeFrom6To7(SQLiteDatabase db) {
@@ -190,7 +204,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     //---Version 8---
     private static final String CREATE_PUBLICATION_V8 = "CREATE TABLE IF NOT EXISTS PUBLICATION (issueName TEXT PRIMARY KEY,created INTEGER,image TEXT,name TEXT,typeName TEXT,url TEXT,validUntil INTEGER, appAndroidVersion INTEGER);";
-    private static final String CREATE_PAPER_V8       = "CREATE TABLE PAPER (_id INTEGER PRIMARY KEY,date TEXT,image TEXT,imageHash TEXT,link TEXT,fileHash TEXT,len INTEGER,lastModified INTEGER,bookId TEXT,resource TEXT,isDemo INTEGER,hasUpdate INTEGER,downloadId INTEGER,isDownloaded INTEGER,kiosk INTEGER,imported INTEGER,title TEXT,validUntil INTEGER,publication TEXT);";
+    private static final String CREATE_PAPER_V8       = "CREATE TABLE PAPER (bookId TEXT PRIMARY KEY,date TEXT,image TEXT,imageHash TEXT,link TEXT,fileHash TEXT,len INTEGER,lastModified INTEGER,resource TEXT,demo INTEGER,hasUpdate INTEGER,downloadId INTEGER,downloaded INTEGER,kiosk INTEGER,imported INTEGER,title TEXT,validUntil INTEGER,publication TEXT);";
+    private static final String CREATE_STORE_V8 = "CREATE TABLE IF NOT EXISTS STORE (path TEXT NOT NULL PRIMARY KEY, value TEXT);";
+    private static final String CREATE_RESOURCE_V8 = "CREATE TABLE RESOURCE (key TEXT PRIMARY KEY,downloadId INTEGER,downloaded INTEGER,len INTEGER,fileHash TEXT,url TEXT)";
 
     //---Version 7---
     private static final String CREATE_STORE_V7 = "CREATE TABLE IF NOT EXISTS STORE (key TEXT NOT NULL PRIMARY KEY, value TEXT);";
@@ -216,25 +232,17 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 
     //---Version 4---
-    private static final String CREATE_PAPER_V4 = "CREATE TABLE PAPER (_id INTEGER PRIMARY KEY,date TEXT,image TEXT,imageHash TEXT,link TEXT,fileHash TEXT,len INTEGER,lastModified INTEGER,bookId TEXT,resource TEXT," +
-//            Paper.Columns.RESOURCEFILEHASH + " TEXT," +
-//            Paper.Columns.RESOURCEURL + " TEXT," +
-            Paper.Columns.ISDEMO + " INTEGER,hasUpdate INTEGER,downloadId INTEGER,isDownloaded INTEGER,kiosk INTEGER,imported INTEGER,title TEXT,publicationId INTEGER" + ");";
+    private static final String CREATE_PAPER_V4 = "CREATE TABLE PAPER (_id INTEGER PRIMARY KEY,date TEXT,image TEXT,imageHash TEXT,link TEXT,fileHash TEXT,len INTEGER,lastModified INTEGER,bookId TEXT,resource TEXT,isDemo INTEGER,hasUpdate INTEGER,downloadId INTEGER,isDownloaded INTEGER,kiosk INTEGER,imported INTEGER,title TEXT,publicationId INTEGER" + ");";
 
     private static final String CREATE_STORE_V4 = "CREATE TABLE STORE (_id INTEGER PRIMARY KEY,key TEXT,value TEXT" + ");";
 
     private static final String CREATE_PUBLICATION_V4 = "CREATE TABLE PUBLICATION (_id INTEGER PRIMARY KEY,created INTEGER,image TEXT,issueName TEXT,name TEXT,typeName TEXT,url TEXT,validUntil INTEGER" + ");";
 
-    private static final String CREATE_RESOURCE_V4 = "CREATE TABLE RESOURCE (key TEXT PRIMARY KEY,downloadID INTEGER,downloaded INTEGER" + ")";
+    private static final String CREATE_RESOURCE_V4 = "CREATE TABLE RESOURCE (key TEXT PRIMARY KEY,downloadID INTEGER,downloaded INTEGER)";
 
 
     //---Version 3---
-    private static final String CREATE_PAPER_V3 = "CREATE TABLE PAPER (_id INTEGER PRIMARY KEY,date TEXT,image TEXT,imageHash TEXT,link TEXT,fileHash TEXT,len INTEGER,lastModified INTEGER,bookId TEXT,isDemo INTEGER," + "filename" + " TEXT," +
-            //                    Paper.Columns.TEMPFILEPATH + " TEXT," +
-            //                    Paper.Columns.TEMPFILENAME + " TEXT," +
-            Paper.Columns.HASUPDATE + " INTEGER,downloadId INTEGER," +
-            //                    Paper.Columns.DOWNLOADPROGRESS + " INTEGER," +
-            Paper.Columns.ISDOWNLOADED + " INTEGER,kiosk INTEGER,imported INTEGER,title TEXT,publicationId INTEGER" + ");";
+    private static final String CREATE_PAPER_V3 = "CREATE TABLE PAPER (_id INTEGER PRIMARY KEY,date TEXT,image TEXT,imageHash TEXT,link TEXT,fileHash TEXT,len INTEGER,lastModified INTEGER,bookId TEXT,isDemo INTEGER," + "filename" + " TEXT,hasUpdate INTEGER,downloadId INTEGER,isDownloaded INTEGER,kiosk INTEGER,imported INTEGER,title TEXT,publicationId INTEGER" + ");";
 
     private static final String CREATE_STORE_V3 = "CREATE TABLE STORE (_id INTEGER PRIMARY KEY,key TEXT,value TEXT" + ");";
 

@@ -2,7 +2,6 @@ package de.thecode.android.tazreader.importer;
 
 
 import android.content.ContentResolver;
-import android.content.ContentUris;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
@@ -270,7 +269,7 @@ public class ImportWorkerFragment extends BaseFragment {
                              .appendEncodedPath(metadata.getArchive())
                              .build()
                              .toString());
-            paper.setHasupdate(true);
+            paper.setHasUpdate(true);
         }
         paper.setImage(null);
         paper.setImageHash(null);

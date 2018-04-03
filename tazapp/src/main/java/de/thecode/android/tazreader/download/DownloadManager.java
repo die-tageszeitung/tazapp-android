@@ -2,7 +2,6 @@ package de.thecode.android.tazreader.download;
 
 import android.annotation.SuppressLint;
 import android.app.DownloadManager.Request;
-import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
@@ -124,8 +123,8 @@ public class DownloadManager {
 
         //paper.setDownloadprogress(0);
         paper.setDownloadId(downloadId);
-        paper.setIsdownloaded(false);
-        paper.setHasupdate(false);
+        paper.setDownloaded(false);
+        paper.setHasUpdate(false);
 
         mContext.getContentResolver()
                 .insert(Paper.CONTENT_URI,paper.getContentValues());
@@ -217,12 +216,12 @@ public class DownloadManager {
             Timber.i("... download requested at android download manager, id: %d", downloadId);
 
             resource.setDownloadId(downloadId);
-
-            mContext.getContentResolver()
-                    .update(Uri.withAppendedPath(Resource.CONTENT_URI, resource.getKey()),
-                            resource.getContentValues(),
-                            null,
-                            null);
+            mContext.getContentResolver().insert(Resource.CONTENT_URI,resource.getContentValues());
+//            mContext.getContentResolver()
+//                    .update(Uri.withAppendedPath(Resource.CONTENT_URI, resource.getKey()),
+//                            resource.getContentValues(),
+//                            null,
+//                            null);
         }
 
     }

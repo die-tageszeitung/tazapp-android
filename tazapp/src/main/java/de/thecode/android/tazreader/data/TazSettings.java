@@ -40,7 +40,7 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
         public static final  String KEEPSCREEN                  = "KeepScreen";
         public static final  String ORIENTATION                 = "Orientation";
         public static final  String LASTACTIVITY                = "lastActivity";
-        public static final  String LASTOPENPAPER               = "lastOpenPaper";
+        private static final  String LASTOPENPAPER               = "lastOpenPaper";
         public static final  String LASTVERSION                 = "lastVersion";
         public static final  String FISRTSTART                  = "firstStart";
         //        public static final String PAGING = "paging";
@@ -281,6 +281,8 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
                          .putBoolean(PREFKEY.INDEXALWAYSEXPANDED, isAlwaysExpanded)
                          .apply();
     }
+
+
 
     public boolean isTapBorderToTurnPage() {
         return sharedPreferences.getBoolean(PREFKEY.PAGETAPBORDERTOTURN, true);
