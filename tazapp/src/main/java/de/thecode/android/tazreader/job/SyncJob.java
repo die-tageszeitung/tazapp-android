@@ -1,7 +1,6 @@
 package de.thecode.android.tazreader.job;
 
 import android.database.Cursor;
-import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
@@ -17,6 +16,7 @@ import com.squareup.picasso.Picasso;
 import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
+import de.thecode.android.tazreader.data.PaperRepository;
 import de.thecode.android.tazreader.data.Publication;
 import de.thecode.android.tazreader.data.Resource;
 import de.thecode.android.tazreader.data.ResourceRepository;
@@ -25,6 +25,8 @@ import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.download.DownloadManager;
 import de.thecode.android.tazreader.okhttp3.OkHttp3Helper;
 import de.thecode.android.tazreader.okhttp3.RequestHelper;
+import de.thecode.android.tazreader.room.AppDatabase;
+import de.thecode.android.tazreader.room.ResourceDao;
 import de.thecode.android.tazreader.start.ScrollToPaperEvent;
 import de.thecode.android.tazreader.sync.SyncErrorEvent;
 import de.thecode.android.tazreader.sync.SyncStateChangedEvent;
@@ -62,6 +64,7 @@ public class SyncJob extends Job {
 
     private Paper moveToPaperAtEnd;
 
+    AppDatabase appDatabase;
 
     @NonNull
     @Override
@@ -69,6 +72,8 @@ public class SyncJob extends Job {
 
         EventBus.getDefault()
                 .postSticky(new SyncStateChangedEvent(true));
+
+        appDatabase = AppDatabase.getInstance(getContext());
 
         PersistableBundleCompat extras = params.getExtras();
 
@@ -93,7 +98,7 @@ public class SyncJob extends Job {
         }
 
         if (startDate == null && endDate == null) {
-            downloadLatestRessource();
+            downloadLatestResource();
         }
 
         cleanUpResources();
@@ -161,7 +166,10 @@ public class SyncJob extends Job {
         SyncJob.scheduleJobIn(TimeUnit.SECONDS.toMillis(validUntil) - System.currentTimeMillis());
         //minDataValidUntil = Math.min(minDataValidUntil, validUntil * 1000);
 
-        getContext().getContentResolver().insert(Publication.CONTENT_URI,publication.getContentValues());
+        appDatabase.publicationDao()
+                   .insert(publication);
+
+//        getContext().getContentResolver().insert(Publication.CONTENT_URI,publication.getContentValues());
 
 //        try {
 //            if (pubCursor.moveToNext()) {
@@ -189,48 +197,58 @@ public class SyncJob extends Job {
 //        }
 
         NSObject[] issues = ((NSArray) root.objectForKey(PLIST_KEY_ISSUES)).getArray();
+        List<Paper> newPapers = new ArrayList<>();
         for (NSObject issue : issues) {
             Paper newPaper = new Paper((NSDictionary) issue);
             newPaper.setPublication(publication.getIssueName());
             newPaper.setTitle(publicationTitle);
             newPaper.setValidUntil(validUntil);
 
-            Uri bookIdUri = Paper.CONTENT_URI.buildUpon()
-                                             .appendPath(newPaper.getBookId())
-                                             .build();
-            Cursor cursor = getContext().getContentResolver()
-                                        .query(bookIdUri,
-                                               null, /*Paper.Columns.IMPORTED + "=0 AND " + Paper.Columns.KIOSK + "=0"*/
-                                               null,
-                                               null,
-                                              null);
+//            Uri bookIdUri = Paper.CONTENT_URI.buildUpon()
+//                                             .appendPath(newPaper.getBookId())
+//                                             .build();
+//            Cursor cursor = getContext().getContentResolver()
+//                                        .query(bookIdUri,
+//                                               null, /*Paper.Columns.IMPORTED + "=0 AND " + Paper.Columns.KIOSK + "=0"*/
+//                                               null,
+//                                               null,
+//                                               null);
 
             boolean loadImage = true;
 
-            try {
-                if (cursor.moveToNext()) {
-                    Paper oldPaper = new Paper(cursor);
-                    newPaper.setDownloaded(oldPaper.isDownloaded());
-                    newPaper.setDownloadId(oldPaper.getDownloadId());
-                    newPaper.setImported(oldPaper.isImported());
-                    newPaper.setKiosk(oldPaper.isKiosk());
-                    loadImage = !new EqualsBuilder().append(oldPaper.getImageHash(), newPaper.getImageHash())
-                                                    .isEquals();
-                    if (!oldPaper.isImported() && !oldPaper.isKiosk()) {
-                        if (!new EqualsBuilder().append(oldPaper.getFileHash(), newPaper.getFileHash())
-                                                .isEquals() && (oldPaper.isDownloaded() || oldPaper.isDownloading()))
-                            newPaper.setHasUpdate(true);
-                    }
-                } } finally { cursor.close();}
-            if (loadImage) preLoadImage(newPaper);
-            getContext().getContentResolver().insert(Paper.CONTENT_URI,newPaper.getContentValues());
-            Resource resource = ResourceRepository.getInstance(getContext())
-                                                  .getWithKey(newPaper.getResource());
-            if (resource == null) {
-                resource = new Resource((NSDictionary) issue);
-                getContext().getContentResolver()
-                            .insert(Resource.CONTENT_URI, resource.getContentValues());
+            Paper oldPaper = appDatabase.paperDao()
+                                        .getPaper(newPaper.getBookId());
+            if (oldPaper != null) {
+                newPaper.setDownloaded(oldPaper.isDownloaded());
+                newPaper.setDownloadId(oldPaper.getDownloadId());
+                newPaper.setImported(oldPaper.isImported());
+                newPaper.setKiosk(oldPaper.isKiosk());
+                loadImage = !new EqualsBuilder().append(oldPaper.getImageHash(), newPaper.getImageHash())
+                                                .isEquals();
+                if (!oldPaper.isImported() && !oldPaper.isKiosk()) {
+                    if (!new EqualsBuilder().append(oldPaper.getFileHash(), newPaper.getFileHash())
+                                            .isEquals() && (oldPaper.isDownloaded() || oldPaper.isDownloading()))
+                        newPaper.setHasUpdate(true);
+                }
             }
+            if (loadImage) preLoadImage(newPaper);
+            newPapers.add(newPaper);
+//            getContext().getContentResolver()
+//                        .insert(Paper.CONTENT_URI, newPaper.getContentValues());
+            Resource resource = appDatabase.resourceDao()
+                                           .resourceWithKey(newPaper.getResource());
+            if (resource == null) {
+                appDatabase.resourceDao()
+                           .insert(new Resource((NSDictionary) issue));
+            }
+
+//            Resource resource = ResourceRepository.getInstance(getContext())
+//                                                  .getWithKey(newPaper.getResource());
+//            if (resource == null) {
+//                resource = new Resource((NSDictionary) issue);
+//                getContext().getContentResolver()
+//                            .insert(Resource.CONTENT_URI, resource.getContentValues());
+//            }
 
 
 //                    if (!newPaper.equals(oldPaper)) {
@@ -289,6 +307,8 @@ public class SyncJob extends Job {
 
 
         }
+        appDatabase.paperDao()
+                   .insert(newPapers);
     }
 
     private NSDictionary callPlist(String startDate, String endDate) {
@@ -352,11 +372,12 @@ public class SyncJob extends Job {
         }
     }
 
-    private void downloadLatestRessource() {
-        Paper latestPaper = Paper.getLatestPaper(getContext());
+    private void downloadLatestResource() {
+        Paper latestPaper = appDatabase.paperDao()
+                                       .getLatestPaper();
         if (latestPaper != null) {
-            Resource latestResource = ResourceRepository.getInstance(getContext())
-                                                        .getWithKey(latestPaper.getResource());
+            Resource latestResource = appDatabase.resourceDao()
+                                                 .resourceWithKey(latestPaper.getResource());
             if (latestResource != null && !latestResource.isDownloaded() && !latestResource.isDownloading()) {
                 try {
                     DownloadManager.getInstance(getContext())
@@ -383,23 +404,18 @@ public class SyncJob extends Job {
             int papersToKeep = TazSettings.getInstance(getContext())
                                           .getPrefInt(TazSettings.PREFKEY.AUTODELETE_VALUE, 0);
             if (papersToKeep > 0) {
-                Cursor deletePapersCursor = getContext().getContentResolver()
-                                                        .query(Paper.CONTENT_URI,
-                                                               null,
-                                                               Paper.Columns.DOWNLOADED + "=1 AND " + Paper.Columns.IMPORTED + "!=1 AND " + Paper.Columns.KIOSK + "!=1",
-                                                               null,
-                                                               Paper.Columns.DATE + " DESC");
-                try {
-                    int counter = 0;
-                    while (deletePapersCursor.moveToNext()) {
+                List<Paper> allPapers = appDatabase.paperDao()
+                                                   .getAllPapers();
+                int counter = 0;
+                for (Paper paper : allPapers) {
+                    if (paper.isDownloaded() && !paper.isImported() && !paper.isKiosk()) {
                         if (counter >= papersToKeep) {
-                            Paper deletePaper = new Paper(deletePapersCursor);
-                            Timber.d("PaperId: %s (currentOpen:%s)", deletePaper.getBookId(), currentOpenPaperBookId);
-                            if (!deletePaper.getBookId()
-                                            .equals(currentOpenPaperBookId)) {
+                            Timber.d("PaperId: %s (currentOpen:%s)", paper.getBookId(), currentOpenPaperBookId);
+                            if (!paper.getBookId()
+                                      .equals(currentOpenPaperBookId)) {
                                 boolean safeToDelete = true;
                                 String bookmarksJsonString = StoreRepository.getInstance(getContext())
-                                                                            .getStore(deletePaper.getBookId(),
+                                                                            .getStore(paper.getBookId(),
                                                                                       Paper.STORE_KEY_BOOKMARKS)
                                                                             .getValue();
                                 if (!TextUtils.isEmpty(bookmarksJsonString)) {
@@ -412,14 +428,13 @@ public class SyncJob extends Job {
                                     }
                                 }
                                 if (safeToDelete) {
-                                    deletePaper.delete(getContext());
+                                    PaperRepository.getInstance(getContext())
+                                                   .deletePaper(paper);
                                 }
                             }
                         }
                         counter++;
                     }
-                } finally {
-                    deletePapersCursor.close();
                 }
             }
         }

@@ -272,6 +272,10 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
                          .apply();
     }
 
+    public void addDemoModeListener(OnPreferenceChangeListener<Boolean> listener) {
+        addOnPreferenceChangeListener(PREFKEY.DEMOMODE,listener);
+    }
+
     public boolean isIndexAlwaysExpanded() {
         return sharedPreferences.getBoolean(PREFKEY.INDEXALWAYSEXPANDED, false);
     }

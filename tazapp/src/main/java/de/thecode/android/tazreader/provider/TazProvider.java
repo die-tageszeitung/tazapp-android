@@ -290,20 +290,20 @@ public class TazProvider extends ContentProvider {
         switch (match) {
             case STORE_DIR:
                 //FIXME Prüfen ob Key vorhanden
-                rowId = mDb.insert(Store.TABLE_NAME, OnConflictStrategy.REPLACE, values);
+                rowId = mDb.insert(Store.TABLE_NAME, SQLiteDatabase.CONFLICT_REPLACE, values);
 //                rowId = mDb.insertWithOnConflict(Store.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE);
                 break;
             case PAPER_DIR:
 //                rowId = mDb.insert(Paper.TABLE_NAME, null, values);
-                rowId = mDb.insert(Paper.TABLE_NAME, OnConflictStrategy.REPLACE, values);
+                rowId = mDb.insert(Paper.TABLE_NAME, SQLiteDatabase.CONFLICT_REPLACE, values);
 //                rowId = mDb.insertWithOnConflict(Paper.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE);
                 break;
             case PUBLICATION_DIR:
-                rowId = mDb.insert(Publication.TABLE_NAME, OnConflictStrategy.REPLACE, values);
+                rowId = mDb.insert(Publication.TABLE_NAME, SQLiteDatabase.CONFLICT_REPLACE, values);
 //                rowId = mDb.insertWithOnConflict(Publication.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE);
                 break;
             case RESOURCE_DIR:
-                rowId = mDb.insert(Resource.TABLE_NAME, OnConflictStrategy.REPLACE, values);
+                rowId = mDb.insert(Resource.TABLE_NAME, SQLiteDatabase.CONFLICT_REPLACE, values);
 //                rowId = mDb.insert(Resource.TABLE_NAME, null, values);
 //                if (rowId > -1) {
 //                    Uri contentUri = Uri.withAppendedPath(uri, values.getAsString(Resource.Columns.KEY));

@@ -1,6 +1,8 @@
-package de.thecode.android.tazreader.start;
+package de.thecode.android.tazreader.start.library;
 
 
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -25,6 +27,10 @@ import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.download.CoverDownloadedEvent;
 import de.thecode.android.tazreader.job.SyncJob;
+import de.thecode.android.tazreader.start.DrawerStateChangedEvent;
+import de.thecode.android.tazreader.start.IStartCallback;
+import de.thecode.android.tazreader.start.ScrollToPaperEvent;
+import de.thecode.android.tazreader.start.StartViewModel;
 import de.thecode.android.tazreader.sync.SyncStateChangedEvent;
 import de.thecode.android.tazreader.utils.BaseFragment;
 import de.thecode.android.tazreader.widget.AutofitRecyclerView;
@@ -34,6 +40,7 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.lang.ref.WeakReference;
+import java.util.List;
 
 import timber.log.Timber;
 
@@ -44,7 +51,8 @@ public class LibraryFragment extends BaseFragment
         implements LoaderManager.LoaderCallbacks<Cursor>, LibraryAdapter.OnItemClickListener,
         LibraryAdapter.OnItemLongClickListener {
     WeakReference<IStartCallback> callback;
-//    LibraryAdapter                adapter;
+    //    LibraryAdapter                adapter;
+    NewLibraryAdapter             adapter;
     SwipeRefreshLayout            swipeRefresh;
 
     ActionMode actionMode;
@@ -53,6 +61,8 @@ public class LibraryFragment extends BaseFragment
 
     private AutofitRecyclerView  recyclerView;
     private FloatingActionButton fabArchive;
+
+    private StartViewModel startViewModel;
 
     private TazSettings.OnPreferenceChangeListener demoModeChangedListener = new TazSettings.OnPreferenceChangeListener<Boolean>() {
         @Override
@@ -65,6 +75,73 @@ public class LibraryFragment extends BaseFragment
         // Required empty public constructor
     }
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        startViewModel = ViewModelProviders.of(getActivity())
+                                           .get(StartViewModel.class);
+
+        adapter = new NewLibraryAdapter(new NewLibraryAdapter.OnItemClickListener() {
+            @Override
+            public void onClick(LibraryPaper libraryPaper, int position) {
+
+                Timber.d("position: %s, paper: %s", position, libraryPaper);
+                if (actionMode != null) onLongClick(libraryPaper,position);
+                else {
+                    Paper paper = libraryPaper.getPaper();
+                    switch (paper.getState()) {
+                        case Paper.DOWNLOADED_READABLE:
+                        case Paper.DOWNLOADED_BUT_UPDATE:
+                            //openPlayer(paper.getId());
+                            if (hasCallback()) getCallback().openReader(paper.getBookId());
+                            break;
+                        case Paper.IS_DOWNLOADING:
+
+                            break;
+
+                        case Paper.NOT_DOWNLOADED:
+                        case Paper.NOT_DOWNLOADED_IMPORT:
+                            try {
+                                if (hasCallback()) getCallback().startDownload(paper.getBookId());
+                            } catch (Paper.PaperNotFoundException e) {
+                                Timber.e(e);
+                            }
+                            break;
+
+                    }
+
+                }
+
+            }
+
+            @Override
+            public void onLongClick(LibraryPaper libraryPaper, int position) {
+
+            }
+        });
+
+//        startViewModel.getLivePapers()
+//                      .observe(this, new Observer<List<Paper>>() {
+//                          @Override
+//                          public void onChanged(@Nullable List<Paper> papers) {
+//                              for (Paper paper : papers) {
+//                                  Timber.i("%s",paper);
+//                              }
+//                              Timber.i("xxx");
+//                              adapter.submitList(papers);
+//                          }
+//                      });
+
+        startViewModel.getLibraryPaperLiveData()
+                      .observe(this, new Observer<List<LibraryPaper>>() {
+                          @Override
+                          public void onChanged(@Nullable List<LibraryPaper> libraryPapers) {
+                              Timber.i("xxx");
+                              adapter.submitList(libraryPapers);
+                          }
+                      });
+
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -91,6 +168,7 @@ public class LibraryFragment extends BaseFragment
 
         recyclerView = (AutofitRecyclerView) view.findViewById(R.id.recycler);
         recyclerView.setHasFixedSize(true);
+        recyclerView.setAdapter(adapter);
 
 //        adapter = new LibraryAdapter(getActivity(), null, getCallback());
 //        adapter.setHasStableIds(true);
@@ -223,15 +301,15 @@ public class LibraryFragment extends BaseFragment
     @Override
     public void onDestroyView() {
 
-        int firstVisible = recyclerView.findFirstVisibleItemPosition();
-        int lastVisible = recyclerView.findLastVisibleItemPosition();
-        for (int i = firstVisible; i <= lastVisible; i++) {
-            LibraryAdapter.ViewHolder vh = (LibraryAdapter.ViewHolder) recyclerView.findViewHolderForLayoutPosition(i);
-            if (vh != null) {
-                EventBus.getDefault()
-                        .unregister(vh);
-            }
-        }
+//        int firstVisible = recyclerView.findFirstVisibleItemPosition();
+//        int lastVisible = recyclerView.findLastVisibleItemPosition();
+//        for (int i = firstVisible; i <= lastVisible; i++) {
+//            LibraryAdapter.ViewHolder vh = (LibraryAdapter.ViewHolder) recyclerView.findViewHolderForLayoutPosition(i);
+//            if (vh != null) {
+//                EventBus.getDefault()
+//                        .unregister(vh);
+//            }
+//        }
 //        adapter.destroy();
         super.onDestroyView();
     }
@@ -313,8 +391,7 @@ public class LibraryFragment extends BaseFragment
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onCoverDowloaded(CoverDownloadedEvent event) {
         try {
-            LibraryAdapter.ViewHolder viewHolder = (LibraryAdapter.ViewHolder) recyclerView.findViewHolderForItemId(
-                    event.getPaperId());
+            LibraryAdapter.ViewHolder viewHolder = (LibraryAdapter.ViewHolder) recyclerView.findViewHolderForItemId(event.getPaperId());
             if (viewHolder != null) viewHolder.image.setTag(null);
 //            adapter.notifyItemChanged(adapter.getItemPosition(event.getPaperId()));
         } catch (IllegalStateException e) {

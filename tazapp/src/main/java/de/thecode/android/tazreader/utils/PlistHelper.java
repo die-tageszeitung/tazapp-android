@@ -10,7 +10,7 @@ public class PlistHelper {
 
     public static String getString(NSDictionary dict, String key) {
         if (dict.containsKey(key)) return getString(dict.get(key));
-        throw new NullPointerException("key " + key + "is not Allowed to be null");
+        return null;
     }
 
     public static Integer getInt(NSDictionary dict, String key) {

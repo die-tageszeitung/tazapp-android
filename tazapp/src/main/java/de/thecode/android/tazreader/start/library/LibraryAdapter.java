@@ -1,4 +1,4 @@
-package de.thecode.android.tazreader.start;
+package de.thecode.android.tazreader.start.library;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -27,6 +27,8 @@ import de.thecode.android.tazreader.download.DownloadManager;
 import de.thecode.android.tazreader.download.DownloadProgressEvent;
 import de.thecode.android.tazreader.download.PaperDownloadFailedEvent;
 import de.thecode.android.tazreader.download.UnzipProgressEvent;
+import de.thecode.android.tazreader.start.CursorRecyclerViewAdapter;
+import de.thecode.android.tazreader.start.IStartCallback;
 import de.thecode.android.tazreader.sync.PreloadImageCallback;
 
 import org.greenrobot.eventbus.EventBus;

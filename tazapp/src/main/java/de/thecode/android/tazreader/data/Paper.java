@@ -14,6 +14,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
+import android.support.annotation.WorkerThread;
 import android.text.TextUtils;
 
 import com.dd.plist.NSArray;
@@ -1592,6 +1593,7 @@ public class Paper {
 //        return StoreRepository.getInstance(context).saveStore(new Store(path,value));
 //    }
 
+    @WorkerThread
     public void delete(Context context) {
         StorageManager storage = StorageManager.getInstance(context);
         storage.deletePaperDir(this);

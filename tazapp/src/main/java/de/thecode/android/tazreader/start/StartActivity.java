@@ -51,6 +51,7 @@ import de.thecode.android.tazreader.job.SyncJob;
 import de.thecode.android.tazreader.migration.MigrationActivity;
 import de.thecode.android.tazreader.notifications.NotificationUtils;
 import de.thecode.android.tazreader.reader.ReaderActivity;
+import de.thecode.android.tazreader.start.library.LibraryFragment;
 import de.thecode.android.tazreader.sync.AccountHelper;
 import de.thecode.android.tazreader.sync.SyncErrorEvent;
 import de.thecode.android.tazreader.utils.BaseActivity;
