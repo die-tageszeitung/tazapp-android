@@ -3,15 +3,18 @@ package de.thecode.android.tazreader.download;
 import android.annotation.SuppressLint;
 import android.app.DownloadManager.Request;
 import android.content.Context;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.StatFs;
+import android.support.annotation.WorkerThread;
 import android.text.TextUtils;
 
 import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
+import de.thecode.android.tazreader.data.PaperRepository;
 import de.thecode.android.tazreader.data.Resource;
 import de.thecode.android.tazreader.data.ResourceRepository;
 import de.thecode.android.tazreader.data.Store;
@@ -37,110 +40,184 @@ import timber.log.Timber;
 
 public class DownloadManager {
 
-    android.app.DownloadManager mDownloadManager;
-    Context                     mContext;
-    StorageManager              mStorage;
-    UserAgentHelper             userAgentHelper;
-    RequestHelper               requestHelper;
+    private final android.app.DownloadManager mDownloadManager;
+    //    private final Context                     mContext;
+    private final StorageManager              mStorage;
+    private final UserAgentHelper             userAgentHelper;
+    private final RequestHelper               requestHelper;
+    private final TazSettings                 settings;
+    private final PaperRepository             paperRepository;
+    private final AccountHelper               accountHelper;
+    private final ResourceRepository resourceRepository;
+    private final StoreRepository storeRepository;
+    private final Resources appResources;
+    private final String packageName;
 
-    private static DownloadManager instance;
+    private static volatile DownloadManager instance;
 
     public static DownloadManager getInstance(Context context) {
-        if (instance == null) instance = new DownloadManager(context.getApplicationContext());
+        if (instance == null) {
+            synchronized (DownloadManager.class) {
+                if (instance == null) {
+                    instance = new DownloadManager(context.getApplicationContext());
+                }
+            }
+        }
         return instance;
     }
 
     private DownloadManager(Context context) {
         mDownloadManager = ((android.app.DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE));
-        mContext = context;
+//        mContext = context;
         mStorage = StorageManager.getInstance(context);
         userAgentHelper = UserAgentHelper.getInstance(context);
         requestHelper = RequestHelper.getInstance(context);
+        settings = TazSettings.getInstance(context);
+        paperRepository = PaperRepository.getInstance(context);
+        accountHelper = AccountHelper.getInstance(context);
+        resourceRepository = ResourceRepository.getInstance(context);
+        storeRepository = StoreRepository.getInstance(context);
+        appResources = context.getResources();
+        packageName = context.getPackageName();
     }
 
     public Uri getUriForDownloadedFile(long downloadId) {
         return mDownloadManager.getUriForDownloadedFile(downloadId);
     }
 
-    @SuppressLint("NewApi")
-    public void enquePaper(String bookId, boolean wifiOnly) throws IllegalArgumentException, Paper.PaperNotFoundException,
-            DownloadNotAllowedException, NotEnoughSpaceException {
+    public static class DownloadManagerResult {
+        public enum STATE {SUCCESS,NOMANAGER,NOTALLOWED,NOSPACE,UNKNOWN}
+        private STATE state = STATE.UNKNOWN;
+        private long downloadId = -1;
+        private String details;
 
-
-        Paper paper = Paper.getPaperWithBookId(mContext, bookId);
-        if (paper == null) throw new Paper.PaperNotFoundException();
-
-        if (TazSettings.getInstance(mContext)
-                       .isDemoMode() && !paper.isDemo()) throw new DownloadNotAllowedException();
-
-        Timber.i("requesting paper download: %s", paper);
-
-        Uri downloadUri = requestHelper.addToUri(Uri.parse(paper.getLink()));
-
-        Request request;
-        try {
-            request = new Request(downloadUri);
-        } catch (Exception e1) {
-            String httpUrl = paper.getLink()
-                                  .replace("https://", "http://");
-            request = new Request(requestHelper.addToUri(Uri.parse(httpUrl)));
-        }
-        addUserAgent(request);
-
-        if (!TextUtils.isEmpty(paper.getPublication())) {
-            request.addRequestHeader("Authorization",
-                                     "Basic " + Base64.encodeToString((AccountHelper.getInstance(mContext)
-                                                                                    .getUser(AccountHelper.ACCOUNT_DEMO_USER) + ":" + AccountHelper.getInstance(
-                                             mContext)
-                                                                                                                                                   .getPassword(
-                                                                                                                                                           AccountHelper.ACCOUNT_DEMO_PASS)).getBytes(),
-                                                                      Base64.NO_WRAP));
+        public void setDownloadId(long downloadId) {
+            this.downloadId = downloadId;
         }
 
-        File destinationFile = mStorage.getDownloadFile(paper);
-
-        if (destinationFile == null) throw new DownloadNotAllowedException("Fehler beim Ermitteln des Downloadverzeichnisses.");
-        if (destinationFile.exists()) {
-            if (!destinationFile.delete()) Timber.w("Cannot delete file %s",destinationFile.getAbsolutePath());
+        public void setState(STATE state) {
+            this.state = state;
         }
 
+        public void setDetails(String details) {
+            this.details = details;
+        }
 
-        assertEnoughSpaceForDownload(destinationFile.getParentFile(), calculateBytesNeeded(paper.getLen()));
+        public long getDownloadId() {
+            return downloadId;
+        }
 
-        request.setDestinationUri(Uri.fromFile(destinationFile));
+        public STATE getState() {
+            return state;
+        }
 
-        request.setMimeType("application/zip");
-
-        request.setTitle(paper.getTitelWithDate(mContext));
-
-        request.setNotificationVisibility(Request.VISIBILITY_VISIBLE);
-        request.setVisibleInDownloadsUi(false);
-        if (wifiOnly) request.setAllowedNetworkTypes(Request.NETWORK_WIFI);
-
-        long downloadId = mDownloadManager.enqueue(request);
-
-        Timber.i("... download requested at android download manager, id: %d", downloadId);
-
-        //paper.setDownloadprogress(0);
-        paper.setDownloadId(downloadId);
-        paper.setDownloaded(false);
-        paper.setHasUpdate(false);
-
-        mContext.getContentResolver()
-                .insert(Paper.CONTENT_URI,paper.getContentValues());
-//        mContext.getContentResolver()
-//                .update(ContentUris.withAppendedId(Paper.CONTENT_URI, paper.getId()), paper.getContentValues(), null, null);
-
-        if (!TextUtils.isEmpty(paper.getResource())) {
-            Resource resource = ResourceRepository.getInstance(mContext)
-                                                  .getWithKey(paper.getResource());
-            StoreRepository storeRepository = StoreRepository.getInstance(mContext);
-            Store resourcePartnerStore = storeRepository.getStore(paper.getBookId(), Paper.STORE_KEY_RESOURCE_PARTNER);
-            resourcePartnerStore.setValue(paper.getResource());
-            storeRepository.saveStore(resourcePartnerStore);
-            enqueResource(resource, wifiOnly);
+        public String getDetails() {
+            return details;
         }
     }
+
+    @WorkerThread
+    public DownloadManagerResult downloadPaper(String bookId, boolean wifiOnly) {
+
+        DownloadManagerResult result = new DownloadManagerResult();
+
+        try {
+
+            Paper paper = paperRepository.getPaperWithBookId(bookId);
+            if (paper == null) throw new Paper.PaperNotFoundException();
+
+            if (settings.isDemoMode() && !paper.isDemo()) throw new DownloadNotAllowedException();
+
+            Timber.i("requesting paper download: %s", paper);
+
+            Uri downloadUri = requestHelper.addToUri(Uri.parse(paper.getLink()));
+
+            Request request;
+            try {
+                request = new Request(downloadUri);
+            } catch (Exception e1) {
+                String httpUrl = paper.getLink()
+                                      .replace("https://", "http://");
+                request = new Request(requestHelper.addToUri(Uri.parse(httpUrl)));
+            }
+            addUserAgent(request);
+
+            if (!TextUtils.isEmpty(paper.getPublication())) {
+                request.addRequestHeader("Authorization",
+                                         "Basic " + Base64.encodeToString((accountHelper.getUser(AccountHelper.ACCOUNT_DEMO_USER) + ":" + accountHelper.getPassword(
+                                                 AccountHelper.ACCOUNT_DEMO_PASS)).getBytes(), Base64.NO_WRAP));
+            }
+
+            File destinationFile = mStorage.getDownloadFile(paper);
+
+            if (destinationFile == null) throw new DownloadNotAllowedException("Fehler beim Ermitteln des Downloadverzeichnisses.");
+            if (destinationFile.exists()) {
+                if (!destinationFile.delete()) Timber.w("Cannot delete file %s", destinationFile.getAbsolutePath());
+            }
+
+
+            assertEnoughSpaceForDownload(destinationFile.getParentFile(), calculateBytesNeeded(paper.getLen()));
+
+            request.setDestinationUri(Uri.fromFile(destinationFile));
+
+            request.setMimeType("application/zip");
+
+            request.setTitle(paper.getTitelWithDate(appResources));
+
+            request.setNotificationVisibility(Request.VISIBILITY_VISIBLE);
+            request.setVisibleInDownloadsUi(false);
+            if (wifiOnly) request.setAllowedNetworkTypes(Request.NETWORK_WIFI);
+
+            long downloadId = mDownloadManager.enqueue(request);
+            result.setDownloadId(downloadId);
+
+            Timber.i("... download requested at android download manager, id: %d", downloadId);
+
+            //paper.setDownloadprogress(0);
+            paper.setDownloadId(downloadId);
+            paper.setDownloaded(false);
+            paper.setHasUpdate(false);
+
+            paperRepository.savePaper(paper);
+            result.setState(DownloadManagerResult.STATE.SUCCESS);
+
+
+            if (!TextUtils.isEmpty(paper.getResource())) {
+                Resource resource = resourceRepository
+                        .getWithKey(paper.getResource());
+                Store resourcePartnerStore = storeRepository.getStore(paper.getBookId(), Paper.STORE_KEY_RESOURCE_PARTNER);
+                resourcePartnerStore.setValue(paper.getResource());
+                storeRepository.saveStore(resourcePartnerStore);
+                try {
+                    enqueResource(resource, wifiOnly);
+                } catch (Exception e) {
+                    Timber.w(e);
+                }
+            }
+
+        }
+        catch (Paper.PaperNotFoundException e) {
+            Timber.e(e);
+            result.setState(DownloadManagerResult.STATE.UNKNOWN);
+            result.setDetails(e.toString());
+        }
+        catch (IllegalArgumentException e) {
+            Timber.e(e);
+            result.setState(DownloadManagerResult.STATE.NOMANAGER);
+            result.setDetails(e.toString());
+        }
+        catch (NotEnoughSpaceException e) {
+            Timber.e(e);
+            result.setState(DownloadManagerResult.STATE.NOSPACE);
+            result.setDetails(e.toString());
+        } catch (DownloadNotAllowedException e) {
+            Timber.e(e);
+            result.setState(DownloadManagerResult.STATE.NOTALLOWED);
+            result.setDetails(e.toString());
+        }
+        return result;
+    }
+
 
     @SuppressLint("NewApi")
     public void enqueResource(Resource resource, boolean wifiOnly) throws IllegalArgumentException, NotEnoughSpaceException {
@@ -200,7 +277,7 @@ public class DownloadManager {
 
             File destinationFile = mStorage.getDownloadFile(resource);
             if (destinationFile.exists()) {
-                if (!destinationFile.delete()) Timber.w("Cannot delete file %s",destinationFile.getAbsolutePath());
+                if (!destinationFile.delete()) Timber.w("Cannot delete file %s", destinationFile.getAbsolutePath());
             }
 
             assertEnoughSpaceForDownload(destinationFile.getParentFile(), calculateBytesNeeded(resource.getLen()));
@@ -216,7 +293,11 @@ public class DownloadManager {
             Timber.i("... download requested at android download manager, id: %d", downloadId);
 
             resource.setDownloadId(downloadId);
-            mContext.getContentResolver().insert(Resource.CONTENT_URI,resource.getContentValues());
+
+            resourceRepository.saveResource(resource);
+
+//            mContext.getContentResolver()
+//                    .insert(Resource.CONTENT_URI, resource.getContentValues());
 //            mContext.getContentResolver()
 //                    .update(Uri.withAppendedPath(Resource.CONTENT_URI, resource.getKey()),
 //                            resource.getContentValues(),
@@ -234,21 +315,10 @@ public class DownloadManager {
         DownloadState state = getDownloadState(downloadId);
         if (state != null && state.getStatus() != DownloadState.STATUS_SUCCESSFUL) {
             if (mDownloadManager.remove(downloadId) > 0) {
-                Cursor cursor = mContext.getContentResolver()
-                                        .query(Paper.CONTENT_URI,
-                                               null,
-                                               Paper.Columns.DOWNLOADID + " = " + downloadId,
-                                               null,
-                                               null);
-                try {
-                    while (cursor.moveToNext()) {
-                        Paper removedPaper = new Paper(cursor);
-                        removedPaper.delete(mContext);
-                    }
-                } finally {
-                    cursor.close();
+                Paper paper = paperRepository.getPaperWithDownloadId(downloadId);
+                if (paper != null) {
+                    paperRepository.deletePaper(paper);
                 }
-
             }
         }
     }
@@ -407,10 +477,10 @@ public class DownloadManager {
          * hinterlegt und kann im erbenden Projekt überschrieben werden.
          */
         public String getReasonText() {
-            int id = mContext.getResources()
-                             .getIdentifier("download_reason_" + getReason(), "string", mContext.getPackageName());
+            int id = appResources
+                             .getIdentifier("download_reason_" + getReason(), "string", packageName);
             if (id == 0) id = R.string.download_reason_notext;
-            StringBuilder builder = new StringBuilder(mContext.getString(id)).append("(")
+            StringBuilder builder = new StringBuilder(appResources.getString(id)).append("(")
                                                                              .append(getReason())
                                                                              .append(")");
             return builder.toString();
@@ -423,17 +493,17 @@ public class DownloadManager {
         public String getStatusText() {
             switch (getStatus()) {
                 case STATUS_SUCCESSFUL:
-                    return mContext.getString(R.string.download_status_successful);
+                    return appResources.getString(R.string.download_status_successful);
                 case STATUS_FAILED:
-                    return mContext.getString(R.string.download_status_failed);
+                    return appResources.getString(R.string.download_status_failed);
                 case STATUS_PAUSED:
-                    return mContext.getString(R.string.download_status_paused);
+                    return appResources.getString(R.string.download_status_paused);
                 case STATUS_PENDING:
-                    return mContext.getString(R.string.download_status_pending);
+                    return appResources.getString(R.string.download_status_pending);
                 case STATUS_RUNNING:
-                    return mContext.getString(R.string.download_status_running);
+                    return appResources.getString(R.string.download_status_running);
                 default:
-                    return mContext.getString(R.string.download_status_unknown);
+                    return appResources.getString(R.string.download_status_unknown);
             }
         }
 
@@ -518,7 +588,7 @@ public class DownloadManager {
     }
 
 
-    public class DownloadNotAllowedException extends ReadableException {
+    public static class DownloadNotAllowedException extends ReadableException {
         public DownloadNotAllowedException() {
         }
 

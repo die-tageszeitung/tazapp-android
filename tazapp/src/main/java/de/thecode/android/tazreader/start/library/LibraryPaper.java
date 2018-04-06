@@ -54,4 +54,9 @@ public class LibraryPaper {
                                           .append(progress)
                                           .toHashCode();
     }
+
+    @Override
+    public String toString() {
+        return "LibraryPaper{" +paper.getBookId() + ", downloading="+ paper.isDownloading() + ", selected=" + selected + ", progress=" + progress + '}';
+    }
 }

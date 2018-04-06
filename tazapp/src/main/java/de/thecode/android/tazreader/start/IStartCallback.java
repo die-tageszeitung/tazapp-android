@@ -26,8 +26,6 @@ public interface IStartCallback {
 
     void openReader(String bookId);
 
-    void startDownload(String bookId) throws Paper.PaperNotFoundException;
-
     void callArchive();
 
     void showWaitDialog(String tag, String message);

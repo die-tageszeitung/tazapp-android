@@ -3,6 +3,7 @@ package de.thecode.android.tazreader.start.library;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
@@ -28,21 +29,26 @@ import de.thecode.android.tazreader.utils.TazListAdapter;
 
 import java.text.DateFormat;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.List;
 
 import timber.log.Timber;
 
-public class NewLibraryAdapter extends TazListAdapter<LibraryPaper,NewLibraryAdapter.ViewHolder>
-{
+public class NewLibraryAdapter extends TazListAdapter<LibraryPaper, NewLibraryAdapter.ViewHolder> {
+
+    private static final String PAYLOAD_PROGRESS = "plProgress";
+    private static final String PAYLOAD_SELECTED = "plSelected";
+    private static final String PAYLOAD_STATE = "plState";
 
     private final ViewHolder.OnClickListener clickListener = new ViewHolder.OnClickListener() {
         @Override
         public void onClick(int position) {
-            if (itemClickListener != null) itemClickListener.onClick(getItem(position),position);
+            if (itemClickListener != null) itemClickListener.onClick(getItem(position), position);
         }
 
         @Override
         public void onLongClick(int position) {
-            if (itemClickListener != null) itemClickListener.onLongClick(getItem(position),position);
+            if (itemClickListener != null) itemClickListener.onLongClick(getItem(position), position);
         }
     };
 
@@ -57,20 +63,34 @@ public class NewLibraryAdapter extends TazListAdapter<LibraryPaper,NewLibraryAda
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         return new ViewHolder(LayoutInflater.from(parent.getContext())
-                                            .inflate(R.layout.start_library_item, parent, false),clickListener);
+                                            .inflate(R.layout.start_library_item, parent, false), clickListener);
     }
+
+    @Override
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position, @NonNull List<Object> payloads) {
+        Timber.d("pos: %d payload: %s",position,payloads);
+        if (!payloads.isEmpty()) {
+            LibraryPaper libraryPaper = getItem(position);
+            if (payloads.contains(PAYLOAD_PROGRESS)) bindProgress(holder, libraryPaper);
+            if (payloads.contains(PAYLOAD_STATE)) bindState(holder, libraryPaper);
+            if (payloads.contains(PAYLOAD_SELECTED)) bindSelected(holder, libraryPaper);
+        } else super.onBindViewHolder(holder, position, payloads);
+    }
+
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         LibraryPaper libraryPaper = getItem(position);
         try {
-            holder.date.setText(libraryPaper.getPaper().getDate(DateFormat.MEDIUM));
+            holder.date.setText(libraryPaper.getPaper()
+                                            .getDate(DateFormat.MEDIUM));
         } catch (ParseException e) {
             holder.date.setText(e.getMessage());
         }
 
         Picasso.with(holder.image.getContext())
-               .load(libraryPaper.getPaper().getImage())
+               .load(libraryPaper.getPaper()
+                                 .getImage())
                .placeholder(R.drawable.dummy)
                .networkPolicy(NetworkPolicy.OFFLINE)
                .into(holder.image, new MissingCoverCallback(holder.image, libraryPaper.getPaper()) {
@@ -88,51 +108,76 @@ public class NewLibraryAdapter extends TazListAdapter<LibraryPaper,NewLibraryAda
                    }
                });
 
-        if (libraryPaper.getPaper().isDownloading()) {
-            holder.wait.setVisibility(View.VISIBLE);
-        } else {
-            holder.wait.setVisibility(View.GONE);
-        }
-
-        if (libraryPaper.getPaper().isKiosk()) {
+        if (libraryPaper.getPaper()
+                        .isKiosk()) {
             holder.badge.setText(R.string.string_badge_kiosk);
             holder.badge.setVisibility(View.VISIBLE);
         } else holder.badge.setVisibility(View.GONE);
-
-        if (libraryPaper.isSelected()) holder.selected.setVisibility(View.VISIBLE);
-        else holder.selected.setVisibility(View.INVISIBLE);
-
         try {
-            holder.card.setContentDescription(libraryPaper.getPaper().getDate(DateFormat.LONG));
+            holder.card.setContentDescription(libraryPaper.getPaper()
+                                                          .getDate(DateFormat.LONG));
         } catch (ParseException e) {
             Timber.e(e);
         }
 
-        holder.progress.setProgress(100-libraryPaper.getProgress());
+        bindProgress(holder, libraryPaper);
+        bindState(holder,libraryPaper);
+        bindSelected(holder, libraryPaper);
     }
+
+    private void bindProgress(ViewHolder holder, LibraryPaper libraryPaper) {
+        holder.progress.setProgress(100 - libraryPaper.getProgress());
+    }
+
+    private void bindState(ViewHolder holder, LibraryPaper libraryPaper) {
+        if (libraryPaper.getPaper()
+                        .isDownloading()) {
+            holder.wait.setVisibility(View.VISIBLE);
+        } else {
+            holder.wait.setVisibility(View.GONE);
+        }
+    }
+
+    private void bindSelected(ViewHolder holder, LibraryPaper libraryPaper){
+        if (libraryPaper.isSelected()) holder.selected.setVisibility(View.VISIBLE);
+        else holder.selected.setVisibility(View.INVISIBLE);
+    }
+
+
+
 
     private static class LibraryAdapterCallback extends DiffUtil.ItemCallback<LibraryPaper> {
 
         @Override
         public boolean areItemsTheSame(LibraryPaper oldItem, LibraryPaper newItem) {
-            return oldItem.getBookId().equals(newItem.getBookId());
+            return oldItem.getBookId()
+                          .equals(newItem.getBookId());
         }
 
         @Override
         public boolean areContentsTheSame(LibraryPaper oldItem, LibraryPaper newItem) {
             return oldItem.equals(newItem);
         }
+
+        @Override
+        public Object getChangePayload(LibraryPaper oldItem, LibraryPaper newItem) {
+            Timber.i("%s %s",oldItem,newItem);
+            if (oldItem.getPaper().isDownloading() != newItem.getPaper().isDownloading()) return PAYLOAD_STATE;
+            if (oldItem.isSelected() != newItem.isSelected()) return PAYLOAD_SELECTED;
+            if (oldItem.getProgress() != newItem.getProgress()) return PAYLOAD_PROGRESS;
+            return null;
+        }
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
 
-        CardView    card;
-        TextView    date;
-        TextView    badge;
-        ImageView   image;
-        ProgressBar wait;
-        ProgressBar progress;
-        FrameLayout selected;
+        CardView        card;
+        TextView        date;
+        TextView        badge;
+        ImageView       image;
+        ProgressBar     wait;
+        ProgressBar     progress;
+        FrameLayout     selected;
         OnClickListener clickListener;
 
         public ViewHolder(View itemView, OnClickListener clickListener) {
@@ -149,7 +194,9 @@ public class NewLibraryAdapter extends TazListAdapter<LibraryPaper,NewLibraryAda
                 DrawableCompat.setTint(wrapDrawable, ContextCompat.getColor(itemView.getContext(), R.color.library_item_text));
                 wait.setIndeterminateDrawable(DrawableCompat.unwrap(wrapDrawable));
             } else {
-                wait.getIndeterminateDrawable().setColorFilter(ContextCompat.getColor(itemView.getContext(), R.color.library_item_text), PorterDuff.Mode.SRC_IN);
+                wait.getIndeterminateDrawable()
+                    .setColorFilter(ContextCompat.getColor(itemView.getContext(), R.color.library_item_text),
+                                    PorterDuff.Mode.SRC_IN);
             }
             progress = itemView.findViewById(R.id.lib_item_progress);
             selected = itemView.findViewById(R.id.lib_item_selected_overlay);
@@ -163,7 +210,7 @@ public class NewLibraryAdapter extends TazListAdapter<LibraryPaper,NewLibraryAda
                 @Override
                 public boolean onLongClick(View v) {
                     if (clickListener != null) clickListener.onLongClick(getAdapterPosition());
-                    return false;
+                    return true;
                 }
             });
             ViewCompat.setImportantForAccessibility(badge, ViewCompat.IMPORTANT_FOR_ACCESSIBILITY_NO);
@@ -172,12 +219,14 @@ public class NewLibraryAdapter extends TazListAdapter<LibraryPaper,NewLibraryAda
 
         public interface OnClickListener {
             void onClick(int position);
+
             void onLongClick(int position);
         }
     }
 
     public interface OnItemClickListener {
         void onClick(LibraryPaper libraryPaper, int position);
+
         void onLongClick(LibraryPaper libraryPaper, int position);
     }
 

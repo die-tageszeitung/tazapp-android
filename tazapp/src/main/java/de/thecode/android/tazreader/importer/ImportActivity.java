@@ -106,13 +106,13 @@ public class ImportActivity extends BaseActivity implements DialogButtonListener
                 case Dialog.BUTTON_POSITIVE:
                     if (downloadUris != null) {
                         for (Uri downloadUri : downloadUris) {
-                            try {
-                                DownloadManager.getInstance(this)
-                                               .enquePaper(TazProvider.getKeyInUri(downloadUri), false);
-                            } catch (Paper.PaperNotFoundException | DownloadManager.DownloadNotAllowedException | DownloadManager.NotEnoughSpaceException e) {
-                                Timber.e(e);
-                                //AnalyticsWrapper.getInstance().logException(e);
-                            }
+//                            try {
+//                                DownloadManager.getInstance(this)
+//                                               .enquePaper(TazProvider.getKeyInUri(downloadUri), false);
+//                            } catch (Paper.PaperNotFoundException | DownloadManager.DownloadNotAllowedException | DownloadManager.NotEnoughSpaceException e) {
+//                                Timber.e(e);
+//                                //AnalyticsWrapper.getInstance().logException(e);
+//                            }
                         }
                     }
                 case Dialog.BUTTON_NEGATIVE:

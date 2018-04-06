@@ -1,6 +1,5 @@
 package de.thecode.android.tazreader.job;
 
-import android.database.Cursor;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
@@ -18,6 +17,7 @@ import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.PaperRepository;
 import de.thecode.android.tazreader.data.Publication;
+import de.thecode.android.tazreader.data.PublicationRepository;
 import de.thecode.android.tazreader.data.Resource;
 import de.thecode.android.tazreader.data.ResourceRepository;
 import de.thecode.android.tazreader.data.StoreRepository;
@@ -25,8 +25,6 @@ import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.download.DownloadManager;
 import de.thecode.android.tazreader.okhttp3.OkHttp3Helper;
 import de.thecode.android.tazreader.okhttp3.RequestHelper;
-import de.thecode.android.tazreader.room.AppDatabase;
-import de.thecode.android.tazreader.room.ResourceDao;
 import de.thecode.android.tazreader.start.ScrollToPaperEvent;
 import de.thecode.android.tazreader.sync.SyncErrorEvent;
 import de.thecode.android.tazreader.sync.SyncStateChangedEvent;
@@ -37,7 +35,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 import java.io.IOException;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -64,7 +61,11 @@ public class SyncJob extends Job {
 
     private Paper moveToPaperAtEnd;
 
-    AppDatabase appDatabase;
+//    AppDatabase appDatabase;
+
+    PaperRepository       paperRepository;
+    ResourceRepository    resourceRepository;
+    PublicationRepository publicationRepository;
 
     @NonNull
     @Override
@@ -73,7 +74,9 @@ public class SyncJob extends Job {
         EventBus.getDefault()
                 .postSticky(new SyncStateChangedEvent(true));
 
-        appDatabase = AppDatabase.getInstance(getContext());
+        paperRepository = PaperRepository.getInstance(getContext());
+        resourceRepository = ResourceRepository.getInstance(getContext());
+        publicationRepository = PublicationRepository.getInstance(getContext());
 
         PersistableBundleCompat extras = params.getExtras();
 
@@ -124,22 +127,20 @@ public class SyncJob extends Job {
 
 
     private void cleanUpResources() {
-        List<Paper> allPapers = Paper.getAllPapers(getContext());
+
+        List<Paper> allPapers = paperRepository.getAllPapers();
         List<Resource> keepResources = new ArrayList<>();
         if (allPapers != null) {
             for (Paper paper : allPapers) {
                 if (paper.isDownloaded() || paper.isDownloading()) {
-                    Resource resource = ResourceRepository.getInstance(getContext())
-                                                          .getResourceForPaper(paper);
+                    Resource resource = resourceRepository.getResourceForPaper(paper);
                     if (resource != null && !keepResources.contains(resource)) keepResources.add(resource);
                 }
             }
         }
-        List<Resource> deleteResources = ResourceRepository.getInstance(getContext())
-                                                           .getAllResources();
-        Paper latestPaper = Paper.getLatestPaper(getContext());
-        if (latestPaper != null) deleteResources.remove(ResourceRepository.getInstance(getContext())
-                                                                          .getWithKey(latestPaper.getResource()));
+        List<Resource> deleteResources = resourceRepository.getAllResources();
+        Paper latestPaper = paperRepository.getLatestPaper();
+        if (latestPaper != null) deleteResources.remove(resourceRepository.getWithKey(latestPaper.getResource()));
         for (Resource keepResource : keepResources) {
             if (deleteResources.contains(keepResource)) {
                 deleteResources.remove(keepResource);
@@ -166,8 +167,8 @@ public class SyncJob extends Job {
         SyncJob.scheduleJobIn(TimeUnit.SECONDS.toMillis(validUntil) - System.currentTimeMillis());
         //minDataValidUntil = Math.min(minDataValidUntil, validUntil * 1000);
 
-        appDatabase.publicationDao()
-                   .insert(publication);
+        publicationRepository.savePublication(publication);
+
 
 //        getContext().getContentResolver().insert(Publication.CONTENT_URI,publication.getContentValues());
 
@@ -216,8 +217,8 @@ public class SyncJob extends Job {
 
             boolean loadImage = true;
 
-            Paper oldPaper = appDatabase.paperDao()
-                                        .getPaper(newPaper.getBookId());
+
+            Paper oldPaper = paperRepository.getPaperWithBookId(newPaper.getBookId());
             if (oldPaper != null) {
                 newPaper.setDownloaded(oldPaper.isDownloaded());
                 newPaper.setDownloadId(oldPaper.getDownloadId());
@@ -235,11 +236,9 @@ public class SyncJob extends Job {
             newPapers.add(newPaper);
 //            getContext().getContentResolver()
 //                        .insert(Paper.CONTENT_URI, newPaper.getContentValues());
-            Resource resource = appDatabase.resourceDao()
-                                           .resourceWithKey(newPaper.getResource());
+            Resource resource = resourceRepository.getWithKey(newPaper.getResource());
             if (resource == null) {
-                appDatabase.resourceDao()
-                           .insert(new Resource((NSDictionary) issue));
+                resourceRepository.saveResource(new Resource((NSDictionary) issue));
             }
 
 //            Resource resource = ResourceRepository.getInstance(getContext())
@@ -307,8 +306,8 @@ public class SyncJob extends Job {
 
 
         }
-        appDatabase.paperDao()
-                   .insert(newPapers);
+        paperRepository.savePapers(newPapers);
+
     }
 
     private NSDictionary callPlist(String startDate, String endDate) {
@@ -361,23 +360,21 @@ public class SyncJob extends Job {
                .fetch();
     }
 
-    private void setMoveToPaperAtEnd(Paper paper) {
-        try {
-            if (moveToPaperAtEnd == null || paper.getDateInMillis() > moveToPaperAtEnd.getDateInMillis()) {
-                moveToPaperAtEnd = paper;
-            }
-        } catch (ParseException e) {
-            Timber.e(e);
-            moveToPaperAtEnd = paper;
-        }
-    }
+//    private void setMoveToPaperAtEnd(Paper paper) {
+//        try {
+//            if (moveToPaperAtEnd == null || paper.getDateInMillis() > moveToPaperAtEnd.getDateInMillis()) {
+//                moveToPaperAtEnd = paper;
+//            }
+//        } catch (ParseException e) {
+//            Timber.e(e);
+//            moveToPaperAtEnd = paper;
+//        }
+//    }
 
     private void downloadLatestResource() {
-        Paper latestPaper = appDatabase.paperDao()
-                                       .getLatestPaper();
+        Paper latestPaper = paperRepository.getLatestPaper();
         if (latestPaper != null) {
-            Resource latestResource = appDatabase.resourceDao()
-                                                 .resourceWithKey(latestPaper.getResource());
+            Resource latestResource = resourceRepository.getWithKey(latestPaper.getResource());
             if (latestResource != null && !latestResource.isDownloaded() && !latestResource.isDownloading()) {
                 try {
                     DownloadManager.getInstance(getContext())
@@ -404,8 +401,7 @@ public class SyncJob extends Job {
             int papersToKeep = TazSettings.getInstance(getContext())
                                           .getPrefInt(TazSettings.PREFKEY.AUTODELETE_VALUE, 0);
             if (papersToKeep > 0) {
-                List<Paper> allPapers = appDatabase.paperDao()
-                                                   .getAllPapers();
+                List<Paper> allPapers = paperRepository.getAllPapers();
                 int counter = 0;
                 for (Paper paper : allPapers) {
                     if (paper.isDownloaded() && !paper.isImported() && !paper.isKiosk()) {

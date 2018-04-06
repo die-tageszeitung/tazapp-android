@@ -30,6 +30,7 @@ import de.thecode.android.tazreader.job.SyncJob;
 import de.thecode.android.tazreader.start.DrawerStateChangedEvent;
 import de.thecode.android.tazreader.start.IStartCallback;
 import de.thecode.android.tazreader.start.ScrollToPaperEvent;
+import de.thecode.android.tazreader.start.StartBaseFragment;
 import de.thecode.android.tazreader.start.StartViewModel;
 import de.thecode.android.tazreader.sync.SyncStateChangedEvent;
 import de.thecode.android.tazreader.utils.BaseFragment;
@@ -47,9 +48,7 @@ import timber.log.Timber;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class LibraryFragment extends BaseFragment
-        implements LoaderManager.LoaderCallbacks<Cursor>, LibraryAdapter.OnItemClickListener,
-        LibraryAdapter.OnItemLongClickListener {
+public class LibraryFragment extends StartBaseFragment implements LoaderManager.LoaderCallbacks<Cursor> {
     WeakReference<IStartCallback> callback;
     //    LibraryAdapter                adapter;
     NewLibraryAdapter             adapter;
@@ -86,7 +85,7 @@ public class LibraryFragment extends BaseFragment
             public void onClick(LibraryPaper libraryPaper, int position) {
 
                 Timber.d("position: %s, paper: %s", position, libraryPaper);
-                if (actionMode != null) onLongClick(libraryPaper,position);
+                if (actionMode != null) onLongClick(libraryPaper, position);
                 else {
                     Paper paper = libraryPaper.getPaper();
                     switch (paper.getState()) {
@@ -101,11 +100,7 @@ public class LibraryFragment extends BaseFragment
 
                         case Paper.NOT_DOWNLOADED:
                         case Paper.NOT_DOWNLOADED_IMPORT:
-                            try {
-                                if (hasCallback()) getCallback().startDownload(paper.getBookId());
-                            } catch (Paper.PaperNotFoundException e) {
-                                Timber.e(e);
-                            }
+                            getStartActivity().startDownload(paper);
                             break;
 
                     }
@@ -116,7 +111,10 @@ public class LibraryFragment extends BaseFragment
 
             @Override
             public void onLongClick(LibraryPaper libraryPaper, int position) {
-
+                setActionMode();
+                startViewModel.getLibraryPaperLiveData()
+                              .toggleSelection(libraryPaper.getBookId());
+                actionMode.invalidate();
             }
         });
 
@@ -136,7 +134,7 @@ public class LibraryFragment extends BaseFragment
                       .observe(this, new Observer<List<LibraryPaper>>() {
                           @Override
                           public void onChanged(@Nullable List<LibraryPaper> libraryPapers) {
-                              Timber.i("xxx");
+                              if (startViewModel.getLibraryPaperLiveData().getSelectionSize() == 0 && actionMode != null) actionMode.finish();
                               adapter.submitList(libraryPapers);
                           }
                       });
@@ -204,7 +202,7 @@ public class LibraryFragment extends BaseFragment
 
 
         if (hasCallback()) getCallback().onUpdateDrawer(this);
-        getLoaderManager().initLoader(0, null, this);
+        //getLoaderManager().initLoader(0, null, this);
 
 
         //ActionMode enabling after view because of theme bugs
@@ -295,7 +293,7 @@ public class LibraryFragment extends BaseFragment
 
     private void onDemoModeChanged(boolean demoMode) {
         showFab();
-        getLoaderManager().restartLoader(0, null, this);
+        //getLoaderManager().restartLoader(0, null, this);
     }
 
     @Override
@@ -415,46 +413,6 @@ public class LibraryFragment extends BaseFragment
     }
 
 
-    @Override
-    public void onItemClick(View v, int position, Paper paper) {
-        Timber.d("v: %s, position: %s, paper: %s", v, position, paper);
-        if (actionMode != null) onItemLongClick(v, position, paper);
-        else {
-            switch (paper.getState()) {
-                case Paper.DOWNLOADED_READABLE:
-                case Paper.DOWNLOADED_BUT_UPDATE:
-                    //openPlayer(paper.getId());
-                    if (hasCallback()) getCallback().openReader(paper.getBookId());
-                    break;
-                case Paper.IS_DOWNLOADING:
-
-                    break;
-
-                case Paper.NOT_DOWNLOADED:
-                case Paper.NOT_DOWNLOADED_IMPORT:
-                    try {
-                        if (hasCallback()) getCallback().startDownload(paper.getBookId());
-                    } catch (Paper.PaperNotFoundException e) {
-                        Timber.e(e);
-                    }
-                    break;
-
-            }
-
-        }
-    }
-
-
-    @Override
-    public boolean onItemLongClick(View v, int position, Paper paper) {
-        setActionMode();
-        Timber.d("v: %s, position: %s, paper: %s", v, position, paper);
-//        if (!adapter.isSelected(paper.getBookId())) selectPaper(paper.getBookId());
-//        else deselectPaper(paper.getId());
-        return true;
-    }
-
-
     private void deleteSelected() {
 //        if (adapter.getSelected() != null && adapter.getSelected()
 //                                                    .size() > 0) {
@@ -500,16 +458,6 @@ public class LibraryFragment extends BaseFragment
         if (actionMode == null) getActivity().startActionMode(new ActionModeCallback());
     }
 
-    public void selectPaper(String bookId) {
-//        if (adapter != null) adapter.select(bookId);
-//        if (actionMode != null) actionMode.invalidate();
-    }
-
-    public void deselectPaper(long paperId) {
-//        if (adapter != null) adapter.deselect(paperId);
-        if (actionMode != null) actionMode.invalidate();
-    }
-
     class ActionModeCallback implements ActionMode.Callback {
 
         @Override
@@ -527,17 +475,17 @@ public class LibraryFragment extends BaseFragment
         public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
             Timber.d("mode: %s, menu: %s", mode, menu);
             menu.clear();
-//            int countSelected = adapter.getSelected()
-//                                       .size();
-//            mode.setTitle(getActivity().getString(R.string.string_library_selected, countSelected));
-//            mode.getMenuInflater()
-//                .inflate(R.menu.start_library_selectmode, menu);
-//            if (countSelected == 0) {
-//                menu.findItem(R.id.ic_action_download)
-//                    .setEnabled(false);
-//                menu.findItem(R.id.ic_action_delete)
-//                    .setEnabled(false);
-//            }
+            int countSelected = startViewModel.getLibraryPaperLiveData()
+                                              .getSelectionSize();
+            mode.setTitle(getString(R.string.string_library_selected, countSelected));
+            mode.getMenuInflater()
+                .inflate(R.menu.start_library_selectmode, menu);
+            if (countSelected == 0) {
+                menu.findItem(R.id.ic_action_download)
+                    .setEnabled(false);
+                menu.findItem(R.id.ic_action_delete)
+                    .setEnabled(false);
+            }
             return true;
         }
 
@@ -554,19 +502,19 @@ public class LibraryFragment extends BaseFragment
                     mode.finish();
                     return true;
                 case R.id.ic_action_selectnone:
-//                    adapter.deselectAll();
+                    startViewModel.getLibraryPaperLiveData().selectNone();
                     mode.invalidate();
                     return true;
                 case R.id.ic_action_selectall:
-//                    adapter.selectAll();
+                    startViewModel.getLibraryPaperLiveData().selectAll();
                     mode.invalidate();
                     return true;
                 case R.id.ic_action_selectinvert:
-//                    adapter.selectionInvert();
+                    startViewModel.getLibraryPaperLiveData().invertSelection();
                     mode.invalidate();
                     return true;
                 case R.id.ic_action_selectnotloaded:
-//                    adapter.selectNotLoaded();
+                    startViewModel.getLibraryPaperLiveData().selectNotDownloaded();
                     mode.invalidate();
                     return true;
             }

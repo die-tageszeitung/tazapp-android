@@ -20,6 +20,10 @@ public abstract class PaperDao implements BaseDao<Paper>{
     @Query("SELECT * FROM PAPER WHERE bookId LIKE :bookId")
     public abstract Paper getPaper(String bookId);
 
+    @Query("SELECT * FROM PAPER WHERE downloadId = :downloadId")
+    public abstract Paper getPaperWithDownloadId(long downloadId);
+
+
     @Query("SELECT * FROM PAPER ORDER BY date DESC")
     public abstract LiveData<List<Paper>> getLivePapersForLibrary();
 

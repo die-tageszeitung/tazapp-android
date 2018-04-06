@@ -10,6 +10,7 @@ import com.evernote.android.job.util.support.PersistableBundleCompat;
 
 import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.data.Paper;
+import de.thecode.android.tazreader.data.PaperRepository;
 import de.thecode.android.tazreader.download.PaperDownloadFailedEvent;
 import de.thecode.android.tazreader.download.PaperDownloadFinishedEvent;
 import de.thecode.android.tazreader.download.UnzipCanceledException;
@@ -43,6 +44,9 @@ public class DownloadFinishedPaperJob extends Job implements UnzipStream.UnzipSt
     private String currentPaperBookId;
 
     private UnzipPaper currentUnzipPaper;
+    private int lastEmittedProgress = 0;
+
+    private PaperRepository paperRepository;
 
     @NonNull
     @Override
@@ -50,7 +54,8 @@ public class DownloadFinishedPaperJob extends Job implements UnzipStream.UnzipSt
         PersistableBundleCompat extras = params.getExtras();
         String bookId = extras.getString(ARG_PAPER_BOOKID, null);
         if (!TextUtils.isEmpty(bookId)) {
-            Paper paper = Paper.getPaperWithBookId(getContext(), bookId);
+            paperRepository = PaperRepository.getInstance(getContext());
+            Paper paper = paperRepository.getPaperWithBookId(bookId);
             if (paper != null) {
                 try {
                     Timber.i("%s", paper);
@@ -74,8 +79,11 @@ public class DownloadFinishedPaperJob extends Job implements UnzipStream.UnzipSt
 
     @Override
     public void onProgress(UnzipStream.Progress progress) {
-        EventBus.getDefault()
-                .post(new UnzipProgressEvent(currentPaperBookId, progress.getPercentage()));
+        if (lastEmittedProgress != progress.getPercentage()) {
+            lastEmittedProgress = progress.getPercentage();
+            EventBus.getDefault()
+                    .post(new UnzipProgressEvent(currentPaperBookId, progress.getPercentage()));
+        }
     }
 
     public String getCurrentPaperBookId() {
@@ -96,11 +104,7 @@ public class DownloadFinishedPaperJob extends Job implements UnzipStream.UnzipSt
             paper.setDownloaded(true);
         }
 
-
-
-        getContext().getContentResolver()
-                    .insert(Paper.CONTENT_URI, paper.getContentValues());
-
+        paperRepository.savePaper(paper);
         if (exception == null) {
 
             //NotificationHelper.showDownloadFinishedNotification(getContext(), paper.getId());

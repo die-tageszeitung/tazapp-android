@@ -30,6 +30,8 @@ import timber.log.Timber;
 
 public class TazReaderApplication extends Application {
 
+    private static volatile TazReaderApplication application;
+
     @Override
     public void onCreate() {
 

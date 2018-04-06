@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.pm.LabeledIntent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.BaseColumns;
@@ -91,35 +92,6 @@ public class Paper {
         }
         return null;
     }
-
-    public static List<Paper> getAllPapers(Context context) {
-        List<Paper> result = new ArrayList<>();
-        Cursor cursor = context.getApplicationContext()
-                               .getContentResolver()
-                               .query(CONTENT_URI, null, null, null, Columns.DATE + " DESC");
-        try {
-            while (cursor.moveToNext()) {
-                result.add(new Paper(cursor));
-            }
-        } finally {
-            cursor.close();
-        }
-        return result;
-    }
-
-//    public static Paper getPaperWithId(Context context, long id) {
-//        Cursor cursor = context.getApplicationContext()
-//                               .getContentResolver()
-//                               .query(ContentUris.withAppendedId(CONTENT_URI, id), null, null, null, null);
-//        try {
-//            if (cursor.moveToNext()) {
-//                return new Paper(cursor);
-//            }
-//        } finally {
-//            cursor.close();
-//        }
-//        return null;
-//    }
 
     public static Paper getPaperWithBookId(Context context, String bookId) {
         Uri bookIdUri = TazProvider.getContentUri(CONTENT_URI, bookId);
@@ -326,6 +298,11 @@ public class Paper {
         return getTitelWithDate(context.getString(R.string.string_titel_seperator));
     }
 
+    public String getTitelWithDate(Resources resources) {
+        return getTitelWithDate(resources.getString(R.string.string_titel_seperator));
+    }
+
+
     public int getProgress() {
         return progress;
     }
@@ -381,9 +358,13 @@ public class Paper {
         return date;
     }
 
-    public long getDateInMillis() throws ParseException {
-        return new SimpleDateFormat("yyyy-MM-dd", Locale.GERMANY).parse(getDate())
-                                                                 .getTime();
+    public long getDateInMillis() {
+        try {
+            return new SimpleDateFormat("yyyy-MM-dd", Locale.GERMANY).parse(getDate())
+                                                                     .getTime();
+        } catch (ParseException e) {
+            return 0;
+        }
     }
 
     public void setDate(String date) {
@@ -1639,23 +1620,21 @@ public class Paper {
             return false;
         }
         Paper rhs = (Paper) obj;
-        EqualsBuilder equalsBuilder = new EqualsBuilder();
-        equalsBuilder.append(date, rhs.date);
-        equalsBuilder.append(image, rhs.image);
-        equalsBuilder.append(imageHash, rhs.imageHash);
-        equalsBuilder.append(link, rhs.link);
-        equalsBuilder.append(fileHash, rhs.fileHash);
-        equalsBuilder.append(len, rhs.len);
-        equalsBuilder.append(resource, rhs.resource);
-//        equalsBuilder.append(resourceFileHash, rhs.resourceFileHash);
-//        equalsBuilder.append(resourceLen, rhs.resourceLen);
-//        equalsBuilder.append(resourceUrl, rhs.resourceUrl);
-        equalsBuilder.append(lastModified, rhs.lastModified);
-        equalsBuilder.append(bookId, rhs.bookId);
-        equalsBuilder.append(demo, rhs.demo);
-        equalsBuilder.append(publication, rhs.publication);
-        equalsBuilder.append(validUntil, rhs.validUntil);
-        return equalsBuilder.isEquals();
+        return new EqualsBuilder().append(date, rhs.date)
+                                  .append(image, rhs.image)
+                                  .append(imageHash, rhs.imageHash)
+                                  .append(link, rhs.link)
+                                  .append(fileHash, rhs.fileHash)
+                                  .append(len, rhs.len)
+                                  .append(resource, rhs.resource)
+                                  .append(lastModified, rhs.lastModified)
+                                  .append(bookId, rhs.bookId)
+                                  .append(demo, rhs.demo)
+                                  .append(publication, rhs.publication)
+                                  .append(validUntil, rhs.validUntil)
+                                  .append(downloadId, rhs.downloadId)
+                                  .append(downloaded, rhs.downloaded)
+                                  .isEquals();
     }
 
     public static class PaperNotFoundException extends ReadableException {

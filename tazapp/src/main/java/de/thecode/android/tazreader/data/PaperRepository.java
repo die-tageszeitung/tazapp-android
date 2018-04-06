@@ -15,6 +15,8 @@ import de.thecode.android.tazreader.utils.StorageManager;
 
 import org.greenrobot.eventbus.EventBus;
 
+import java.util.List;
+
 /**
  * Created by mate on 02.03.18.
  */
@@ -48,9 +50,21 @@ public class PaperRepository {
     }
 
     @WorkerThread
+    public List<Paper> getAllPapers() {
+        return appDatabase.paperDao()
+                          .getAllPapers();
+    }
+
+    @WorkerThread
     public Paper getPaperWithBookId(String bookId) {
         return appDatabase.paperDao()
                           .getPaper(bookId);
+    }
+
+    @WorkerThread
+    public Paper getPaperWithDownloadId(long downloadId) {
+        return appDatabase.paperDao()
+                          .getPaperWithDownloadId(downloadId);
     }
 
     @WorkerThread
@@ -59,17 +73,36 @@ public class PaperRepository {
         picasso.invalidate(paper.getImage());
         storeRepository.deletePath(Store.getPath(paper.getBookId(), Paper.STORE_KEY_RESOURCE_PARTNER));
         if (paper.isImported() || paper.isKiosk()) {
-            appDatabase.paperDao().delete(paper);
+            appDatabase.paperDao()
+                       .delete(paper);
         } else {
             paper.setDownloadId(0);
             paper.setDownloaded(false);
             paper.setHasUpdate(false);
             if (BuildConfig.BUILD_TYPE.equals("staging"))
                 paper.setValidUntil(0); //Wunsch von Ralf, damit besser im Staging getestet werden kann
-            appDatabase.paperDao().insert(paper);
+            appDatabase.paperDao()
+                       .insert(paper);
             EventBus.getDefault()
                     .post(new PaperDeletedEvent(paper.getBookId()));
         }
     }
 
+    @WorkerThread
+    public void savePaper(Paper paper) {
+        appDatabase.paperDao()
+                   .insert(paper);
+    }
+
+    @WorkerThread
+    public void savePapers(List<Paper> papers) {
+        appDatabase.paperDao()
+                   .insert(papers);
+    }
+
+    @WorkerThread
+    public Paper getLatestPaper() {
+        return appDatabase.paperDao()
+                   .getLatestPaper();
+    }
 }
