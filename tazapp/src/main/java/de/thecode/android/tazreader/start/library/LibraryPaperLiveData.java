@@ -49,10 +49,13 @@ public class LibraryPaperLiveData extends MutableLiveData<List<LibraryPaper>> {
                     papersData.clear();
                     if (parameter != null) {
                         for (Paper paper : parameter) {
+                            progressMap.remove(paper.getBookId());
                             if (paper.isDownloaded()) {
                                 progressMap.put(paper.getBookId(), 100);
                             } else if (paper.isDownloading()) {
                                 runningDownloads.put(paper.getBookId(), paper.getDownloadId());
+                            } else {
+
                             }
                         }
                         papersData.addAll(parameter);
@@ -172,6 +175,10 @@ public class LibraryPaperLiveData extends MutableLiveData<List<LibraryPaper>> {
 
     public int getSelectionSize() {
         return selected.size();
+    }
+
+    public List<String> getSelected() {
+        return selected;
     }
 
     public void invertSelection() {

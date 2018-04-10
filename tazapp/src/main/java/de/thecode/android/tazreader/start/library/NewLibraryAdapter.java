@@ -26,6 +26,7 @@ import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.sync.PreloadImageCallback;
 import de.thecode.android.tazreader.utils.TazListAdapter;
+import de.thecode.android.tazreader.utils.asyncdiffer.ExtendedAdapterListUpdateCallback;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -54,8 +55,8 @@ public class NewLibraryAdapter extends TazListAdapter<LibraryPaper, NewLibraryAd
 
     private final OnItemClickListener itemClickListener;
 
-    public NewLibraryAdapter(OnItemClickListener itemClickListener) {
-        super(new LibraryAdapterCallback());
+    public NewLibraryAdapter(OnItemClickListener itemClickListener, ExtendedAdapterListUpdateCallback.OnFirstInsertedListener firstInsertedListener) {
+        super(new LibraryAdapterCallback(), firstInsertedListener);
         this.itemClickListener = itemClickListener;
     }
 

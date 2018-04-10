@@ -1,6 +1,5 @@
 package de.thecode.android.tazreader.importer;
 
-import android.content.ContentUris;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -10,8 +9,6 @@ import de.mateware.dialog.Dialog;
 import de.mateware.dialog.listener.DialogButtonListener;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
-import de.thecode.android.tazreader.download.DownloadManager;
-import de.thecode.android.tazreader.provider.TazProvider;
 import de.thecode.android.tazreader.utils.BaseActivity;
 
 import java.io.File;
@@ -146,35 +143,35 @@ public class ImportActivity extends BaseActivity implements DialogButtonListener
 
     @Override
     public void onFinishedImporting(List<Paper> importedPapers) {
-        Uri[] importedPaperUris = new Uri[importedPapers.size()];
-        Uri[] downloadPaperUris = new Uri[0];
-        int i = 0;
-        for (Paper importedPaper : importedPapers) {
-            importedPaperUris[i] = importedPaper.getContentUri();
-
-            if (importedPaper.hasUpdate()) {
-                int j = downloadPaperUris.length;
-                downloadPaperUris = Arrays.copyOf(downloadPaperUris, j + 1);
-                downloadPaperUris[j] = importedPaper.getContentUri();
-            }
-
-            i++;
-        }
-
-        if (downloadPaperUris.length > 0) {
-            Bundle bundle = new Bundle();
-            bundle.putParcelableArray(BUNDLE_KEY_DOWNLOAD_URIS, downloadPaperUris);
-            bundle.putParcelableArray(BUNDLE_KEY_RESULT_URIS, importedPaperUris);
-            new Dialog.Builder().addBundle(bundle)
-                                .setMessage(getResources().getQuantityString(R.plurals.import_download, downloadPaperUris.length, downloadPaperUris.length))
-                                .setCancelable(false)
-                                .setPositiveButton(R.string.import_download_positive)
-                                .setNegativeButton(R.string.import_download_negative)
-                                .buildSupport()
-                                .show(getSupportFragmentManager(), DIALOG_DOWNLOAD);
-        } else {
-            finishActivity(importedPaperUris);
-        }
+//        Uri[] importedPaperUris = new Uri[importedPapers.size()];
+//        Uri[] downloadPaperUris = new Uri[0];
+//        int i = 0;
+//        for (Paper importedPaper : importedPapers) {
+//            importedPaperUris[i] = importedPaper.getContentUri();
+//
+//            if (importedPaper.hasUpdate()) {
+//                int j = downloadPaperUris.length;
+//                downloadPaperUris = Arrays.copyOf(downloadPaperUris, j + 1);
+//                downloadPaperUris[j] = importedPaper.getContentUri();
+//            }
+//
+//            i++;
+//        }
+//
+//        if (downloadPaperUris.length > 0) {
+//            Bundle bundle = new Bundle();
+//            bundle.putParcelableArray(BUNDLE_KEY_DOWNLOAD_URIS, downloadPaperUris);
+//            bundle.putParcelableArray(BUNDLE_KEY_RESULT_URIS, importedPaperUris);
+//            new Dialog.Builder().addBundle(bundle)
+//                                .setMessage(getResources().getQuantityString(R.plurals.import_download, downloadPaperUris.length, downloadPaperUris.length))
+//                                .setCancelable(false)
+//                                .setPositiveButton(R.string.import_download_positive)
+//                                .setNegativeButton(R.string.import_download_negative)
+//                                .buildSupport()
+//                                .show(getSupportFragmentManager(), DIALOG_DOWNLOAD);
+//        } else {
+//            finishActivity(importedPaperUris);
+//        }
     }
 
     private void finishActivity(Uri[] paperUris) {

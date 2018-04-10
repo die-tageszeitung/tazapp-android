@@ -1,13 +1,16 @@
 package de.thecode.android.tazreader.reader;
 
 import android.app.Application;
+import android.arch.core.util.Function;
 import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.Transformations;
 import android.arch.lifecycle.ViewModelProvider;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.WorkerThread;
 
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Resource;
@@ -18,11 +21,19 @@ import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.data.ITocItem;
 import de.thecode.android.tazreader.reader.pagetoc.PageTocLiveData;
 import de.thecode.android.tazreader.reader.usertoc.UserTocLiveData;
+import de.thecode.android.tazreader.room.AppDatabase;
+import de.thecode.android.tazreader.utils.AsyncTaskListener;
+import de.thecode.android.tazreader.utils.StorageManager;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import timber.log.Timber;
 
 /**
  * Created by mate on 01.03.18.
@@ -30,30 +41,54 @@ import java.util.List;
 
 public class ReaderViewModel extends AndroidViewModel {
 
-    private StoreRepository storeRepository;
-
-    private       Resource                  resource;
-    private       Store                     currentKeyStore;
+    private       StoreRepository           storeRepository;
     private       PaperLiveData             paperLiveData;
     private       MutableLiveData<Boolean>  indexVerboseLiveData;
     private       TazSettings               settings;
     private       MutableLiveData<ITocItem> currentKeyLiveData;
+    private       LiveData<String>          currentKeyHelperLiveData;
     private       PagesLiveData             pagesLiveData;
     private final UserTocLiveData           userTocLiveData;
     private final PageTocLiveData           pageTocLiveData;
+    private final LiveData<List<Store>>     storeListLiveData;
+    private final String                    bookId;
+    private final StorageManager            storageManager;
 
-    public ReaderViewModel(@NonNull Application application, String bookId, String resourceKey) {
+
+    public ReaderViewModel(@NonNull Application application, String bookId) {
         super(application);
+        this.bookId = bookId;
+        storageManager = StorageManager.getInstance(application);
         settings = TazSettings.getInstance(application);
         storeRepository = StoreRepository.getInstance(application);
-        resource = ResourceRepository.getInstance(application)
-                                     .getWithKey(resourceKey);
-        currentKeyStore = storeRepository.getStore(bookId, Paper.STORE_KEY_CURRENTPOSITION);
         currentKeyLiveData = new MutableLiveData<>();
         userTocLiveData = new UserTocLiveData(currentKeyLiveData, settings.isIndexAlwaysExpanded());
         pageTocLiveData = new PageTocLiveData(application, currentKeyLiveData);
         pagesLiveData = new PagesLiveData();
         paperLiveData = new PaperLiveData(application, bookId);
+        storeListLiveData = storeRepository.getLiveAllStoresForBook(bookId);
+        currentKeyHelperLiveData = Transformations.map(storeRepository.getLiveStore(bookId, Paper.STORE_KEY_CURRENTPOSITION),
+                                                       store -> {
+                                                           String value = null;
+                                                           if (store != null) {
+                                                               value = store.getValue();
+                                                           }
+                                                           if (value == null) {
+                                                               value = paperLiveData.getValue()
+                                                                                    .getPlist()
+                                                                                    .getSources()
+                                                                                    .get(0)
+                                                                                    .getBooks()
+                                                                                    .get(0)
+                                                                                    .getCategories()
+                                                                                    .get(0)
+                                                                                    .getPages()
+                                                                                    .get(0)
+                                                                                    .getKey();
+                                                           }
+                                                           return value;
+                                                       });
+
         paperLiveData.observeForever(new Observer<Paper>() {
             @Override
             public void onChanged(@Nullable Paper paper) {
@@ -61,19 +96,18 @@ public class ReaderViewModel extends AndroidViewModel {
                     userTocLiveData.create(paper.getPlist());
                     pageTocLiveData.create(paper.getPlist());
                     pagesLiveData.create();
-                    String currentKey = currentKeyStore.getValue(paper.getPlist()
-                                                                      .getSources()
-                                                                      .get(0)
-                                                                      .getBooks()
-                                                                      .get(0)
-                                                                      .getCategories()
-                                                                      .get(0)
-                                                                      .getPages()
-                                                                      .get(0)
-                                                                      .getKey());
-                    currentKey = StringUtils.substringBefore(currentKey, "?");
-                    currentKeyLiveData.setValue(paper.getPlist()
-                                                     .getIndexItem(currentKey));
+                    currentKeyHelperLiveData.observeForever(new Observer<String>() {
+                        @Override
+                        public void onChanged(@Nullable String s) {
+                            if (currentKeyLiveData.getValue() == null || !currentKeyLiveData.getValue()
+                                                                                            .getKey()
+                                                                                            .equals(s)) {
+                                currentKeyLiveData.setValue(paperLiveData.getValue()
+                                                                         .getPlist()
+                                                                         .getIndexItem(s));
+                            }
+                        }
+                    });
                 }
             }
         });
@@ -82,13 +116,26 @@ public class ReaderViewModel extends AndroidViewModel {
         indexVerboseLiveData.setValue(settings.getPrefBoolean(TazSettings.PREFKEY.CONTENTVERBOSE, true));
     }
 
+    public File getPaperDirectory() {
+        return storageManager.getPaperDirectory(paperLiveData.getValue());
+    }
+
+    public File getResourceDirectory(){
+        return storageManager.getResourceDirectory(paperLiveData.getValue().getResource());
+    }
+
     public StoreRepository getStoreRepository() {
         return storeRepository;
     }
 
-    public Resource getResource() {
-        return resource;
+    @WorkerThread
+    public Store getStore(String key){
+        return getStoreRepository().getStore(bookId,key);
     }
+
+//    public Resource getResource() {
+//        return resource;
+//    }
 
     public PaperLiveData getPaperLiveData() {
         return paperLiveData;
@@ -102,15 +149,22 @@ public class ReaderViewModel extends AndroidViewModel {
         return paper;
     }
 
-    public void setCurrentKey(String currentKey) {
-        currentKeyStore.setValue(currentKey);
-        storeRepository.saveStore(currentKeyStore);
-        ITocItem item = getPaper().getPlist()
-                                  .getIndexItem(currentKey);
-        currentKeyLiveData.setValue(item);
+    public Resource getResource() {
+        return paperLiveData.getResource();
     }
 
-    public MutableLiveData<ITocItem> getCurrentKeyLiveData() {
+    public void setCurrentKey(String currentKey) {
+        if (currentKey != null) currentKey = StringUtils.substringBefore(currentKey, "?");
+        new AsyncTaskListener<String, Void>(new AsyncTaskListener.OnExecute<String, Void>() {
+            @Override
+            public Void execute(String... strings) throws Exception {
+                storeRepository.saveStore(new Store(Store.getPath(bookId, Paper.STORE_KEY_CURRENTPOSITION), strings[0]));
+                return null;
+            }
+        }).execute(currentKey);
+    }
+
+    public LiveData<ITocItem> getCurrentKeyLiveData() {
         return currentKeyLiveData;
     }
 
@@ -127,8 +181,8 @@ public class ReaderViewModel extends AndroidViewModel {
         userTocLiveData.setExpandAll(expanded);
     }
 
-    public static ReaderViewModelFactory createFactory(@NonNull Application application, String bookId, String resourceKey) {
-        return new ReaderViewModelFactory(application, bookId, resourceKey);
+    public static ReaderViewModelFactory createFactory(@NonNull Application application, String bookId) {
+        return new ReaderViewModelFactory(application, bookId);
     }
 
     public static class ReaderViewModelFactory implements ViewModelProvider.Factory {
@@ -136,24 +190,22 @@ public class ReaderViewModel extends AndroidViewModel {
 
         private final Application application;
         private final String      bookId;
-        private final String      resourceKey;
 
         /**
          * Creates a {@code AndroidViewModelFactory}
          *
          * @param application an application to pass in {@link AndroidViewModel}
          */
-        public ReaderViewModelFactory(@NonNull Application application, String bookId, String resourceKey) {
+        public ReaderViewModelFactory(@NonNull Application application, String bookId) {
             this.application = application;
             this.bookId = bookId;
-            this.resourceKey = resourceKey;
         }
 
         @SuppressWarnings("unchecked")
         @NonNull
         @Override
         public ReaderViewModel create(@NonNull Class modelClass) {
-            return new ReaderViewModel(application, bookId, resourceKey);
+            return new ReaderViewModel(application, bookId);
         }
 
     }
@@ -166,10 +218,6 @@ public class ReaderViewModel extends AndroidViewModel {
         settings.setPref(TazSettings.PREFKEY.CONTENTVERBOSE, indexVerbose);
         indexVerboseLiveData.setValue(indexVerbose);
     }
-
-//    public UserTocLiveData getUserTocLiveData() {
-//        return userTocLiveData;
-//    }
 
     public UserTocLiveData getUserTocLiveData() {
         return userTocLiveData;

@@ -114,7 +114,7 @@ import java.util.List;
  * @see AdapterListUpdateCallback
  */
 public class FixedAsyncListDiffer<T> {
-    private final ListUpdateCallback   mUpdateCallback;
+    private final ExtendedAdapterListUpdateCallback   mUpdateCallback;
     private final AsyncDifferConfig<T> mConfig;
 
     /**
@@ -129,7 +129,7 @@ public class FixedAsyncListDiffer<T> {
      */
     public FixedAsyncListDiffer(@NonNull RecyclerView.Adapter adapter,
                            @NonNull DiffUtil.ItemCallback<T> diffCallback) {
-        mUpdateCallback = new AdapterListUpdateCallback(adapter);
+        mUpdateCallback = new ExtendedAdapterListUpdateCallback(adapter);
         mConfig = new AsyncDifferConfig.Builder<>(diffCallback).build();
     }
 
@@ -144,7 +144,7 @@ public class FixedAsyncListDiffer<T> {
      * @see DiffUtil.DiffResult#dispatchUpdatesTo(RecyclerView.Adapter)
      */
     @SuppressWarnings("WeakerAccess")
-    public FixedAsyncListDiffer(@NonNull ListUpdateCallback listUpdateCallback,
+    public FixedAsyncListDiffer(@NonNull ExtendedAdapterListUpdateCallback listUpdateCallback,
                            @NonNull AsyncDifferConfig<T> config) {
         mUpdateCallback = listUpdateCallback;
         mConfig = config;
@@ -263,8 +263,12 @@ public class FixedAsyncListDiffer<T> {
     }
 
     private void latchList(@NonNull List<T> newList, @NonNull DiffUtil.DiffResult diffResult) {
+        mUpdateCallback.resetCounters();
         diffResult.dispatchUpdatesTo(mUpdateCallback);
+        mUpdateCallback.callListener();
         mList = newList;
         mReadOnlyList = Collections.unmodifiableList(newList);
     }
+
+
 }

@@ -40,14 +40,13 @@ public class DownloadFinishedJob extends Job {
     @Override
     protected Result onRunJob(@NonNull Params params) {
         PersistableBundleCompat extras = params.getExtras();
-        long downloadId = extras.getLong(ARG_DOWNLOAD_ID,-1);
-        if (downloadId != -1){
+        long downloadId = extras.getLong(ARG_DOWNLOAD_ID, -1);
+        if (downloadId != -1) {
 
             StorageManager externalStorage = StorageManager.getInstance(getContext());
             DownloadManager downloadHelper = DownloadManager.getInstance(getContext());
             PaperRepository paperRepository = PaperRepository.getInstance(getContext());
             ResourceRepository resourceRepository = ResourceRepository.getInstance(getContext());
-
 
 
             DownloadManager.DownloadState state = downloadHelper.getDownloadState(downloadId);
@@ -69,19 +68,19 @@ public class DownloadFinishedJob extends Job {
                         Timber.i("... checked file existence");
                         if (paper.getLen() != 0 && downloadFile.length() != paper.getLen())
                             throw new DownloadException(String.format(Locale.GERMANY,
-                                                                                       "Wrong size of paper download. expected: %d, file: %d, downloaded: %d",
-                                                                                       paper.getLen(),
-                                                                                       downloadFile.length(),
-                                                                                       state.getBytesDownloaded()));
+                                                                      "Wrong size of paper download. expected: %d, file: %d, downloaded: %d",
+                                                                      paper.getLen(),
+                                                                      downloadFile.length(),
+                                                                      state.getBytesDownloaded()));
                         Timber.i("... checked correct size of paper download");
                         try {
                             String fileHash = HashHelper.getHash(downloadFile, HashHelper.SHA_1);
                             if (!TextUtils.isEmpty(paper.getFileHash()) && !paper.getFileHash()
                                                                                  .equals(fileHash)) {
                                 throw new DownloadException(String.format(Locale.GERMANY,
-                                                                                           "Wrong paper file hash. Expected: %s, calculated: %s",
-                                                                                           paper.getFileHash(),
-                                                                                           fileHash));
+                                                                          "Wrong paper file hash. Expected: %s, calculated: %s",
+                                                                          paper.getFileHash(),
+                                                                          fileHash));
                             }
                             Timber.i("... checked correct hash of paper download");
                         } catch (NoSuchAlgorithmException e) {
@@ -113,22 +112,19 @@ public class DownloadFinishedJob extends Job {
                         externalStorage.getDownloadFile(paper)
                                        .delete();
                     new NotificationUtils(getContext()).showDownloadErrorNotification(paper,
-                                                                                 getContext().getString(R.string.download_error_hints));
+                                                                                      getContext().getString(R.string.download_error_hints));
                     //NotificationHelper.showDownloadErrorNotification(context, null, paper.getId());
 
                     EventBus.getDefault()
-                            .post(new PaperDownloadFailedEvent(paper.getBookId(), e));
+                            .post(new PaperDownloadFailedEvent(paper, e));
 
                 }
 
             }
 
-            Cursor cursor = getContext().getContentResolver()
-                                   .query(Resource.CONTENT_URI, null, Resource.Columns.DOWNLOADID + " = " + downloadId, null, null);
-            try {
-                while (cursor.moveToNext()) {
+            Resource resource = resourceRepository.getWithDownloadId(downloadId);
+            if (resource != null) {
 
-                    Resource resource = new Resource(cursor);
                     //DownloadHelper.DownloadState downloadDownloadState = downloadHelper.getDownloadState(downloadId);
                     Timber.i("Download complete for resource: %s, %s", resource, state);
                     try {
@@ -140,19 +136,19 @@ public class DownloadFinishedJob extends Job {
                             Timber.i("... checked file existence");
                             if (resource.getLen() != 0 && downloadFile.length() != resource.getLen())
                                 throw new DownloadException(String.format(Locale.GERMANY,
-                                                                                           "Wrong size of resource download. expected: %d, file: %d, downloaded: %d",
-                                                                                           resource.getLen(),
-                                                                                           downloadFile.length(),
-                                                                                           state.getBytesDownloaded()));
+                                                                          "Wrong size of resource download. expected: %d, file: %d, downloaded: %d",
+                                                                          resource.getLen(),
+                                                                          downloadFile.length(),
+                                                                          state.getBytesDownloaded()));
                             Timber.i("... checked correct size of resource download");
                             try {
                                 String fileHash = HashHelper.getHash(downloadFile, HashHelper.SHA_1);
                                 if (!TextUtils.isEmpty(resource.getFileHash()) && !resource.getFileHash()
                                                                                            .equals(fileHash))
                                     throw new DownloadException(String.format(Locale.GERMANY,
-                                                                                               "Wrong resource file hash. Expected: %s, calculated: %s",
-                                                                                               resource.getFileHash(),
-                                                                                               fileHash));
+                                                                              "Wrong resource file hash. Expected: %s, calculated: %s",
+                                                                              resource.getFileHash(),
+                                                                              fileHash));
                                 Timber.i("... checked correct hash of resource download");
                             } catch (NoSuchAlgorithmException e) {
                                 Timber.w(e);
@@ -165,23 +161,14 @@ public class DownloadFinishedJob extends Job {
                     } catch (DownloadException e) {
                         Timber.e(e);
                         resource.setDownloadId(0);
-                        getContext().getContentResolver()
-                               .insert(Resource.CONTENT_URI, resource.getContentValues());
-//                        context.getContentResolver()
-//                               .update(Uri.withAppendedPath(Resource.CONTENT_URI, resource.getKey()),
-//                                       resource.getContentValues(),
-//                                       null,
-//                                       null);
+                        resourceRepository.saveResource(resource);
                         EventBus.getDefault()
                                 .post(new ResourceDownloadEvent(resource.getKey(), e));
                     }
-                }
-            } finally {
-                cursor.close();
+
             }
 
-        }
-        return Result.SUCCESS;
+        } return Result.SUCCESS;
     }
 
     public static void scheduleJob(long downloadId) {

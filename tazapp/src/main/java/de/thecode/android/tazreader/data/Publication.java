@@ -1,30 +1,17 @@
 package de.thecode.android.tazreader.data;
 
 import android.arch.persistence.room.Entity;
-import android.arch.persistence.room.Ignore;
 import android.arch.persistence.room.PrimaryKey;
-import android.content.ContentValues;
-import android.database.Cursor;
-import android.net.Uri;
-import android.os.Build;
-import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
 
 import com.dd.plist.NSDictionary;
 
-import de.thecode.android.tazreader.BuildConfig;
-import de.thecode.android.tazreader.provider.TazProvider;
 import de.thecode.android.tazreader.utils.PlistHelper;
 
 @Entity(tableName = "PUBLICATION")
 public class Publication {
 
-    public static String TABLE_NAME = "PUBLICATION";
-    public static final Uri CONTENT_URI = Uri.parse("content://" + TazProvider.AUTHORITY + "/" + TABLE_NAME);
-    public static final String CONTENT_TYPE = "vnd.android.cursor.dir/vnd.taz."+TABLE_NAME;
-    public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/vnd.taz."+TABLE_NAME;
-
-    public static final class Columns {
+    public static final class PLISTFIELDS {
         public static final String ISSUENAME = "issueName";
         public static final String TYPENAME = "typeName";
         public static final String NAME = "name";
@@ -51,45 +38,18 @@ public class Publication {
     public Publication() {
     }
 
-    public Publication(Cursor cursor)
-    {
-//        this.id=cursor.getLong(cursor.getColumnIndex(Columns._ID));
-        this.issueName=cursor.getString(cursor.getColumnIndex(Columns.ISSUENAME));
-        this.typeName=cursor.getString(cursor.getColumnIndex(Columns.TYPENAME));
-        this.name=cursor.getString(cursor.getColumnIndex(Columns.NAME));
-        this.url=cursor.getString(cursor.getColumnIndex(Columns.URL));
-        this.image=cursor.getString(cursor.getColumnIndex(Columns.IMAGE));
-        this.created=cursor.getLong(cursor.getColumnIndex(Columns.CREATED));
-        this.validUntil=cursor.getLong(cursor.getColumnIndex(Columns.VALIDUNTIL));
-        this.appAndroidVersion=cursor.getString(cursor.getColumnIndex(Columns.APPANDROIDVERSION));
-    }
-    
     public Publication(NSDictionary nsDictionary)
     {
-        this.issueName=PlistHelper.getString(nsDictionary,Columns.ISSUENAME);
-        this.typeName=PlistHelper.getString(nsDictionary,Columns.TYPENAME);
-        this.name=PlistHelper.getString(nsDictionary,Columns.NAME);
-        this.url=PlistHelper.getString(nsDictionary,Columns.URL);
-        this.image=PlistHelper.getString(nsDictionary,Columns.IMAGE);
-        this.created=PlistHelper.getInt(nsDictionary,Columns.CREATED);
-        this.validUntil=PlistHelper.getInt(nsDictionary,Columns.VALIDUNTIL);
-        this.appAndroidVersion=PlistHelper.getString(nsDictionary,Columns.APPANDROIDVERSION);
+        this.issueName=PlistHelper.getString(nsDictionary,PLISTFIELDS.ISSUENAME);
+        this.typeName=PlistHelper.getString(nsDictionary,PLISTFIELDS.TYPENAME);
+        this.name=PlistHelper.getString(nsDictionary,PLISTFIELDS.NAME);
+        this.url=PlistHelper.getString(nsDictionary,PLISTFIELDS.URL);
+        this.image=PlistHelper.getString(nsDictionary,PLISTFIELDS.IMAGE);
+        this.created=PlistHelper.getInt(nsDictionary,PLISTFIELDS.CREATED);
+        this.validUntil=PlistHelper.getInt(nsDictionary,PLISTFIELDS.VALIDUNTIL);
+        this.appAndroidVersion=PlistHelper.getString(nsDictionary,PLISTFIELDS.APPANDROIDVERSION);
     }
-    
-    public ContentValues getContentValues()
-    {
-        ContentValues cv = new ContentValues();
-        cv.put(Columns.CREATED, created);
-        cv.put(Columns.IMAGE, image);
-        cv.put(Columns.ISSUENAME, issueName);
-        cv.put(Columns.NAME, name);
-        cv.put(Columns.TYPENAME, typeName);
-        cv.put(Columns.URL, url);
-        cv.put(Columns.VALIDUNTIL, validUntil);
-        cv.put(Columns.APPANDROIDVERSION,appAndroidVersion);
-        return cv;
-    }
-    
+
     
     public String getIssueName() {
         return issueName;

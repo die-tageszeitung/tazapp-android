@@ -35,9 +35,7 @@ import de.mateware.snacky.Snacky;
 import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.analytics.AnalyticsWrapper;
-import de.thecode.android.tazreader.data.DeleteTask;
 import de.thecode.android.tazreader.data.Paper;
-import de.thecode.android.tazreader.data.PaperRepository;
 import de.thecode.android.tazreader.data.Resource;
 import de.thecode.android.tazreader.data.ResourceRepository;
 import de.thecode.android.tazreader.data.TazSettings;
@@ -66,8 +64,6 @@ import de.thecode.android.tazreader.widget.CustomToolbar;
 import org.apache.commons.io.IOUtils;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-import org.json.JSONArray;
-import org.json.JSONException;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -133,14 +129,14 @@ public class StartActivity extends BaseActivity
     @Override
     public void onStart() {
         super.onStart();
-        TazSettings.getInstance(this)
-                   .addOnPreferenceChangeListener(TazSettings.PREFKEY.DEMOMODE, demoModeChanged);
+        startViewModel.getSettings()
+                      .addOnPreferenceChangeListener(TazSettings.PREFKEY.DEMOMODE, demoModeChanged);
     }
 
     @Override
     public void onStop() {
-        TazSettings.getInstance(this)
-                   .removeOnPreferenceChangeListener(demoModeChanged);
+        startViewModel.getSettings()
+                      .removeOnPreferenceChangeListener(demoModeChanged);
         super.onStop();
     }
 
@@ -284,9 +280,8 @@ public class StartActivity extends BaseActivity
             if (intent.hasExtra(NotificationUtils.NOTIFICATION_EXTRA_TYPE_ID) && intent.hasExtra(NotificationUtils.NOTIFICATION_EXTRA_BOOKID)) {
                 String bookId = intent.getStringExtra(NotificationUtils.NOTIFICATION_EXTRA_BOOKID);
                 int type = intent.getIntExtra(NotificationUtils.NOTIFICATION_EXTRA_TYPE_ID, -1);
-                Paper paper = Paper.getPaperWithBookId(this, bookId);
-                if (type == NotificationUtils.DOWNLOAD_NOTIFICTAION_ID && paper != null) {
-                    openReader(paper.getBookId());
+                if (type == NotificationUtils.DOWNLOAD_NOTIFICTAION_ID && !TextUtils.isEmpty(bookId)) {
+                    openReader(bookId);
                 }
             }
         }
@@ -598,19 +593,19 @@ public class StartActivity extends BaseActivity
 
     @Override
     public void openReader(String bookId) {
-        new AsyncTaskListener<String, Paper>(bookIdParam -> PaperRepository.getInstance(StartActivity.this)
-                                                                           .getPaperWithBookId(bookIdParam), paper -> {
+        new AsyncTaskListener<String, Paper>(bookIdParams -> startViewModel.getPaperRepository()
+                                                                           .getPaperWithBookId(bookIdParams[0]), paper -> {
             if (!paper.isDownloaded()) {
                 showErrorDialog(getString(R.string.message_paper_not_downloaded), DIALOG_ERROR_OPEN_PAPER);
             }
-            new AsyncTaskListener<Paper, Resource>(paper1 -> ResourceRepository.getInstance(StartActivity.this)
-                                                                               .getResourceForPaper(paper1), resource -> {
+            new AsyncTaskListener<Paper, Resource>(papers -> ResourceRepository.getInstance(StartActivity.this)
+                                                                               .getResourceForPaper(papers[0]), resource -> {
                 if (resource.isDownloaded()) {
                     Timber.i("start reader for paper: %s", paper);
                     Intent intent = new Intent(StartActivity.this, ReaderActivity.class);
 //                intent.putExtra(ReaderActivity.KEY_EXTRA_PAPER_ID, id);
                     intent.putExtra(ReaderActivity.KEY_EXTRA_BOOK_ID, paper.getBookId());
-                    intent.putExtra(ReaderActivity.KEY_EXTRA_RESOURCE_KEY, resource.getKey());
+//                    intent.putExtra(ReaderActivity.KEY_EXTRA_RESOURCE_KEY, resource.getKey());
                     startActivity(intent);
                 } else {
                     AnalyticsWrapper.getInstance()
@@ -640,8 +635,8 @@ public class StartActivity extends BaseActivity
 
                     }
                 }
-            }, Timber::e).execute(paper);
-        }, Timber::e).execute(bookId);
+            }).execute(paper);
+        }).execute(bookId);
 
     }
 
@@ -680,44 +675,41 @@ public class StartActivity extends BaseActivity
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onPaperDownloadFailed(PaperDownloadFailedEvent event) {
-        try {
-            Paper paper = Paper.getPaperWithBookId(this, event.getBookId());
-            if (paper == null) throw new Paper.PaperNotFoundException();
-            showDownloadErrorDialog(paper.getTitelWithDate(this), null, event.getException());
-
-            //NotificationHelper.cancelDownloadErrorNotification(this, event.getPaperId());
-            new NotificationUtils(this).removeDownloadNotification(event.getBookId());
-        } catch (Paper.PaperNotFoundException e) {
-            e.printStackTrace();
-        }
+        showDownloadErrorDialog(event.getPaper()
+                                     .getTitelWithDate(this), null, event.getException());
+        new NotificationUtils(this).removeDownloadNotification(event.getPaper()
+                                                                    .getBookId());
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onResourceDownload(ResourceDownloadEvent event) {
-        if (!TextUtils.isEmpty(retainDataFragment.openPaperWaitingForRessource)) {
-            try {
-                Paper waitingPaper = Paper.getPaperWithBookId(this, retainDataFragment.openPaperWaitingForRessource);
-                if (waitingPaper == null) throw new Paper.PaperNotFoundException();
-                if (event.getKey()
-                         .equals(ResourceRepository.getInstance(this)
-                                                   .getResourceForPaper(waitingPaper)
-                                                   .getKey())) {
-                    hideWaitDialog(DIALOG_WAIT + waitingPaper.getBookId());
-                    String bookId = retainDataFragment.openPaperWaitingForRessource;
-                    retainDataFragment.openPaperWaitingForRessource = null;
-                    if (event.isSuccessful()) {
-                        openReader(bookId);
-                    } else {
-                        showDownloadErrorDialog(getString(R.string.message_resourcedownload_error),
-                                                String.format(getString(R.string.message_resourcedownload_late_error),
-                                                              event.getException()
-                                                                   .toString()),
-                                                null);
+        String waitingBookId = retainDataFragment.openPaperWaitingForRessource;
+        if (!TextUtils.isEmpty(waitingBookId)) {
+            new AsyncTaskListener<ResourceDownloadEvent, Void>(new AsyncTaskListener.OnExecute<ResourceDownloadEvent, Void>() {
+                @Override
+                public Void execute(ResourceDownloadEvent... resourceDownloadEvents) throws Exception {
+                    Paper waitingPaper = startViewModel.getPaperRepository()
+                                                       .getPaperWithBookId(retainDataFragment.openPaperWaitingForRessource);
+                    if (resourceDownloadEvents[0].getKey()
+                                                 .equals(ResourceRepository.getInstance(StartActivity.this)
+                                                                           .getResourceForPaper(waitingPaper)
+                                                                           .getKey())) {
+                        hideWaitDialog(DIALOG_WAIT + waitingPaper.getBookId());
+                        String bookId = retainDataFragment.openPaperWaitingForRessource;
+                        retainDataFragment.openPaperWaitingForRessource = null;
+                        if (resourceDownloadEvents[0].isSuccessful()) {
+                            openReader(bookId);
+                        } else {
+                            showDownloadErrorDialog(getString(R.string.message_resourcedownload_error),
+                                                    String.format(getString(R.string.message_resourcedownload_late_error),
+                                                                  resourceDownloadEvents[0].getException()
+                                                                                           .toString()),
+                                                    null);
+                        }
                     }
+                    return null;
                 }
-            } catch (Paper.PaperNotFoundException e) {
-                retainDataFragment.openPaperWaitingForRessource = null;
-            }
+            }).execute(event);
         }
     }
 
@@ -726,31 +718,23 @@ public class StartActivity extends BaseActivity
     @Override
     protected void onResume() {
         super.onResume();
-        if (firstStartTask != null) firstStartTask.cancel(true);
-        firstStartTask = new AsyncTask<Void, Void, Boolean>() {
-            @Override
-            protected Boolean doInBackground(Void... voids) {
-                boolean showDialog = false;
-                List<Paper> allPapers = PaperRepository.getInstance(StartActivity.this)
-                                                       .getAllPapers();
-                boolean foundDownloaded = false;
-                for (Paper paper : allPapers) {
-                    if (foundDownloaded || isCancelled()) break;
-                    foundDownloaded = paper.isDownloaded() || paper.isDownloading();
-                }
-                if (!foundDownloaded) {
-                    showDialog = TazSettings.getInstance(StartActivity.this)
-                                            .isDemoMode();
-                }
-                return showDialog;
+        new AsyncTaskListener<Void, Boolean>(voids -> {
+            boolean showDialog = false;
+            List<Paper> allPapers = startViewModel.getPaperRepository()
+                                                  .getAllPapers();
+            boolean foundDownloaded = false;
+            for (Paper paper : allPapers) {
+                if (foundDownloaded) break;
+                foundDownloaded = paper.isDownloaded() || paper.isDownloading();
             }
-
-            @Override
-            protected void onPostExecute(Boolean aBoolean) {
-                if (aBoolean) showHelpDialog(HelpDialog.HELP_INTRO);
+            if (!foundDownloaded) {
+                showDialog = startViewModel.getSettings()
+                                           .isDemoMode();
             }
-        };
-        firstStartTask.execute();
+            return showDialog;
+        }, aBoolean -> {
+            if (aBoolean) showHelpDialog(HelpDialog.HELP_INTRO);
+        }).execute();
     }
 
     @Override
@@ -979,23 +963,5 @@ public class StartActivity extends BaseActivity
             return navBackstack;
         }
 
-        public void deletePaper(String... bookIds) {
-            if (hasCallback())
-                getCallback().showWaitDialog(DIALOG_WAIT + "delete", getString(R.string.dialog_message_delete_wait));
-            new DeleteTask(getActivity()) {
-
-                @Override
-                protected void onPostError(Exception exception) {
-                    Timber.e(exception);
-
-                    if (hasCallback()) getCallback().hideWaitDialog(DIALOG_WAIT + "delete");
-                }
-
-                @Override
-                protected void onPostSuccess(Void aVoid) {
-                    if (hasCallback()) getCallback().hideWaitDialog(DIALOG_WAIT + "delete");
-                }
-            }.execute(bookIds);
-        }
     }
 }

@@ -25,7 +25,6 @@ import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.download.DownloadManager;
 import de.thecode.android.tazreader.okhttp3.OkHttp3Helper;
 import de.thecode.android.tazreader.okhttp3.RequestHelper;
-import de.thecode.android.tazreader.start.ScrollToPaperEvent;
 import de.thecode.android.tazreader.sync.SyncErrorEvent;
 import de.thecode.android.tazreader.sync.SyncStateChangedEvent;
 
@@ -59,13 +58,10 @@ public class SyncJob extends Job {
     public static final String ARG_END_DATE          = "endDate";
     public static final String ARG_INITIATED_BY_USER = "initiatedByUser";
 
-    private Paper moveToPaperAtEnd;
 
-//    AppDatabase appDatabase;
-
-    PaperRepository       paperRepository;
-    ResourceRepository    resourceRepository;
-    PublicationRepository publicationRepository;
+    private PaperRepository       paperRepository;
+    private ResourceRepository    resourceRepository;
+    private PublicationRepository publicationRepository;
 
     @NonNull
     @Override
@@ -106,14 +102,7 @@ public class SyncJob extends Job {
 
         cleanUpResources();
 
-
-        if (moveToPaperAtEnd != null) {
-            EventBus.getDefault()
-                    .post(new ScrollToPaperEvent(moveToPaperAtEnd.getBookId()));
-            moveToPaperAtEnd = null;
-        }
-
-        Paper latestPaper = Paper.getLatestPaper(getContext());
+        Paper latestPaper = paperRepository.getLatestPaper();
         if (latestPaper != null) AutoDownloadJob.scheduleJob(latestPaper);
 
         return endJob(Result.SUCCESS);
@@ -147,7 +136,7 @@ public class SyncJob extends Job {
             }
         }
         for (Resource deleteResource : deleteResources) {
-            deleteResource.delete(getContext());
+            resourceRepository.deleteResource(deleteResource);
         }
     }
 

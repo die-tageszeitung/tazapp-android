@@ -1,14 +1,16 @@
 package de.thecode.android.tazreader.utils;
 
 import android.support.annotation.NonNull;
-import android.support.v7.util.AdapterListUpdateCallback;
 import android.support.v7.util.DiffUtil;
 import android.support.v7.widget.RecyclerView;
 
 import de.thecode.android.tazreader.utils.asyncdiffer.AsyncDifferConfig;
+import de.thecode.android.tazreader.utils.asyncdiffer.ExtendedAdapterListUpdateCallback;
 import de.thecode.android.tazreader.utils.asyncdiffer.FixedAsyncListDiffer;
 
 import java.util.List;
+
+import timber.log.Timber;
 
 /**
  * Created by mate on 19.03.18.
@@ -18,15 +20,19 @@ public abstract class TazListAdapter<T, VH extends RecyclerView.ViewHolder> exte
 
     private final FixedAsyncListDiffer<T> mHelper;
 
-    @SuppressWarnings("unused")
     public TazListAdapter(@NonNull DiffUtil.ItemCallback<T> diffCallback) {
-        mHelper = new FixedAsyncListDiffer<T>(new AdapterListUpdateCallback(this),
-                                        new AsyncDifferConfig.Builder<>(diffCallback).build());
+        mHelper = new FixedAsyncListDiffer<>(new ExtendedAdapterListUpdateCallback(this),
+                                              new AsyncDifferConfig.Builder<>(diffCallback).build());
     }
 
-    @SuppressWarnings("unused")
+    public TazListAdapter(@NonNull DiffUtil.ItemCallback<T> diffCallback, ExtendedAdapterListUpdateCallback.OnFirstInsertedListener firstInsertedListener) {
+        mHelper = new FixedAsyncListDiffer<>(new ExtendedAdapterListUpdateCallback(this,firstInsertedListener),
+                                             new AsyncDifferConfig.Builder<>(diffCallback).build());
+    }
+
+
     public TazListAdapter(@NonNull AsyncDifferConfig<T> config) {
-        mHelper = new FixedAsyncListDiffer<T>(new AdapterListUpdateCallback(this), config);
+        mHelper = new FixedAsyncListDiffer<>(new ExtendedAdapterListUpdateCallback(this), config);
     }
 
     public FixedAsyncListDiffer<T> getHelper() {
@@ -58,7 +64,9 @@ public abstract class TazListAdapter<T, VH extends RecyclerView.ViewHolder> exte
                       .size();
     }
 
-    public int indexOf(T item){
-        return mHelper.getCurrentList().indexOf(item);
+    public int indexOf(T item) {
+        return mHelper.getCurrentList()
+                      .indexOf(item);
     }
+
 }

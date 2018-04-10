@@ -3,14 +3,10 @@ package de.thecode.android.tazreader.start.library;
 
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
-import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.CursorLoader;
-import android.support.v4.content.Loader;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.RecyclerView;
@@ -29,11 +25,11 @@ import de.thecode.android.tazreader.download.CoverDownloadedEvent;
 import de.thecode.android.tazreader.job.SyncJob;
 import de.thecode.android.tazreader.start.DrawerStateChangedEvent;
 import de.thecode.android.tazreader.start.IStartCallback;
-import de.thecode.android.tazreader.start.ScrollToPaperEvent;
 import de.thecode.android.tazreader.start.StartBaseFragment;
 import de.thecode.android.tazreader.start.StartViewModel;
 import de.thecode.android.tazreader.sync.SyncStateChangedEvent;
-import de.thecode.android.tazreader.utils.BaseFragment;
+import de.thecode.android.tazreader.utils.AsyncTaskListener;
+import de.thecode.android.tazreader.utils.asyncdiffer.ExtendedAdapterListUpdateCallback;
 import de.thecode.android.tazreader.widget.AutofitRecyclerView;
 
 import org.greenrobot.eventbus.EventBus;
@@ -48,7 +44,7 @@ import timber.log.Timber;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class LibraryFragment extends StartBaseFragment implements LoaderManager.LoaderCallbacks<Cursor> {
+public class LibraryFragment extends StartBaseFragment {
     WeakReference<IStartCallback> callback;
     //    LibraryAdapter                adapter;
     NewLibraryAdapter             adapter;
@@ -116,25 +112,24 @@ public class LibraryFragment extends StartBaseFragment implements LoaderManager.
                               .toggleSelection(libraryPaper.getBookId());
                 actionMode.invalidate();
             }
-        });
+        }, new ExtendedAdapterListUpdateCallback.OnFirstInsertedListener() {
+            @Override
+            public void onFinished(int firstInserted) {
 
-//        startViewModel.getLivePapers()
-//                      .observe(this, new Observer<List<Paper>>() {
-//                          @Override
-//                          public void onChanged(@Nullable List<Paper> papers) {
-//                              for (Paper paper : papers) {
-//                                  Timber.i("%s",paper);
-//                              }
-//                              Timber.i("xxx");
-//                              adapter.submitList(papers);
-//                          }
-//                      });
+                try {
+                    recyclerView.smoothScrollToPosition(firstInserted);
+                } catch (Exception e) {
+                    Timber.w("Can't scroll, dont worry!", e);
+                }
+            }
+        });
 
         startViewModel.getLibraryPaperLiveData()
                       .observe(this, new Observer<List<LibraryPaper>>() {
                           @Override
                           public void onChanged(@Nullable List<LibraryPaper> libraryPapers) {
-                              if (startViewModel.getLibraryPaperLiveData().getSelectionSize() == 0 && actionMode != null) actionMode.finish();
+                              if (startViewModel.getLibraryPaperLiveData()
+                                                .getSelectionSize() == 0 && actionMode != null) actionMode.finish();
                               adapter.submitList(libraryPapers);
                           }
                       });
@@ -324,58 +319,6 @@ public class LibraryFragment extends StartBaseFragment implements LoaderManager.
         super.onActivityCreated(savedInstanceState);
     }
 
-    @Override
-    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-
-
-        StringBuilder selection = new StringBuilder();
-        boolean demo = true;
-        if (hasCallback()) {
-            demo = TazSettings.getInstance(getContext())
-                              .isDemoMode();
-        }
-
-        if (demo) selection.append("(");
-        selection.append(Paper.Columns.FULL_VALIDUNTIL)
-                 .append(" > ")
-                 .append(System.currentTimeMillis() / 1000);
-
-        if (demo) {
-            selection.append(" AND ");
-            selection.append(Paper.Columns.DEMO)
-                     .append("=1");
-            selection.append(")");
-        }
-        selection.append(" OR ")
-                 .append(Paper.Columns.DOWNLOADED)
-                 .append("=1");
-        selection.append(" OR ")
-                 .append(Paper.Columns.DOWNLOADID)
-                 .append("!=0");
-        selection.append(" OR ")
-                 .append(Paper.Columns.IMPORTED)
-                 .append("=1");
-        selection.append(" OR ")
-                 .append(Paper.Columns.HASUPDATE)
-                 .append("=1");
-        selection.append(" OR ")
-                 .append(Paper.Columns.KIOSK)
-                 .append("=1");
-
-        return new CursorLoader(getActivity(), Paper.CONTENT_URI, null, selection.toString(), null, Paper.Columns.DATE + " DESC");
-    }
-
-    @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        Timber.i("loader: %s, data: %s", loader, data);
-//        adapter.swapCursor(data);
-    }
-
-    @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
-        Timber.d("loader: %s", loader);
-    }
-
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     public void onSyncStateChanged(SyncStateChangedEvent event) {
@@ -388,22 +331,16 @@ public class LibraryFragment extends StartBaseFragment implements LoaderManager.
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onCoverDowloaded(CoverDownloadedEvent event) {
-        try {
-            LibraryAdapter.ViewHolder viewHolder = (LibraryAdapter.ViewHolder) recyclerView.findViewHolderForItemId(event.getPaperId());
-            if (viewHolder != null) viewHolder.image.setTag(null);
-//            adapter.notifyItemChanged(adapter.getItemPosition(event.getPaperId()));
-        } catch (IllegalStateException e) {
-            Timber.w(e);
-        }
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onScrollToPaper(ScrollToPaperEvent event) {
-//        Timber.d("event: %s", event);
-//        if (recyclerView != null && adapter != null) {
-//            recyclerView.smoothScrollToPosition(adapter.getItemPosition(event.getPaperId()));
+        //TODO onCoverDownloaded
+//        try {
+//            LibraryAdapter.ViewHolder viewHolder = (LibraryAdapter.ViewHolder) recyclerView.findViewHolderForItemId(event.getPaperId());
+//            if (viewHolder != null) viewHolder.image.setTag(null);
+////            adapter.notifyItemChanged(adapter.getItemPosition(event.getPaperId()));
+//        } catch (IllegalStateException e) {
+//            Timber.w(e);
 //        }
     }
+
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onDrawerStateChanged(DrawerStateChangedEvent event) {
@@ -414,6 +351,23 @@ public class LibraryFragment extends StartBaseFragment implements LoaderManager.
 
 
     private void deleteSelected() {
+        new AsyncTaskListener<String, Void>(bookIds -> {
+
+            List<Paper> deletePapers = startViewModel.getPaperRepository()
+                                                     .getPapersWithBookId(bookIds);
+            if (deletePapers != null) {
+                for (Paper paper : deletePapers) {
+                    startViewModel.getPaperRepository()
+                                  .deletePaper(paper);
+                }
+            }
+            return null;
+        }).execute(startViewModel.getLibraryPaperLiveData()
+                                 .getSelected()
+                                 .toArray(new String[startViewModel.getLibraryPaperLiveData()
+                                                                   .getSelected()
+                                                                   .size()]));
+
 //        if (adapter.getSelected() != null && adapter.getSelected()
 //                                                    .size() > 0) {
 //            Long[] ids = adapter.getSelected()
@@ -425,16 +379,19 @@ public class LibraryFragment extends StartBaseFragment implements LoaderManager.
     }
 
     private void downloadSelected() {
-//        for (Long paperId : adapter.getSelected()) {
-//            try {
-//                Paper paper = Paper.getPaperWithId(getContext(), paperId);
-//                if (paper == null) throw new Paper.PaperNotFoundException();
-//                if (hasCallback()) getCallback().startDownload(paper.getBookId());
-//            } catch (Paper.PaperNotFoundException e) {
-//                Timber.e(e);
-//            }
-//        }
-//        adapter.deselectAll();
+        new AsyncTaskListener<String, List<Paper>>(bookIds -> startViewModel.getPaperRepository()
+                                                                            .getPapersWithBookId(bookIds), papers -> {
+            if (papers != null) {
+                for (Paper paper : papers) {
+                    getStartActivity().startDownload(paper);
+                }
+            }
+        }).execute(startViewModel.getLibraryPaperLiveData()
+                                 .getSelected()
+                                 .toArray(new String[startViewModel.getLibraryPaperLiveData()
+                                                                   .getSelected()
+                                                                   .size()]));
+
     }
 
 
@@ -455,7 +412,7 @@ public class LibraryFragment extends StartBaseFragment implements LoaderManager.
 
 
     public void setActionMode() {
-        if (actionMode == null) getActivity().startActionMode(new ActionModeCallback());
+        if (actionMode == null && getActivity() != null) getActivity().startActionMode(new ActionModeCallback());
     }
 
     class ActionModeCallback implements ActionMode.Callback {
@@ -502,19 +459,23 @@ public class LibraryFragment extends StartBaseFragment implements LoaderManager.
                     mode.finish();
                     return true;
                 case R.id.ic_action_selectnone:
-                    startViewModel.getLibraryPaperLiveData().selectNone();
+                    startViewModel.getLibraryPaperLiveData()
+                                  .selectNone();
                     mode.invalidate();
                     return true;
                 case R.id.ic_action_selectall:
-                    startViewModel.getLibraryPaperLiveData().selectAll();
+                    startViewModel.getLibraryPaperLiveData()
+                                  .selectAll();
                     mode.invalidate();
                     return true;
                 case R.id.ic_action_selectinvert:
-                    startViewModel.getLibraryPaperLiveData().invertSelection();
+                    startViewModel.getLibraryPaperLiveData()
+                                  .invertSelection();
                     mode.invalidate();
                     return true;
                 case R.id.ic_action_selectnotloaded:
-                    startViewModel.getLibraryPaperLiveData().selectNotDownloaded();
+                    startViewModel.getLibraryPaperLiveData()
+                                  .selectNotDownloaded();
                     mode.invalidate();
                     return true;
             }
@@ -524,6 +485,8 @@ public class LibraryFragment extends StartBaseFragment implements LoaderManager.
 
         @Override
         public void onDestroyActionMode(ActionMode mode) {
+            startViewModel.getLibraryPaperLiveData()
+                          .selectNone();
             Timber.d("mode: %s", mode);
 //            adapter.deselectAll();
             if (hasCallback()) getCallback().getRetainData()

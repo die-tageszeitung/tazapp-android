@@ -1,9 +1,6 @@
 package de.thecode.android.tazreader.data;
 
-import android.content.ContentResolver;
 import android.content.Context;
-import android.database.Cursor;
-import android.net.Uri;
 import android.support.annotation.WorkerThread;
 
 import com.squareup.picasso.Picasso;
@@ -15,6 +12,7 @@ import de.thecode.android.tazreader.utils.StorageManager;
 
 import org.greenrobot.eventbus.EventBus;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -62,6 +60,18 @@ public class PaperRepository {
     }
 
     @WorkerThread
+    public List<Paper> getPapersWithBookId(List<String> bookIds) {
+        if (bookIds == null) bookIds = Collections.emptyList();
+        return getPapersWithBookId(bookIds.toArray(new String[bookIds.size()]));
+    }
+
+    @WorkerThread
+    public List<Paper> getPapersWithBookId(String... bookIds) {
+        return appDatabase.paperDao()
+                          .getPapers(bookIds);
+    }
+
+    @WorkerThread
     public Paper getPaperWithDownloadId(long downloadId) {
         return appDatabase.paperDao()
                           .getPaperWithDownloadId(downloadId);
@@ -81,8 +91,7 @@ public class PaperRepository {
             paper.setHasUpdate(false);
             if (BuildConfig.BUILD_TYPE.equals("staging"))
                 paper.setValidUntil(0); //Wunsch von Ralf, damit besser im Staging getestet werden kann
-            appDatabase.paperDao()
-                       .insert(paper);
+            savePaper(paper);
             EventBus.getDefault()
                     .post(new PaperDeletedEvent(paper.getBookId()));
         }

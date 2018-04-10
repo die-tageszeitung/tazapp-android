@@ -57,6 +57,7 @@ public class Migrations {
 
             Timber.d("Umbenennen der alten Store Tabelle");
             db.execSQL("ALTER TABLE STORE RENAME TO STORE_REN;");
+            db.execSQL("UPDATE STORE_REN SET value = replace(value,substr(value,instr(value,'?')),'') WHERE key LIKE '%/currentPosition' AND value LIKE '%?%'");
             Timber.d("Anlegen der neuen Store Tabelle");
             db.execSQL(CREATE_SQL_STORE);
             db.execSQL("INSERT INTO STORE (path, value) SELECT key, value FROM STORE_REN;");

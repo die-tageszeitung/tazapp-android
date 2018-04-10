@@ -4,12 +4,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 
 import de.thecode.android.tazreader.data.Paper;
-import de.thecode.android.tazreader.utils.AsyncTaskWithExecption;
+import de.thecode.android.tazreader.utils.AsyncTaskWithException;
 
 /**
  * Created by mate on 10.08.2015.
  */
-public abstract class UnzipPaperTask extends AsyncTaskWithExecption<Object, UnzipStream.Progress, File> implements UnzipStream.UnzipStreamProgressListener {
+public abstract class UnzipPaperTask extends AsyncTaskWithException<Object, UnzipStream.Progress, File> implements UnzipStream.UnzipStreamProgressListener {
 
     private UnzipPaper unzipPaper;
 

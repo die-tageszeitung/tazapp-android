@@ -4,18 +4,14 @@ import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.Ignore;
 import android.arch.persistence.room.PrimaryKey;
 import android.content.ComponentName;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.LabeledIntent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.Resources;
-import android.database.Cursor;
 import android.net.Uri;
-import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
-import android.support.annotation.WorkerThread;
 import android.text.TextUtils;
 
 import com.dd.plist.NSArray;
@@ -24,20 +20,16 @@ import com.dd.plist.NSObject;
 import com.dd.plist.NSString;
 import com.dd.plist.PropertyListFormatException;
 import com.dd.plist.PropertyListParser;
-import com.squareup.picasso.Picasso;
 
 import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper.Plist.Page.Article;
-import de.thecode.android.tazreader.download.PaperDeletedEvent;
-import de.thecode.android.tazreader.provider.TazProvider;
 import de.thecode.android.tazreader.utils.PlistHelper;
 import de.thecode.android.tazreader.utils.ReadableException;
 import de.thecode.android.tazreader.utils.StorageManager;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.greenrobot.eventbus.EventBus;
 import org.json.JSONArray;
 import org.xml.sax.SAXException;
 
@@ -71,70 +63,7 @@ public class Paper {
     public static final String STORE_KEY_RESOURCE_PARTNER    = "resource";
     public static final String STORE_KEY_AUTO_DOWNLOADED     = "auto_download";
 
-    public static       String TABLE_NAME        = "PAPER";
-    public static final Uri    CONTENT_URI       = Uri.parse("content://" + TazProvider.AUTHORITY + "/" + TABLE_NAME);
-    public static final String CONTENT_TYPE      = "vnd.android.cursor.dir/vnd.taz." + TABLE_NAME;
-    public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/vnd.taz." + TABLE_NAME;
-
     public static final String CONTENT_PLIST_FILENAME = "content.plist";
-
-    public static Paper getLatestPaper(Context context) {
-        Cursor cursor = context.getContentResolver()
-                               .query(CONTENT_URI, null, null, null, Columns.DATE + " DESC LIMIT 1");
-        if (cursor != null) {
-            try {
-                if (cursor.moveToNext()) {
-                    return new Paper(cursor);
-                }
-            } finally {
-                cursor.close();
-            }
-        }
-        return null;
-    }
-
-    public static Paper getPaperWithBookId(Context context, String bookId) {
-        Uri bookIdUri = TazProvider.getContentUri(CONTENT_URI, bookId);
-        Cursor cursor = context.getApplicationContext()
-                               .getContentResolver()
-                               .query(bookIdUri, null, null, null, null);
-        try {
-            if (cursor.moveToNext()) {
-                return new Paper(cursor);
-            }
-        } finally {
-            cursor.close();
-        }
-        return null;
-    }
-
-
-    public static final class Columns implements BaseColumns {
-
-        public static final String DATE            = "date";
-        public static final String IMAGE           = "image";
-        public static final String IMAGEHASH       = "imageHash";
-        public static final String LINK            = "link";
-        public static final String FILEHASH        = "fileHash";
-        public static final String LEN             = "len";
-        public static final String LASTMODIFIED    = "lastModified";
-        public static final String BOOKID          = "bookId";
-        public static final String DEMO            = "demo";
-        public static final String HASUPDATE       = "hasUpdate";
-        public static final String DOWNLOADID      = "downloadId";
-        public static final String DOWNLOADED      = "downloaded";
-        public static final String KIOSK           = "kiosk";
-        public static final String IMPORTED        = "imported";
-        public static final String TITLE           = "title";
-        //        public static final String PUBLICATIONID   = "publicationId";
-        public static final String PUBLICATION     = "publication";
-        public static final String RESOURCE        = "resource";
-        //        public static final String RESOURCEFILEHASH = "resourceFileHash";
-//        public static final String RESOURCEURL      = "resourceUrl";
-//        public static final String RESOURCELEN      = "resourceLen";
-        public static final String VALIDUNTIL      = "validUntil";
-        public static final String FULL_VALIDUNTIL = TABLE_NAME + "." + VALIDUNTIL;
-    }
 
     public final static int NOT_DOWNLOADED        = 1;
     public final static int DOWNLOADED_READABLE   = 2;
@@ -175,44 +104,6 @@ public class Paper {
     }
 
 
-    public Paper(Cursor cursor) {
-        setData(cursor);
-    }
-
-    private void setData(Cursor cursor) {
-//        this.id = cursor.getLong(cursor.getColumnIndex(Columns._ID));
-        this.date = cursor.getString(cursor.getColumnIndex(Columns.DATE));
-        this.image = cursor.getString(cursor.getColumnIndex(Columns.IMAGE));
-        this.imageHash = cursor.getString(cursor.getColumnIndex(Columns.IMAGEHASH));
-        this.link = cursor.getString(cursor.getColumnIndex(Columns.LINK));
-        this.fileHash = cursor.getString(cursor.getColumnIndex(Columns.FILEHASH));
-        this.len = cursor.getLong(cursor.getColumnIndex(Columns.LEN));
-        this.lastModified = cursor.getLong(cursor.getColumnIndex(Columns.LASTMODIFIED));
-        this.bookId = cursor.getString(cursor.getColumnIndex(Columns.BOOKID));
-        this.demo = getBoolean(cursor, cursor.getColumnIndex(Columns.DEMO));
-        // this.filename = cursor.getString(cursor.getColumnIndex(Columns.FILENAME));
-        // this.tempfilepath = cursor.getString(cursor.getColumnIndex(Columns.TEMPFILEPATH));
-        // this.tempfilename = cursor.getString(cursor.getColumnIndex(Columns.TEMPFILENAME));
-        this.hasUpdate = getBoolean(cursor, cursor.getColumnIndex(Columns.HASUPDATE));
-        this.downloadId = cursor.getLong(cursor.getColumnIndex(Columns.DOWNLOADID));
-        //this.downloadprogress = cursor.getInt(cursor.getColumnIndex(Columns.DOWNLOADPROGRESS));
-        this.downloaded = getBoolean(cursor, cursor.getColumnIndex(Columns.DOWNLOADED));
-        this.kiosk = getBoolean(cursor, cursor.getColumnIndex(Columns.KIOSK));
-        this.imported = getBoolean(cursor, cursor.getColumnIndex(Columns.IMPORTED));
-        this.title = cursor.getString(cursor.getColumnIndex(Columns.TITLE));
-//        this.publicationId = cursor.getLong(cursor.getColumnIndex(Columns.PUBLICATIONID));
-        this.publication = cursor.getString(cursor.getColumnIndex(Columns.PUBLICATION));
-        //if (cursor.getColumnIndex(Publication.Columns.VALIDUNTIL) != -1)
-        this.validUntil = cursor.getLong(cursor.getColumnIndex(Columns.VALIDUNTIL));
-        this.resource = cursor.getString(cursor.getColumnIndex(Columns.RESOURCE));
-//        this.resourceFileHash = cursor.getString(cursor.getColumnIndex(Columns.RESOURCEFILEHASH));
-//        this.resourceUrl = cursor.getString(cursor.getColumnIndex(Columns.RESOURCEURL));
-//        this.resourceLen = cursor.getLong(cursor.getColumnIndex(Columns.RESOURCELEN));
-    }
-
-    private boolean getBoolean(Cursor cursor, int columnIndex) {
-        return !(cursor.isNull(columnIndex) || cursor.getShort(columnIndex) == 0);
-    }
 
     public Paper(NSDictionary nsDictionary) {
         this.date = PlistHelper.getString(nsDictionary, de.thecode.android.tazreader.sync.model.Plist.Fields.DATE);
@@ -226,50 +117,6 @@ public class Paper {
         this.demo = PlistHelper.getBoolean(nsDictionary, de.thecode.android.tazreader.sync.model.Plist.Fields.ISDEMO);
         this.resource = PlistHelper.getString(nsDictionary, de.thecode.android.tazreader.sync.model.Plist.Fields.RESOURCE);
     }
-
-    public ContentValues getContentValues() {
-        ContentValues cv = new ContentValues();
-        cv.put(Columns.BOOKID, bookId);
-        cv.put(Columns.DATE, date);
-        //cv.put(Columns.DOWNLOADPROGRESS, downloadprogress);
-        cv.put(Columns.FILEHASH, fileHash);
-        // cv.put(Columns.FILENAME, filename);
-        cv.put(Columns.HASUPDATE, hasUpdate);
-        cv.put(Columns.IMAGE, image);
-        cv.put(Columns.IMAGEHASH, imageHash);
-        cv.put(Columns.IMPORTED, imported);
-        cv.put(Columns.DEMO, demo);
-        cv.put(Columns.DOWNLOADED, downloaded);
-        cv.put(Columns.DOWNLOADID, downloadId);
-        cv.put(Columns.KIOSK, kiosk);
-        cv.put(Columns.LASTMODIFIED, lastModified);
-        cv.put(Columns.LEN, len);
-        cv.put(Columns.LINK, link);
-        // cv.put(Columns.TEMPFILENAME, tempfilename);
-        // cv.put(Columns.TEMPFILEPATH, tempfilepath);
-        cv.put(Columns.TITLE, title);
-//        cv.put(Columns.PUBLICATIONID, publicationId);
-        cv.put(Columns.PUBLICATION, publication);
-        cv.put(Columns.RESOURCE, resource);
-//        cv.put(Columns.RESOURCEFILEHASH, resourceFileHash);
-//        cv.put(Columns.RESOURCEURL, resourceUrl);
-//        cv.put(Columns.RESOURCELEN, resourceLen);
-        cv.put(Columns.VALIDUNTIL, validUntil);
-//        cv.put(Columns._ID, id);
-        return cv;
-    }
-
-    public Uri getContentUri() {
-        return TazProvider.getContentUri(CONTENT_URI, getBookId());
-    }
-
-//    public Long getId() {
-//        return id;
-//    }
-//
-//    public void setId(Long id) {
-//        this.id = id;
-//    }
 
     public String getBookId() {
         return bookId;
@@ -1501,7 +1348,7 @@ public class Paper {
         }
     }
 
-    public JSONArray getBookmarkJson() {
+    public @NonNull JSONArray getBookmarkJson() {
         JSONArray array = new JSONArray();
         try {
 
@@ -1521,85 +1368,6 @@ public class Paper {
 
         }
         return array;
-    }
-
-//    public boolean savePositionInArticle(Context context, IIndexItem article, String position) {
-//        return saveStoreValue(context, STORE_KEY_POSITION_IN_ARTICLE + "_" + article.getPath(), position);
-//    }
-
-//    public String getPositionInArticle(Context context, IIndexItem article) {
-//        String result = getStoreValue(context, STORE_KEY_POSITION_IN_ARTICLE + "_" + article.getPath());
-//        return (TextUtils.isEmpty(result)) ? "0" : result;
-//    }
-
-//    public boolean saveAutoDownloaded(Context context, boolean isAutoDownload) {
-//        return saveStoreValue(context, STORE_KEY_AUTO_DOWNLOADED, String.valueOf(isAutoDownload));
-//    }
-//
-//    public boolean isAutoDownloaded(Context context) {
-//        String resultString = getStoreValue(context, STORE_KEY_AUTO_DOWNLOADED);
-//        return Boolean.parseBoolean(resultString);
-//    }
-
-//    public boolean saveResourcePartner(Context context, Resource resource) {
-//        return saveStoreValue(context, STORE_KEY_RESOURCE_PARTNER, resource.getPath());
-//    }
-//
-//    public void deleteResourcePartner(Context context) {
-//        deleteStoreKey(context, STORE_KEY_RESOURCE_PARTNER);
-//    }
-//
-//    public Resource getResourcePartner(Context context) {
-//        String resource = getStoreValue(context, STORE_KEY_RESOURCE_PARTNER);
-//        if (TextUtils.isEmpty(resource)) resource = getResource(); //Fallback;
-//        return Resource.getWithKey(context, resource);
-//    }
-
-//    public String getStorePathForPositionInArticle(IIndexItem article){
-//        return getStorePath(STORE_KEY_POSITION_IN_ARTICLE + "_" + article.getKey());
-//    }
-
-//    public String getStoreValue(Context context, String key) {
-//        String path = getBookId() + "/" + key;
-//        return StoreRepository.getInstance(context).getStoreForPath(path).getValue();
-//    }
-//
-//    public void deleteStoreKey(Context context, String key) {
-//        String path = getBookId() + "/" + key;
-//        StoreRepository.getInstance(context).deleteKey(path);
-//    }
-//
-//    public boolean saveStoreValue(Context context, String key, String value) {
-//        String path = getBookId() + "/" + key;
-//        return StoreRepository.getInstance(context).saveStore(new Store(path,value));
-//    }
-
-    @WorkerThread
-    public void delete(Context context) {
-        StorageManager storage = StorageManager.getInstance(context);
-        storage.deletePaperDir(this);
-        Picasso.with(context)
-               .invalidate(getImage());
-        StoreRepository.getInstance(context)
-                       .deletePath(Store.getPath(getBookId(), Paper.STORE_KEY_RESOURCE_PARTNER));
-        //deleteResourcePartner(context);
-        if (isImported() || isKiosk()) {
-            context.getContentResolver()
-                   .delete(getContentUri(), null, null);
-        } else {
-            setDownloadId(0);
-            setDownloaded(false);
-            setHasUpdate(false);
-            if (BuildConfig.BUILD_TYPE.equals("staging"))
-                setValidUntil(0); //Wunsch von Ralf, damit besser im Staging getestet werden kann
-//            int affected = context.getContentResolver()
-//                                  .update(getContentUri(), getContentValues(), null, null);
-            context.getContentResolver()
-                   .insert(CONTENT_URI, getContentValues());
-            EventBus.getDefault()
-                    .post(new PaperDeletedEvent(getBookId()));
-        }
-
     }
 
     @Override

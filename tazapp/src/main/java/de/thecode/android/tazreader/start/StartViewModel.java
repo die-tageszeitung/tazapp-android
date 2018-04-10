@@ -72,7 +72,7 @@ public class StartViewModel extends AndroidViewModel {
     public void startDownloadQueue(){
         new AsyncTaskListener<Void,Void>(new AsyncTaskListener.OnExecute<Void, Void>() {
             @Override
-            public Void execute(Void aVoid) throws Exception {
+            public Void execute(Void... aVoid) throws Exception {
                 while (downloadQueue.size() > 0) {
                     String bookId = downloadQueue.get(0);
                     DownloadManager.DownloadManagerResult result = downloadManager.downloadPaper(bookId,false);
@@ -87,6 +87,14 @@ public class StartViewModel extends AndroidViewModel {
                 return null;
             }
         }).execute();
+    }
+
+    public PaperRepository getPaperRepository() {
+        return paperRepository;
+    }
+
+    public TazSettings getSettings() {
+        return settings;
     }
 
     public static class DownloadError {
@@ -105,5 +113,6 @@ public class StartViewModel extends AndroidViewModel {
         public String getDetails() {
             return details;
         }
+
     }
 }

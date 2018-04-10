@@ -123,7 +123,7 @@ public class DownloadFinishedPaperJob extends Job implements UnzipStream.UnzipSt
             new NotificationUtils(getContext()).showDownloadErrorNotification(paper, null);
             //NotificationHelper.showDownloadErrorNotification(getContext(), null, paper.getId());
             EventBus.getDefault()
-                    .post(new PaperDownloadFailedEvent(paper.getBookId(), exception));
+                    .post(new PaperDownloadFailedEvent(paper, exception));
         }
     }
 

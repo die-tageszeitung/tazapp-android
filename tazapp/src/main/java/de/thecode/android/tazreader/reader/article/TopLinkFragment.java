@@ -10,8 +10,8 @@ import de.thecode.android.tazreader.reader.ReaderBaseFragment;
 
 public class TopLinkFragment extends ArticleFragment {
 
-    public static TopLinkFragment newInstance(String bookId, String resourceKey, String articleKey) {
-        TopLinkFragment fragment = ReaderBaseFragment.newInstance(TopLinkFragment.class,bookId,resourceKey);
+    public static TopLinkFragment newInstance(String bookId, String articleKey) {
+        TopLinkFragment fragment = ReaderBaseFragment.newInstance(TopLinkFragment.class,bookId);
         Bundle arguments = fragment.getArguments();
         arguments.putString(ArticleFragment.ARG_KEY, articleKey);
         fragment.setArguments(arguments);

@@ -1,6 +1,8 @@
 package de.thecode.android.tazreader.utils;
 
-public class AsyncTaskListener<PARAM,RESULT> extends AsyncTaskWithExecption<PARAM,Void,RESULT>{
+import timber.log.Timber;
+
+public class AsyncTaskListener<PARAM,RESULT> extends AsyncTaskWithException<PARAM,Void,RESULT> {
 
     private final OnExecute<PARAM,RESULT> executor;
     private final OnSuccess<RESULT> successor;
@@ -9,6 +11,11 @@ public class AsyncTaskListener<PARAM,RESULT> extends AsyncTaskWithExecption<PARA
     public AsyncTaskListener(OnExecute<PARAM, RESULT> executor) {
         this(executor,null,null);
     }
+
+    public AsyncTaskListener(OnExecute<PARAM, RESULT> executor, OnSuccess<RESULT> successor) {
+        this(executor,successor,null);
+    }
+
 
     public AsyncTaskListener(OnExecute<PARAM, RESULT> executor, OnSuccess<RESULT> successor, OnError errorHandler) {
         this.executor = executor;
@@ -20,9 +27,7 @@ public class AsyncTaskListener<PARAM,RESULT> extends AsyncTaskWithExecption<PARA
     @Override
     public final RESULT doInBackgroundWithException(PARAM... params) throws Exception {
         if (executor != null) {
-            PARAM parameter = null;
-            if (params != null && params.length > 0) parameter = params[0];
-            return executor.execute(parameter);
+            return executor.execute(params);
         }
         return null;
     }
@@ -37,15 +42,20 @@ public class AsyncTaskListener<PARAM,RESULT> extends AsyncTaskWithExecption<PARA
         if (successor != null) successor.onSuccess(result);
     }
 
+    @FunctionalInterface
     public interface OnExecute<PARAM, RESULT> {
-        RESULT execute(PARAM param) throws Exception;
+        RESULT execute(PARAM... params) throws Exception;
     }
 
+    @FunctionalInterface
     public interface OnSuccess<RESULT> {
         void onSuccess(RESULT result);
+
     }
 
     public interface OnError{
-        void onError(Exception exception);
+        default void onError(Exception exception){
+            Timber.e(exception);
+        }
     }
 }

@@ -10,6 +10,7 @@ import com.evernote.android.job.util.support.PersistableBundleCompat;
 import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
+import de.thecode.android.tazreader.data.PaperRepository;
 import de.thecode.android.tazreader.data.Store;
 import de.thecode.android.tazreader.data.StoreRepository;
 import de.thecode.android.tazreader.data.TazSettings;
@@ -31,6 +32,8 @@ public class AutoDownloadJob extends Job {
 
     private static final String ARG_PAPER_BOOKID = "paper_bookid";
 
+    PaperRepository paperRepository;
+
     @NonNull
     @Override
     protected Result onRunJob(Params params) {
@@ -41,7 +44,8 @@ public class AutoDownloadJob extends Job {
             PersistableBundleCompat extras = params.getExtras();
             String bookId = extras.getString(ARG_PAPER_BOOKID,null);
             if (!TextUtils.isEmpty(bookId)) {
-                Paper paper = Paper.getPaperWithBookId(getContext(), bookId);
+                paperRepository = PaperRepository.getInstance(getContext());
+                Paper paper = paperRepository.getPaperWithBookId(bookId);
                 if (paper != null) {
                         Store autoDownloadedStore = StoreRepository.getInstance(getContext())
                                                                    .getStore(paper.getBookId(), Paper.STORE_KEY_AUTO_DOWNLOADED);

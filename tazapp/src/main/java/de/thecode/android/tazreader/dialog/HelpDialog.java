@@ -1,6 +1,5 @@
 package de.thecode.android.tazreader.dialog;
 
-import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -13,8 +12,6 @@ import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
-import com.artifex.mupdfdemo.AsyncTask;
-
 import de.mateware.dialog.DialogCustomView;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
@@ -22,7 +19,6 @@ import de.thecode.android.tazreader.data.PaperRepository;
 import de.thecode.android.tazreader.data.Resource;
 import de.thecode.android.tazreader.data.ResourceRepository;
 import de.thecode.android.tazreader.utils.AsyncTaskListener;
-import de.thecode.android.tazreader.utils.AsyncTaskWithExecption;
 import de.thecode.android.tazreader.utils.StorageManager;
 
 import java.io.File;
@@ -125,7 +121,7 @@ public class HelpDialog extends DialogCustomView {
                 String helpPage = getArguments().getString(ARG_HELPPAGE);
                 currentUrl = baseUrlPath + helpPage;
                 loadUrl();
-            }, Timber::e).execute();
+            }).execute();
         } else {
             loadUrl();
         }
@@ -134,7 +130,7 @@ public class HelpDialog extends DialogCustomView {
     }
 
     private void loadUrl() {
-        Timber.d("loading url %s",currentUrl);
+        Timber.d("loading url %s", currentUrl);
         webView.loadUrl(currentUrl);
     }
 

@@ -1,14 +1,14 @@
 package de.thecode.android.tazreader.data;
 
-import android.content.ContentResolver;
+import android.arch.lifecycle.LiveData;
 import android.content.Context;
-import android.database.Cursor;
 import android.net.Uri;
+import android.support.annotation.WorkerThread;
 
-import java.util.ArrayList;
+import de.thecode.android.tazreader.room.AppDatabase;
+
+import java.util.Collections;
 import java.util.List;
-
-import timber.log.Timber;
 
 /**
  * Created by mate on 01.03.18.
@@ -29,68 +29,66 @@ public class StoreRepository {
         return mInstance;
     }
 
-    private ContentResolver contentResolver;
+    private final AppDatabase appDatabase;
 
     private StoreRepository(Context context) {
-        this.contentResolver = context.getContentResolver();
+        appDatabase = AppDatabase.getInstance(context);
     }
 
+    @WorkerThread
     public Store getStore(String bookId, String key){
         return getStoreForPath(Store.getPath(bookId,key));
     }
 
-
+    @WorkerThread
     public Store getStoreForPath(String path) {
-        Cursor cursor = contentResolver
-                .query(getUriForKey(path), null, null, null, null);
-        Store store = new Store(path,null);
-        try {
-            if (cursor.moveToNext()) store = new Store(cursor);
-        } finally {
-            cursor.close();
-        }
-        Timber.d("path %s %s", path, store);
-        return store;
-    }
-
-    public void deletePath(String path) {
-        int affected = contentResolver
-                .delete(getUriForKey(path), null, null);
-        Timber.d("key %s %d", path, affected);
-    }
-
-    public void deleteStore(Store store) {
-        deletePath(store.getPath());
-    }
-
-    public List<Store> getAllStores() {
-        Cursor cursor = contentResolver
-                .query(Store.CONTENT_URI, null, null, null, null);
-        List<Store> result = new ArrayList<>();
-        try {
-            while (cursor.moveToNext()) {
-                result.add(new Store(cursor));
-            }
-        } finally {
-            cursor.close();
-        }
+        Store result = appDatabase.storeDao().withPath(path);
+        if (result == null) result = new Store(path,null);
         return result;
     }
 
-    public boolean saveStore(Store store) {
-        return contentResolver.insert(Store.CONTENT_URI, store.getContentValues()) != null;
+    public LiveData<Store> getLiveStore(String bookId, String key){
+        return getLiveStoreForPath(Store.getPath(bookId,key));
     }
 
-    private Uri getUriForKey(String key) {
-        Uri.Builder uriBuilder = Store.CONTENT_URI.buildUpon();
-
-        if (key != null) {
-            while (key.startsWith("/")) key = key.replaceFirst("/", "");
-        }
-
-        uriBuilder.appendEncodedPath(key);
-
-        return uriBuilder.build();
+    public LiveData<Store> getLiveStoreForPath(String path) {
+        return appDatabase.storeDao().liveWithPath(path);
     }
+
+    public LiveData<List<Store>> getLiveAllStoresForBook(String bookId) {
+        return appDatabase.storeDao().liveAllForBookId(bookId);
+    }
+
+
+
+    @WorkerThread
+    public void deletePath(String path) {
+        appDatabase.storeDao().deleteWithPath(path);
+    }
+
+    @WorkerThread
+    public void deleteStore(Store store) {
+        appDatabase.storeDao().delete(store);
+    }
+
+    @WorkerThread
+    public List<Store> getAllStores() {
+        List<Store> stores = appDatabase.storeDao().getAll();
+        if ( stores == null) stores = Collections.emptyList();
+        return stores;
+    }
+
+    @WorkerThread
+    public List<Store> getAllStoresForBook(String bookId) {
+        List<Store> stores = appDatabase.storeDao().getAllForBookId(bookId);
+        if ( stores == null) stores = Collections.emptyList();
+        return stores;
+    }
+
+    @WorkerThread
+    public void saveStore(Store store) {
+        appDatabase.storeDao().insert(store);
+    }
+
 
 }
