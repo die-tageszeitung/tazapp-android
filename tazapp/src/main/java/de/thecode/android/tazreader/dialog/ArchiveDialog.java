@@ -45,7 +45,7 @@ public class ArchiveDialog extends DialogAdapterList<ArchiveEntry> {
                     convertView = LayoutInflater.from(getContext())
                                                              .inflate(android.R.layout.simple_list_item_1, parent, false);
                     viewHolder = new ViewHolder();
-                    viewHolder.text = (TextView) convertView.findViewById(android.R.id.text1);
+                    viewHolder.text = convertView.findViewById(android.R.id.text1);
                     viewHolder.text.setGravity(Gravity.CENTER);
                     convertView.setTag(viewHolder);
                 } else viewHolder = (ViewHolder) convertView.getTag();

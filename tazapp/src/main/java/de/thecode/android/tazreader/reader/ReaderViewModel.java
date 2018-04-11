@@ -157,7 +157,7 @@ public class ReaderViewModel extends AndroidViewModel {
         if (currentKey != null) currentKey = StringUtils.substringBefore(currentKey, "?");
         new AsyncTaskListener<String, Void>(new AsyncTaskListener.OnExecute<String, Void>() {
             @Override
-            public Void execute(String... strings) throws Exception {
+            public Void execute(String... strings) {
                 storeRepository.saveStore(new Store(Store.getPath(bookId, Paper.STORE_KEY_CURRENTPOSITION), strings[0]));
                 return null;
             }

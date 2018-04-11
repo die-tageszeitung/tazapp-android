@@ -37,7 +37,7 @@ public class SettingsDialog extends DialogCustomView {
         View view = inflater.inflate(R.layout.reader_settings, parent);
 
 
-        btnNormal = (Button) view.findViewById(R.id.btnNormal);
+        btnNormal = view.findViewById(R.id.btnNormal);
         btnNormal.setOnClickListener(new View.OnClickListener() {
 
             @Override
@@ -48,7 +48,7 @@ public class SettingsDialog extends DialogCustomView {
             }
         });
 
-        btnSepia = (Button) view.findViewById(R.id.btnSepia);
+        btnSepia = view.findViewById(R.id.btnSepia);
         btnSepia.setOnClickListener(new View.OnClickListener() {
 
             @Override
@@ -59,7 +59,7 @@ public class SettingsDialog extends DialogCustomView {
             }
         });
 
-        btnNight = (Button) view.findViewById(R.id.btnNight);
+        btnNight = view.findViewById(R.id.btnNight);
         btnNight.setOnClickListener(new View.OnClickListener() {
 
             @Override
@@ -72,7 +72,7 @@ public class SettingsDialog extends DialogCustomView {
         colorThemeButtonText(THEMES.valueOf(TazSettings.getInstance(getContext())
                                                        .getPrefString(TazSettings.PREFKEY.THEME, null)));
 
-        SwitchCompat switchIsScroll = (SwitchCompat) view.findViewById(R.id.switchIsScroll);
+        SwitchCompat switchIsScroll = view.findViewById(R.id.switchIsScroll);
         switchIsScroll.setChecked(!isScroll);
         switchIsScroll.setOnCheckedChangeListener(new OnCheckedChangeListener() {
 
@@ -84,7 +84,7 @@ public class SettingsDialog extends DialogCustomView {
             }
         });
 
-        SwitchCompat switchIsPaging = (SwitchCompat) view.findViewById(R.id.switchIsPaging);
+        SwitchCompat switchIsPaging = view.findViewById(R.id.switchIsPaging);
         switchIsPaging.setChecked(TazSettings.getInstance(getContext())
                                              .getPrefBoolean(TazSettings.PREFKEY.ISPAGING, false));
         switchIsPaging.setOnCheckedChangeListener(new OnCheckedChangeListener() {
@@ -94,7 +94,7 @@ public class SettingsDialog extends DialogCustomView {
             }
         });
 
-        SwitchCompat switchIsScrollToNext = (SwitchCompat) view.findViewById(R.id.switchIsScrollToNext);
+        SwitchCompat switchIsScrollToNext = view.findViewById(R.id.switchIsScrollToNext);
         switchIsScrollToNext.setChecked(TazSettings.getInstance(getContext())
                                                    .getPrefBoolean(TazSettings.PREFKEY.ISSCROLLTONEXT, false));
         switchIsScrollToNext.setOnCheckedChangeListener(new OnCheckedChangeListener() {
@@ -104,7 +104,7 @@ public class SettingsDialog extends DialogCustomView {
             }
         });
 
-        SwitchCompat switchIsJustify = (SwitchCompat) view.findViewById(R.id.switchIsJustify);
+        SwitchCompat switchIsJustify = view.findViewById(R.id.switchIsJustify);
         switchIsJustify.setChecked(TazSettings.getInstance(getContext())
                                               .getPrefBoolean(TazSettings.PREFKEY.ISJUSTIFY, false));
         switchIsJustify.setOnCheckedChangeListener(new OnCheckedChangeListener() {
@@ -115,7 +115,7 @@ public class SettingsDialog extends DialogCustomView {
         });
 
 
-        SwitchCompat switchFullscreen = (SwitchCompat) view.findViewById(R.id.switchFullscreen);
+        SwitchCompat switchFullscreen = view.findViewById(R.id.switchFullscreen);
         switchFullscreen.setVisibility(View.GONE);
 //        switchFullscreen.setChecked(isFullscreen);
 //        switchFullscreen.setOnCheckedChangeListener(new OnCheckedChangeListener() {
@@ -129,7 +129,7 @@ public class SettingsDialog extends DialogCustomView {
 //        });
 
 
-        seekBarColumns = (SeekBar) view.findViewById(R.id.seekBarColumn);
+        seekBarColumns = view.findViewById(R.id.seekBarColumn);
 
         seekBarColumns.setEnabled(!isScroll);
         seekBarColumns.setProgress((int) (Float.valueOf(TazSettings.getInstance(getContext())
@@ -155,7 +155,7 @@ public class SettingsDialog extends DialogCustomView {
             }
         });
 
-        SeekBar seekBarFontSize = (SeekBar) view.findViewById(R.id.seekBarFontSize);
+        SeekBar seekBarFontSize = view.findViewById(R.id.seekBarFontSize);
         seekBarFontSize.setProgress(Integer.valueOf(TazSettings.getInstance(getContext())
                                                                .getPrefString(TazSettings.PREFKEY.FONTSIZE, "0")));
         seekBarFontSize.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {

@@ -135,7 +135,7 @@ public class ReaderActivity extends BaseActivity
         setBackgroundColor(onGetBackgroundColor(TazSettings.getInstance(this)
                                                            .getPrefString(TazSettings.PREFKEY.THEME, "normal")));
 
-        mLoadingProgress = (ProgressBar) findViewById(R.id.loading);
+        mLoadingProgress = findViewById(R.id.loading);
         mLoadingProgress.setVisibility(View.VISIBLE);
 
         mDrawerLayoutPageIndex = findViewById(R.id.right_drawer);
@@ -144,9 +144,9 @@ public class ReaderActivity extends BaseActivity
                 R.dimen.pageindex_padding) * 2);
         mDrawerLayoutPageIndex.setLayoutParams(pageIndexLayoutParams);
 
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        mDrawerLayout = findViewById(R.id.drawer_layout);
         mDrawerLayoutIndex = findViewById(R.id.left_drawer);
-        mContentFrame = (FrameLayout) findViewById(R.id.content_frame);
+        mContentFrame = findViewById(R.id.content_frame);
 
         mFragmentManager = getSupportFragmentManager();
 
@@ -431,7 +431,7 @@ public class ReaderActivity extends BaseActivity
         }
         new AsyncTaskListener<JSONArray,Void>(new AsyncTaskListener.OnExecute<JSONArray, Void>() {
             @Override
-            public Void execute(JSONArray... jsonArrays) throws Exception {
+            public Void execute(JSONArray... jsonArrays) {
                 JSONArray jsonArray = jsonArrays[0];
 
                 Store bookmarkStore = readerViewModel.getStoreRepository()
@@ -515,7 +515,7 @@ public class ReaderActivity extends BaseActivity
 
     public interface ConfigurationChangeListener {
 
-        public void onConfigurationChange(String key, String value);
+        void onConfigurationChange(String key, String value);
     }
 
 

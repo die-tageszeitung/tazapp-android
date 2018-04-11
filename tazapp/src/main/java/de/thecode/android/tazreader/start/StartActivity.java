@@ -51,6 +51,7 @@ import de.thecode.android.tazreader.job.SyncJob;
 import de.thecode.android.tazreader.migration.MigrationActivity;
 import de.thecode.android.tazreader.notifications.NotificationUtils;
 import de.thecode.android.tazreader.reader.ReaderActivity;
+import de.thecode.android.tazreader.start.importer.ImportFragment;
 import de.thecode.android.tazreader.start.library.LibraryFragment;
 import de.thecode.android.tazreader.sync.AccountHelper;
 import de.thecode.android.tazreader.sync.SyncErrorEvent;
@@ -188,7 +189,7 @@ public class StartActivity extends BaseActivity
 
         setContentView(R.layout.activity_start);
 
-        toolbar = (CustomToolbar) findViewById(R.id.toolbar);
+        toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         toolbar.setItemColor(ContextCompat.getColor(this, R.color.toolbar_foreground_color));
         toolbar.setTitleTextAppearance(this, R.style.Toolbar_TitleText);
@@ -197,7 +198,7 @@ public class StartActivity extends BaseActivity
         updateTitle();
 
         mDrawerFragment = (NavigationDrawerFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_navigation_drawer);
-        mDrawerFragment.setUp(R.id.fragment_navigation_drawer, (DrawerLayout) findViewById(R.id.drawer_layout), toolbar);
+        mDrawerFragment.setUp(R.id.fragment_navigation_drawer, findViewById(R.id.drawer_layout), toolbar);
 
         userItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_account),
                                                                R.drawable.ic_account,
@@ -687,7 +688,7 @@ public class StartActivity extends BaseActivity
         if (!TextUtils.isEmpty(waitingBookId)) {
             new AsyncTaskListener<ResourceDownloadEvent, Void>(new AsyncTaskListener.OnExecute<ResourceDownloadEvent, Void>() {
                 @Override
-                public Void execute(ResourceDownloadEvent... resourceDownloadEvents) throws Exception {
+                public Void execute(ResourceDownloadEvent... resourceDownloadEvents) {
                     Paper waitingPaper = startViewModel.getPaperRepository()
                                                        .getPaperWithBookId(retainDataFragment.openPaperWaitingForRessource);
                     if (resourceDownloadEvents[0].getKey()

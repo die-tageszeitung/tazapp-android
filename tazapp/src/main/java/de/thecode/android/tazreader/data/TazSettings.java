@@ -122,7 +122,7 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
         } else if (v instanceof String) {
             prefEdit.putString(key, ((String) v));
         } else if (v instanceof Uri) {
-            prefEdit.putString(key, ((Uri) v).toString());
+            prefEdit.putString(key, v.toString());
         }
 
         boolean result = prefEdit.commit();

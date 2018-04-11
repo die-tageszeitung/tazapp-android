@@ -152,7 +152,7 @@ public class ImportWorkerFragment extends BaseFragment {
         }
     }
 
-    private void stepTwoCheckType(Uri dataUri, File file, boolean deleteFile) throws IOException {
+    private void stepTwoCheckType(Uri dataUri, File file, boolean deleteFile) {
 
 
         new AsyncTaskWithException<Object, Void, ImportMetadata>() {
@@ -249,7 +249,7 @@ public class ImportWorkerFragment extends BaseFragment {
     }
 
 
-    private void importTazAndroid(Uri dataUri, ImportMetadata metadata, File cacheFile, boolean deleteFile) throws ImportException, IOException {
+    private void importTazAndroid(Uri dataUri, ImportMetadata metadata, File cacheFile, boolean deleteFile) {
 
 //        StorageManager storage = StorageManager.getInstance(getActivity());
 //
@@ -302,7 +302,7 @@ public class ImportWorkerFragment extends BaseFragment {
 //        onFinished(dataUri, cacheFile, deleteFile);
     }
 
-    private void importTpaper(Uri dataUri, ImportMetadata metadata, File cacheFile, boolean deleteFile) throws IOException {
+    private void importTpaper(Uri dataUri, ImportMetadata metadata, File cacheFile, boolean deleteFile) {
 //        StorageManager storage = StorageManager.getInstance(getActivity());
 //
 //        Paper paper;
@@ -381,10 +381,10 @@ public class ImportWorkerFragment extends BaseFragment {
 
 
     public interface ImportRetainFragmentCallback {
-        public void onImportRetainFragmentCreate(ImportWorkerFragment importRetainWorkerFragment);
-        public void onFinishedImporting(List<Paper> papersToDownload);
-        public void onErrorWhileImport(Uri dataUri, Exception e);
-        public void onImportAlreadyExists(Uri dataUri, ImportMetadata metadata, File cacheFile, boolean deleteFile);
+        void onImportRetainFragmentCreate(ImportWorkerFragment importRetainWorkerFragment);
+        void onFinishedImporting(List<Paper> papersToDownload);
+        void onErrorWhileImport(Uri dataUri, Exception e);
+        void onImportAlreadyExists(Uri dataUri, ImportMetadata metadata, File cacheFile, boolean deleteFile);
     }
 
 

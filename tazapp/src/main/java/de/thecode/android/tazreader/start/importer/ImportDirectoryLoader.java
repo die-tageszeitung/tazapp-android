@@ -1,12 +1,8 @@
-package de.thecode.android.tazreader.start;
+package de.thecode.android.tazreader.start.importer;
 
 
 import android.content.Context;
 import android.support.v4.content.AsyncTaskLoader;
-
-import de.thecode.android.tazreader.R;
-import de.thecode.android.tazreader.data.Paper;
-import de.thecode.android.tazreader.importer.ImportMetadata;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -245,8 +241,7 @@ public class ImportDirectoryLoader extends AsyncTaskLoader<List<ImportDirectoryL
         int dotPos = filename.lastIndexOf(".");
         if (dotPos != -1) {
             String ending = filename.substring(dotPos);
-            if (ending.equalsIgnoreCase("."+fileEnding))
-                return true;
+            return ending.equalsIgnoreCase("." + fileEnding);
         }
         return false;
     }

@@ -40,7 +40,7 @@ public class ImprintFragment extends BaseFragment {
 
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.start_imprint, container, false);
-        Button techInfoButton = (Button) view.findViewById(R.id.buttonTechInfo);
+        Button techInfoButton = view.findViewById(R.id.buttonTechInfo);
         techInfoButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -64,7 +64,7 @@ public class ImprintFragment extends BaseFragment {
             }
         });
 
-        WebView webView = (WebView) view.findViewById(R.id.webView);
+        WebView webView = view.findViewById(R.id.webView);
         webView.loadUrl("file:///android_asset/imprint.html");
 
 

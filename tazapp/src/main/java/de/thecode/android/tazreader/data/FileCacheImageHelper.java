@@ -114,10 +114,7 @@ public abstract class FileCacheImageHelper {
         @Override
         public boolean accept(File dir, String filename) {
             String[] split = filename.split("\\.");
-            if (split.length > 0 && split[0].equals(hash)) {
-                return true;
-            }
-            return false;
+            return split.length > 0 && split[0].equals(hash);
         }
     }
 

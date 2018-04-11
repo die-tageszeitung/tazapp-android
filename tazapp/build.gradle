@@ -243,7 +243,7 @@ android {
     applicationVariants.all { variant ->
         variant.outputs.each { output ->
             def baseAbiVersionCode = abiCodes.get(output.getFilter(com.android.build.OutputFile.ABI))
-            output.versionCodeOverride = baseAbiVersionCode * 100000000 + variant.versionCode;
+            output.versionCodeOverride = baseAbiVersionCode * 100000000 + variant.versionCode
             output.versionNameOverride = variant.versionName + " " + abiCodes.find { it.value == baseAbiVersionCode }.key
         }
     }
@@ -308,7 +308,7 @@ dependencies {
     implementation 'com.jakewharton.timber:timber:4.5.1'
     implementation 'com.yqritc:recyclerview-flexibledivider:1.2.9'
     implementation('com.crashlytics.sdk.android:crashlytics:2.9.1@aar') {
-        transitive = true;
+        transitive = true
     }
     implementation 'net.ypresto.timbertreeutils:timbertreeutils:1.0.0'
     implementation 'com.scottyab:aescrypt:0.0.1'

@@ -87,7 +87,7 @@ public class PagesFragment extends AbstractContentFragment {
 //        AnalyticsWrapper.getInstance()
 //                        .trackBreadcrumb("onCreateView in PagesFragment");
         View view = inflater.inflate(R.layout.reader_pagereader, container, false);
-        _readerView = (TAZReaderView) view.findViewById(R.id.readerview);
+        _readerView = view.findViewById(R.id.readerview);
         _readerView.setListener(new TAZReaderView.TAZReaderViewListener() {
             @Override
             public void onMoveToChild(String key) {
@@ -95,8 +95,8 @@ public class PagesFragment extends AbstractContentFragment {
             }
         });
         _readerView.setAdapter(_adapter);
-        mShareButton = (ShareButton) view.findViewById(R.id.share);
-        ReaderButton mPageIndexButton = (ReaderButton) view.findViewById(R.id.pageindex);
+        mShareButton = view.findViewById(R.id.share);
+        ReaderButton mPageIndexButton = view.findViewById(R.id.pageindex);
         if (TazSettings.getInstance(getContext())
                        .getPrefBoolean(TazSettings.PREFKEY.PAGEINDEXBUTTON, false)) {
             mPageIndexButton.setOnClickListener(new View.OnClickListener() {
@@ -117,7 +117,7 @@ public class PagesFragment extends AbstractContentFragment {
             });
         } else mPageIndexButton.setVisibility(View.GONE);
 
-        ReaderButton mIndexButton = (ReaderButton) view.findViewById(R.id.index);
+        ReaderButton mIndexButton = view.findViewById(R.id.index);
         if (TazSettings.getInstance(getContext())
                        .getPrefBoolean(TazSettings.PREFKEY.PAGEINDEXBUTTON, false)) {
             mIndexButton.setOnClickListener(new View.OnClickListener() {

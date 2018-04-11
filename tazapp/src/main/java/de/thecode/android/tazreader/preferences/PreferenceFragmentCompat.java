@@ -44,7 +44,7 @@ public abstract class PreferenceFragmentCompat extends com.takisoft.fix.support.
         if (requestCode == REQUESTCODE_RINGTONE) {
             if (resultCode == Activity.RESULT_OK) {
                 if (data.hasExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI)) {
-                    Uri ringtoneUri = (Uri) data.getParcelableExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI);
+                    Uri ringtoneUri = data.getParcelableExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI);
                     if (!TextUtils.isEmpty(lastRingtoneRequestForKey)) {
                         TazSettings.getInstance(getContext()).setNotificationSoundUri(lastRingtoneRequestForKey,ringtoneUri);
                         Preference preference = findPreference(lastRingtoneRequestForKey);

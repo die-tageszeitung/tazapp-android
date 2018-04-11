@@ -395,12 +395,12 @@ public class Paper {
         parsePlist(fis, parseIndex);
     }
 
-    public void parsePlist(InputStream is) throws ZipException, IOException, PropertyListFormatException, ParseException,
+    public void parsePlist(InputStream is) throws IOException, PropertyListFormatException, ParseException,
             ParserConfigurationException, SAXException {
         parsePlist(is, true);
     }
 
-    public void parsePlist(InputStream is, boolean parseIndex) throws ZipException, IOException, PropertyListFormatException,
+    public void parsePlist(InputStream is, boolean parseIndex) throws IOException, PropertyListFormatException,
             ParseException, ParserConfigurationException, SAXException {
         Timber.i("Start parsing Plist - parse Index: %s", parseIndex);
         plist = new Plist(is, parseIndex);
@@ -796,7 +796,7 @@ public class Paper {
             @Override
             public boolean hasIndexChilds() {
                 if (pages != null) {
-                    if (pages.size() > 0) return true;
+                    return pages.size() > 0;
                 }
                 return false;
             }
@@ -1315,8 +1315,7 @@ public class Paper {
             }
 
             public boolean isLink() {
-                if (link != null) return true;
-                return false;
+                return link != null;
             }
 
             @Override
@@ -1357,7 +1356,8 @@ public class Paper {
                 switch (entry.getValue()
                              .getType()) {
                     case ARTICLE:
-                        if (((Article) entry.getValue()).isBookmarked()) {
+                        if (entry.getValue()
+                                 .isBookmarked()) {
                             array.put(entry.getValue()
                                            .getKey());
                         }

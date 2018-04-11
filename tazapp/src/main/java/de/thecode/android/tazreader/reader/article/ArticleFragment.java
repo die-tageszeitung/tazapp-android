@@ -133,9 +133,9 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View result = inflater.inflate(R.layout.reader_article, container, false);
 
-        mBookmarkClickLayout = (FrameLayout) result.findViewById(R.id.bookmarkClickLayout);
+        mBookmarkClickLayout = result.findViewById(R.id.bookmarkClickLayout);
 
-        mWebView = (ArticleWebView) result.findViewById(R.id.webview);
+        mWebView = result.findViewById(R.id.webview);
         mWebView.setAlpha(0F);
         mWebView.setArticleWebViewCallback(this);
 
@@ -161,11 +161,11 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
         mWebView.setVerticalScrollBarEnabled(true);
         mWebView.setScrollbarFadingEnabled(true);
 
-        mProgressBar = (ProgressBar) result.findViewById(R.id.progressBar);
+        mProgressBar = result.findViewById(R.id.progressBar);
 
-        mShareButton = (ShareButton) result.findViewById(R.id.share);
+        mShareButton = result.findViewById(R.id.share);
 
-        ReaderButton mPageIndexButton = (ReaderButton) result.findViewById(R.id.pageindex);
+        ReaderButton mPageIndexButton = result.findViewById(R.id.pageindex);
         if (TazSettings.getInstance(getContext())
                        .getPrefBoolean(TazSettings.PREFKEY.PAGEINDEXBUTTON, false)) {
             mPageIndexButton.setOnClickListener(new View.OnClickListener() {
@@ -186,7 +186,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
             });
         } else mPageIndexButton.setVisibility(View.GONE);
 
-        ReaderButton mIndexButton = (ReaderButton) result.findViewById(R.id.index);
+        ReaderButton mIndexButton = result.findViewById(R.id.index);
         if (TazSettings.getInstance(getContext())
                        .isIndexButton()) {
             mIndexButton.setOnClickListener(new View.OnClickListener() {
@@ -224,7 +224,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
                                     if (paper != null) {
                                         new AsyncTaskListener<Paper, ITocItem>(new AsyncTaskListener.OnExecute<Paper, ITocItem>() {
                                             @Override
-                                            public ITocItem execute(Paper... papers) throws Exception {
+                                            public ITocItem execute(Paper... papers) {
                                                 ITocItem article = papers[0].getPlist()
                                                                             .getIndexItem(key);
                                                 if (TextUtils.isEmpty(mPosition)) {
@@ -391,7 +391,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
                 }
             });
 
-            ImageView bookmark = (ImageView) mBookmarkClickLayout.findViewById(R.id.bookmark);
+            ImageView bookmark = mBookmarkClickLayout.findViewById(R.id.bookmark);
             FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) bookmark.getLayoutParams();
             if (mArticle.isBookmarked()) {
                 TintHelper.tintDrawable(bookmark.getDrawable(), ContextCompat.getColor(getActivity(), R.color.index_bookmark_on));

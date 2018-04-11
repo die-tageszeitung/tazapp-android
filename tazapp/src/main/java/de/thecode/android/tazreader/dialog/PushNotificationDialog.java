@@ -58,7 +58,7 @@ public class PushNotificationDialog extends DialogCustomView {
                        .setAllowFileAccess(true);
                 new AsyncTaskListener<Void, Void>(new AsyncTaskListener.OnExecute<Void, Void>() {
                     @Override
-                    public Void execute(Void... voids) throws Exception {
+                    public Void execute(Void... voids) {
                         mWebView.loadDataWithBaseURL("file:///android_asset/push/", getHtml(), "text/html", "utf-8", null);
                         return null;
                     }

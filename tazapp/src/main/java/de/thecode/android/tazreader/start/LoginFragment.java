@@ -68,14 +68,14 @@ public class LoginFragment extends BaseFragment {
         if (hasCallback()) getCallback().onUpdateDrawer(this);
 
         View view = inflater.inflate(R.layout.start_login, container, false);
-        loginButton = (Button) view.findViewById(R.id.buttonLogin);
+        loginButton = view.findViewById(R.id.buttonLogin);
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 checkLogin();
             }
         });
-        Button orderButton = (Button) view.findViewById(R.id.buttonOrder);
+        Button orderButton = view.findViewById(R.id.buttonOrder);
         orderButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -85,8 +85,8 @@ public class LoginFragment extends BaseFragment {
             }
         });
 
-        editUser = (EditText) view.findViewById(R.id.editUser);
-        editPass = (EditText) view.findViewById(R.id.editPass);
+        editUser = view.findViewById(R.id.editUser);
+        editPass = view.findViewById(R.id.editPass);
         editPass.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View v, int keyCode, KeyEvent event) {

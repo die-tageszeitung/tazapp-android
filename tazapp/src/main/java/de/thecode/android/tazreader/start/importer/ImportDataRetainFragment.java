@@ -1,4 +1,4 @@
-package de.thecode.android.tazreader.start;
+package de.thecode.android.tazreader.start.importer;
 
 
 import android.os.Bundle;
@@ -177,7 +177,7 @@ public class ImportDataRetainFragment extends BaseFragment implements LoaderMana
     }
 
     public interface ImportDataCallback {
-        public void dataChanged();
+        void dataChanged();
 //        public void onStartLoading();
     }
 

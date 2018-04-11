@@ -146,7 +146,7 @@ public class LibraryFragment extends StartBaseFragment {
 
         View view = inflater.inflate(R.layout.start_library, container, false);
 
-        swipeRefresh = (SwipeRefreshLayout) view.findViewById(R.id.swipeRefreshLayout);
+        swipeRefresh = view.findViewById(R.id.swipeRefreshLayout);
         swipeRefresh.setColorSchemeResources(R.color.refresh_color_1, R.color.refresh_color_2);
         swipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -159,14 +159,14 @@ public class LibraryFragment extends StartBaseFragment {
         });
 
 
-        recyclerView = (AutofitRecyclerView) view.findViewById(R.id.recycler);
+        recyclerView = view.findViewById(R.id.recycler);
         recyclerView.setHasFixedSize(true);
         recyclerView.setAdapter(adapter);
 
 //        adapter = new LibraryAdapter(getActivity(), null, getCallback());
 //        adapter.setHasStableIds(true);
 
-        fabArchive = (FloatingActionButton) view.findViewById(R.id.fabArchive);
+        fabArchive = view.findViewById(R.id.fabArchive);
         fabArchive.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

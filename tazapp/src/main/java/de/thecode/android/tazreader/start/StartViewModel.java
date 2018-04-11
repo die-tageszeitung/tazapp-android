@@ -72,7 +72,7 @@ public class StartViewModel extends AndroidViewModel {
     public void startDownloadQueue(){
         new AsyncTaskListener<Void,Void>(new AsyncTaskListener.OnExecute<Void, Void>() {
             @Override
-            public Void execute(Void... aVoid) throws Exception {
+            public Void execute(Void... aVoid) {
                 while (downloadQueue.size() > 0) {
                     String bookId = downloadQueue.get(0);
                     DownloadManager.DownloadManagerResult result = downloadManager.downloadPaper(bookId,false);

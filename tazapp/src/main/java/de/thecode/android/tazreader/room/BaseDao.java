@@ -10,16 +10,16 @@ public interface BaseDao<T> {
 
     @SuppressWarnings("unchecked")
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    public void insert(T... items);
+    void insert(T... items);
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    public void insert(List<T> itemList);
+    void insert(List<T> itemList);
 
     @SuppressWarnings("unchecked")
     @Delete
-    public void delete(T... items);
+    void delete(T... items);
 
     @Delete
-    public void delete(List<T> items);
+    void delete(List<T> items);
 
 }

@@ -78,8 +78,7 @@ public class Resource {
     }
 
     public boolean isDownloading() {
-        if (downloadId == 0) return false;
-        else return true;
+        return downloadId != 0;
     }
 
     public long getDownloadId() {

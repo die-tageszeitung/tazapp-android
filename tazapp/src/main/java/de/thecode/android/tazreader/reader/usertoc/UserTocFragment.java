@@ -97,7 +97,7 @@ public class UserTocFragment extends ReaderBaseFragment {
             return true;
         });
 
-        CustomToolbar toolbar2 = (CustomToolbar) view.findViewById(R.id.toolbar2);
+        CustomToolbar toolbar2 = view.findViewById(R.id.toolbar2);
         toolbar2.setItemColor(ContextCompat.getColor(inflater.getContext(), R.color.toolbar_foreground_color));
         toolbar2.setNavigationIcon(R.drawable.ic_arrow_back_24dp);
         toolbar2.setNavigationOnClickListener(new View.OnClickListener() {

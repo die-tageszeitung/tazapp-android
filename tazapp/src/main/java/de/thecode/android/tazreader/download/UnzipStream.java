@@ -258,7 +258,7 @@ public class UnzipStream {
     }
 
     public interface UnzipStreamProgressListener {
-        public void onProgress(Progress progress);
+        void onProgress(Progress progress);
     }
 
 }

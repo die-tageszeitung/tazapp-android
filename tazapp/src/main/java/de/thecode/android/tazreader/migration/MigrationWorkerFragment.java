@@ -111,7 +111,7 @@ public class MigrationWorkerFragment extends BaseFragment {
             }
 
             @Override
-            public List<File> doInBackgroundWithException(Void... params) throws Exception {
+            public List<File> doInBackgroundWithException(Void... params) {
                 List<File> filesToImport = new ArrayList<>();
 //                Timber.i("Migrating to version 32 ...");
 //
@@ -239,10 +239,10 @@ public class MigrationWorkerFragment extends BaseFragment {
 
     public interface MigrationWorkerCallback {
 
-        public void onMigrationStart(int toVersionNumber);
+        void onMigrationStart(int toVersionNumber);
 
-        public void onMigrationFinished(int toVersionNumber, List<File> importFiles);
+        void onMigrationFinished(int toVersionNumber, List<File> importFiles);
 
-        public void onMigrationError(Exception e);
+        void onMigrationError(Exception e);
     }
 }

@@ -91,7 +91,7 @@ public class NavigationDrawerFragment extends BaseFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.start_navigation, container, false);
-        mRecyclerView = (RecyclerView) view.findViewById(R.id.recycler);
+        mRecyclerView = view.findViewById(R.id.recycler);
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
@@ -300,8 +300,6 @@ public class NavigationDrawerFragment extends BaseFragment {
             }
         }
 
-        ;
-
         //        public int getPositionOfItemWithFracmentFactoryId(int fragmentFactoryId) {
         //            for (Item item : items) {
         //                if (item instanceof NavigationItem) {
@@ -351,9 +349,9 @@ public class NavigationDrawerFragment extends BaseFragment {
 
         public NavigationItemViewHolder(View itemView, Item.ClickListener clickListener) {
             super(itemView, clickListener);
-            layout = (RelativeLayout) itemView.findViewById(R.id.layout);
-            text = (TextView) itemView.findViewById(R.id.text);
-            image = (ImageView) itemView.findViewById(R.id.image);
+            layout = itemView.findViewById(R.id.layout);
+            text = itemView.findViewById(R.id.text);
+            image = itemView.findViewById(R.id.image);
 
         }
 
@@ -378,7 +376,7 @@ public class NavigationDrawerFragment extends BaseFragment {
 
         public HeaderViewHolder(View itemView) {
             super(itemView, null);
-            layout = (RelativeLayout) itemView.findViewById(R.id.layout);
+            layout = itemView.findViewById(R.id.layout);
             ViewCompat.setImportantForAccessibility(layout, ViewCompat.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS);
         }
     }
@@ -399,7 +397,7 @@ public class NavigationDrawerFragment extends BaseFragment {
         }
 
         public interface ClickListener {
-            public void onItemClick(int position);
+            void onItemClick(int position);
         }
 
         public int getPosition() {
