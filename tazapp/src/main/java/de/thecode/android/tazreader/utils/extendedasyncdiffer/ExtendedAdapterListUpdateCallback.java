@@ -1,4 +1,4 @@
-package de.thecode.android.tazreader.utils.asyncdiffer;
+package de.thecode.android.tazreader.utils.extendedasyncdiffer;
 
 import android.support.annotation.NonNull;
 import android.support.v7.util.ListUpdateCallback;

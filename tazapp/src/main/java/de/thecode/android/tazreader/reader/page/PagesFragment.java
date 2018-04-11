@@ -1,13 +1,11 @@
 package de.thecode.android.tazreader.reader.page;
 
 import android.arch.lifecycle.Observer;
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,12 +13,10 @@ import android.widget.BaseAdapter;
 import android.widget.Toast;
 
 import de.thecode.android.tazreader.R;
-import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Paper.Plist.Page;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.reader.AbstractContentFragment;
 import de.thecode.android.tazreader.reader.ReaderActivity;
-import de.thecode.android.tazreader.reader.ReaderTtsFragment;
 import de.thecode.android.tazreader.data.ITocItem;
 import de.thecode.android.tazreader.widget.ReaderButton;
 import de.thecode.android.tazreader.widget.ShareButton;
@@ -269,8 +265,8 @@ public class PagesFragment extends AbstractContentFragment {
 
     }
 
-    @Override
-    public void onTtsStateChanged(ReaderTtsFragment.TTS state) {
-        Timber.d("state: %s", state);
-    }
+//    @Override
+//    public void onTtsStateChanged(ReaderTtsFragment.TTS state) {
+//        Timber.d("state: %s", state);
+//    }
 }

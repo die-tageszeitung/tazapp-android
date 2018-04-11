@@ -4,13 +4,11 @@ import android.support.annotation.NonNull;
 import android.support.v7.util.DiffUtil;
 import android.support.v7.widget.RecyclerView;
 
-import de.thecode.android.tazreader.utils.asyncdiffer.AsyncDifferConfig;
-import de.thecode.android.tazreader.utils.asyncdiffer.ExtendedAdapterListUpdateCallback;
-import de.thecode.android.tazreader.utils.asyncdiffer.FixedAsyncListDiffer;
+import de.thecode.android.tazreader.utils.extendedasyncdiffer.ExtendedAsyncDifferConfig;
+import de.thecode.android.tazreader.utils.extendedasyncdiffer.ExtendedAdapterListUpdateCallback;
+import de.thecode.android.tazreader.utils.extendedasyncdiffer.ExtendedAsyncListDiffer;
 
 import java.util.List;
-
-import timber.log.Timber;
 
 /**
  * Created by mate on 19.03.18.
@@ -18,24 +16,24 @@ import timber.log.Timber;
 
 public abstract class TazListAdapter<T, VH extends RecyclerView.ViewHolder> extends RecyclerView.Adapter<VH> {
 
-    private final FixedAsyncListDiffer<T> mHelper;
+    private final ExtendedAsyncListDiffer<T> mHelper;
 
     public TazListAdapter(@NonNull DiffUtil.ItemCallback<T> diffCallback) {
-        mHelper = new FixedAsyncListDiffer<>(new ExtendedAdapterListUpdateCallback(this),
-                                              new AsyncDifferConfig.Builder<>(diffCallback).build());
+        mHelper = new ExtendedAsyncListDiffer<>(new ExtendedAdapterListUpdateCallback(this),
+                                                new ExtendedAsyncDifferConfig.Builder<>(diffCallback).build());
     }
 
     public TazListAdapter(@NonNull DiffUtil.ItemCallback<T> diffCallback, ExtendedAdapterListUpdateCallback.OnFirstInsertedListener firstInsertedListener) {
-        mHelper = new FixedAsyncListDiffer<>(new ExtendedAdapterListUpdateCallback(this,firstInsertedListener),
-                                             new AsyncDifferConfig.Builder<>(diffCallback).build());
+        mHelper = new ExtendedAsyncListDiffer<>(new ExtendedAdapterListUpdateCallback(this, firstInsertedListener),
+                                                new ExtendedAsyncDifferConfig.Builder<>(diffCallback).build());
     }
 
 
-    public TazListAdapter(@NonNull AsyncDifferConfig<T> config) {
-        mHelper = new FixedAsyncListDiffer<>(new ExtendedAdapterListUpdateCallback(this), config);
+    public TazListAdapter(@NonNull ExtendedAsyncDifferConfig<T> config) {
+        mHelper = new ExtendedAsyncListDiffer<>(new ExtendedAdapterListUpdateCallback(this), config);
     }
 
-    public FixedAsyncListDiffer<T> getHelper() {
+    public ExtendedAsyncListDiffer<T> getHelper() {
         return mHelper;
     }
 

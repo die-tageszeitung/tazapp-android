@@ -3,7 +3,6 @@ package de.thecode.android.tazreader.start.library;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
-import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
@@ -26,11 +25,10 @@ import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.sync.PreloadImageCallback;
 import de.thecode.android.tazreader.utils.TazListAdapter;
-import de.thecode.android.tazreader.utils.asyncdiffer.ExtendedAdapterListUpdateCallback;
+import de.thecode.android.tazreader.utils.extendedasyncdiffer.ExtendedAdapterListUpdateCallback;
 
 import java.text.DateFormat;
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.List;
 
 import timber.log.Timber;

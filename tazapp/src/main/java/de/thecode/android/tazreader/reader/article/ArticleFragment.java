@@ -4,8 +4,6 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.SuppressLint;
 import android.arch.lifecycle.Observer;
-import android.arch.lifecycle.ViewModelProviders;
-import android.content.Context;
 import android.content.Intent;
 import android.net.MailTo;
 import android.net.ParseException;
@@ -44,7 +42,6 @@ import de.thecode.android.tazreader.reader.AbstractContentFragment;
 import de.thecode.android.tazreader.reader.ReaderActivity;
 import de.thecode.android.tazreader.reader.ReaderActivity.DIRECTIONS;
 import de.thecode.android.tazreader.reader.ReaderBaseFragment;
-import de.thecode.android.tazreader.reader.ReaderTtsFragment;
 import de.thecode.android.tazreader.reader.article.ArticleWebView.ArticleWebViewCallback;
 import de.thecode.android.tazreader.data.ITocItem;
 import de.thecode.android.tazreader.utils.AsyncTaskListener;
@@ -738,10 +735,10 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
         // (\<[^\>]+?(?:href|src)\=(?:\"|\'))(res)(.+?(?:\"|\')\>)
     }
 
-    @Override
-    public void onTtsStateChanged(ReaderTtsFragment.TTS state) {
-        Timber.d("%s", state);
-    }
+//    @Override
+//    public void onTtsStateChanged(ReaderTTSViewModel.TTS state) {
+//        Timber.d("%s", state);
+//    }
 
     private CharSequence getTextToSpeech() {
         Pattern pattern = Pattern.compile(".*?<body.*?>(.*?)</body>.*?", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);

@@ -10,7 +10,7 @@ import de.thecode.android.tazreader.data.Paper;
  * Created by mate on 05.02.2015.
  */
 public interface IStartCallback {
-    StartActivity.RetainDataFragment getRetainData();
+//    StartActivity.RetainDataFragment getRetainData();
 
     void loadFragment(NavigationDrawerFragment.NavigationItem item);
 

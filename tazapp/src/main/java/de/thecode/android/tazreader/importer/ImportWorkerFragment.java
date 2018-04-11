@@ -142,11 +142,11 @@ public class ImportWorkerFragment extends BaseFragment {
 
                 @Override
                 protected void onPostSuccess(File file) {
-                    try {
-                        stepTwoCheckType(dataUri, file, true);
-                    } catch (IOException e) {
-                        onError(dataUri, e, file, true);
-                    }
+//                    try {
+//                        stepTwoCheckType(dataUri, file, true);
+//                    } catch (IOException e) {
+//                        onError(dataUri, e, file, true);
+//                    }
                 }
             }.execute(getActivity().getApplicationContext(), dataUri);
         }
@@ -213,19 +213,19 @@ public class ImportWorkerFragment extends BaseFragment {
 
     public void stepFourStartImport(Uri dataUri, ImportMetadata data, File file, boolean deleteFile) {
 
-        try {
-            switch (data.getType()) {
-                case TAZANDROID:
-                    importTazAndroid(dataUri, data, file, deleteFile);
-                    break;
-                case TPAPER:
-                    importTpaper(dataUri, data, file, deleteFile);
-                    break;
-            }
-
-        } catch (IOException | ImportException  e) {
-            onError(dataUri, e, file, deleteFile);
-        }
+//        try {
+//            switch (data.getType()) {
+//                case TAZANDROID:
+//                    importTazAndroid(dataUri, data, file, deleteFile);
+//                    break;
+//                case TPAPER:
+//                    importTpaper(dataUri, data, file, deleteFile);
+//                    break;
+//            }
+//
+//        } catch (IOException | ImportException  e) {
+//            onError(dataUri, e, file, deleteFile);
+//        }
     }
 
 

@@ -1,4 +1,4 @@
-package de.thecode.android.tazreader.utils.asyncdiffer;
+package de.thecode.android.tazreader.utils.extendedasyncdiffer;
 
 /*
  * Copyright 2017 The Android Open Source Project
@@ -113,9 +113,9 @@ import java.util.List;
  * @see DiffUtil
  * @see AdapterListUpdateCallback
  */
-public class FixedAsyncListDiffer<T> {
-    private final ExtendedAdapterListUpdateCallback   mUpdateCallback;
-    private final AsyncDifferConfig<T> mConfig;
+public class ExtendedAsyncListDiffer<T> {
+    private final ExtendedAdapterListUpdateCallback mUpdateCallback;
+    private final ExtendedAsyncDifferConfig<T>      mConfig;
 
     /**
      * Convenience for
@@ -127,10 +127,10 @@ public class FixedAsyncListDiffer<T> {
      *
      * @see DiffUtil.DiffResult#dispatchUpdatesTo(RecyclerView.Adapter)
      */
-    public FixedAsyncListDiffer(@NonNull RecyclerView.Adapter adapter,
-                           @NonNull DiffUtil.ItemCallback<T> diffCallback) {
+    public ExtendedAsyncListDiffer(@NonNull RecyclerView.Adapter adapter,
+                                   @NonNull DiffUtil.ItemCallback<T> diffCallback) {
         mUpdateCallback = new ExtendedAdapterListUpdateCallback(adapter);
-        mConfig = new AsyncDifferConfig.Builder<>(diffCallback).build();
+        mConfig = new ExtendedAsyncDifferConfig.Builder<>(diffCallback).build();
     }
 
     /**
@@ -144,8 +144,8 @@ public class FixedAsyncListDiffer<T> {
      * @see DiffUtil.DiffResult#dispatchUpdatesTo(RecyclerView.Adapter)
      */
     @SuppressWarnings("WeakerAccess")
-    public FixedAsyncListDiffer(@NonNull ExtendedAdapterListUpdateCallback listUpdateCallback,
-                           @NonNull AsyncDifferConfig<T> config) {
+    public ExtendedAsyncListDiffer(@NonNull ExtendedAdapterListUpdateCallback listUpdateCallback,
+                                   @NonNull ExtendedAsyncDifferConfig<T> config) {
         mUpdateCallback = listUpdateCallback;
         mConfig = config;
     }
@@ -263,11 +263,11 @@ public class FixedAsyncListDiffer<T> {
     }
 
     private void latchList(@NonNull List<T> newList, @NonNull DiffUtil.DiffResult diffResult) {
+        mList = newList;
+        mReadOnlyList = Collections.unmodifiableList(newList);
         mUpdateCallback.resetCounters();
         diffResult.dispatchUpdatesTo(mUpdateCallback);
         mUpdateCallback.callListener();
-        mList = newList;
-        mReadOnlyList = Collections.unmodifiableList(newList);
     }
 
 

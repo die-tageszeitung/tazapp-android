@@ -1,4 +1,4 @@
-package de.thecode.android.tazreader.utils.asyncdiffer;
+package de.thecode.android.tazreader.utils.extendedasyncdiffer;
 
 import android.os.Handler;
 import android.os.Looper;
@@ -11,7 +11,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 
-public final class AsyncDifferConfig<T> {
+public final class ExtendedAsyncDifferConfig<T> {
     @NonNull
     private final Executor mMainThreadExecutor;
     @NonNull
@@ -19,7 +19,7 @@ public final class AsyncDifferConfig<T> {
     @NonNull
     private final DiffUtil.ItemCallback<T> mDiffCallback;
 
-    private AsyncDifferConfig(
+    private ExtendedAsyncDifferConfig(
             @NonNull Executor mainThreadExecutor,
             @NonNull Executor backgroundThreadExecutor,
             @NonNull DiffUtil.ItemCallback<T> diffCallback) {
@@ -75,7 +75,7 @@ public final class AsyncDifferConfig<T> {
          */
         @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
         @NonNull
-        public AsyncDifferConfig.Builder<T> setMainThreadExecutor(Executor executor) {
+        public ExtendedAsyncDifferConfig.Builder<T> setMainThreadExecutor(Executor executor) {
             mMainThreadExecutor = executor;
             return this;
         }
@@ -91,7 +91,7 @@ public final class AsyncDifferConfig<T> {
          */
         @SuppressWarnings({"unused", "WeakerAccess"})
         @NonNull
-        public AsyncDifferConfig.Builder<T> setBackgroundThreadExecutor(Executor executor) {
+        public ExtendedAsyncDifferConfig.Builder<T> setBackgroundThreadExecutor(Executor executor) {
             mBackgroundThreadExecutor = executor;
             return this;
         }
@@ -106,7 +106,7 @@ public final class AsyncDifferConfig<T> {
 
 
         @NonNull
-        public AsyncDifferConfig<T> build() {
+        public ExtendedAsyncDifferConfig<T> build() {
             if (mMainThreadExecutor == null) {
                 mMainThreadExecutor = sMainThreadExecutor;
             }
@@ -118,7 +118,7 @@ public final class AsyncDifferConfig<T> {
                 }
                 mBackgroundThreadExecutor = sDiffExecutor;
             }
-            return new AsyncDifferConfig<>(
+            return new ExtendedAsyncDifferConfig<>(
                     mMainThreadExecutor,
                     mBackgroundThreadExecutor,
                     mDiffCallback);

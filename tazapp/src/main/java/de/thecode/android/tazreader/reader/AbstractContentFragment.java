@@ -43,6 +43,6 @@ public abstract class AbstractContentFragment extends ReaderBaseFragment impleme
         return result.toString();
     }
 
-    public abstract void onTtsStateChanged(ReaderTtsFragment.TTS state);
+//    public abstract void onTtsStateChanged(ReaderTtsFragment.TTS state);
 
 }

@@ -3,9 +3,9 @@ def versionMinor = 5
 def versionPatch = 2
 def versionBuild = 0
 
-def supportLibVer = "27.1.0"
+def supportLibVer = "27.1.1"
 def buildToolsVer = "27.0.3"
-def firebaseVer = "12.0.0"
+def firebaseVer = "12.0.1"
 def compileSdkVer = 27
 def targetSdkVer = 27
 def minSdkVer = 15
@@ -313,7 +313,6 @@ dependencies {
     implementation 'net.ypresto.timbertreeutils:timbertreeutils:1.0.0'
     implementation 'com.scottyab:aescrypt:0.0.1'
     implementation 'com.github.matecode:Snacky:1.0.3'
-    implementation 'com.github.matecode:DataFragment:1.0.2'
     implementation('com.github.matecode:androiddialog:1.2.32') {
         exclude group: 'commons-io', module: 'commons-io'
     }

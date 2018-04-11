@@ -29,7 +29,7 @@ import de.thecode.android.tazreader.start.StartBaseFragment;
 import de.thecode.android.tazreader.start.StartViewModel;
 import de.thecode.android.tazreader.sync.SyncStateChangedEvent;
 import de.thecode.android.tazreader.utils.AsyncTaskListener;
-import de.thecode.android.tazreader.utils.asyncdiffer.ExtendedAdapterListUpdateCallback;
+import de.thecode.android.tazreader.utils.extendedasyncdiffer.ExtendedAdapterListUpdateCallback;
 import de.thecode.android.tazreader.widget.AutofitRecyclerView;
 
 import org.greenrobot.eventbus.EventBus;
@@ -204,11 +204,7 @@ public class LibraryFragment extends StartBaseFragment {
         view.post(new Runnable() {
             @Override
             public void run() {
-                if (hasCallback()) {
-
-                    if (getCallback().getRetainData()
-                                     .isActionMode()) setActionMode();
-                }
+                if (startViewModel.isActionMode()) setActionMode();
             }
         });
 
@@ -263,8 +259,7 @@ public class LibraryFragment extends StartBaseFragment {
 
     @Override
     public void onPause() {
-        if (hasCallback()) getCallback().getRetainData()
-                                        .removeOpenPaperIdAfterDownload();
+        startViewModel.removeOpenPaperIdAfterDownload();
         super.onPause();
     }
 
@@ -420,8 +415,7 @@ public class LibraryFragment extends StartBaseFragment {
         @Override
         public boolean onCreateActionMode(ActionMode mode, Menu menu) {
             Timber.d("mode: %s, menu: %s", mode, menu);
-            if (hasCallback()) getCallback().getRetainData()
-                                            .setActionMode(true);
+            startViewModel.setActionMode(true);
             if (hasCallback()) getCallback().enableDrawer(false);
             actionMode = mode;
             swipeRefresh.setEnabled(false);
@@ -489,8 +483,7 @@ public class LibraryFragment extends StartBaseFragment {
                           .selectNone();
             Timber.d("mode: %s", mode);
 //            adapter.deselectAll();
-            if (hasCallback()) getCallback().getRetainData()
-                                            .setActionMode(false);
+            startViewModel.setActionMode(false);
             if (hasCallback()) getCallback().enableDrawer(true);
             swipeRefresh.setEnabled(true);
             actionMode = null;

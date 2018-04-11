@@ -4,8 +4,7 @@ import android.app.Application;
 import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.MutableLiveData;
 import android.support.annotation.NonNull;
-
-import com.artifex.mupdfdemo.AsyncTask;
+import android.text.TextUtils;
 
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.PaperRepository;
@@ -29,6 +28,12 @@ public class StartViewModel extends AndroidViewModel {
     private final DownloadManager downloadManager;
     private final List<String> downloadQueue = new ArrayList<>();
     private final SingleLiveEvent<DownloadError> downloadErrorLiveSingleData = new SingleLiveEvent<>();
+    private final List<NavigationDrawerFragment.NavigationItem> navBackstack = new ArrayList<>();
+    private boolean mobileDownloadAllowed = false;
+    private String openPaperIdAfterDownload;
+    private boolean openReaderAfterDownload = false;
+    private String paperWaitingForResource;
+    private boolean actionMode = false;
 
     private final TazSettings.OnPreferenceChangeListener<Boolean> demoModeListener = new TazSettings.OnPreferenceChangeListener<Boolean>() {
         @Override
@@ -51,6 +56,15 @@ public class StartViewModel extends AndroidViewModel {
     protected void onCleared() {
         super.onCleared();
         settings.removeOnPreferenceChangeListener(demoModeListener);
+    }
+
+    public void addToNavBackstack(NavigationDrawerFragment.NavigationItem item) {
+        if (navBackstack.contains(item)) navBackstack.remove(item);
+        navBackstack.add(item);
+    }
+
+    public List<NavigationDrawerFragment.NavigationItem> getNavBackstack() {
+        return navBackstack;
     }
 
     public MutableLiveData<Boolean> getDemoModeLiveData() {
@@ -95,6 +109,56 @@ public class StartViewModel extends AndroidViewModel {
 
     public TazSettings getSettings() {
         return settings;
+    }
+
+    public boolean isMobileDownloadAllowed() {
+        return mobileDownloadAllowed;
+    }
+
+    public void setMobileDownloadAllowed(boolean mobileDownloadAllowed) {
+        this.mobileDownloadAllowed = mobileDownloadAllowed;
+    }
+
+    public void setOpenPaperIdAfterDownload(String bookId) {
+        if (TextUtils.isEmpty(openPaperIdAfterDownload)) {
+            openPaperIdAfterDownload = bookId;
+            openReaderAfterDownload = true;
+        } else {
+            openReaderAfterDownload = false;
+        }
+    }
+
+    public String getOpenPaperIdAfterDownload() {
+        return openPaperIdAfterDownload;
+    }
+
+    public void removeOpenPaperIdAfterDownload() {
+        openPaperIdAfterDownload = null;
+        openReaderAfterDownload = true;
+    }
+
+    public void setPaperWaitingForResource(String bookId) {
+        this.paperWaitingForResource = bookId;
+    }
+
+    public String getPaperWaitingForResource() {
+        return paperWaitingForResource;
+    }
+
+    public boolean isOpenReaderAfterDownload() {
+        return openReaderAfterDownload;
+    }
+
+    public void setOpenReaderAfterDownload(boolean openReaderAfterDownload) {
+        this.openReaderAfterDownload = openReaderAfterDownload;
+    }
+
+    public boolean isActionMode() {
+        return actionMode;
+    }
+
+    public void setActionMode(boolean actionMode) {
+        this.actionMode = actionMode;
     }
 
     public static class DownloadError {
