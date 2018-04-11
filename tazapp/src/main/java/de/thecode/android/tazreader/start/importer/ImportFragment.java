@@ -22,8 +22,7 @@ import android.widget.TextView;
 import de.mateware.dialog.Dialog;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.importer.ImportActivity;
-import de.thecode.android.tazreader.start.IStartCallback;
-import de.thecode.android.tazreader.utils.BaseFragment;
+import de.thecode.android.tazreader.start.StartBaseFragment;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
@@ -33,7 +32,7 @@ import timber.log.Timber;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class ImportFragment extends BaseFragment implements ImportDataRetainFragment.ImportDataCallback {
+public class ImportFragment extends StartBaseFragment implements ImportDataRetainFragment.ImportDataCallback {
 
     public static final String DIALOG_PERMISSION_WRITE = "DialogPermissionWrite";
     private static int PERMISSION_REQUEST_IMPORT_WRITE = 345;
@@ -43,7 +42,6 @@ public class ImportFragment extends BaseFragment implements ImportDataRetainFrag
 
     ImportRecyclerAdapter adapter;
 
-    private WeakReference<IStartCallback> callback;
     private ImportDataRetainFragment      dataFragment;
     private boolean                       isShowingExplenationDialog;
     private boolean                       isRequestinPermission;
@@ -55,8 +53,7 @@ public class ImportFragment extends BaseFragment implements ImportDataRetainFrag
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        callback = new WeakReference<>((IStartCallback) getActivity());
-        if (hasCallback()) getCallback().onUpdateDrawer(this);
+        getStartActivity().onUpdateDrawer(this);
         dataFragment = ImportDataRetainFragment.findOrCreateRetainFragment(getFragmentManager(), this);
         isShowingExplenationDialog = savedInstanceState != null && savedInstanceState.getBoolean(ARG_IS_SHOWING_EXPLENATION_DIALOG, false);
         isRequestinPermission = savedInstanceState != null && savedInstanceState.getBoolean(ARG_IS_REQUESTING_PERMISSION, false);
@@ -122,14 +119,6 @@ public class ImportFragment extends BaseFragment implements ImportDataRetainFrag
                 }
             }
         }
-    }
-
-    private boolean hasCallback() {
-        return callback.get() != null;
-    }
-
-    private IStartCallback getCallback() {
-        return callback.get();
     }
 
     @Override

@@ -24,7 +24,6 @@ import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.download.CoverDownloadedEvent;
 import de.thecode.android.tazreader.job.SyncJob;
 import de.thecode.android.tazreader.start.DrawerStateChangedEvent;
-import de.thecode.android.tazreader.start.IStartCallback;
 import de.thecode.android.tazreader.start.StartBaseFragment;
 import de.thecode.android.tazreader.start.StartViewModel;
 import de.thecode.android.tazreader.sync.SyncStateChangedEvent;
@@ -45,7 +44,6 @@ import timber.log.Timber;
  * A simple {@link Fragment} subclass.
  */
 public class LibraryFragment extends StartBaseFragment {
-    WeakReference<IStartCallback> callback;
     //    LibraryAdapter                adapter;
     NewLibraryAdapter             adapter;
     SwipeRefreshLayout            swipeRefresh;
@@ -88,7 +86,7 @@ public class LibraryFragment extends StartBaseFragment {
                         case Paper.DOWNLOADED_READABLE:
                         case Paper.DOWNLOADED_BUT_UPDATE:
                             //openPlayer(paper.getId());
-                            if (hasCallback()) getCallback().openReader(paper.getBookId());
+                            getStartActivity().openReader(paper.getBookId());
                             break;
                         case Paper.IS_DOWNLOADING:
 
@@ -142,8 +140,6 @@ public class LibraryFragment extends StartBaseFragment {
 
         setHasOptionsMenu(true);
 
-        callback = new WeakReference<>((IStartCallback) getActivity());
-
         View view = inflater.inflate(R.layout.start_library, container, false);
 
         swipeRefresh = view.findViewById(R.id.swipeRefreshLayout);
@@ -170,7 +166,7 @@ public class LibraryFragment extends StartBaseFragment {
         fabArchive.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (hasCallback()) getCallback().callArchive();
+                getStartActivity().callArchive();
             }
         });
 
@@ -196,7 +192,7 @@ public class LibraryFragment extends StartBaseFragment {
         });
 
 
-        if (hasCallback()) getCallback().onUpdateDrawer(this);
+        getStartActivity().onUpdateDrawer(this);
         //getLoaderManager().initLoader(0, null, this);
 
 
@@ -211,14 +207,6 @@ public class LibraryFragment extends StartBaseFragment {
         setHasOptionsMenu(true);
 
         return view;
-    }
-
-    private boolean hasCallback() {
-        return callback.get() != null;
-    }
-
-    private IStartCallback getCallback() {
-        return callback.get();
     }
 
     @Override
@@ -416,7 +404,7 @@ public class LibraryFragment extends StartBaseFragment {
         public boolean onCreateActionMode(ActionMode mode, Menu menu) {
             Timber.d("mode: %s, menu: %s", mode, menu);
             startViewModel.setActionMode(true);
-            if (hasCallback()) getCallback().enableDrawer(false);
+            getStartActivity().enableDrawer(false);
             actionMode = mode;
             swipeRefresh.setEnabled(false);
             return true;
@@ -484,7 +472,7 @@ public class LibraryFragment extends StartBaseFragment {
             Timber.d("mode: %s", mode);
 //            adapter.deselectAll();
             startViewModel.setActionMode(false);
-            if (hasCallback()) getCallback().enableDrawer(true);
+            getStartActivity().enableDrawer(true);
             swipeRefresh.setEnabled(true);
             actionMode = null;
         }

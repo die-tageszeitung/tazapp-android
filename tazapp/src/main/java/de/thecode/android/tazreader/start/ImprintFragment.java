@@ -19,13 +19,11 @@ import java.lang.ref.WeakReference;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class ImprintFragment extends BaseFragment {
+public class ImprintFragment extends StartBaseFragment {
 
 
     public static final String DIALOG_TECHINFO  = "dialogTechInfo";
     public static final String DIALOG_ERRORMAIL = "dialogErrorMail";
-
-    private WeakReference<IStartCallback> callback;
 
     public ImprintFragment() {
         // Required empty public constructor
@@ -34,8 +32,7 @@ public class ImprintFragment extends BaseFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-        callback = new WeakReference<>((IStartCallback) getActivity());
-        if (hasCallback()) getCallback().onUpdateDrawer(this);
+        getStartActivity().onUpdateDrawer(this);
 
 
         // Inflate the layout for this fragment
@@ -69,13 +66,5 @@ public class ImprintFragment extends BaseFragment {
 
 
         return view;
-    }
-
-    private boolean hasCallback() {
-        return callback.get() != null;
-    }
-
-    private IStartCallback getCallback() {
-        return callback.get();
     }
 }

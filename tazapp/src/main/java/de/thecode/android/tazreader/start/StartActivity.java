@@ -1,23 +1,18 @@
 package de.thecode.android.tazreader.start;
 
 
-import android.annotation.SuppressLint;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.widget.DrawerLayout;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
-import android.util.LruCache;
 
 import de.mateware.dialog.Dialog;
 import de.mateware.dialog.DialogAdapterList;
@@ -57,7 +52,6 @@ import de.thecode.android.tazreader.sync.AccountHelper;
 import de.thecode.android.tazreader.sync.SyncErrorEvent;
 import de.thecode.android.tazreader.utils.AsyncTaskListener;
 import de.thecode.android.tazreader.utils.BaseActivity;
-import de.thecode.android.tazreader.utils.BaseFragment;
 import de.thecode.android.tazreader.utils.Connection;
 import de.thecode.android.tazreader.utils.UserDeviceInfo;
 import de.thecode.android.tazreader.widget.CustomToolbar;
@@ -67,7 +61,6 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.IOException;
-import java.lang.ref.WeakReference;
 import java.net.ConnectException;
 import java.text.DateFormatSymbols;
 import java.util.ArrayList;
@@ -80,7 +73,7 @@ import timber.log.Timber;
  * Created by mate on 27.01.2015.
  */
 public class StartActivity extends BaseActivity
-        implements IStartCallback, DialogButtonListener, DialogDismissListener, DialogCancelListener, DialogAdapterListListener {
+        implements DialogButtonListener, DialogDismissListener, DialogCancelListener, DialogAdapterListListener {
 
     //private static final String DIALOG_FIRST                 = "dialogFirst";
     private static final String DIALOG_USER_REENTER          = "dialogUserReenter";
@@ -299,9 +292,6 @@ public class StartActivity extends BaseActivity
         }
     }
 
-    //boolean firstFragmentLoaded = false;
-
-    @Override
     public void loadFragment(NavigationDrawerFragment.NavigationItem item) {
         if (item.getTarget() != null) {
             //noinspection TryWithIdenticalCatches
@@ -323,7 +313,6 @@ public class StartActivity extends BaseActivity
         }
     }
 
-    @Override
     public void onNavigationClick(NavigationDrawerFragment.ClickItem item) {
         Timber.i("");
         if (helpItem.equals(item)) {
@@ -337,13 +326,13 @@ public class StartActivity extends BaseActivity
     @Override
     public void onBackPressed() {
         if (startViewModel.getNavBackstack()
-                           .size() > 1) {
+                          .size() > 1) {
             startViewModel.getNavBackstack()
-                           .remove(startViewModel.getNavBackstack()
-                                                  .size() - 1);
+                          .remove(startViewModel.getNavBackstack()
+                                                .size() - 1);
             NavigationDrawerFragment.NavigationItem backstackItem = startViewModel.getNavBackstack()
-                                                                                   .get(startViewModel.getNavBackstack()
-                                                                                                       .size() - 1);
+                                                                                  .get(startViewModel.getNavBackstack()
+                                                                                                     .size() - 1);
             loadFragment(backstackItem);
         } else {
             super.onBackPressed();
@@ -351,7 +340,6 @@ public class StartActivity extends BaseActivity
     }
 
 
-    @Override
     public void onSuccessfulCredentialsCheck() {
         mDrawerFragment.simulateClick(libraryItem, false);
     }
@@ -360,7 +348,7 @@ public class StartActivity extends BaseActivity
         updateTitle();
     }
 
-    @Override
+
     public Toolbar getToolbar() {
         return toolbar;
     }
@@ -371,13 +359,12 @@ public class StartActivity extends BaseActivity
     //        mDrawerFragment.handleChangedItem(userItem);
     //    }
 
-    @Override
+
     public void enableDrawer(boolean bool) {
         mDrawerFragment.setEnabled(bool);
     }
 
 
-    @Override
     public void onUpdateDrawer(Fragment fragment) {
         mDrawerFragment.setActive(fragment.getClass());
     }
@@ -513,7 +500,6 @@ public class StartActivity extends BaseActivity
                             .show(getSupportFragmentManager(), DIALOG_DOWNLOADMANAGER_ERROR);
     }
 
-    @Override
     public void showWaitDialog(String tag, String message) {
         DialogFragment dialog = (DialogFragment) getSupportFragmentManager().findFragmentByTag(tag);
         if (dialog == null) new DialogIndeterminateProgress.Builder().setCancelable(false)
@@ -522,18 +508,15 @@ public class StartActivity extends BaseActivity
                                                                      .show(getSupportFragmentManager(), tag);
     }
 
-    @Override
     public void hideWaitDialog(String tag) {
         DialogFragment dialog = (DialogFragment) getSupportFragmentManager().findFragmentByTag(tag);
         if (dialog != null) dialog.dismiss();
     }
 
-    @Override
     public void callArchive() {
         showArchiveYearPicker();
     }
 
-    @Override
     public void openReader(String bookId) {
         new AsyncTaskListener<String, Paper>(bookIdParams -> startViewModel.getPaperRepository()
                                                                            .getPaperWithBookId(bookIdParams[0]), paper -> {

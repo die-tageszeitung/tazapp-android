@@ -37,6 +37,12 @@ public class ReaderTTSViewModel extends AndroidViewModel implements TextToSpeech
     private SingleLiveEvent<TTS> liveTtsState = new SingleLiveEvent<>();
     private SingleLiveEvent<TTSERROR> liveTtsError = new SingleLiveEvent<>();
 
+    private AudioManager.OnAudioFocusChangeListener audioFocusChangeListener = focusChange -> {
+        Timber.d("focusChange: %s", focusChange);
+        if (focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT || focusChange == AudioManager.AUDIOFOCUS_LOSS) {
+            if (getTtsState() == TTS.PLAYING) pauseTts();
+        }
+    };
 
     public ReaderTTSViewModel(@NonNull Application application) {
         super(application);
@@ -235,32 +241,9 @@ public class ReaderTTSViewModel extends AndroidViewModel implements TextToSpeech
         }
     };
 
-    AudioManager.OnAudioFocusChangeListener audioFocusChangeListener = new AudioManager.OnAudioFocusChangeListener() {
-        @Override
-        public void onAudioFocusChange(int focusChange) {
-            Timber.d("focusChange: %s", focusChange);
-            if (focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT || focusChange == AudioManager.AUDIOFOCUS_LOSS) {
-                if (getTtsState() == TTS.PLAYING) pauseTts();
-            }
-        }
-    };
 
     public AudioManager.OnAudioFocusChangeListener getAudioFocusChangeListener() {
         return audioFocusChangeListener;
-    }
-
-
-    public interface ReaderTtsFragmentCallback {
-        void onTtsStateChanged(TTS newState);
-
-        void onTtsInitError(TTSERROR error);
-
-
-        //boolean ttsPreparePlayingInActivity();
-
-        void onTtsStopped();
-
-
     }
 
 }
