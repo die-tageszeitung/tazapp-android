@@ -14,6 +14,7 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
+import com.commonsware.cwac.provider.StreamProvider;
 import com.dd.plist.NSArray;
 import com.dd.plist.NSDictionary;
 import com.dd.plist.NSObject;
@@ -951,10 +952,13 @@ public class Paper {
                     String pagePath = pdfFile.getCanonicalPath()
                                              .replace(papersDir.getCanonicalPath(), "papers");
 
-                    Uri contentUri = Uri.parse("content://" + BuildConfig.APPLICATION_ID + ".streamprovider")
-                                        .buildUpon()
-                                        .appendEncodedPath(pagePath)
-                                        .build();
+//                    Uri contentUri = Uri.parse("content://" + BuildConfig.APPLICATION_ID + ".streamprovider")
+//                                        .buildUpon()
+//
+//                                        .appendEncodedPath(pagePath)
+//                                        .build();
+
+                    Uri contentUri = StreamProvider.getUriForFile(BuildConfig.APPLICATION_ID + ".streamprovider",pdfFile);
 
                     //share Intent
                     Intent intent = new Intent(Intent.ACTION_SEND);

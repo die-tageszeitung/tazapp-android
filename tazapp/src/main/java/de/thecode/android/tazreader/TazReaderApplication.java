@@ -43,8 +43,6 @@ public class TazReaderApplication extends Application {
 
         BuildTypeProvider.installStetho(this);
 
-        AppDatabase.getInstance(this);
-
         EventBus.builder()
                 .addIndex(new EventBusIndex())
                 .installDefaultEventBus();

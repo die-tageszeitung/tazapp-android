@@ -11,6 +11,7 @@ import android.text.TextUtils;
 import com.crashlytics.android.core.CrashlyticsCore;
 import com.scottyab.aescrypt.AESCrypt;
 
+import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.secure.SimpleCrypto;
 
 import java.security.GeneralSecurityException;
@@ -40,7 +41,7 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
         public static final  String KEEPSCREEN                  = "KeepScreen";
         public static final  String ORIENTATION                 = "Orientation";
         public static final  String LASTACTIVITY                = "lastActivity";
-        private static final  String LASTOPENPAPER               = "lastOpenPaper";
+        private static final String LASTOPENPAPER               = "lastOpenPaper";
         public static final  String LASTVERSION                 = "lastVersion";
         public static final  String FISRTSTART                  = "firstStart";
         //        public static final String PAGING = "paging";
@@ -69,12 +70,13 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
         public static final  String ISSCROLLTONEXT              = "isScrollToNext";
         public static final  String PAGETAPTOARTICLE            = "pageTapToArticle";
         public static final  String PAGEDOUBLETAPZOOM           = "pageDoubleTapZoom";
-        public static final String PAGETAPBORDERTOTURN         = "pageTapBorderToTurn";
+        public static final  String PAGETAPBORDERTOTURN         = "pageTapBorderToTurn";
         private static final String INDEXALWAYSEXPANDED         = "indexAlwaysExpanded";
         public static final  String FIREBASETOKEN               = "firebaseToken";
         private static final String FIREBASETOKENOLD            = "firebaseTokenOld";
         public static final  String NOTIFICATION_PUSH           = "notification_push";
         public static final  String CRASHLYTICS_ALWAYS_SEND     = "always_send_reports_opt_in";
+        private static final String LATEST_VERSION              = "latestVersion";
     }
 
 
@@ -89,7 +91,8 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
 
     private TazSettings(Context context) {
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-        crashlyticsSharedPreferences = context.getSharedPreferences("com.crashlytics.sdk.android.crashlytics-core:"+ CrashlyticsCore.class.getName(), Context.MODE_PRIVATE);
+        crashlyticsSharedPreferences = context.getSharedPreferences("com.crashlytics.sdk.android.crashlytics-core:" + CrashlyticsCore.class.getName(),
+                                                                    Context.MODE_PRIVATE);
         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
     }
 
@@ -273,7 +276,7 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
     }
 
     public void addDemoModeListener(OnPreferenceChangeListener<Boolean> listener) {
-        addOnPreferenceChangeListener(PREFKEY.DEMOMODE,listener);
+        addOnPreferenceChangeListener(PREFKEY.DEMOMODE, listener);
     }
 
     public boolean isIndexAlwaysExpanded() {
@@ -286,6 +289,15 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
                          .apply();
     }
 
+    public void setLatestVersion(int latestVersion) {
+        sharedPreferences.edit()
+                         .putInt(PREFKEY.LATEST_VERSION, latestVersion)
+                         .apply();
+    }
+
+    public int getLatestVersion() {
+        return sharedPreferences.getInt(PREFKEY.LATEST_VERSION, BuildConfig.VERSION_CODE);
+    }
 
 
     public boolean isTapBorderToTurnPage() {

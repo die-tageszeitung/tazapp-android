@@ -27,6 +27,7 @@ import de.thecode.android.tazreader.okhttp3.OkHttp3Helper;
 import de.thecode.android.tazreader.okhttp3.RequestHelper;
 import de.thecode.android.tazreader.sync.SyncErrorEvent;
 import de.thecode.android.tazreader.sync.SyncStateChangedEvent;
+import de.thecode.android.tazreader.update.UpdateHelper;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.greenrobot.eventbus.EventBus;
@@ -157,6 +158,7 @@ public class SyncJob extends Job {
         //minDataValidUntil = Math.min(minDataValidUntil, validUntil * 1000);
 
         publicationRepository.savePublication(publication);
+        UpdateHelper.getInstance(getContext()).setLatestVersion(publication.getAppAndroidVersion());
 
 
 //        getContext().getContentResolver().insert(Publication.CONTENT_URI,publication.getContentValues());

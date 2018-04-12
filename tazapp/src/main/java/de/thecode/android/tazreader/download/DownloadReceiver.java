@@ -3,7 +3,9 @@ package de.thecode.android.tazreader.download;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.text.TextUtils;
 
+import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.job.DownloadFinishedJob;
 import de.thecode.android.tazreader.start.StartActivity;
 
@@ -20,14 +22,21 @@ public class DownloadReceiver extends BroadcastReceiver {
         String action = intent.getAction();
 
         Timber.i("DownloadReceiver received intent: %s", intent);
-
+        long downloadId = intent.getLongExtra(android.app.DownloadManager.EXTRA_DOWNLOAD_ID, 0);
+        DownloadManager.DownloadState downloadState = DownloadManager.getInstance(context)
+                                                                     .getDownloadState(downloadId);
+        String downloadStateUri = downloadState.getUri() == null ? null : downloadState.getUri()
+                                                                                       .toString();
+        boolean isAppUpdate = false;
+        if (!TextUtils.isEmpty(downloadStateUri) && downloadStateUri.startsWith(BuildConfig.APKURL)) isAppUpdate = true;
         if (android.app.DownloadManager.ACTION_DOWNLOAD_COMPLETE.equals(action)) {
-            long downloadId = intent.getLongExtra(android.app.DownloadManager.EXTRA_DOWNLOAD_ID, 0);
-            DownloadFinishedJob.scheduleJob(downloadId);
+            if (!isAppUpdate) DownloadFinishedJob.scheduleJob(downloadId);
         } else if (android.app.DownloadManager.ACTION_NOTIFICATION_CLICKED.equals(action)) {
-            Intent libIntent = new Intent(context, StartActivity.class);
-            libIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            context.startActivity(libIntent);
+            if (!isAppUpdate) {
+                Intent libIntent = new Intent(context, StartActivity.class);
+                libIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                context.startActivity(libIntent);
+            }
         }
     }
 }

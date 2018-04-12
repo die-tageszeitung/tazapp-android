@@ -116,5 +116,10 @@
     <string name="download_error_hints">Sollten Sie AdBlocker, Antiviren- oder Proxy-Software verwenden, deaktivieren Sie diese bzw. fügen Sie eine Ausnahme hinzu.</string>
 
     <string name="errormail_subject">Fehler in %1$s - Abo-ID: %2$s</string>
+    <string name="dialog_update_available_title">Update verfügbar</string>
+    <string name="dialog_update_available_message">Es steht ein Update für %1$s zur Verfügung, bitte aktualisieren Sie die App.</string>
+    <string name="dialog_update_available_ok">Aktualisieren</string>
+    <string name="dialog_update_available_no">Ignorieren</string>
+    <string name="update_app_download_notification">%1$s Update</string>
 
 </resources>

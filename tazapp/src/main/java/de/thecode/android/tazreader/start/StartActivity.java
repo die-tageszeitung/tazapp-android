@@ -4,7 +4,6 @@ package de.thecode.android.tazreader.start;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
-import android.net.MailTo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -13,7 +12,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.Toolbar;
-import android.text.Html;
 import android.text.TextUtils;
 
 import de.mateware.dialog.Dialog;
@@ -52,6 +50,7 @@ import de.thecode.android.tazreader.start.importer.ImportFragment;
 import de.thecode.android.tazreader.start.library.LibraryFragment;
 import de.thecode.android.tazreader.sync.AccountHelper;
 import de.thecode.android.tazreader.sync.SyncErrorEvent;
+import de.thecode.android.tazreader.update.UpdateHelper;
 import de.thecode.android.tazreader.utils.AsyncTaskListener;
 import de.thecode.android.tazreader.utils.BaseActivity;
 import de.thecode.android.tazreader.utils.Charsets;
@@ -94,6 +93,7 @@ public class StartActivity extends BaseActivity
     private static final String DIALOG_WAIT                  = "dialogWait";
     private static final String DIALOG_LICENCES              = "dialogLicences";
     private static final String DIALOG_ERROR_OPEN_PAPER      = "dialogErrorOpenPaper";
+    private static final String DIALOG_UPDATE_AVAILABLE      = "dialogUpdateAvailable";
 
     private static final String ARGUMENT_RESOURCE_KEY           = "resourceKey";
     private static final String ARGUMENT_RESOURCE_URL           = "resourceUrl";
@@ -271,6 +271,23 @@ public class StartActivity extends BaseActivity
 //                       .getSyncServiceNextRun() == 0) SyncHelper.requestSync(this);
         //Intent intent = getIntent();
         openReaderFromDownloadNotificationIntent(getIntent());
+        checkForNewerVersion();
+    }
+
+    public void checkForNewerVersion() {
+        UpdateHelper updateHelper = UpdateHelper.getInstance(this);
+        if (updateHelper.hasUpdate() && !updateHelper.isUpdateMessageShown()) {
+            updateHelper.setUpdateMessageShown(true);
+            if (getSupportFragmentManager().findFragmentByTag(DIALOG_UPDATE_AVAILABLE) == null) {
+                new Dialog.Builder().setCancelable(true)
+                                    .setTitle(R.string.dialog_update_available_title)
+                                    .setMessage(getString(R.string.dialog_update_available_message, getString(R.string.app_name)))
+                                    .setPositiveButton(R.string.dialog_update_available_ok)
+                                    .setNegativeButton(R.string.dialog_update_available_no)
+                                    .buildSupport()
+                                    .show(getSupportFragmentManager(), DIALOG_UPDATE_AVAILABLE);
+            }
+        }
     }
 
     private void openReaderFromDownloadNotificationIntent(Intent intent) {
@@ -760,9 +777,16 @@ public class StartActivity extends BaseActivity
                         }
                     } catch (IOException | ActivityNotFoundException e) {
                         Timber.e(e);
-                    } break;
+                    }
+                    break;
                 case Dialog.BUTTON_NEUTRAL:
                     mDrawerFragment.simulateClick(preferencesItem, true);
+                    break;
+            }
+        } else if (DIALOG_UPDATE_AVAILABLE.equals(tag)) {
+            switch (which) {
+                case Dialog.BUTTON_POSITIVE:
+                    UpdateHelper.getInstance(this).update(this);
                     break;
             }
         }

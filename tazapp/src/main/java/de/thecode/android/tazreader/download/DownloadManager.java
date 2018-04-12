@@ -7,6 +7,7 @@ import android.content.res.Resources;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Environment;
 import android.os.StatFs;
 import android.support.annotation.WorkerThread;
 import android.text.TextUtils;
@@ -26,6 +27,7 @@ import de.thecode.android.tazreader.sync.AccountHelper;
 import de.thecode.android.tazreader.utils.ReadableException;
 import de.thecode.android.tazreader.utils.StorageManager;
 import de.thecode.android.tazreader.utils.UserAgentHelper;
+import de.thecode.android.tazreader.utils.UserDeviceInfo;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.greenrobot.eventbus.EventBus;
@@ -48,10 +50,10 @@ public class DownloadManager {
     private final TazSettings                 settings;
     private final PaperRepository             paperRepository;
     private final AccountHelper               accountHelper;
-    private final ResourceRepository resourceRepository;
-    private final StoreRepository storeRepository;
-    private final Resources appResources;
-    private final String packageName;
+    private final ResourceRepository          resourceRepository;
+    private final StoreRepository             storeRepository;
+    private final Resources                   appResources;
+    private final UserDeviceInfo              userDeviceInfo;
 
     private static volatile DownloadManager instance;
 
@@ -78,7 +80,7 @@ public class DownloadManager {
         resourceRepository = ResourceRepository.getInstance(context);
         storeRepository = StoreRepository.getInstance(context);
         appResources = context.getResources();
-        packageName = context.getPackageName();
+        userDeviceInfo = UserDeviceInfo.getInstance(context);
     }
 
     public Uri getUriForDownloadedFile(long downloadId) {
@@ -86,9 +88,10 @@ public class DownloadManager {
     }
 
     public static class DownloadManagerResult {
-        public enum STATE {SUCCESS,NOMANAGER,NOTALLOWED,NOSPACE,UNKNOWN}
-        private STATE state = STATE.UNKNOWN;
-        private long downloadId = -1;
+        public enum STATE {SUCCESS, NOMANAGER, NOTALLOWED, NOSPACE, UNKNOWN}
+
+        private STATE state      = STATE.UNKNOWN;
+        private long  downloadId = -1;
         private String details;
 
         public void setDownloadId(long downloadId) {
@@ -150,7 +153,8 @@ public class DownloadManager {
 
             File destinationFile = mStorage.getDownloadFile(paper);
 
-            if (destinationFile == null) throw new DownloadNotAllowedException("Fehler beim Ermitteln des Downloadverzeichnisses.");
+            if (destinationFile == null)
+                throw new DownloadNotAllowedException("Fehler beim Ermitteln des Downloadverzeichnisses.");
             if (destinationFile.exists()) {
                 if (!destinationFile.delete()) Timber.w("Cannot delete file %s", destinationFile.getAbsolutePath());
             }
@@ -183,8 +187,7 @@ public class DownloadManager {
 
 
             if (!TextUtils.isEmpty(paper.getResource())) {
-                Resource resource = resourceRepository
-                        .getWithKey(paper.getResource());
+                Resource resource = resourceRepository.getWithKey(paper.getResource());
                 Store resourcePartnerStore = storeRepository.getStore(paper.getBookId(), Paper.STORE_KEY_RESOURCE_PARTNER);
                 resourcePartnerStore.setValue(paper.getResource());
                 storeRepository.saveStore(resourcePartnerStore);
@@ -195,18 +198,15 @@ public class DownloadManager {
                 }
             }
 
-        }
-        catch (Paper.PaperNotFoundException e) {
+        } catch (Paper.PaperNotFoundException e) {
             Timber.e(e);
             result.setState(DownloadManagerResult.STATE.UNKNOWN);
             result.setDetails(e.toString());
-        }
-        catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             Timber.e(e);
             result.setState(DownloadManagerResult.STATE.NOMANAGER);
             result.setDetails(e.toString());
-        }
-        catch (NotEnoughSpaceException e) {
+        } catch (NotEnoughSpaceException e) {
             Timber.e(e);
             result.setState(DownloadManagerResult.STATE.NOSPACE);
             result.setDetails(e.toString());
@@ -307,9 +307,62 @@ public class DownloadManager {
 
     }
 
+    public void downloadUpdate() {
+
+        List<String> supportedArchs = userDeviceInfo.getSupportedArchList();
+        String arch = null;
+        if (supportedArchs != null && supportedArchs.size() > 0) {
+            int bestArch = 0;
+            for (String supportedArch : supportedArchs) {
+                int newArch = UserDeviceInfo.getWeightForArch(supportedArch);
+                if (newArch > bestArch) bestArch = newArch;
+            }
+            if (bestArch == 2 || bestArch == 3 || bestArch == 6 || bestArch == 7) {
+                //Filter for build archTypes
+                arch = UserDeviceInfo.getArchForWeight(bestArch);
+            }
+            if (TextUtils.isEmpty(arch)) arch = "universal";
+        }
+
+
+        StringBuilder fileName = new StringBuilder("tazapp-").append(BuildConfig.FLAVOR)
+                                                             .append("-")
+                                                             .append(arch)
+                                                             .append("-")
+                                                             .append(BuildConfig.BUILD_TYPE)
+                                                             .append(".apk");
+
+        Uri uri = Uri.parse(BuildConfig.APKURL)
+                     .buildUpon()
+                     .appendEncodedPath(fileName.toString())
+                     .build();
+
+
+        File updateFile = new File(mStorage.getUpdateAppCache(), fileName.toString());
+
+        List<DownloadState> allUpdateDownloads = getDownloadStatesForUrl(uri.toString());
+        for (DownloadState updateDownload : allUpdateDownloads) {
+            mDownloadManager.remove(updateDownload.getDownloadId());
+        }
+
+        if (updateFile.exists()) updateFile.delete();
+
+        Request request = new Request(uri);
+        request.setMimeType("application/vnd.android.package-archive");
+        request.setTitle(appResources.getString(R.string.update_app_download_notification,
+                                                appResources.getString(R.string.app_name)));
+        request.setNotificationVisibility(Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+        request.setVisibleInDownloadsUi(true);
+        request.setDestinationUri(Uri.fromFile(updateFile));
+        mDownloadManager.enqueue(request);
+
+    }
+
     private void addUserAgent(Request request) {
         request.addRequestHeader(UserAgentHelper.USER_AGENT_HEADER_NAME, userAgentHelper.getUserAgentHeaderValue());
     }
+
+
 
     public void cancelDownload(long downloadId) {
         DownloadState state = getDownloadState(downloadId);
@@ -360,6 +413,25 @@ public class DownloadManager {
         return result;
     }
 
+    public List<DownloadState> getDownloadStatesForUrl(String url) {
+        List<DownloadState> result = new ArrayList<>();
+        android.app.DownloadManager.Query q = new android.app.DownloadManager.Query();
+        Cursor cursor = null;
+        try {
+            cursor = mDownloadManager.query(q);
+            if (cursor != null && cursor.moveToFirst()) {
+                String uri = cursor.getString(cursor.getColumnIndex(android.app.DownloadManager.COLUMN_URI));
+                if (uri.equals(url)) {
+                    long downloadId = cursor.getLong(cursor.getColumnIndex(android.app.DownloadManager.COLUMN_ID));
+                    result.add(new DownloadState(downloadId));
+                }
+            }
+        } finally {
+            if (cursor != null) cursor.close();
+        }
+        return result;
+    }
+
     public class DownloadState {
 
 
@@ -386,7 +458,6 @@ public class DownloadManager {
         public DownloadState(long downloadId) {
             this.downloadId = downloadId;
             android.app.DownloadManager.Query q = new android.app.DownloadManager.Query();
-
             q.setFilterById(downloadId);
             Cursor cursor = null;
             try {
@@ -477,12 +548,11 @@ public class DownloadManager {
          * hinterlegt und kann im erbenden Projekt überschrieben werden.
          */
         public String getReasonText() {
-            int id = appResources
-                             .getIdentifier("download_reason_" + getReason(), "string", packageName);
+            int id = appResources.getIdentifier("download_reason_" + getReason(), "string", userDeviceInfo.getPackageName());
             if (id == 0) id = R.string.download_reason_notext;
             StringBuilder builder = new StringBuilder(appResources.getString(id)).append("(")
-                                                                             .append(getReason())
-                                                                             .append(")");
+                                                                                 .append(getReason())
+                                                                                 .append(")");
             return builder.toString();
         }
 
