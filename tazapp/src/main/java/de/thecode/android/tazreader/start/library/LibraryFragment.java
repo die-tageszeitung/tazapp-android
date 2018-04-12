@@ -105,10 +105,10 @@ public class LibraryFragment extends StartBaseFragment {
 
             @Override
             public void onLongClick(LibraryPaper libraryPaper, int position) {
-                setActionMode();
                 startViewModel.getLibraryPaperLiveData()
                               .toggleSelection(libraryPaper.getBookId());
-                actionMode.invalidate();
+                setActionMode();
+//                actionMode.invalidate();
             }
         }, new ExtendedAdapterListUpdateCallback.OnFirstInsertedListener() {
             @Override
@@ -126,8 +126,12 @@ public class LibraryFragment extends StartBaseFragment {
                       .observe(this, new Observer<List<LibraryPaper>>() {
                           @Override
                           public void onChanged(@Nullable List<LibraryPaper> libraryPapers) {
-                              if (startViewModel.getLibraryPaperLiveData()
-                                                .getSelectionSize() == 0 && actionMode != null) actionMode.finish();
+                              if (actionMode != null) {
+                                  if (startViewModel.getLibraryPaperLiveData()
+                                                    .getSelectionSize() == 0) actionMode.finish();
+                                  else
+                                      actionMode.invalidate();
+                              }
                               adapter.submitList(libraryPapers);
                           }
                       });
@@ -443,22 +447,22 @@ public class LibraryFragment extends StartBaseFragment {
                 case R.id.ic_action_selectnone:
                     startViewModel.getLibraryPaperLiveData()
                                   .selectNone();
-                    mode.invalidate();
+//                    mode.invalidate();
                     return true;
                 case R.id.ic_action_selectall:
                     startViewModel.getLibraryPaperLiveData()
                                   .selectAll();
-                    mode.invalidate();
+//                    mode.invalidate();
                     return true;
                 case R.id.ic_action_selectinvert:
                     startViewModel.getLibraryPaperLiveData()
                                   .invertSelection();
-                    mode.invalidate();
+//                    mode.invalidate();
                     return true;
                 case R.id.ic_action_selectnotloaded:
                     startViewModel.getLibraryPaperLiveData()
                                   .selectNotDownloaded();
-                    mode.invalidate();
+//                    mode.invalidate();
                     return true;
             }
 

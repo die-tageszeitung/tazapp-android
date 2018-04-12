@@ -79,3 +79,8 @@
 -dontwarn com.crashlytics.**
 -keep public class * extends java.lang.Exception
 -keepattributes *Annotation*
+
+# --- Commons Lang ---
+-keep class org.apache.commons.lang3.** { <init>(...); *; }
+-keep enum org.apache.commons.lang3.** { <init>(...); *; }
+# --- /Commons Lang ---

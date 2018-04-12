@@ -7,8 +7,6 @@ import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Resource;
 import de.thecode.android.tazreader.secure.HashHelper;
 
-import org.apache.commons.io.FileUtils;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -113,14 +111,14 @@ public class StorageManager {
 
 
     public void deletePaperDir(Paper paper) {
-        if (getPaperDirectory(paper).exists()) FileUtils.deleteQuietly(getPaperDirectory(paper));
+        if (getPaperDirectory(paper).exists()) FileUtils.deleteContentsAndDir(getPaperDirectory(paper));
 //        Utils.deleteDir(getPaperDirectory(paper));
         new FileCachePDFThumbHelper(this, paper.getFileHash()).deleteDir();
     }
 
     public void deleteResourceDir(String key) {
         File dir = getResourceDirectory(key);
-        if (dir.exists()) FileUtils.deleteQuietly(getResourceDirectory(key));
+        if (dir.exists()) FileUtils.deleteContentsAndDir(getResourceDirectory(key));
         //Utils.deleteDir(getResourceDirectory(key));
     }
 

@@ -1,6 +1,5 @@
 package de.thecode.android.tazreader.dialog;
 
-import android.content.Context;
 import android.content.res.AssetManager;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -16,12 +15,13 @@ import de.thecode.android.tazreader.data.Resource;
 import de.thecode.android.tazreader.data.ResourceRepository;
 import de.thecode.android.tazreader.push.PushNotification;
 import de.thecode.android.tazreader.utils.AsyncTaskListener;
+import de.thecode.android.tazreader.utils.Charsets;
 import de.thecode.android.tazreader.utils.StorageManager;
-
-import org.apache.commons.io.IOUtils;
+import de.thecode.android.tazreader.utils.StreamUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Created by mate on 25.07.2017.
@@ -89,7 +89,11 @@ public class PushNotificationDialog extends DialogCustomView {
         String html;
 
         try {
-            html = IOUtils.toString(assetManager.open("push/template.html"), "UTF-8");
+            InputStream inputStream = assetManager.open("push/template.html");
+            html = StreamUtils.toString(inputStream, Charsets.UTF_8);
+            inputStream.close();
+
+//            html = IOUtils.toString(assetManager.open("push/template.html"), "UTF-8");
 
             String cssfilepath = "file:///android_asset/push/simple.css";
             Paper latestPaper = paperRepository.getLatestPaper();

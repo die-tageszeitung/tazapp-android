@@ -34,6 +34,7 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import de.thecode.android.tazreader.R;
+import de.thecode.android.tazreader.data.ITocItem;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Paper.Plist.Page.Article;
 import de.thecode.android.tazreader.data.Store;
@@ -43,17 +44,15 @@ import de.thecode.android.tazreader.reader.ReaderActivity;
 import de.thecode.android.tazreader.reader.ReaderActivity.DIRECTIONS;
 import de.thecode.android.tazreader.reader.ReaderBaseFragment;
 import de.thecode.android.tazreader.reader.article.ArticleWebView.ArticleWebViewCallback;
-import de.thecode.android.tazreader.data.ITocItem;
 import de.thecode.android.tazreader.utils.AsyncTaskListener;
+import de.thecode.android.tazreader.utils.Charsets;
+import de.thecode.android.tazreader.utils.FileUtils;
 import de.thecode.android.tazreader.utils.StorageManager;
 import de.thecode.android.tazreader.utils.TintHelper;
 import de.thecode.android.tazreader.widget.ReaderButton;
 import de.thecode.android.tazreader.widget.ShareButton;
 
-import org.apache.commons.io.IOUtils;
-
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Locale;
 import java.util.regex.Matcher;
@@ -463,11 +462,9 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
                 startActivity(i);
             } else if (url.startsWith("mailto:")) {
                 try {
-                    MailTo mt = MailTo.parse(url);
-                    Intent i = new Intent(Intent.ACTION_SEND);
-                    i.setType("text/plain");
-                    i.putExtra(Intent.EXTRA_SUBJECT, mt.getSubject());
-                    i.putExtra(Intent.EXTRA_TEXT, mt.getBody());
+                    //MailTo mt = MailTo.parse(url);
+                    Intent i = new Intent(Intent.ACTION_SENDTO);
+                    i.setData(Uri.parse(url));
                     startActivity(i);
                 } catch (ParseException e) {
                     Toast.makeText(getContext(), "Kein gültiger RFC 2368 mailto: Link\n" + url, Toast.LENGTH_LONG)
@@ -708,7 +705,9 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
         String result = null;
         try {
-            result = IOUtils.toString(new FileInputStream(articleFile), "UTF-8");
+            result = FileUtils.readFile(articleFile, Charsets.UTF_8);
+//            result = Files.asCharSource(articleFile, Charsets.UTF_8).read();
+//            result = IOUtils.toString(new FileInputStream(articleFile), "UTF-8");
 
             //            Pattern tazapiPattern = Pattern.compile("(<script.+?src\\s*?=\\s*?(?:\"|'))(res.+?TAZAPI.js)((?:\"|').*?>)", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 

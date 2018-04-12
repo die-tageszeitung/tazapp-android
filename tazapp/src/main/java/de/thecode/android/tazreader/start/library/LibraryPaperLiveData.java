@@ -74,7 +74,6 @@ public class LibraryPaperLiveData extends MutableLiveData<List<LibraryPaper>> {
                 final Map<String, Long> runningDownloadsCopy = new HashMap<>(runningDownloads);
                 for (Map.Entry<String, Long> runningDownload : runningDownloadsCopy.entrySet()) {
                     DownloadManager.DownloadState state = downloadManager.getDownloadState(runningDownload.getValue());
-                    Timber.i("runningDownload %s %s", runningDownload.getKey(), state.getDownloadProgress());
                     switch (state.getStatus()) {
                         case DownloadManager.DownloadState.STATUS_SUCCESSFUL:
                         case DownloadManager.DownloadState.STATUS_NOTFOUND:

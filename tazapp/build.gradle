@@ -20,6 +20,7 @@ def tazResourceUrl = '"https://dl.taz.de/ressourcen"'
 def tazArchiveUrl = '"https://dl.taz.de/tpaperArchiv"'
 def tazPushRestUrl = '"https://dl.taz.de/tpaperPushInfo"'
 def tazStagingPushRestUrl = '"https://dl.taz.de/tpaperPushInfoTest"'
+def tazErrorMail = '"app@taz.de"'
 
 def lmdPlist = '"https://dl.monde-diplomatique.de/tpaperIssue.plist"'
 def lmdPlistArchiv = '"https://dl.monde-diplomatique.de/tpaperIssue.plist?start=%1$s&end=%2$s"'
@@ -31,6 +32,7 @@ def lmdResourceUrl = '"https://dl.monde-diplomatique.de/ressourcen"'
 def lmdArchiveUrl = '"https://dl.monde-diplomatique.de/tpaperArchiv"'
 def lmdPushRestUrl = '"https://dl.monde-diplomatique.de/tpaperPushInfo"'
 def lmdStagingPushRestUrl = '"https://dl.monde-diplomatique.de/tpaperPushInfoTest"'
+def lmdErrorMail = '"app@monde-diplomatique.de"'
 
 def plistUrl = "PLISTURL"
 def plistArchiveUrl = "PLISTARCHIVURL"
@@ -39,6 +41,7 @@ def checkLoginUrl = "CHECKLOGINURL"
 def resourceUrl = "RESOURCEURL"
 def archiveUrl = "ARCHIVEURL"
 def pushRestUrl = "PUSHRESTURL"
+def errorMail = "ERRORMAIL"
 
 apply plugin: 'idea'
 
@@ -198,6 +201,8 @@ android {
             buildConfigField 'String', resourceUrl, tazResourceUrl
             buildConfigField 'String', archiveUrl, tazArchiveUrl
             buildConfigField 'String', pushRestUrl, tazPushRestUrl
+            buildConfigField 'String', pushRestUrl, tazPushRestUrl
+            buildConfigField 'String', errorMail, tazErrorMail
         }
         lmd {
             dimension "publication"
@@ -210,6 +215,7 @@ android {
             buildConfigField 'String', resourceUrl, lmdResourceUrl
             buildConfigField 'String', archiveUrl, lmdArchiveUrl
             buildConfigField 'String', pushRestUrl, lmdPushRestUrl
+            buildConfigField 'String', errorMail, lmdErrorMail
         }
     }
 
@@ -313,10 +319,8 @@ dependencies {
     implementation 'net.ypresto.timbertreeutils:timbertreeutils:1.0.0'
     implementation 'com.scottyab:aescrypt:0.0.1'
     implementation 'com.github.matecode:Snacky:1.0.3'
-    implementation('com.github.matecode:androiddialog:1.2.32') {
-        exclude group: 'commons-io', module: 'commons-io'
-    }
-    implementation 'commons-io:commons-io:2.6'
+    implementation('com.github.matecode:androiddialog:1.2.34')
+//    implementation 'commons-io:commons-io:2.6'
     implementation "com.google.firebase:firebase-messaging:$firebaseVer"
     implementation 'com.evernote:android-job:1.2.5'
     implementation 'com.google.code.gson:gson:2.8.2'
@@ -327,6 +331,9 @@ dependencies {
     annotationProcessor "android.arch.persistence.room:compiler:1.0.0"
     implementation "android.arch.lifecycle:common-java8:1.1.1"
 
+    implementation "org.apache.commons:commons-lang3:3.7"
+
+//    implementation "com.google.guava:guava:24.1-android"
 }
 
 class Download extends DefaultTask {

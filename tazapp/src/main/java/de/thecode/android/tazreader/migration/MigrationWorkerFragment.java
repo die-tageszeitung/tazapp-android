@@ -2,28 +2,15 @@ package de.thecode.android.tazreader.migration;
 
 
 import android.content.Context;
-import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 
 import de.thecode.android.tazreader.BuildConfig;
-import de.thecode.android.tazreader.data.Paper;
-import de.thecode.android.tazreader.data.Store;
-import de.thecode.android.tazreader.data.StoreRepository;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.utils.AsyncTaskWithException;
 import de.thecode.android.tazreader.utils.BaseFragment;
-import de.thecode.android.tazreader.utils.StorageManager;
-
-import org.apache.commons.io.FileUtils;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 

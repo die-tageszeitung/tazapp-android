@@ -18,9 +18,9 @@ import de.thecode.android.tazreader.reader.ReaderActivity;
 import de.thecode.android.tazreader.room.AppDatabase;
 import de.thecode.android.tazreader.timber.TazTimberTree;
 import de.thecode.android.tazreader.utils.BuildTypeProvider;
+import de.thecode.android.tazreader.utils.FileUtils;
 import de.thecode.android.tazreader.utils.StorageManager;
 
-import org.apache.commons.io.FileUtils;
 import org.greenrobot.eventbus.EventBus;
 
 import java.io.File;
@@ -90,11 +90,11 @@ public class TazReaderApplication extends Application {
             String[] children = dir.list();
             for (String aChildren : children) {
                 if (aChildren.startsWith("com.crashlytics") || aChildren.startsWith("Twitter") || aChildren.startsWith("io.fabric"))
-                    FileUtils.deleteQuietly(new File(dir, aChildren));
+                    new File(dir, aChildren).delete();
             }
             File oldLibImageDir = StorageManager.getInstance(this)
                                                 .getCache("library");
-            FileUtils.deleteQuietly(oldLibImageDir);
+            FileUtils.deleteContentsAndDir(oldLibImageDir);
         }
 
 

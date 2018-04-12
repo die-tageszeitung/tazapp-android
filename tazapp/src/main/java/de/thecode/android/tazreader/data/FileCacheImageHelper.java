@@ -4,9 +4,8 @@ import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import android.os.Build;
 
+import de.thecode.android.tazreader.utils.FileUtils;
 import de.thecode.android.tazreader.utils.StorageManager;
-
-import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -81,7 +80,7 @@ public abstract class FileCacheImageHelper {
 
     public void deleteDir() {
         if (mCacheDir != null) {
-            if (mCacheDir.exists()) FileUtils.deleteQuietly(mCacheDir);
+            if (mCacheDir.exists()) FileUtils.deleteContentsAndDir(mCacheDir);
         }
     }
 

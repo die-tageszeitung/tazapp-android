@@ -4,6 +4,7 @@ package de.thecode.android.tazreader.start;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.net.MailTo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -12,6 +13,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.Toolbar;
+import android.text.Html;
 import android.text.TextUtils;
 
 import de.mateware.dialog.Dialog;
@@ -52,15 +54,17 @@ import de.thecode.android.tazreader.sync.AccountHelper;
 import de.thecode.android.tazreader.sync.SyncErrorEvent;
 import de.thecode.android.tazreader.utils.AsyncTaskListener;
 import de.thecode.android.tazreader.utils.BaseActivity;
+import de.thecode.android.tazreader.utils.Charsets;
 import de.thecode.android.tazreader.utils.Connection;
+import de.thecode.android.tazreader.utils.StreamUtils;
 import de.thecode.android.tazreader.utils.UserDeviceInfo;
 import de.thecode.android.tazreader.widget.CustomToolbar;
 
-import org.apache.commons.io.IOUtils;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.ConnectException;
 import java.text.DateFormatSymbols;
 import java.util.ArrayList;
@@ -729,24 +733,34 @@ public class StartActivity extends BaseActivity
             switch (which) {
                 case Dialog.BUTTON_POSITIVE:
                     try {
-                        String body = IOUtils.toString(getAssets().open("errorReportMail/body.txt"), "UTF-8");
-                        UserDeviceInfo userDeviceInfo = UserDeviceInfo.getInstance(this);
-                        AccountHelper accountHelper = AccountHelper.getInstance(this);
+                        try (InputStream bodyInputStream = getAssets().open("errorReportMail/body.txt")) {
 
-                        body = body.replaceFirst("\\{appversion\\}", userDeviceInfo.getVersionName());
-                        body = body.replaceFirst("\\{installid\\}", userDeviceInfo.getInstallationId());
-                        body = body.replaceFirst("\\{aboid\\}",
-                                                 AccountHelper.getInstance(this)
-                                                              .getUser(""));
-                        String mailtoLink = IOUtils.toString(getAssets().open("errorReportMail/linktemplate.txt"), "UTF-8");
-                        mailtoLink = mailtoLink.replaceFirst("\\{body\\}", Uri.encode(body));
-                        Intent emailIntent = new Intent(Intent.ACTION_SENDTO);
-                        emailIntent.setData(Uri.parse(mailtoLink));
-                        startActivity(emailIntent);
+                            String aboId = AccountHelper.getInstance(this)
+                                                        .getUser("");
+                            UserDeviceInfo userDeviceInfo = UserDeviceInfo.getInstance(this);
+
+                            String body = StreamUtils.toString(bodyInputStream, Charsets.UTF_8);
+                            body = body.replaceFirst("\\{appversion\\}", userDeviceInfo.getVersionName());
+                            body = body.replaceFirst("\\{installid\\}", userDeviceInfo.getInstallationId());
+                            body = body.replaceFirst("\\{aboid\\}", aboId);
+
+
+                            StringBuilder mailToBuilder = new StringBuilder("mailto:");
+                            mailToBuilder.append(BuildConfig.ERRORMAIL);
+                            mailToBuilder.append("?subject=")
+                                         .append(Uri.encode(getString(R.string.errormail_subject,
+                                                                      getString(R.string.app_name),
+                                                                      aboId)));
+                            mailToBuilder.append("&body=")
+                                         .append(Uri.encode(body));
+
+                            Intent emailIntent = new Intent(Intent.ACTION_SENDTO);
+                            emailIntent.setData(Uri.parse(mailToBuilder.toString()));
+                            startActivity(emailIntent);
+                        }
                     } catch (IOException | ActivityNotFoundException e) {
                         Timber.e(e);
-                    }
-                    break;
+                    } break;
                 case Dialog.BUTTON_NEUTRAL:
                     mDrawerFragment.simulateClick(preferencesItem, true);
                     break;
