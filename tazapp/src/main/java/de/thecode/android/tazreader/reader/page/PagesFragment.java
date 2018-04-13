@@ -1,13 +1,11 @@
 package de.thecode.android.tazreader.reader.page;
 
 import android.arch.lifecycle.Observer;
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,12 +13,10 @@ import android.widget.BaseAdapter;
 import android.widget.Toast;
 
 import de.thecode.android.tazreader.R;
-import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Paper.Plist.Page;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.reader.AbstractContentFragment;
 import de.thecode.android.tazreader.reader.ReaderActivity;
-import de.thecode.android.tazreader.reader.ReaderTtsFragment;
 import de.thecode.android.tazreader.data.ITocItem;
 import de.thecode.android.tazreader.widget.ReaderButton;
 import de.thecode.android.tazreader.widget.ShareButton;
@@ -87,7 +83,7 @@ public class PagesFragment extends AbstractContentFragment {
 //        AnalyticsWrapper.getInstance()
 //                        .trackBreadcrumb("onCreateView in PagesFragment");
         View view = inflater.inflate(R.layout.reader_pagereader, container, false);
-        _readerView = (TAZReaderView) view.findViewById(R.id.readerview);
+        _readerView = view.findViewById(R.id.readerview);
         _readerView.setListener(new TAZReaderView.TAZReaderViewListener() {
             @Override
             public void onMoveToChild(String key) {
@@ -95,8 +91,8 @@ public class PagesFragment extends AbstractContentFragment {
             }
         });
         _readerView.setAdapter(_adapter);
-        mShareButton = (ShareButton) view.findViewById(R.id.share);
-        ReaderButton mPageIndexButton = (ReaderButton) view.findViewById(R.id.pageindex);
+        mShareButton = view.findViewById(R.id.share);
+        ReaderButton mPageIndexButton = view.findViewById(R.id.pageindex);
         if (TazSettings.getInstance(getContext())
                        .getPrefBoolean(TazSettings.PREFKEY.PAGEINDEXBUTTON, false)) {
             mPageIndexButton.setOnClickListener(new View.OnClickListener() {
@@ -117,7 +113,7 @@ public class PagesFragment extends AbstractContentFragment {
             });
         } else mPageIndexButton.setVisibility(View.GONE);
 
-        ReaderButton mIndexButton = (ReaderButton) view.findViewById(R.id.index);
+        ReaderButton mIndexButton = view.findViewById(R.id.index);
         if (TazSettings.getInstance(getContext())
                        .getPrefBoolean(TazSettings.PREFKEY.PAGEINDEXBUTTON, false)) {
             mIndexButton.setOnClickListener(new View.OnClickListener() {
@@ -269,8 +265,8 @@ public class PagesFragment extends AbstractContentFragment {
 
     }
 
-    @Override
-    public void onTtsStateChanged(ReaderTtsFragment.TTS state) {
-        Timber.d("state: %s", state);
-    }
+//    @Override
+//    public void onTtsStateChanged(ReaderTtsFragment.TTS state) {
+//        Timber.d("state: %s", state);
+//    }
 }

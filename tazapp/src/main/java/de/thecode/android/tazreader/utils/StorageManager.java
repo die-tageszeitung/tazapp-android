@@ -1,13 +1,12 @@
 package de.thecode.android.tazreader.utils;
 
 import android.content.Context;
+import android.content.ContextWrapper;
 
 import de.thecode.android.tazreader.data.FileCachePDFThumbHelper;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Resource;
 import de.thecode.android.tazreader.secure.HashHelper;
-
-import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,7 +16,7 @@ import java.security.NoSuchAlgorithmException;
 import timber.log.Timber;
 
 
-public class StorageManager {
+public class StorageManager extends ContextWrapper {
 
     public static final String TEMP     = "temp";
     public static final String PAPER    = "paper";
@@ -25,6 +24,7 @@ public class StorageManager {
 
     private static final String DOWNLOAD = "download";
     private static final String IMPORT   = "import";
+    private static final String APPUPDATE   = "appUpdate";
 
     private static StorageManager instance;
 
@@ -33,10 +33,8 @@ public class StorageManager {
         return instance;
     }
 
-    private Context mApplicationContext;
-
     private StorageManager(Context context) {
-        mApplicationContext = context;
+        super(context);
         createNoMediaFileInDir(getCache(null));
         createNoMediaFileInDir(get(null));
     }
@@ -53,7 +51,7 @@ public class StorageManager {
     }
 
     public File get(String type) {
-        File result = mApplicationContext.getExternalFilesDir(type);
+        File result = getExternalFilesDir(type);
         if (result != null) //noinspection ResultOfMethodCallIgnored
             result.mkdirs();
         return result;
@@ -61,7 +59,7 @@ public class StorageManager {
 
 
     public File getCache(String subDir) {
-        File result = mApplicationContext.getExternalCacheDir();
+        File result = getExternalCacheDir();
         if (result != null) {
             if (subDir != null) result = new File(result, subDir);
             result.mkdirs();
@@ -76,6 +74,10 @@ public class StorageManager {
 
     public File getImportCache() {
         return getCache(IMPORT);
+    }
+
+    public File getUpdateAppCache() {
+        return getCache(APPUPDATE);
     }
 
 
@@ -113,14 +115,14 @@ public class StorageManager {
 
 
     public void deletePaperDir(Paper paper) {
-        if (getPaperDirectory(paper).exists()) FileUtils.deleteQuietly(getPaperDirectory(paper));
+        if (getPaperDirectory(paper).exists()) FileUtils.deleteContentsAndDir(getPaperDirectory(paper));
 //        Utils.deleteDir(getPaperDirectory(paper));
         new FileCachePDFThumbHelper(this, paper.getFileHash()).deleteDir();
     }
 
     public void deleteResourceDir(String key) {
         File dir = getResourceDirectory(key);
-        if (dir.exists()) FileUtils.deleteQuietly(getResourceDirectory(key));
+        if (dir.exists()) FileUtils.deleteContentsAndDir(getResourceDirectory(key));
         //Utils.deleteDir(getResourceDirectory(key));
     }
 

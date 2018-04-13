@@ -1,22 +1,18 @@
 package de.thecode.android.tazreader.start;
 
 
-import android.annotation.SuppressLint;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.widget.DrawerLayout;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
-import android.util.LruCache;
 
 import de.mateware.dialog.Dialog;
 import de.mateware.dialog.DialogAdapterList;
@@ -34,7 +30,6 @@ import de.mateware.snacky.Snacky;
 import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.analytics.AnalyticsWrapper;
-import de.thecode.android.tazreader.data.DeleteTask;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Resource;
 import de.thecode.android.tazreader.data.ResourceRepository;
@@ -51,22 +46,24 @@ import de.thecode.android.tazreader.job.SyncJob;
 import de.thecode.android.tazreader.migration.MigrationActivity;
 import de.thecode.android.tazreader.notifications.NotificationUtils;
 import de.thecode.android.tazreader.reader.ReaderActivity;
+import de.thecode.android.tazreader.start.importer.ImportFragment;
+import de.thecode.android.tazreader.start.library.LibraryFragment;
 import de.thecode.android.tazreader.sync.AccountHelper;
 import de.thecode.android.tazreader.sync.SyncErrorEvent;
+import de.thecode.android.tazreader.update.UpdateHelper;
+import de.thecode.android.tazreader.utils.AsyncTaskListener;
 import de.thecode.android.tazreader.utils.BaseActivity;
-import de.thecode.android.tazreader.utils.BaseFragment;
+import de.thecode.android.tazreader.utils.Charsets;
 import de.thecode.android.tazreader.utils.Connection;
+import de.thecode.android.tazreader.utils.StreamUtils;
 import de.thecode.android.tazreader.utils.UserDeviceInfo;
 import de.thecode.android.tazreader.widget.CustomToolbar;
 
-import org.apache.commons.io.IOUtils;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-import org.json.JSONArray;
-import org.json.JSONException;
 
 import java.io.IOException;
-import java.lang.ref.WeakReference;
+import java.io.InputStream;
 import java.net.ConnectException;
 import java.text.DateFormatSymbols;
 import java.util.ArrayList;
@@ -79,7 +76,7 @@ import timber.log.Timber;
  * Created by mate on 27.01.2015.
  */
 public class StartActivity extends BaseActivity
-        implements IStartCallback, DialogButtonListener, DialogDismissListener, DialogCancelListener, DialogAdapterListListener {
+        implements DialogButtonListener, DialogDismissListener, DialogCancelListener, DialogAdapterListListener {
 
     //private static final String DIALOG_FIRST                 = "dialogFirst";
     private static final String DIALOG_USER_REENTER          = "dialogUserReenter";
@@ -96,6 +93,7 @@ public class StartActivity extends BaseActivity
     private static final String DIALOG_WAIT                  = "dialogWait";
     private static final String DIALOG_LICENCES              = "dialogLicences";
     private static final String DIALOG_ERROR_OPEN_PAPER      = "dialogErrorOpenPaper";
+    private static final String DIALOG_UPDATE_AVAILABLE      = "dialogUpdateAvailable";
 
     private static final String ARGUMENT_RESOURCE_KEY           = "resourceKey";
     private static final String ARGUMENT_RESOURCE_URL           = "resourceUrl";
@@ -105,7 +103,7 @@ public class StartActivity extends BaseActivity
     private CustomToolbar            toolbar;
     private NavigationDrawerFragment mDrawerFragment;
 
-    RetainDataFragment retainDataFragment;
+//    RetainDataFragment retainDataFragment;
 
     NavigationDrawerFragment.NavigationItem userItem;
     NavigationDrawerFragment.NavigationItem libraryItem;
@@ -117,6 +115,8 @@ public class StartActivity extends BaseActivity
     NavigationDrawerFragment.ClickItem      privacyTermsItem;
     // NavigationDrawerFragment.NavigationItem importItem;
 
+    private StartViewModel startViewModel;
+
     TazSettings.OnPreferenceChangeListener demoModeChanged = new TazSettings.OnPreferenceChangeListener<Boolean>() {
         @Override
         public void onPreferenceChanged(Boolean value) {
@@ -127,14 +127,14 @@ public class StartActivity extends BaseActivity
     @Override
     public void onStart() {
         super.onStart();
-        TazSettings.getInstance(this)
-                   .addOnPreferenceChangeListener(TazSettings.PREFKEY.DEMOMODE, demoModeChanged);
+        startViewModel.getSettings()
+                      .addOnPreferenceChangeListener(TazSettings.PREFKEY.DEMOMODE, demoModeChanged);
     }
 
     @Override
     public void onStop() {
-        TazSettings.getInstance(this)
-                   .removeOnPreferenceChangeListener(demoModeChanged);
+        startViewModel.getSettings()
+                      .removeOnPreferenceChangeListener(demoModeChanged);
         super.onStop();
     }
 
@@ -162,29 +162,31 @@ public class StartActivity extends BaseActivity
 
         //Orientation.setActivityOrientationFromPrefs(this);
 
+        startViewModel = ViewModelProviders.of(this)
+                                           .get(StartViewModel.class);
 
-        retainDataFragment = RetainDataFragment.findOrCreateRetainFragment(getSupportFragmentManager(), this);
-
-
-        if (retainDataFragment.getCache() == null) {
-            final int maxMemory = (int) (Runtime.getRuntime()
-                                                .maxMemory() / 1024);
-            final int cacheSize = maxMemory / 8;
-            retainDataFragment.cache = new LruCache<String, Bitmap>(cacheSize) {
-
-                @SuppressLint("NewApi")
-                @Override
-                protected int sizeOf(String key, Bitmap bitmap) {
-                    // The cache size will be measured in kilobytes rather than
-                    // number of items.
-                    return bitmap.getByteCount() / 1024;
-                }
-            };
-        }
+//        retainDataFragment = RetainDataFragment.findOrCreateRetainFragment(getSupportFragmentManager(), this);
+//
+//
+//        if (retainDataFragment.getCache() == null) {
+//            final int maxMemory = (int) (Runtime.getRuntime()
+//                                                .maxMemory() / 1024);
+//            final int cacheSize = maxMemory / 8;
+//            retainDataFragment.cache = new LruCache<String, Bitmap>(cacheSize) {
+//
+//                @SuppressLint("NewApi")
+//                @Override
+//                protected int sizeOf(String key, Bitmap bitmap) {
+//                    // The cache size will be measured in kilobytes rather than
+//                    // number of items.
+//                    return bitmap.getByteCount() / 1024;
+//                }
+//            };
+//        }
 
         setContentView(R.layout.activity_start);
 
-        toolbar = (CustomToolbar) findViewById(R.id.toolbar);
+        toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         toolbar.setItemColor(ContextCompat.getColor(this, R.color.toolbar_foreground_color));
         toolbar.setTitleTextAppearance(this, R.style.Toolbar_TitleText);
@@ -193,7 +195,7 @@ public class StartActivity extends BaseActivity
         updateTitle();
 
         mDrawerFragment = (NavigationDrawerFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_navigation_drawer);
-        mDrawerFragment.setUp(R.id.fragment_navigation_drawer, (DrawerLayout) findViewById(R.id.drawer_layout), toolbar);
+        mDrawerFragment.setUp(R.id.fragment_navigation_drawer, findViewById(R.id.drawer_layout), toolbar);
 
         userItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_account),
                                                                R.drawable.ic_account,
@@ -269,6 +271,23 @@ public class StartActivity extends BaseActivity
 //                       .getSyncServiceNextRun() == 0) SyncHelper.requestSync(this);
         //Intent intent = getIntent();
         openReaderFromDownloadNotificationIntent(getIntent());
+        checkForNewerVersion();
+    }
+
+    public void checkForNewerVersion() {
+        UpdateHelper updateHelper = UpdateHelper.getInstance(this);
+        if (updateHelper.hasUpdate() && !updateHelper.isUpdateMessageShown()) {
+            updateHelper.setUpdateMessageShown(true);
+            if (getSupportFragmentManager().findFragmentByTag(DIALOG_UPDATE_AVAILABLE) == null) {
+                new Dialog.Builder().setCancelable(true)
+                                    .setTitle(R.string.dialog_update_available_title)
+                                    .setMessage(getString(R.string.dialog_update_available_message, getString(R.string.app_name)))
+                                    .setPositiveButton(R.string.dialog_update_available_ok)
+                                    .setNegativeButton(R.string.dialog_update_available_no)
+                                    .buildSupport()
+                                    .show(getSupportFragmentManager(), DIALOG_UPDATE_AVAILABLE);
+            }
+        }
     }
 
     private void openReaderFromDownloadNotificationIntent(Intent intent) {
@@ -276,9 +295,8 @@ public class StartActivity extends BaseActivity
             if (intent.hasExtra(NotificationUtils.NOTIFICATION_EXTRA_TYPE_ID) && intent.hasExtra(NotificationUtils.NOTIFICATION_EXTRA_BOOKID)) {
                 String bookId = intent.getStringExtra(NotificationUtils.NOTIFICATION_EXTRA_BOOKID);
                 int type = intent.getIntExtra(NotificationUtils.NOTIFICATION_EXTRA_TYPE_ID, -1);
-                Paper paper = Paper.getPaperWithBookId(this, bookId);
-                if (type == NotificationUtils.DOWNLOAD_NOTIFICTAION_ID && paper != null) {
-                    openReader(paper.getId());
+                if (type == NotificationUtils.DOWNLOAD_NOTIFICTAION_ID && !TextUtils.isEmpty(bookId)) {
+                    openReader(bookId);
                 }
             }
         }
@@ -295,9 +313,6 @@ public class StartActivity extends BaseActivity
         }
     }
 
-    //boolean firstFragmentLoaded = false;
-
-    @Override
     public void loadFragment(NavigationDrawerFragment.NavigationItem item) {
         if (item.getTarget() != null) {
             //noinspection TryWithIdenticalCatches
@@ -310,7 +325,7 @@ public class StartActivity extends BaseActivity
                 //                else firstFragmentLoaded = true;
                 //ft.addToBackStack(item.getTarget().getSimpleName());
                 ft.commit();
-                getRetainData().addToNavBackstack(item);
+                startViewModel.addToNavBackstack(item);
             } catch (InstantiationException e) {
                 Timber.e(e);
             } catch (IllegalAccessException e) {
@@ -319,7 +334,6 @@ public class StartActivity extends BaseActivity
         }
     }
 
-    @Override
     public void onNavigationClick(NavigationDrawerFragment.ClickItem item) {
         Timber.i("");
         if (helpItem.equals(item)) {
@@ -332,14 +346,14 @@ public class StartActivity extends BaseActivity
 
     @Override
     public void onBackPressed() {
-        if (getRetainData().getNavBackstack()
-                           .size() > 1) {
-            getRetainData().getNavBackstack()
-                           .remove(getRetainData().getNavBackstack()
-                                                  .size() - 1);
-            NavigationDrawerFragment.NavigationItem backstackItem = getRetainData().getNavBackstack()
-                                                                                   .get(getRetainData().getNavBackstack()
-                                                                                                       .size() - 1);
+        if (startViewModel.getNavBackstack()
+                          .size() > 1) {
+            startViewModel.getNavBackstack()
+                          .remove(startViewModel.getNavBackstack()
+                                                .size() - 1);
+            NavigationDrawerFragment.NavigationItem backstackItem = startViewModel.getNavBackstack()
+                                                                                  .get(startViewModel.getNavBackstack()
+                                                                                                     .size() - 1);
             loadFragment(backstackItem);
         } else {
             super.onBackPressed();
@@ -347,13 +361,6 @@ public class StartActivity extends BaseActivity
     }
 
 
-    @Override
-    public RetainDataFragment getRetainData() {
-        return retainDataFragment;
-    }
-
-
-    @Override
     public void onSuccessfulCredentialsCheck() {
         mDrawerFragment.simulateClick(libraryItem, false);
     }
@@ -362,7 +369,7 @@ public class StartActivity extends BaseActivity
         updateTitle();
     }
 
-    @Override
+
     public Toolbar getToolbar() {
         return toolbar;
     }
@@ -373,21 +380,18 @@ public class StartActivity extends BaseActivity
     //        mDrawerFragment.handleChangedItem(userItem);
     //    }
 
-    @Override
+
     public void enableDrawer(boolean bool) {
         mDrawerFragment.setEnabled(bool);
     }
 
 
-    @Override
     public void onUpdateDrawer(Fragment fragment) {
         mDrawerFragment.setActive(fragment.getClass());
     }
 
-    @Override
-    public void startDownload(long paperId) throws Paper.PaperNotFoundException {
-        Paper downloadPaper = Paper.getPaperWithId(this, paperId);
-        if (downloadPaper == null) throw new Paper.PaperNotFoundException();
+
+    public void startDownload(Paper downloadPaper) {
         if (!downloadPaper.isDownloading()) {
             switch (Connection.getConnectionType(this)) {
                 case Connection.CONNECTION_NOT_AVAILABLE:
@@ -395,64 +399,23 @@ public class StartActivity extends BaseActivity
                     break;
                 case Connection.CONNECTION_MOBILE:
                 case Connection.CONNECTION_MOBILE_ROAMING:
-                    addToDownloadQueue(paperId);
-                    if (retainDataFragment.allowMobileDownload) startDownloadQueue();
+                    addToDownloadQueue(downloadPaper.getBookId());
+                    if (startViewModel.isMobileDownloadAllowed()) startViewModel.startDownloadQueue();
                     else showMobileConnectionDialog();
                     break;
                 default:
-                    addToDownloadQueue(paperId);
-                    startDownloadQueue();
+                    addToDownloadQueue(downloadPaper.getBookId());
+                    startViewModel.startDownloadQueue();
             }
         }
-        //        //TODO DIALOG
-        //        //startDownload(paper.getId());
-        //        DownloadHelper mDownloadHelper = new DownloadHelper(this);
-        //        try {
-        //            mDownloadHelper.enquePaper(paperId);
-        //        } catch (IllegalArgumentException e) {
-        //            // errorDownloadManagerDialog();
-        //        }
     }
 
-    private void addToDownloadQueue(long paperId) {
-        retainDataFragment.downloadQueue.add(paperId);
-        retainDataFragment.setOpenPaperIdAfterDownload(paperId);
+    private void addToDownloadQueue(String bookId) {
+        startViewModel.getDownloadQueue()
+                      .add(bookId);
+//        retainDataFragment.downloadQueue.add(bookId);
+        startViewModel.setOpenPaperIdAfterDownload(bookId);
     }
-
-    private void startDownloadQueue() {
-        //DownloadHelper mDownloadHelper = new DownloadHelper(this);
-        while (retainDataFragment.downloadQueue.size() > 0) {
-            long paperId = retainDataFragment.downloadQueue.get(0);
-            try {
-                Paper paper = Paper.getPaperWithId(this, paperId);
-                if (paper == null) throw new Paper.PaperNotFoundException();
-                try {
-                    DownloadManager.getInstance(this)
-                                   .enquePaper(paperId, false);
-                } catch (IllegalArgumentException e) {
-                    showErrorDialog(getString(R.string.dialog_downloadmanager_error), DIALOG_DOWNLOADMANAGER_ERROR);
-                } catch (DownloadManager.DownloadNotAllowedException e) {
-                    showDownloadErrorDialog(paper.getTitelWithDate(this), getString(R.string.message_download_not_allowed), e);
-                } catch (DownloadManager.NotEnoughSpaceException e) {
-                    showDownloadErrorDialog(paper.getTitelWithDate(this), getString(R.string.message_not_enough_space), e);
-                }
-            } catch (Paper.PaperNotFoundException e) {
-                showDownloadErrorDialog(String.valueOf(paperId), getString(R.string.message_paper_not_found), e);
-            }
-
-
-            retainDataFragment.downloadQueue.remove(0);
-        }
-    }
-
-
-//    private void firstStartDialog() {
-//        new Dialog.Builder().setMessage(R.string.dialog_first)
-//                            .setPositiveButton()
-//                            .setNeutralButton(R.string.drawer_account)
-//                            .buildSupport()
-//                            .show(getSupportFragmentManager(), DIALOG_FIRST);
-//    }
 
     public void showNoConnectionDialog() {
         new Dialog.Builder().setMessage(R.string.dialog_noconnection)
@@ -497,21 +460,6 @@ public class StartActivity extends BaseActivity
                                    .buildSupport()
                                    .show(getSupportFragmentManager(), DIALOG_LICENCES);
     }
-
-//    private void showAccountErrorDialog() {
-//        new Dialog.Builder().setMessage(R.string.dialog_account_error)
-//                            .setPositiveButton()
-//                            .setCancelable(false)
-//                            .buildSupport()
-//                            .show(getSupportFragmentManager(), DIALOG_ACCOUNT_ERROR);
-//    }
-
-//    private void showDownloadManagerErrorDialog() {
-//        new Dialog.Builder().setMessage(R.string.dialog_downloadmanager_error)
-//                            .setPositiveButton()
-//                            .buildSupport()
-//                            .show(getSupportFragmentManager(), DIALOG_DOWNLOADMANAGER_ERROR);
-//    }
 
     private void showErrorDialog(String message, String tag) {
         new Dialog.Builder().setMessage(message)
@@ -573,7 +521,6 @@ public class StartActivity extends BaseActivity
                             .show(getSupportFragmentManager(), DIALOG_DOWNLOADMANAGER_ERROR);
     }
 
-    @Override
     public void showWaitDialog(String tag, String message) {
         DialogFragment dialog = (DialogFragment) getSupportFragmentManager().findFragmentByTag(tag);
         if (dialog == null) new DialogIndeterminateProgress.Builder().setCancelable(false)
@@ -582,68 +529,61 @@ public class StartActivity extends BaseActivity
                                                                      .show(getSupportFragmentManager(), tag);
     }
 
-    @Override
     public void hideWaitDialog(String tag) {
         DialogFragment dialog = (DialogFragment) getSupportFragmentManager().findFragmentByTag(tag);
         if (dialog != null) dialog.dismiss();
     }
 
-    @Override
     public void callArchive() {
         showArchiveYearPicker();
     }
 
-    @Override
-    public void openReader(long id) {
-
-        Paper openPaper;
-        try {
-            openPaper = Paper.getPaperWithId(this, id);
-            if (openPaper == null) throw new Paper.PaperNotFoundException();
-            if (!openPaper.isDownloaded()) {
+    public void openReader(String bookId) {
+        new AsyncTaskListener<String, Paper>(bookIdParams -> startViewModel.getPaperRepository()
+                                                                           .getPaperWithBookId(bookIdParams[0]), paper -> {
+            if (!paper.isDownloaded()) {
                 showErrorDialog(getString(R.string.message_paper_not_downloaded), DIALOG_ERROR_OPEN_PAPER);
             }
-            Resource paperResource = ResourceRepository.getInstance(this)
-                                                       .getResourceForPaper(openPaper);
-            //TODO Check for null resource and handle it, ask for sync / delete and redownload
-            if (paperResource.isDownloaded()) {
-                Timber.i("start reader for paper: %s", openPaper);
-                Intent intent = new Intent(this, ReaderActivity.class);
-                intent.putExtra(ReaderActivity.KEY_EXTRA_PAPER_ID, id);
-                intent.putExtra(ReaderActivity.KEY_EXTRA_BOOK_ID, openPaper.getBookId());
-                intent.putExtra(ReaderActivity.KEY_EXTRA_RESOURCE_KEY, paperResource.getKey());
-                startActivity(intent);
-            } else {
-                AnalyticsWrapper.getInstance()
-                                .logData("PAPER", openPaper.toString());
-                AnalyticsWrapper.getInstance()
-                                .logData("RESOURCE", paperResource.toString());
-                switch (Connection.getConnectionType(this)) {
-                    case Connection.CONNECTION_NOT_AVAILABLE:
-                        Timber.e(new ConnectException("Keine Verbindung"));
-                        showErrorDialog(getString(R.string.message_resource_not_downloaded_no_connection),
-                                        DIALOG_ERROR_OPEN_PAPER);
-                        break;
-                    default:
-                        try {
-                            DownloadManager.getInstance(this)
-                                           .enqueResource(paperResource, false);
-                            retainDataFragment.openPaperWaitingForRessource = id;
-                            Timber.e(new Resource.MissingResourceException());
-                            showWaitDialog(DIALOG_WAIT + openPaper.getBookId(),
-                                           getString(R.string.dialog_meassage_loading_missing_resource));
-                        } catch (DownloadManager.NotEnoughSpaceException e) {
-                            Timber.e(e);
-                            showDownloadErrorDialog(getString(R.string.message_resourcedownload_error),
-                                                    getString(R.string.message_not_enough_space),
-                                                    e);
-                        }
+            new AsyncTaskListener<Paper, Resource>(papers -> ResourceRepository.getInstance(StartActivity.this)
+                                                                               .getResourceForPaper(papers[0]), resource -> {
+                if (resource.isDownloaded()) {
+                    Timber.i("start reader for paper: %s", paper);
+                    Intent intent = new Intent(StartActivity.this, ReaderActivity.class);
+//                intent.putExtra(ReaderActivity.KEY_EXTRA_PAPER_ID, id);
+                    intent.putExtra(ReaderActivity.KEY_EXTRA_BOOK_ID, paper.getBookId());
+//                    intent.putExtra(ReaderActivity.KEY_EXTRA_RESOURCE_KEY, resource.getKey());
+                    startActivity(intent);
+                } else {
+                    AnalyticsWrapper.getInstance()
+                                    .logData("PAPER", paper.toString());
+                    AnalyticsWrapper.getInstance()
+                                    .logData("RESOURCE", resource.toString());
+                    switch (Connection.getConnectionType(StartActivity.this)) {
+                        case Connection.CONNECTION_NOT_AVAILABLE:
+                            Timber.e(new ConnectException("Keine Verbindung"));
+                            showErrorDialog(getString(R.string.message_resource_not_downloaded_no_connection),
+                                            DIALOG_ERROR_OPEN_PAPER);
+                            break;
+                        default:
+                            try {
+                                DownloadManager.getInstance(StartActivity.this)
+                                               .enqueResource(resource, false);
+                                startViewModel.setPaperWaitingForResource(paper.getBookId());
+                                Timber.e(new Resource.MissingResourceException());
+                                showWaitDialog(DIALOG_WAIT + paper.getBookId(),
+                                               getString(R.string.dialog_meassage_loading_missing_resource));
+                            } catch (DownloadManager.NotEnoughSpaceException e) {
+                                Timber.e(e);
+                                showDownloadErrorDialog(getString(R.string.message_resourcedownload_error),
+                                                        getString(R.string.message_not_enough_space),
+                                                        e);
+                            }
 
+                    }
                 }
-            }
-        } catch (Paper.PaperNotFoundException e) {
-            Timber.e(e);
-        }
+            }).execute(paper);
+        }).execute(bookId);
+
     }
 
     public void updateTitle() {
@@ -671,53 +611,51 @@ public class StartActivity extends BaseActivity
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onPaperDownloadFinished(PaperDownloadFinishedEvent event) {
         Timber.d("event: %s", event);
-        if (retainDataFragment.useOpenPaperafterDownload) {
-            if (event.getPaperId() == retainDataFragment.openPaperIdAfterDownload) {
-                openReader(retainDataFragment.openPaperIdAfterDownload);
+        if (startViewModel.isOpenReaderAfterDownload()) {
+            if (event.getBookId()
+                     .equals(startViewModel.getOpenPaperIdAfterDownload())) {
+                startViewModel.removeOpenPaperIdAfterDownload();
+                openReader(event.getBookId());
             }
         }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onPaperDownloadFailed(PaperDownloadFailedEvent event) {
-        try {
-            Paper paper = Paper.getPaperWithId(this, event.getPaperId());
-            if (paper == null) throw new Paper.PaperNotFoundException();
-            showDownloadErrorDialog(paper.getTitelWithDate(this), null, event.getException());
-
-            //NotificationHelper.cancelDownloadErrorNotification(this, event.getPaperId());
-            new NotificationUtils(this).removeDownloadNotification(event.getPaperId());
-        } catch (Paper.PaperNotFoundException e) {
-            e.printStackTrace();
-        }
+        showDownloadErrorDialog(event.getPaper()
+                                     .getTitelWithDate(this), null, event.getException());
+        new NotificationUtils(this).removeDownloadNotification(event.getPaper()
+                                                                    .getBookId());
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onResourceDownload(ResourceDownloadEvent event) {
-        if (retainDataFragment.openPaperWaitingForRessource != -1) {
-            try {
-                Paper waitingPaper = Paper.getPaperWithId(this, retainDataFragment.openPaperWaitingForRessource);
-                if (waitingPaper == null) throw new Paper.PaperNotFoundException();
-                if (event.getKey()
-                         .equals(ResourceRepository.getInstance(this)
-                                                   .getResourceForPaper(waitingPaper)
-                                                   .getKey())) {
-                    hideWaitDialog(DIALOG_WAIT + waitingPaper.getBookId());
-                    long paperId = retainDataFragment.openPaperWaitingForRessource;
-                    retainDataFragment.openPaperWaitingForRessource = -1;
-                    if (event.isSuccessful()) {
-                        openReader(paperId);
-                    } else {
-                        showDownloadErrorDialog(getString(R.string.message_resourcedownload_error),
-                                                String.format(getString(R.string.message_resourcedownload_late_error),
-                                                              event.getException()
-                                                                   .toString()),
-                                                null);
+        String waitingBookId = startViewModel.getPaperWaitingForResource();
+        if (!TextUtils.isEmpty(waitingBookId)) {
+            new AsyncTaskListener<ResourceDownloadEvent, Void>(new AsyncTaskListener.OnExecute<ResourceDownloadEvent, Void>() {
+                @Override
+                public Void execute(ResourceDownloadEvent... resourceDownloadEvents) {
+                    Paper waitingPaper = startViewModel.getPaperRepository()
+                                                       .getPaperWithBookId(waitingBookId);
+                    if (resourceDownloadEvents[0].getKey()
+                                                 .equals(ResourceRepository.getInstance(StartActivity.this)
+                                                                           .getResourceForPaper(waitingPaper)
+                                                                           .getKey())) {
+                        hideWaitDialog(DIALOG_WAIT + waitingBookId);
+                        startViewModel.setPaperWaitingForResource(null);
+                        if (resourceDownloadEvents[0].isSuccessful()) {
+                            openReader(waitingBookId);
+                        } else {
+                            showDownloadErrorDialog(getString(R.string.message_resourcedownload_error),
+                                                    String.format(getString(R.string.message_resourcedownload_late_error),
+                                                                  resourceDownloadEvents[0].getException()
+                                                                                           .toString()),
+                                                    null);
+                        }
                     }
+                    return null;
                 }
-            } catch (Paper.PaperNotFoundException e) {
-                retainDataFragment.openPaperWaitingForRessource = -1;
-            }
+            }).execute(event);
         }
     }
 
@@ -726,30 +664,23 @@ public class StartActivity extends BaseActivity
     @Override
     protected void onResume() {
         super.onResume();
-        if (firstStartTask != null) firstStartTask.cancel(true);
-        firstStartTask = new AsyncTask<Void, Void, Boolean>() {
-            @Override
-            protected Boolean doInBackground(Void... voids) {
-                boolean showDialog = false;
-                List<Paper> allPapers = Paper.getAllPapers(StartActivity.this);
-                boolean foundDownloaded = false;
-                for (Paper paper : allPapers) {
-                    if (foundDownloaded || isCancelled()) break;
-                    foundDownloaded = paper.isDownloaded() || paper.isDownloading();
-                }
-                if (!foundDownloaded) {
-                    showDialog = TazSettings.getInstance(StartActivity.this)
-                                            .isDemoMode();
-                }
-                return showDialog;
+        new AsyncTaskListener<Void, Boolean>(voids -> {
+            boolean showDialog = false;
+            List<Paper> allPapers = startViewModel.getPaperRepository()
+                                                  .getAllPapers();
+            boolean foundDownloaded = false;
+            for (Paper paper : allPapers) {
+                if (foundDownloaded) break;
+                foundDownloaded = paper.isDownloaded() || paper.isDownloading();
             }
-
-            @Override
-            protected void onPostExecute(Boolean aBoolean) {
-                if (aBoolean) showHelpDialog(HelpDialog.HELP_INTRO);
+            if (!foundDownloaded) {
+                showDialog = startViewModel.getSettings()
+                                           .isDemoMode();
             }
-        };
-        firstStartTask.execute();
+            return showDialog;
+        }, aBoolean -> {
+            if (aBoolean) showHelpDialog(HelpDialog.HELP_INTRO);
+        }).execute();
     }
 
     @Override
@@ -771,14 +702,14 @@ public class StartActivity extends BaseActivity
             }
         } else if (DIALOG_MIGRATION_FINISHED.equals(tag)) {
             if (which == Dialog.BUTTON_POSITIVE) {
-                try {
-                    JSONArray json = new JSONArray(arguments.getString(ARGUMENT_MIGRATED_IDS_JSONARRAY));
-                    for (int i = 0; i < json.length(); i++) {
-                        startDownload(json.getLong(i));
-                    }
-                } catch (JSONException | Paper.PaperNotFoundException e) {
-                    Timber.w(e);
-                }
+//                try {
+//                    JSONArray json = new JSONArray(arguments.getString(ARGUMENT_MIGRATED_IDS_JSONARRAY));
+//                    for (int i = 0; i < json.length(); i++) {
+//                        startDownload(json.getString(i));
+//                    }
+//                } catch (JSONException | Paper.PaperNotFoundException e) {
+//                    Timber.w(e);
+//                }
 
             }
         } else if (ImprintFragment.DIALOG_TECHINFO.equals(tag)) {
@@ -790,14 +721,19 @@ public class StartActivity extends BaseActivity
         } else if (DIALOG_DOWNLOAD_MOBILE.equals(tag)) {
             switch (which) {
                 case Dialog.BUTTON_POSITIVE:
-                    retainDataFragment.allowMobileDownload = true;
-                    startDownloadQueue();
+                    startViewModel.setMobileDownloadAllowed(true);
+                    startViewModel.startDownloadQueue();
+//                    startDownloadQueue();
                     break;
                 case Dialog.BUTTON_NEGATIVE:
-                    retainDataFragment.downloadQueue.clear();
+                    startViewModel.getDownloadQueue()
+                                  .clear();
+//                    retainDataFragment.downloadQueue.clear();
                     break;
                 case Dialog.BUTTON_NEUTRAL:
-                    retainDataFragment.downloadQueue.clear();
+                    startViewModel.getDownloadQueue()
+                                  .clear();
+//                    retainDataFragment.downloadQueue.clear();
                     startActivity(new Intent(android.provider.Settings.ACTION_WIFI_SETTINGS));
                     break;
             }
@@ -814,26 +750,43 @@ public class StartActivity extends BaseActivity
             switch (which) {
                 case Dialog.BUTTON_POSITIVE:
                     try {
-                        String body = IOUtils.toString(getAssets().open("errorReportMail/body.txt"), "UTF-8");
-                        UserDeviceInfo userDeviceInfo = UserDeviceInfo.getInstance(this);
-                        AccountHelper accountHelper = AccountHelper.getInstance(this);
+                        try (InputStream bodyInputStream = getAssets().open("errorReportMail/body.txt")) {
 
-                        body = body.replaceFirst("\\{appversion\\}", userDeviceInfo.getVersionName());
-                        body = body.replaceFirst("\\{installid\\}", userDeviceInfo.getInstallationId());
-                        body = body.replaceFirst("\\{aboid\\}",
-                                                 AccountHelper.getInstance(this)
-                                                              .getUser(""));
-                        String mailtoLink = IOUtils.toString(getAssets().open("errorReportMail/linktemplate.txt"), "UTF-8");
-                        mailtoLink = mailtoLink.replaceFirst("\\{body\\}", Uri.encode(body));
-                        Intent emailIntent = new Intent(Intent.ACTION_SENDTO);
-                        emailIntent.setData(Uri.parse(mailtoLink));
-                        startActivity(emailIntent);
+                            String aboId = AccountHelper.getInstance(this)
+                                                        .getUser("");
+                            UserDeviceInfo userDeviceInfo = UserDeviceInfo.getInstance(this);
+
+                            String body = StreamUtils.toString(bodyInputStream, Charsets.UTF_8);
+                            body = body.replaceFirst("\\{appversion\\}", userDeviceInfo.getVersionName());
+                            body = body.replaceFirst("\\{installid\\}", userDeviceInfo.getInstallationId());
+                            body = body.replaceFirst("\\{aboid\\}", aboId);
+
+
+                            StringBuilder mailToBuilder = new StringBuilder("mailto:");
+                            mailToBuilder.append(BuildConfig.ERRORMAIL);
+                            mailToBuilder.append("?subject=")
+                                         .append(Uri.encode(getString(R.string.errormail_subject,
+                                                                      getString(R.string.app_name),
+                                                                      aboId)));
+                            mailToBuilder.append("&body=")
+                                         .append(Uri.encode(body));
+
+                            Intent emailIntent = new Intent(Intent.ACTION_SENDTO);
+                            emailIntent.setData(Uri.parse(mailToBuilder.toString()));
+                            startActivity(emailIntent);
+                        }
                     } catch (IOException | ActivityNotFoundException e) {
                         Timber.e(e);
                     }
                     break;
                 case Dialog.BUTTON_NEUTRAL:
                     mDrawerFragment.simulateClick(preferencesItem, true);
+                    break;
+            }
+        } else if (DIALOG_UPDATE_AVAILABLE.equals(tag)) {
+            switch (which) {
+                case Dialog.BUTTON_POSITIVE:
+                    UpdateHelper.getInstance(this).update(this);
                     break;
             }
         }
@@ -873,7 +826,9 @@ public class StartActivity extends BaseActivity
     public void onDialogDismiss(String tag, Bundle arguments) {
         super.onDialogDismiss(tag, arguments);
         if (DIALOG_DOWNLOAD_MOBILE.equals(tag)) {
-            retainDataFragment.downloadQueue.clear();
+            startViewModel.getDownloadQueue()
+                          .clear();
+//            retainDataFragment.downloadQueue.clear();
         }
     }
 
@@ -881,111 +836,9 @@ public class StartActivity extends BaseActivity
     public void onDialogCancel(String tag, Bundle arguments) {
         super.onDialogCancel(tag, arguments);
         if (DIALOG_DOWNLOAD_MOBILE.equals(tag)) {
-            retainDataFragment.downloadQueue.clear();
-        }
-    }
-
-
-    public static class RetainDataFragment extends BaseFragment {
-
-        private static final String TAG = "RetainDataFragment";
-        public LruCache<String, Bitmap> cache;
-        public List<Long> selectedInLibrary = new ArrayList<>();
-        boolean actionMode;
-        List<Long> downloadQueue       = new ArrayList<>();
-        boolean    allowMobileDownload = false;
-        private long    openPaperIdAfterDownload     = -1;
-        private long    openPaperWaitingForRessource = -1;
-        private boolean useOpenPaperafterDownload    = true;
-        List<NavigationDrawerFragment.NavigationItem> navBackstack = new ArrayList<>();
-        WeakReference<IStartCallback> callback;
-
-        public RetainDataFragment() {
-        }
-
-        public static RetainDataFragment findOrCreateRetainFragment(FragmentManager fm, IStartCallback callback) {
-            RetainDataFragment fragment = (RetainDataFragment) fm.findFragmentByTag(TAG);
-            if (fragment == null) {
-                fragment = new RetainDataFragment();
-                fm.beginTransaction()
-                  .add(fragment, TAG)
-                  .commit();
-            }
-            fragment.callback = new WeakReference<>(callback);
-            return fragment;
-        }
-
-        @Override
-        public void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-            setRetainInstance(true);
-        }
-
-        private boolean hasCallback() {
-            return callback.get() != null;
-        }
-
-        private IStartCallback getCallback() {
-            return callback.get();
-        }
-
-        public LruCache<String, Bitmap> getCache() {
-            return cache;
-        }
-
-        public List<Long> getSelectedInLibrary() {
-            return selectedInLibrary;
-        }
-
-        public boolean isActionMode() {
-            return actionMode;
-        }
-
-        public void setActionMode(boolean actionMode) {
-            this.actionMode = actionMode;
-        }
-
-
-        public void setOpenPaperIdAfterDownload(long paperId) {
-            if (openPaperIdAfterDownload == -1) {
-                openPaperIdAfterDownload = paperId;
-                useOpenPaperafterDownload = true;
-            } else {
-                useOpenPaperafterDownload = false;
-            }
-        }
-
-        public void removeOpenPaperIdAfterDownload() {
-            openPaperIdAfterDownload = -1;
-            useOpenPaperafterDownload = true;
-        }
-
-        public void addToNavBackstack(NavigationDrawerFragment.NavigationItem item) {
-            if (navBackstack.contains(item)) navBackstack.remove(item);
-            navBackstack.add(item);
-        }
-
-        public List<NavigationDrawerFragment.NavigationItem> getNavBackstack() {
-            return navBackstack;
-        }
-
-        public void deletePaper(Long... ids) {
-            if (hasCallback())
-                getCallback().showWaitDialog(DIALOG_WAIT + "delete", getString(R.string.dialog_message_delete_wait));
-            new DeleteTask(getActivity()) {
-
-                @Override
-                protected void onPostError(Exception exception) {
-                    Timber.e(exception);
-
-                    if (hasCallback()) getCallback().hideWaitDialog(DIALOG_WAIT + "delete");
-                }
-
-                @Override
-                protected void onPostSuccess(Void aVoid) {
-                    if (hasCallback()) getCallback().hideWaitDialog(DIALOG_WAIT + "delete");
-                }
-            }.execute(ids);
+            startViewModel.getDownloadQueue()
+                          .clear();
+//            retainDataFragment.downloadQueue.clear();
         }
     }
 }

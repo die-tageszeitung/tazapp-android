@@ -1,12 +1,8 @@
-package de.thecode.android.tazreader.start;
+package de.thecode.android.tazreader.start.importer;
 
 
 import android.content.Context;
 import android.support.v4.content.AsyncTaskLoader;
-
-import de.thecode.android.tazreader.R;
-import de.thecode.android.tazreader.data.Paper;
-import de.thecode.android.tazreader.importer.ImportMetadata;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -100,25 +96,25 @@ public class ImportDirectoryLoader extends AsyncTaskLoader<List<ImportDirectoryL
             if (isFileendingTazandroid(file.getName()) || isFileendingTpaper(file.getName()))
             {
 
-                try {
-                    ImportMetadata metadata = ImportMetadata.parse(file);
-
-                    if (metadata == null) throw new NullPointerException();
-                    ifw.selectable = true;
-                    ifw.detail = metadata.getTitelWithDate(", ");
-                    try {
-                        Paper paper = Paper.getPaperWithBookId(getContext(), metadata.getBookId());
-                        if (paper == null) throw new Paper.PaperNotFoundException();
-                        if (paper.isDownloaded() || paper.hasUpdate() || paper.isDownloading())
-                            ifw.override = true;
-                    } catch (Paper.PaperNotFoundException ignored) {
-                    }
-                } catch (IOException | NullPointerException | ImportMetadata.NotReadableException e) {
-                    Timber.w(e,"in file %s",file.getName());
-                    ifw.selectable = false;
-                    ifw.detail = getContext().getString(R.string.import_error_detail);
-                }
-                result.add(ifw);
+//                try {
+//                    ImportMetadata metadata = ImportMetadata.parse(file);
+//
+//                    if (metadata == null) throw new NullPointerException();
+//                    ifw.selectable = true;
+//                    ifw.detail = metadata.getTitelWithDate(", ");
+//                    try {
+//                        Paper paper = Paper.getPaperWithBookId(getContext(), metadata.getBookId());
+//                        if (paper == null) throw new Paper.PaperNotFoundException();
+//                        if (paper.isDownloaded() || paper.hasUpdate() || paper.isDownloading())
+//                            ifw.override = true;
+//                    } catch (Paper.PaperNotFoundException ignored) {
+//                    }
+//                } catch (IOException | NullPointerException | ImportMetadata.NotReadableException e) {
+//                    Timber.w(e,"in file %s",file.getName());
+//                    ifw.selectable = false;
+//                    ifw.detail = getContext().getString(R.string.import_error_detail);
+//                }
+//                result.add(ifw);
             }
 
         }
@@ -245,8 +241,7 @@ public class ImportDirectoryLoader extends AsyncTaskLoader<List<ImportDirectoryL
         int dotPos = filename.lastIndexOf(".");
         if (dotPos != -1) {
             String ending = filename.substring(dotPos);
-            if (ending.equalsIgnoreCase("."+fileEnding))
-                return true;
+            return ending.equalsIgnoreCase("." + fileEnding);
         }
         return false;
     }

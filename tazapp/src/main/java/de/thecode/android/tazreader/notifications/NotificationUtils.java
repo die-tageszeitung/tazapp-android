@@ -37,6 +37,8 @@ public class NotificationUtils extends ContextWrapper {
     private static final String DOWNLOAD_GROUP_KEY       = "notificationDownloadGroup";
     public static final  String DOWNLOAD_CHANNEL_ID      = BuildConfig.APPLICATION_ID + ".DOWNLOAD";
 
+    public static final String TAG_NOTIFICATION_UPDATE = "appUpdate";
+
     public static final String NOTIFICATION_EXTRA_TYPE_ID = "typeId";
     public static final String NOTIFICATION_EXTRA_BOOKID  = "notificationBookId";
 
@@ -97,8 +99,8 @@ public class NotificationUtils extends ContextWrapper {
                                                                                                 .setContentIntent(contentIntent)
                                                                                                 .setAutoCancel(true)
                                                                                                 .setContentText(message.toString())
-                                                                                                .setStyle(new NotificationCompat.BigTextStyle()
-                                                                                                                  .bigText(message.toString()))
+                                                                                                .setStyle(new NotificationCompat.BigTextStyle().bigText(
+                                                                                                        message.toString()))
                                                                                                 .setSound(ringtoneUri);
         int defaults = Notification.DEFAULT_LIGHTS;
         if (withVibration) defaults |= Notification.DEFAULT_VIBRATE;
@@ -131,9 +133,9 @@ public class NotificationUtils extends ContextWrapper {
                                                                                                 .setAutoCancel(true)
                                                                                                 .setContentText(paper.getTitelWithDate(
                                                                                                         this))
-                                                                                                .setStyle(new NotificationCompat.BigTextStyle()
-                                                                                                                  .bigText(paper.getTitelWithDate(
-                                                                                                                          this)))
+                                                                                                .setStyle(new NotificationCompat.BigTextStyle().bigText(
+                                                                                                        paper.getTitelWithDate(
+                                                                                                                this)))
                                                                                                 .setSound(ringtoneUri)
                                                                                                 .setGroup(DOWNLOAD_GROUP_KEY);
         int defaults = Notification.DEFAULT_LIGHTS;
@@ -153,14 +155,8 @@ public class NotificationUtils extends ContextWrapper {
         getManager().notify(paper.getBookId(), DOWNLOAD_NOTIFICTAION_ID, builder.build());
     }
 
-    public void removeDownloadNotification(Paper paper) {
-        if (paper != null) {
-            getManager().cancel(paper.getBookId(), DOWNLOAD_NOTIFICTAION_ID);
-        }
-    }
-
-    public void removeDownloadNotification(long paperId) {
-        removeDownloadNotification(Paper.getPaperWithId(this, paperId));
+    public void removeDownloadNotification(String bookId) {
+        getManager().cancel(bookId, DOWNLOAD_NOTIFICTAION_ID);
     }
 
 

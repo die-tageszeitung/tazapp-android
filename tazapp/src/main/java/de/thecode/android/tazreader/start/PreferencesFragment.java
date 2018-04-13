@@ -22,7 +22,6 @@ import java.lang.ref.WeakReference;
 
 public class PreferencesFragment extends PreferenceFragmentCompat {
 
-    WeakReference<IStartCallback> callback;
     Preference                    pushPreferenceCat;
     SwitchPreferenceCompat        crashlyticsAlwaysSendPreference;
 
@@ -41,12 +40,12 @@ public class PreferencesFragment extends PreferenceFragmentCompat {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        callback = new WeakReference<>((IStartCallback) getActivity());
-        if (hasCallback()) getCallback().onUpdateDrawer(this);
+        super.onCreateView(inflater,container,savedInstanceState);
+        ((StartActivity) getActivity()).onUpdateDrawer(this);
         View view = super.onCreateView(inflater, container, savedInstanceState);
         if (view != null)
             view.setBackgroundColor(ContextCompat.getColor(inflater.getContext(), R.color.start_fragment_background));
-        setDividerHeight(0);
+        //setDividerHeight(0);
         return view;
     }
 
@@ -93,13 +92,5 @@ public class PreferencesFragment extends PreferenceFragmentCompat {
         TazSettings.getInstance(getContext())
                    .removeOnPreferenceChangeListener(firebaseTokenPrefrenceListener);
         super.onStop();
-    }
-
-    private boolean hasCallback() {
-        return callback.get() != null;
-    }
-
-    private IStartCallback getCallback() {
-        return callback.get();
     }
 }

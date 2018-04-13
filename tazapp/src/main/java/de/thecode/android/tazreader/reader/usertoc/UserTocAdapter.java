@@ -177,8 +177,8 @@ public class UserTocAdapter extends TazListAdapter<UserTocItem, UserTocAdapter.V
 
         public CategoryViewHolder(View itemView, UserTocAdapterClickListener clickListener) {
             super(itemView, clickListener);
-            title = (TextView) itemView.findViewById(R.id.title);
-            image = (ImageView) itemView.findViewById(R.id.image);
+            title = itemView.findViewById(R.id.title);
+            image = itemView.findViewById(R.id.image);
 
         }
 
@@ -195,9 +195,9 @@ public class UserTocAdapter extends TazListAdapter<UserTocItem, UserTocAdapter.V
 
         public ArticleViewHolder(View itemView, UserTocAdapterClickListener clickListener) {
             super(itemView, clickListener);
-            title = (TextView) itemView.findViewById(R.id.title);
-            subtitle = (TextView) itemView.findViewById(R.id.subtitle);
-            bookmark = (ImageView) itemView.findViewById(R.id.bookmark);
+            title = itemView.findViewById(R.id.title);
+            subtitle = itemView.findViewById(R.id.subtitle);
+            bookmark = itemView.findViewById(R.id.bookmark);
             bookmarkLayout = itemView.findViewById(R.id.bookmarkClickLayout);
             bookmarkLayout.setOnClickListener(v -> listener.onBookmarkClick(getAdapterPosition()));
         }
@@ -209,7 +209,7 @@ public class UserTocAdapter extends TazListAdapter<UserTocItem, UserTocAdapter.V
 
         public ToplinkViewHolder(View itemView, UserTocAdapterClickListener clickListener) {
             super(itemView, clickListener);
-            title = (TextView) itemView.findViewById(R.id.title);
+            title = itemView.findViewById(R.id.title);
         }
     }
 

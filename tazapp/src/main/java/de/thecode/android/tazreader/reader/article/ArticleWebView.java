@@ -136,19 +136,19 @@ public class ArticleWebView extends WebView {
 
     public interface ArticleWebViewCallback {
 
-        public void onScrollStarted(ArticleWebView view);
+        void onScrollStarted(ArticleWebView view);
 
-        public void onScrollFinished(ArticleWebView view);
+        void onScrollFinished(ArticleWebView view);
 
-        public void onSwipeRight(ArticleWebView view, MotionEvent e1, MotionEvent e2);
+        void onSwipeRight(ArticleWebView view, MotionEvent e1, MotionEvent e2);
 
-        public void onSwipeLeft(ArticleWebView view, MotionEvent e1, MotionEvent e2);
+        void onSwipeLeft(ArticleWebView view, MotionEvent e1, MotionEvent e2);
 
-        public void onSwipeBottom(ArticleWebView view, MotionEvent e1, MotionEvent e2);
+        void onSwipeBottom(ArticleWebView view, MotionEvent e1, MotionEvent e2);
 
-        public void onSwipeTop(ArticleWebView view, MotionEvent e1, MotionEvent e2);
+        void onSwipeTop(ArticleWebView view, MotionEvent e1, MotionEvent e2);
 
-        public boolean onDoubleTap(MotionEvent e);
+        boolean onDoubleTap(MotionEvent e);
     }
 
     GestureDetector.SimpleOnGestureListener simpleOnGestureListener = new SimpleOnGestureListener() {

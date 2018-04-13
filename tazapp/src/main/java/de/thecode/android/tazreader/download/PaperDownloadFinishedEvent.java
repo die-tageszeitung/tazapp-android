@@ -5,14 +5,13 @@ package de.thecode.android.tazreader.download;
  */
 public class PaperDownloadFinishedEvent {
 
-    long paperId;
+    private final String bookId;
 
-    public PaperDownloadFinishedEvent(long paperId) {
-        this.paperId = paperId;
+    public PaperDownloadFinishedEvent(String bookId) {
+        this.bookId = bookId;
     }
 
-    public long getPaperId() {
-        return paperId;
+    public String getBookId() {
+        return bookId;
     }
-
 }

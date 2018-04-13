@@ -33,6 +33,7 @@ import de.mateware.dialog.listener.DialogButtonListener;
 import de.mateware.dialog.listener.DialogDismissListener;
 import de.mateware.snacky.Snacky;
 import de.thecode.android.tazreader.R;
+import de.thecode.android.tazreader.data.ITocItem;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Store;
 import de.thecode.android.tazreader.data.TazSettings;
@@ -40,10 +41,10 @@ import de.thecode.android.tazreader.dialog.HelpDialog;
 import de.thecode.android.tazreader.notifications.NotificationUtils;
 import de.thecode.android.tazreader.reader.article.ArticleFragment;
 import de.thecode.android.tazreader.reader.article.TopLinkFragment;
-import de.thecode.android.tazreader.data.ITocItem;
-import de.thecode.android.tazreader.reader.usertoc.UserTocFragment;
-import de.thecode.android.tazreader.reader.pagetoc.PageTocFragment;
 import de.thecode.android.tazreader.reader.page.PagesFragment;
+import de.thecode.android.tazreader.reader.pagetoc.PageTocFragment;
+import de.thecode.android.tazreader.reader.usertoc.UserTocFragment;
+import de.thecode.android.tazreader.utils.AsyncTaskListener;
 import de.thecode.android.tazreader.utils.BaseActivity;
 import de.thecode.android.tazreader.utils.StorageManager;
 import de.thecode.android.tazreader.utils.TintHelper;
@@ -56,12 +57,11 @@ import timber.log.Timber;
 
 @SuppressLint("RtlHardcoded")
 public class ReaderActivity extends BaseActivity
-        implements SettingsDialog.SettingsDialogCallback, DialogButtonListener, DialogDismissListener,
-        ReaderTtsFragment.ReaderTtsFragmentCallback {
+        implements SettingsDialog.SettingsDialogCallback, DialogButtonListener, DialogDismissListener {
 
     private AudioManager audioManager;
     private String       bookId;
-    private String       resourceKey;
+//    private String       resourceKey;
 
     public enum THEMES {
         normal("bgColorNormal"), sepia("bgColorSepia"), night("bgColorNight");
@@ -85,8 +85,8 @@ public class ReaderActivity extends BaseActivity
     private static final String TAG_FRAGMENT_PAGEINDEX      = "PageIndexFragment";
     public static final  String TAG_FRAGMENT_DIALOG_SETTING = "settingsDialog";
     public static final  String TAG_DIALOG_TTS_ERROR        = "ttsError";
-    public static final  String KEY_EXTRA_PAPER_ID          = "paperId";
-    public static final  String KEY_EXTRA_RESOURCE_KEY      = "resourceKey";
+    //    public static final  String KEY_EXTRA_PAPER_ID          = "paperId";
+//    public static final  String KEY_EXTRA_RESOURCE_KEY      = "resourceKey";
     public static final  String KEY_EXTRA_BOOK_ID           = "bookId";
 
     DrawerLayout mDrawerLayout;
@@ -98,14 +98,14 @@ public class ReaderActivity extends BaseActivity
     FragmentManager mFragmentManager;
     StorageManager  mStorage;
 
-    ReaderTtsFragment retainTtsFragment;
 
     UserTocFragment         mUserTocFragment;
     PageTocFragment         mPageTocFragment;
     AbstractContentFragment mContentFragment;
 
 
-    ReaderViewModel readerViewModel;
+    ReaderViewModel    readerViewModel;
+    ReaderTTSViewModel ttsViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -115,18 +115,20 @@ public class ReaderActivity extends BaseActivity
 
         bookId = getIntent().getStringExtra(KEY_EXTRA_BOOK_ID);
         if (TextUtils.isEmpty(bookId)) throw new IllegalStateException("Activity Reader has to be called with extra BookID");
-        resourceKey = getIntent().getStringExtra(KEY_EXTRA_RESOURCE_KEY);
-        if (TextUtils.isEmpty(resourceKey))
-            throw new IllegalStateException("Activity Reader has to be called with extra Resource Key");
-        long paperId = getIntent().getLongExtra(KEY_EXTRA_PAPER_ID, -1L);
-        if (paperId == -1L) throw new IllegalStateException("Activity Reader has to be called with extra PaperId");
+//        resourceKey = getIntent().getStringExtra(KEY_EXTRA_RESOURCE_KEY);
+//        if (TextUtils.isEmpty(resourceKey))
+//            throw new IllegalStateException("Activity Reader has to be called with extra Resource Key");
+//        long paperId = getIntent().getLongExtra(KEY_EXTRA_PAPER_ID, -1L);
+//        if (paperId == -1L) throw new IllegalStateException("Activity Reader has to be called with extra PaperId");
 
-        readerViewModel = ViewModelProviders.of(this, ReaderViewModel.createFactory(getApplication(), bookId, resourceKey))
+        readerViewModel = ViewModelProviders.of(this, ReaderViewModel.createFactory(getApplication(), bookId))
                                             .get(ReaderViewModel.class);
+        ttsViewModel = ViewModelProviders.of(this)
+                                         .get(ReaderTTSViewModel.class);
 
         mStorage = StorageManager.getInstance(this);
 
-        new NotificationUtils(this).removeDownloadNotification(paperId);
+        new NotificationUtils(this).removeDownloadNotification(bookId);
 
         setContentView(R.layout.activity_reader);
 
@@ -134,7 +136,7 @@ public class ReaderActivity extends BaseActivity
         setBackgroundColor(onGetBackgroundColor(TazSettings.getInstance(this)
                                                            .getPrefString(TazSettings.PREFKEY.THEME, "normal")));
 
-        mLoadingProgress = (ProgressBar) findViewById(R.id.loading);
+        mLoadingProgress = findViewById(R.id.loading);
         mLoadingProgress.setVisibility(View.VISIBLE);
 
         mDrawerLayoutPageIndex = findViewById(R.id.right_drawer);
@@ -143,32 +145,87 @@ public class ReaderActivity extends BaseActivity
                 R.dimen.pageindex_padding) * 2);
         mDrawerLayoutPageIndex.setLayoutParams(pageIndexLayoutParams);
 
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        mDrawerLayout = findViewById(R.id.drawer_layout);
         mDrawerLayoutIndex = findViewById(R.id.left_drawer);
-        mContentFrame = (FrameLayout) findViewById(R.id.content_frame);
+        mContentFrame = findViewById(R.id.content_frame);
 
         mFragmentManager = getSupportFragmentManager();
 
         audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        retainTtsFragment = ReaderTtsFragment.createOrRetainDataFragment(getSupportFragmentManager(), ReaderTtsFragment.class);
-        retainTtsFragment.setCallback(this);
-        if (retainTtsFragment.getTtsState() == ReaderTtsFragment.TTS.PLAYING) ttsPreparePlayingInActivty();
+//        retainTtsFragment = ReaderTtsFragment.createOrRetainDataFragment(getSupportFragmentManager(), ReaderTtsFragment.class);
+//        retainTtsFragment.setCallback(this);
+//        if (retainTtsFragment.getTtsState() == ReaderTtsFragment.TTS.PLAYING) ttsPreparePlayingInActivity();
 
         mContentFragment = (AbstractContentFragment) getSupportFragmentManager().findFragmentById(R.id.content_frame);
         loadIndexFragment();
         loadPageIndexFragment();
 
-        readerViewModel.getPaperLiveData()
-                       .observe(this, new Observer<Paper>() {
+
+        readerViewModel.getCurrentKeyLiveData()
+                       .observe(this, new Observer<ITocItem>() {
                            @Override
-                           public void onChanged(@Nullable Paper paper) {
-                               Timber.d("Paper loaded");
-                               mLoadingProgress.setVisibility(View.GONE);
-                               if (mContentFragment == null) {
-                                   loadContentFragment(readerViewModel.getCurrentKey());
+                           public void onChanged(@Nullable ITocItem iTocItem) {
+                               if (mContentFragment == null && iTocItem != null) {
+                                   mLoadingProgress.setVisibility(View.GONE);
+                                   loadContentFragment(iTocItem.getKey());
                                }
                            }
                        });
+
+        ttsViewModel.getLiveTtsState()
+                    .observe(this, new Observer<ReaderTTSViewModel.TTS>() {
+                        @Override
+                        public void onChanged(@Nullable ReaderTTSViewModel.TTS ttsState) {
+                            Timber.d("new tts state: %s", ttsState);
+                            switch (ttsState) {
+                                case IDLE:
+                                    audioManager.abandonAudioFocus(ttsViewModel.getAudioFocusChangeListener());
+                                    break;
+                                case PAUSED:
+                                    audioManager.abandonAudioFocus(ttsViewModel.getAudioFocusChangeListener());
+                                    showTtsSnackbar(getString(R.string.toast_tts_paused),
+                                                    getString(R.string.toast_tts_action_restart),
+                                                    new View.OnClickListener() {
+                                                        @Override
+                                                        public void onClick(View v) {
+                                                            ttsViewModel.stopTts();
+                                                            if (ttsPreparePlayingInActivity()) {
+                                                                ttsViewModel.restartTts();
+                                                            }
+                                                        }
+                                                    });
+
+                                    break;
+                            }
+                        }
+                    });
+
+        ttsViewModel.getLiveTtsError()
+                    .observe(this, new Observer<ReaderTTSViewModel.TTSERROR>() {
+                        @Override
+                        public void onChanged(@Nullable ReaderTTSViewModel.TTSERROR ttserror) {
+                            if (ttserror != null) {
+                                Timber.w("error: %s", ttserror);
+                                StringBuilder message = new StringBuilder(getString(R.string.dialog_tts_error));
+                                switch (ttserror) {
+                                    case LANG_MISSING_DATA:
+                                        message.append(" ")
+                                               .append(getString(R.string.dialog_tts_error_lang_missing_data));
+                                        break;
+                                    case LANG_NOT_SUPPORTED:
+                                        message.append(" ")
+                                               .append(getString(R.string.dialog_tts_error_lang_not_supported));
+                                        break;
+                                }
+                                new Dialog.Builder().setMessage(message.toString())
+                                                    .setNeutralButton(R.string.dialog_tts_error_settings)
+                                                    .setPositiveButton()
+                                                    .buildSupport()
+                                                    .show(getSupportFragmentManager(), TAG_DIALOG_TTS_ERROR);
+
+                            }
+                        }
+                    });
 
     }
 
@@ -200,7 +257,7 @@ public class ReaderActivity extends BaseActivity
 
     @Override
     protected void onDestroy() {
-        audioManager.abandonAudioFocus(retainTtsFragment.getAudioFocusChangeListener());
+        audioManager.abandonAudioFocus(ttsViewModel.getAudioFocusChangeListener());
         super.onDestroy();
     }
 
@@ -209,7 +266,7 @@ public class ReaderActivity extends BaseActivity
         mUserTocFragment = (UserTocFragment) mFragmentManager.findFragmentByTag(TAG_FRAGMENT_INDEX);
         if (mUserTocFragment == null) {
             Timber.i("Did not find IndexFragment, create one ...");
-            mUserTocFragment = ReaderBaseFragment.newInstance(UserTocFragment.class,bookId,resourceKey);
+            mUserTocFragment = ReaderBaseFragment.newInstance(UserTocFragment.class, bookId);
             FragmentTransaction indexesFragmentTransaction = mFragmentManager.beginTransaction();
             indexesFragmentTransaction.replace(R.id.left_drawer, mUserTocFragment, TAG_FRAGMENT_INDEX);
             indexesFragmentTransaction.commit();
@@ -223,7 +280,7 @@ public class ReaderActivity extends BaseActivity
         mPageTocFragment = (PageTocFragment) mFragmentManager.findFragmentByTag(TAG_FRAGMENT_PAGEINDEX);
         if (mPageTocFragment == null) {
             Timber.i("Did not find PageIndexFragment, create one ...");
-            mPageTocFragment = ReaderBaseFragment.newInstance(PageTocFragment.class,bookId,resourceKey);
+            mPageTocFragment = ReaderBaseFragment.newInstance(PageTocFragment.class, bookId);
             FragmentTransaction indexesFragmentTransaction = mFragmentManager.beginTransaction();
             indexesFragmentTransaction.replace(R.id.right_drawer, mPageTocFragment, TAG_FRAGMENT_PAGEINDEX);
             indexesFragmentTransaction.commit();
@@ -264,11 +321,11 @@ public class ReaderActivity extends BaseActivity
     private void loadArticleFragment(ITocItem indexItem, DIRECTIONS direction, String position) {
 
 
-        if (TextUtils.isEmpty(position)) position = readerViewModel.getStoreRepository()
-                                                                   .getStore(readerViewModel.getPaper()
-                                                                                            .getBookId(),
-                                                                             Paper.STORE_KEY_POSITION_IN_ARTICLE + "_" + indexItem.getKey())
-                                                                   .getValue("0");
+//        if (TextUtils.isEmpty(position)) position = readerViewModel.getStoreRepository()
+//                                                                   .getStore(readerViewModel.getPaper()
+//                                                                                            .getBookId(),
+//                                                                             Paper.STORE_KEY_POSITION_IN_ARTICLE + "_" + indexItem.getKey())
+//                                                                   .getValue("0");
 
         FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
 
@@ -277,9 +334,9 @@ public class ReaderActivity extends BaseActivity
         //if (oldContentFragment != null) fragmentTransaction.remove(oldContentFragment);
 
         if (indexItem.getType() == ITocItem.Type.TOPLINK) {
-            mContentFragment = TopLinkFragment.newInstance(bookId, resourceKey, indexItem.getKey());
+            mContentFragment = TopLinkFragment.newInstance(bookId, indexItem.getKey());
         } else {
-            mContentFragment = ArticleFragment.newInstance(bookId, resourceKey, indexItem.getKey(), position);
+            mContentFragment = ArticleFragment.newInstance(bookId, indexItem.getKey(), position);
         }
 
 
@@ -320,7 +377,7 @@ public class ReaderActivity extends BaseActivity
             }
             if (!(mContentFragment instanceof PagesFragment)) {
                 FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
-                mContentFragment = ReaderBaseFragment.newInstance(PagesFragment.class, bookId, resourceKey);
+                mContentFragment = ReaderBaseFragment.newInstance(PagesFragment.class, bookId);
 //                mContentFragment = PagesFragment.newInstance(/*indexItem.getKey()*/);
                 fragmentTransaction.replace(R.id.content_frame, mContentFragment);
                 fragmentTransaction.commit();
@@ -343,7 +400,8 @@ public class ReaderActivity extends BaseActivity
         int prevPosition = readerViewModel.getPaper()
                                           .getArticleCollectionOrderPosition(readerViewModel.getCurrentKey()) - 1;
 
-        if (readerViewModel.getUserTocLiveData().isFilterBookmarks()) {
+        if (readerViewModel.getUserTocLiveData()
+                           .isFilterBookmarks()) {
             while (prevPosition >= 0) {
                 ITocItem item = readerViewModel.getPaper()
                                                .getPlist()
@@ -366,28 +424,29 @@ public class ReaderActivity extends BaseActivity
 
     public boolean onLoadNextArticle(DIRECTIONS fromDirection, String position) {
 
-        int nextPositiion = readerViewModel.getPaper()
-                                           .getArticleCollectionOrderPosition(readerViewModel.getCurrentKey()) + 1;
+        int nextPosition = readerViewModel.getPaper()
+                                          .getArticleCollectionOrderPosition(readerViewModel.getCurrentKey()) + 1;
 
-        if (readerViewModel.getUserTocLiveData().isFilterBookmarks()) {
-            while (nextPositiion < readerViewModel.getPaper()
-                                                  .getArticleCollectionSize()) {
+        if (readerViewModel.getUserTocLiveData()
+                           .isFilterBookmarks()) {
+            while (nextPosition < readerViewModel.getPaper()
+                                                 .getArticleCollectionSize()) {
                 ITocItem item = readerViewModel.getPaper()
                                                .getPlist()
                                                .getIndexItem(readerViewModel.getPaper()
-                                                                            .getArticleCollectionOrderKey(nextPositiion));
+                                                                            .getArticleCollectionOrderKey(nextPosition));
                 if (item != null) {
                     if (item.isBookmarked()) break;
                 }
-                nextPositiion++;
+                nextPosition++;
             }
         }
 
-        if (nextPositiion < readerViewModel.getPaper()
-                                           .getArticleCollectionSize()) {
+        if (nextPosition < readerViewModel.getPaper()
+                                          .getArticleCollectionSize()) {
 
             loadArticleFragment(readerViewModel.getPaper()
-                                               .getArticleCollectionOrderKey(nextPositiion), fromDirection, position);
+                                               .getArticleCollectionOrderKey(nextPosition), fromDirection, position);
             return true;
         }
         return false;
@@ -420,26 +479,38 @@ public class ReaderActivity extends BaseActivity
         Timber.d("%s", item.getKey());
         item.setBookmark(!item.isBookmarked());
 
-        readerViewModel.getUserTocLiveData().onBookmarkChanged(item);
+        readerViewModel.getUserTocLiveData()
+                       .onBookmarkChanged(item);
 
 //        if (mUserTocFragment != null) mUserTocFragment.onBookmarkChange(item.getKey());
-        ITocItem currentItem = readerViewModel.getCurrentKeyLiveData().getValue();
+        ITocItem currentItem = readerViewModel.getCurrentKeyLiveData()
+                                              .getValue();
         if (currentItem.equals(item)) {
             if (mContentFragment instanceof ArticleFragment) ((ArticleFragment) mContentFragment).initialBookmark();
         }
-        Store bookmarkStore = readerViewModel.getStoreRepository()
-                                             .getStore(readerViewModel.getPaper()
-                                                                      .getBookId(), Paper.STORE_KEY_BOOKMARKS);
-        JSONArray bookmarks = readerViewModel.getPaper()
-                                             .getBookmarkJson();
-        if (bookmarks.length() > 0) {
-            bookmarkStore.setValue(bookmarks.toString());
-            readerViewModel.getStoreRepository()
-                           .saveStore(bookmarkStore);
-        } else {
-            readerViewModel.getStoreRepository()
-                           .deleteStore(bookmarkStore);
-        }
+        new AsyncTaskListener<JSONArray, Void>(new AsyncTaskListener.OnExecute<JSONArray, Void>() {
+            @Override
+            public Void execute(JSONArray... jsonArrays) {
+                JSONArray jsonArray = jsonArrays[0];
+
+                Store bookmarkStore = readerViewModel.getStoreRepository()
+                                                     .getStore(readerViewModel.getPaper()
+                                                                              .getBookId(), Paper.STORE_KEY_BOOKMARKS);
+
+                if (jsonArray.length() > 0) {
+                    bookmarkStore.setValue(jsonArray.toString());
+                    readerViewModel.getStoreRepository()
+                                   .saveStore(bookmarkStore);
+                } else {
+                    readerViewModel.getStoreRepository()
+                                   .deleteStore(bookmarkStore);
+                }
+
+                return null;
+            }
+        }).execute(readerViewModel.getPaper()
+                                  .getBookmarkJson());
+
     }
 
     @Override
@@ -504,7 +575,7 @@ public class ReaderActivity extends BaseActivity
 
     public interface ConfigurationChangeListener {
 
-        public void onConfigurationChange(String key, String value);
+        void onConfigurationChange(String key, String value);
     }
 
 
@@ -591,43 +662,62 @@ public class ReaderActivity extends BaseActivity
 
     }
 
-    @Override
-    public void onTtsStateChanged(ReaderTtsFragment.TTS newState) {
-        Timber.d(newState.name());
-        if (mContentFragment != null) mContentFragment.onTtsStateChanged(newState);
-    }
+//    @Override
+//    public void onTtsStateChanged(ReaderTtsFragment.TTS newState) {
+//        Timber.d(newState.name());
+//        if (mContentFragment != null) mContentFragment.onTtsStateChanged(newState);
+//    }
+//
+//    @Override
+//    public void onTtsInitError(ReaderTtsFragment.TTSERROR error) {
+//        Timber.w("error: %s", error);
+//        StringBuilder message = new StringBuilder(getString(R.string.dialog_tts_error));
+//        switch (error) {
+//            case LANG_MISSING_DATA:
+//                message.append(" ")
+//                       .append(getString(R.string.dialog_tts_error_lang_missing_data));
+//                break;
+//            case LANG_NOT_SUPPORTED:
+//                message.append(" ")
+//                       .append(getString(R.string.dialog_tts_error_lang_not_supported));
+//                break;
+//        }
+//        new Dialog.Builder().setMessage(message.toString())
+//                            .setNeutralButton(R.string.dialog_tts_error_settings)
+//                            .setPositiveButton()
+//                            .buildSupport()
+//                            .show(getSupportFragmentManager(), TAG_DIALOG_TTS_ERROR);
+//    }
+//
+//    @Override
+//    public void onTtsStopped() {
+//        audioManager.abandonAudioFocus(retainTtsFragment.getAudioFocusChangeListener());
+//        if (retainTtsFragment.getTtsState() == ReaderTtsFragment.TTS.PAUSED) {
+//            showTtsSnackbar(getString(R.string.toast_tts_paused),
+//                            getString(R.string.toast_tts_action_restart),
+//                            new View.OnClickListener() {
+//                                @Override
+//                                public void onClick(View v) {
+//                                    retainTtsFragment.stopTts();
+//                                    if (ttsPreparePlayingInActivity()) {
+//                                        retainTtsFragment.restartTts();
+//                                    }
+//                                }
+//                            });
+//        }
+//
+//    }
 
-    @Override
-    public void onTtsInitError(ReaderTtsFragment.TTSERROR error) {
-        Timber.w("error: %s", error);
-        StringBuilder message = new StringBuilder(getString(R.string.dialog_tts_error));
-        switch (error) {
-            case LANG_MISSING_DATA:
-                message.append(" ")
-                       .append(getString(R.string.dialog_tts_error_lang_missing_data));
-                break;
-            case LANG_NOT_SUPPORTED:
-                message.append(" ")
-                       .append(getString(R.string.dialog_tts_error_lang_not_supported));
-                break;
-        }
-        new Dialog.Builder().setMessage(message.toString())
-                            .setNeutralButton(R.string.dialog_tts_error_settings)
-                            .setPositiveButton()
-                            .buildSupport()
-                            .show(getSupportFragmentManager(), TAG_DIALOG_TTS_ERROR);
-    }
 
+    public boolean ttsPreparePlayingInActivity() {
 
-    public boolean ttsPreparePlayingInActivty() {
-
-        int request = audioManager.requestAudioFocus(retainTtsFragment.getAudioFocusChangeListener(),
+        int request = audioManager.requestAudioFocus(ttsViewModel.getAudioFocusChangeListener(),
                                                      TextToSpeech.Engine.DEFAULT_STREAM,
                                                      AudioManager.AUDIOFOCUS_GAIN);
         switch (request) {
             case AudioManager.AUDIOFOCUS_REQUEST_GRANTED:
 
-                switch (retainTtsFragment.getTtsState()) {
+                switch (ttsViewModel.getTtsState()) {
                     case DISABLED:
                     case IDLE:
                         showTtsSnackbar(makeTtsPlayingSpan(getString(R.string.toast_tts_started)));
@@ -638,8 +728,8 @@ public class ReaderActivity extends BaseActivity
                                         new View.OnClickListener() {
                                             @Override
                                             public void onClick(View v) {
-                                                retainTtsFragment.stopTts();
-                                                retainTtsFragment.restartTts();
+                                                ttsViewModel.stopTts();
+                                                ttsViewModel.restartTts();
                                             }
                                         });
                 }
@@ -676,56 +766,36 @@ public class ReaderActivity extends BaseActivity
     }
 
 
-    @Override
-    public void onTtsStopped() {
-        audioManager.abandonAudioFocus(retainTtsFragment.getAudioFocusChangeListener());
-        if (retainTtsFragment.getTtsState() == ReaderTtsFragment.TTS.PAUSED) {
-            showTtsSnackbar(getString(R.string.toast_tts_paused),
-                            getString(R.string.toast_tts_action_restart),
-                            new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    retainTtsFragment.stopTts();
-                                    if (ttsPreparePlayingInActivty()) {
-                                        retainTtsFragment.restartTts();
-                                    }
-                                }
-                            });
-        }
-
-    }
-
-
-    public ReaderTtsFragment.TTS getTtsState() {
-        Timber.d("%s", retainTtsFragment.getTtsState());
-        return retainTtsFragment.getTtsState();
-    }
+//    public ReaderTtsFragment.TTS getTtsState() {
+//        Timber.d("%s", retainTtsFragment.getTtsState());
+//        return retainTtsFragment.getTtsState();
+//    }
 
     public void speak(@NonNull String id, CharSequence text) {
         if (TazSettings.getInstance(this)
                        .getPrefBoolean(TazSettings.PREFKEY.TEXTTOSPEACH, false)) {
-            switch (getTtsState()) {
+            switch (ttsViewModel.getTtsState()) {
                 case DISABLED:
-                    if (ttsPreparePlayingInActivty()) {
-                        retainTtsFragment.initTts(this, id, text);
+                    if (ttsPreparePlayingInActivity()) {
+                        ttsViewModel.initTts(id, text);
                     }
                     break;
                 case PLAYING:
-                    retainTtsFragment.pauseTts();
+                    ttsViewModel.pauseTts();
                     break;
                 case IDLE:
-                    if (ttsPreparePlayingInActivty()) {
-                        retainTtsFragment.flushTts();
-                        retainTtsFragment.prepareTts(id, text);
-                        retainTtsFragment.startTts();
+                    if (ttsPreparePlayingInActivity()) {
+                        ttsViewModel.flushTts();
+                        ttsViewModel.prepareTts(id, text);
+                        ttsViewModel.startTts();
                     }
                     break;
                 case PAUSED:
-                    if (ttsPreparePlayingInActivty()) {
-                        if (id.equals(retainTtsFragment.getUtteranceBaseId())) {
-                            retainTtsFragment.startTts();
+                    if (ttsPreparePlayingInActivity()) {
+                        if (id.equals(ttsViewModel.getUtteranceBaseId())) {
+                            ttsViewModel.startTts();
                         } else {
-                            retainTtsFragment.flushTts();
+                            ttsViewModel.flushTts();
                             speak(id, text);
                         }
                     }

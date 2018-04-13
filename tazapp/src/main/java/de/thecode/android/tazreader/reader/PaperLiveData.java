@@ -7,9 +7,11 @@ import android.text.TextUtils;
 
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.PaperRepository;
+import de.thecode.android.tazreader.data.Resource;
+import de.thecode.android.tazreader.data.ResourceRepository;
 import de.thecode.android.tazreader.data.StoreRepository;
 import de.thecode.android.tazreader.data.ITocItem;
-import de.thecode.android.tazreader.utils.AsyncTaskWithExecption;
+import de.thecode.android.tazreader.utils.AsyncTaskWithException;
 import de.thecode.android.tazreader.utils.StorageManager;
 
 import org.json.JSONArray;
@@ -33,24 +35,28 @@ public class PaperLiveData extends LiveData<Paper> {
     private final PaperRepository paperRepository;
     private final StorageManager  storageManager;
     private final StoreRepository storeRepository;
+    private final ResourceRepository resourceRepository;
+    private Resource resource;
 
     public PaperLiveData(Context context, String bookId) {
         this.bookId = bookId;
         paperRepository = PaperRepository.getInstance(context);
         storageManager = StorageManager.getInstance(context);
         storeRepository = StoreRepository.getInstance(context);
+        resourceRepository = ResourceRepository.getInstance(context);
         loadData();
     }
 
     @SuppressLint("StaticFieldLeak")
     private void loadData() {
-        new AsyncTaskWithExecption<Void, Void, Paper>() {
+        new AsyncTaskWithException<Void, Void, Paper>() {
 
             @Override
             public Paper doInBackgroundWithException(Void... voids) throws Exception {
                 Paper paper = paperRepository.getPaperWithBookId(bookId);
                 if (paper == null) throw new Paper.PaperNotFoundException();
                 //paper.parsePlist(mStorage.getPaperFile(paper));
+                resource = resourceRepository.getResourceForPaper(paper);
                 paper.parsePlist(new File(storageManager.getPaperDirectory(paper), Paper.CONTENT_PLIST_FILENAME));
                 String bookmarkJsonString = storeRepository.getStore(bookId,Paper.STORE_KEY_BOOKMARKS)
                                                            .getValue();
@@ -134,5 +140,9 @@ public class PaperLiveData extends LiveData<Paper> {
                 setValue(paper);
             }
         }.execute();
+    }
+
+    public Resource getResource() {
+        return resource;
     }
 }

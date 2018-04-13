@@ -1,17 +1,15 @@
 package de.thecode.android.tazreader.reader;
 
-
-import android.content.Context;
+import android.app.Application;
+import android.arch.lifecycle.AndroidViewModel;
 import android.media.AudioManager;
 import android.os.Build;
-import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
 import android.support.annotation.NonNull;
 
-import de.mateware.datafragment.DataFragmentBase;
+import de.thecode.android.tazreader.utils.SingleLiveEvent;
 
-import java.lang.ref.WeakReference;
 import java.text.BreakIterator;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,10 +19,7 @@ import java.util.regex.Pattern;
 
 import timber.log.Timber;
 
-/**
- * Created by mate on 15.03.2016.
- */
-public class ReaderTtsFragment extends DataFragmentBase implements TextToSpeech.OnInitListener {
+public class ReaderTTSViewModel extends AndroidViewModel implements TextToSpeech.OnInitListener{
 
     public enum TTS {DISABLED, INIT, IDLE, PLAYING, PAUSED}
 
@@ -39,34 +34,26 @@ public class ReaderTtsFragment extends DataFragmentBase implements TextToSpeech.
     private ArrayList<String> sentencesOrderOriginal;
     private HashMap<String, String> sentences = new HashMap<>();
 
-    private WeakReference<ReaderTtsFragmentCallback> callback;
+    private SingleLiveEvent<TTS> liveTtsState = new SingleLiveEvent<>();
+    private SingleLiveEvent<TTSERROR> liveTtsError = new SingleLiveEvent<>();
 
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setRetainInstance(true);
-    }
-
-    @Override
-    public void onDestroy() {
-        if (tts != null) {
-            tts.stop();
-            tts.shutdown();
+    private AudioManager.OnAudioFocusChangeListener audioFocusChangeListener = focusChange -> {
+        Timber.d("focusChange: %s", focusChange);
+        if (focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT || focusChange == AudioManager.AUDIOFOCUS_LOSS) {
+            if (getTtsState() == TTS.PLAYING) pauseTts();
         }
-        super.onDestroy();
+    };
+
+    public ReaderTTSViewModel(@NonNull Application application) {
+        super(application);
     }
 
-    public void setCallback(ReaderTtsFragmentCallback callback) {
-        this.callback = new WeakReference<>(callback);
+    public SingleLiveEvent<TTS> getLiveTtsState() {
+        return liveTtsState;
     }
 
-    private boolean hasCallback() {
-        return callback != null && callback.get() != null;
-    }
-
-    private ReaderTtsFragmentCallback getCallback() {
-        return callback.get();
+    public SingleLiveEvent<TTSERROR> getLiveTtsError() {
+        return liveTtsError;
     }
 
     @Override
@@ -75,10 +62,8 @@ public class ReaderTtsFragment extends DataFragmentBase implements TextToSpeech.
             int result = tts.setLanguage(Locale.GERMAN);
             if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
                 setTtsState(TTS.DISABLED);
-                if (hasCallback()) {
-                    if (result == TextToSpeech.LANG_MISSING_DATA) getCallback().onTtsInitError(TTSERROR.LANG_MISSING_DATA);
-                    else if (result == TextToSpeech.LANG_NOT_SUPPORTED) getCallback().onTtsInitError(TTSERROR.LANG_NOT_SUPPORTED);
-                }
+                if (result == TextToSpeech.LANG_MISSING_DATA) liveTtsError.setValue(TTSERROR.LANG_MISSING_DATA);
+                else if (result == TextToSpeech.LANG_NOT_SUPPORTED) liveTtsError.setValue(TTSERROR.LANG_NOT_SUPPORTED);
                 tts.shutdown();
             } else {
                 tts.setOnUtteranceProgressListener(ttsListener);
@@ -90,17 +75,15 @@ public class ReaderTtsFragment extends DataFragmentBase implements TextToSpeech.
             }
         } else {
             setTtsState(TTS.DISABLED);
-            if (hasCallback()) {
-                getCallback().onTtsInitError(TTSERROR.UNKNOWN);
-            }
+            liveTtsError.setValue(TTSERROR.UNKNOWN);
         }
     }
 
-    public void initTts(Context context, String utteranceBaseId, CharSequence text) {
+    public void initTts(String utteranceBaseId, CharSequence text) {
         if (getTtsState() == TTS.DISABLED) {
             setTtsState(TTS.INIT);
             prepareTts(utteranceBaseId, text);
-            tts = new TextToSpeech(context.getApplicationContext(), this);
+            tts = new TextToSpeech(getApplication(), this);
         }
     }
 
@@ -108,7 +91,7 @@ public class ReaderTtsFragment extends DataFragmentBase implements TextToSpeech.
         TTS oldState = ttsState;
         ttsState = newState;
         if (!newState.equals(oldState)) {
-            if (hasCallback()) getCallback().onTtsStateChanged(ttsState);
+            liveTtsState.postValue(ttsState);
         }
     }
 
@@ -202,7 +185,8 @@ public class ReaderTtsFragment extends DataFragmentBase implements TextToSpeech.
         } else {
             setTtsState(TTS.IDLE);
         }
-        if (hasCallback()) getCallback().onTtsStopped();
+
+        //if (hasCallback()) getCallback().onTtsStopped();
     }
 
     public void stopTts() {
@@ -252,36 +236,14 @@ public class ReaderTtsFragment extends DataFragmentBase implements TextToSpeech.
             if (getTtsState() == TTS.PLAYING) sentencesOrder.remove(utteranceId);
             if (sentencesOrder.size() == 0) {
                 setTtsState(TTS.IDLE);
-                if (hasCallback()) getCallback().onTtsStopped();
+                //if (hasCallback()) getCallback().onTtsStopped();
             }
         }
     };
 
-    AudioManager.OnAudioFocusChangeListener audioFocusChangeListener = new AudioManager.OnAudioFocusChangeListener() {
-        @Override
-        public void onAudioFocusChange(int focusChange) {
-            Timber.d("focusChange: %s", focusChange);
-            if (focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT || focusChange == AudioManager.AUDIOFOCUS_LOSS) {
-                if (getTtsState() == TTS.PLAYING) pauseTts();
-            }
-        }
-    };
 
     public AudioManager.OnAudioFocusChangeListener getAudioFocusChangeListener() {
         return audioFocusChangeListener;
     }
 
-
-    public interface ReaderTtsFragmentCallback {
-        void onTtsStateChanged(TTS newState);
-
-        void onTtsInitError(TTSERROR error);
-
-
-        //boolean ttsPreparePlayingInActivty();
-
-        void onTtsStopped();
-
-
-    }
 }

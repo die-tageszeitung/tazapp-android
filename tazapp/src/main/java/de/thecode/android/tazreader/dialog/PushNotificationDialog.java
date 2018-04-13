@@ -1,6 +1,6 @@
 package de.thecode.android.tazreader.dialog;
 
-import android.content.Context;
+import android.content.res.AssetManager;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -10,15 +10,18 @@ import android.webkit.WebView;
 
 import de.mateware.dialog.DialogCustomView;
 import de.thecode.android.tazreader.data.Paper;
+import de.thecode.android.tazreader.data.PaperRepository;
 import de.thecode.android.tazreader.data.Resource;
 import de.thecode.android.tazreader.data.ResourceRepository;
 import de.thecode.android.tazreader.push.PushNotification;
+import de.thecode.android.tazreader.utils.AsyncTaskListener;
+import de.thecode.android.tazreader.utils.Charsets;
 import de.thecode.android.tazreader.utils.StorageManager;
-
-import org.apache.commons.io.IOUtils;
+import de.thecode.android.tazreader.utils.StreamUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Created by mate on 25.07.2017.
@@ -27,11 +30,22 @@ import java.io.IOException;
 public class PushNotificationDialog extends DialogCustomView {
 
     private static final String ARG_PUSH_NOTIFICATION = "pushNotification";
-    private PushNotification pushNotification;
+    private PushNotification   pushNotification;
+    private WebView            mWebView;
+    private PaperRepository    paperRepository;
+    private ResourceRepository resourceRepository;
+    private StorageManager     storageManager;
+    private AssetManager       assetManager;
 
     @Override
     public View getView(LayoutInflater inflater, ViewGroup parent) {
+        paperRepository = PaperRepository.getInstance(inflater.getContext());
+        resourceRepository = ResourceRepository.getInstance(inflater.getContext());
+        storageManager = StorageManager.getInstance(inflater.getContext());
+        assetManager = inflater.getContext()
+                               .getAssets();
         WebView webView = new WebView(inflater.getContext());
+        mWebView = webView;
         webView.getSettings()
                .setJavaScriptEnabled(true);
 
@@ -40,13 +54,15 @@ public class PushNotificationDialog extends DialogCustomView {
             if (!TextUtils.isEmpty(pushNotification.getUrl())) {
                 webView.loadUrl(pushNotification.getUrl());
             } else {
-                webView.loadDataWithBaseURL("file:///android_asset/push/",
-                                            getHtml(inflater.getContext()),
-                                            "text/html",
-                                            "utf-8",
-                                            null);
                 webView.getSettings()
                        .setAllowFileAccess(true);
+                new AsyncTaskListener<Void, Void>(new AsyncTaskListener.OnExecute<Void, Void>() {
+                    @Override
+                    public Void execute(Void... voids) {
+                        mWebView.loadDataWithBaseURL("file:///android_asset/push/", getHtml(), "text/html", "utf-8", null);
+                        return null;
+                    }
+                }).execute();
             }
         }
         return webView;
@@ -67,23 +83,24 @@ public class PushNotificationDialog extends DialogCustomView {
 
     }
 
-    private String getHtml(Context context) {
+    private String getHtml() {
 
 
         String html;
 
         try {
-            html = IOUtils.toString(context.getAssets()
-                                           .open("push/template.html"), "UTF-8");
+            InputStream inputStream = assetManager.open("push/template.html");
+            html = StreamUtils.toString(inputStream, Charsets.UTF_8);
+            inputStream.close();
+
+//            html = IOUtils.toString(assetManager.open("push/template.html"), "UTF-8");
 
             String cssfilepath = "file:///android_asset/push/simple.css";
-            Paper latestPaper = Paper.getLatestPaper(context);
+            Paper latestPaper = paperRepository.getLatestPaper();
             if (latestPaper != null) {
-                Resource latestResource = ResourceRepository.getInstance(context)
-                                                            .getWithKey(latestPaper.getResource());
+                Resource latestResource = resourceRepository.getWithKey(latestPaper.getResource());
                 if (latestResource != null && latestResource.isDownloaded()) {
-                    File resourceDir = StorageManager.getInstance(context)
-                                                     .getResourceDirectory(latestResource.getKey());
+                    File resourceDir = storageManager.getResourceDirectory(latestResource.getKey());
                     File cssfile = new File(resourceDir, "res/css/notification.css");
                     if (cssfile.exists()) {
                         cssfilepath = "file://" + resourceDir.getAbsolutePath() + "/res/css/notification.css";

@@ -15,8 +15,10 @@ import android.webkit.WebViewClient;
 import de.mateware.dialog.DialogCustomView;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
+import de.thecode.android.tazreader.data.PaperRepository;
 import de.thecode.android.tazreader.data.Resource;
 import de.thecode.android.tazreader.data.ResourceRepository;
+import de.thecode.android.tazreader.utils.AsyncTaskListener;
 import de.thecode.android.tazreader.utils.StorageManager;
 
 import java.io.File;
@@ -48,50 +50,27 @@ public class HelpDialog extends DialogCustomView {
 
     private static final String ARG_HELPPAGE   = "helpPage";
     private static final String ARG_CURRENTURL = "currentUrl";
+    private static final String ARG_BASEURL    = "baseUrl";
 
     String  baseUrlPath;
     WebView webView;
     String  currentUrl;
+
+    private PaperRepository    paperRepository;
+    private ResourceRepository resourceRepository;
+    private StorageManager     storageManager;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (savedInstanceState != null) {
             currentUrl = savedInstanceState.getString(ARG_CURRENTURL);
+            baseUrlPath = savedInstanceState.getString(ARG_BASEURL);
         }
     }
 
     @Override
     public View getView(final LayoutInflater inflater, ViewGroup parent) {
-        if (TextUtils.isEmpty(currentUrl)) {
-            String helpPage = getArguments().getString(ARG_HELPPAGE);
-
-
-            List<Paper> papers = Paper.getAllPapers(inflater.getContext());
-
-            baseUrlPath = "file:///android_asset/help/";
-
-            for (Paper paper : papers) {
-                Resource latestResource = ResourceRepository.getInstance(inflater.getContext())
-                                                            .getWithKey(paper.getResource());
-                if (latestResource != null && latestResource.isDownloaded()) {
-
-                    File latestResourceDir = StorageManager.getInstance(getContext())
-                                                           .getResourceDirectory(latestResource.getKey());
-                    File helpFileDir = null;
-                    for (String helpFileSubdirPath : HELP_RESOURCE_SUBDIRS) {
-                        helpFileDir = new File(latestResourceDir, helpFileSubdirPath);
-                        if (helpFileDir.exists()) break;
-                    }
-                    if (helpFileDir != null) {
-                        baseUrlPath = "file://" + helpFileDir.getAbsolutePath() + "/";
-                        break;
-                    }
-                }
-            }
-
-            currentUrl = baseUrlPath + helpPage;
-        }
 
         View view = inflater.inflate(R.layout.dialog_help, parent, false);
         webView = view.findViewById(R.id.help_web_view);
@@ -112,14 +91,53 @@ public class HelpDialog extends DialogCustomView {
                 return true;
             }
         });
-        webView.loadUrl(currentUrl);
+
+
+        if (TextUtils.isEmpty(currentUrl)) {
+            paperRepository = PaperRepository.getInstance(view.getContext());
+            resourceRepository = ResourceRepository.getInstance(view.getContext());
+            storageManager = StorageManager.getInstance(view.getContext());
+            new AsyncTaskListener<Void, String>(aVoid -> {
+                List<Paper> papers = paperRepository.getAllPapers();
+                String result = "file:///android_asset/help/";
+                for (Paper paper : papers) {
+                    Resource latestResource = resourceRepository.getWithKey(paper.getResource());
+                    if (latestResource != null && latestResource.isDownloaded()) {
+                        File latestResourceDir = storageManager.getResourceDirectory(latestResource.getKey());
+                        File helpFileDir = null;
+                        for (String helpFileSubdirPath : HELP_RESOURCE_SUBDIRS) {
+                            helpFileDir = new File(latestResourceDir, helpFileSubdirPath);
+                            if (helpFileDir.exists()) break;
+                        }
+                        if (helpFileDir != null) {
+                            result = "file://" + helpFileDir.getAbsolutePath() + "/";
+                            break;
+                        }
+                    }
+                }
+                return result;
+            }, baseUrl -> {
+                baseUrlPath = baseUrl;
+                String helpPage = getArguments().getString(ARG_HELPPAGE);
+                currentUrl = baseUrlPath + helpPage;
+                loadUrl();
+            }).execute();
+        } else {
+            loadUrl();
+        }
 
         return view;
+    }
+
+    private void loadUrl() {
+        Timber.d("loading url %s", currentUrl);
+        webView.loadUrl(currentUrl);
     }
 
     @Override
     public Bundle onSaveInstanceState(Bundle outState) {
         if (webView != null) outState.putString(ARG_CURRENTURL, webView.getUrl());
+        outState.putString(ARG_BASEURL, baseUrlPath);
         return super.onSaveInstanceState(outState);
     }
 
@@ -142,4 +160,5 @@ public class HelpDialog extends DialogCustomView {
             addBundle(bundle);
         }
     }
+
 }

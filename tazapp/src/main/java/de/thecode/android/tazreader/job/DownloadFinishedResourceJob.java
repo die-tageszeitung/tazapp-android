@@ -35,7 +35,7 @@ public class DownloadFinishedResourceJob extends Job {
 
     public static final  String TAG              = BuildConfig.FLAVOR + "_" + "download_finished_resource_job";
     private static final String ARG_RESOURCE_KEY = "resource_key";
-
+    private ResourceRepository resourceRepository;
 
     @NonNull
     @Override
@@ -43,7 +43,8 @@ public class DownloadFinishedResourceJob extends Job {
         PersistableBundleCompat extras = params.getExtras();
         String resourceKey = extras.getString(ARG_RESOURCE_KEY, null);
         if (!TextUtils.isEmpty(resourceKey)) {
-            Resource resource = ResourceRepository.getInstance(getContext()).getWithKey(resourceKey);
+            resourceRepository = ResourceRepository.getInstance(getContext());
+            Resource resource = resourceRepository.getWithKey(resourceKey);
             Timber.i("%s", resource);
             if (resource != null && resource.isDownloading()) {
                 StorageManager storageManager = StorageManager.getInstance(getContext());
@@ -65,24 +66,16 @@ public class DownloadFinishedResourceJob extends Job {
     }
 
     private void saveResource(Resource resource, Exception e) {
+        resource.setDownloadId(0);
+
         if (e == null) {
-            resource.setDownloadId(0);
             resource.setDownloaded(true);
-            getContext().getContentResolver()
-                        .update(Uri.withAppendedPath(Resource.CONTENT_URI, resource.getKey()),
-                                resource.getContentValues(),
-                                null,
-                                null);
-            EventBus.getDefault()
-                    .post(new ResourceDownloadEvent(resource.getKey()));
         } else {
-            resource.setDownloadId(0);
-            resource.setDownloaded(false);
             Timber.e(e);
-            //AnalyticsWrapper.getInstance().logException(e);
-            EventBus.getDefault()
-                    .post(new ResourceDownloadEvent(resource.getKey(), e));
         }
+        resourceRepository.saveResource(resource);
+        EventBus.getDefault()
+                .post(new ResourceDownloadEvent(resource.getKey(),e));
     }
 
     public static void scheduleJob(Resource resource) {

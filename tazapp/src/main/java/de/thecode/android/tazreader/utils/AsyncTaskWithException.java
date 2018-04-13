@@ -7,7 +7,7 @@ import android.os.AsyncTask;
 /**
  * Created by mate on 20.04.2015.
  */
-public abstract class AsyncTaskWithExecption<Params, Progress, Result> extends AsyncTask<Params, Progress, Result> {
+public abstract class AsyncTaskWithException<Params, Progress, Result> extends AsyncTask<Params, Progress, Result> {
 
     private Exception exception;
 

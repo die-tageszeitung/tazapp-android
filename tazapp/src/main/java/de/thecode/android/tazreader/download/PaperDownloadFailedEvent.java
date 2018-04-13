@@ -1,19 +1,21 @@
 package de.thecode.android.tazreader.download;
 
+import de.thecode.android.tazreader.data.Paper;
+
 /**
  * Created by mate on 20.03.2015.
  */
 public class PaperDownloadFailedEvent {
-    long paperId;
-    Exception exception;
+    final Paper     paper;
+    final Exception exception;
 
-    public PaperDownloadFailedEvent(long paperId, Exception exception) {
-        this.paperId = paperId;
+    public PaperDownloadFailedEvent(Paper paper, Exception exception) {
+        this.paper = paper;
         this.exception = exception;
     }
 
-    public long getPaperId() {
-        return paperId;
+    public Paper getPaper() {
+        return paper;
     }
 
     public Exception getException() {

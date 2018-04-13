@@ -17,9 +17,7 @@ public class ResourceDownloadEvent {
     }
 
     public boolean isSuccessful() {
-        if (exception == null)
-            return true;
-        return false;
+        return exception == null;
     }
 
     public Exception getException() {

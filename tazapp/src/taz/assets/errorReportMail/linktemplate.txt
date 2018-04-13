@@ -1,1 +1,0 @@
-mailto:app@taz.de?subject=Fehler%20in%20taz.app%3A%20%5BIhr%20Betreff%5D&body={body}

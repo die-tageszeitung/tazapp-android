@@ -2,7 +2,6 @@ package de.thecode.android.tazreader.importer;
 
 
 import android.content.ContentResolver;
-import android.content.ContentUris;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
@@ -12,7 +11,7 @@ import android.text.TextUtils;
 import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.download.UnzipPaperTask;
-import de.thecode.android.tazreader.utils.AsyncTaskWithExecption;
+import de.thecode.android.tazreader.utils.AsyncTaskWithException;
 import de.thecode.android.tazreader.utils.BaseFragment;
 import de.thecode.android.tazreader.utils.ReadableException;
 import de.thecode.android.tazreader.utils.StorageManager;
@@ -90,7 +89,7 @@ public class ImportWorkerFragment extends BaseFragment {
                 onError(dataUri, e, file, false);
             }
         } else {
-            new AsyncTaskWithExecption<Object, Void, File>() {
+            new AsyncTaskWithException<Object, Void, File>() {
 
                 Uri dataUri;
 
@@ -143,20 +142,20 @@ public class ImportWorkerFragment extends BaseFragment {
 
                 @Override
                 protected void onPostSuccess(File file) {
-                    try {
-                        stepTwoCheckType(dataUri, file, true);
-                    } catch (IOException e) {
-                        onError(dataUri, e, file, true);
-                    }
+//                    try {
+//                        stepTwoCheckType(dataUri, file, true);
+//                    } catch (IOException e) {
+//                        onError(dataUri, e, file, true);
+//                    }
                 }
             }.execute(getActivity().getApplicationContext(), dataUri);
         }
     }
 
-    private void stepTwoCheckType(Uri dataUri, File file, boolean deleteFile) throws IOException {
+    private void stepTwoCheckType(Uri dataUri, File file, boolean deleteFile) {
 
 
-        new AsyncTaskWithExecption<Object, Void, ImportMetadata>() {
+        new AsyncTaskWithException<Object, Void, ImportMetadata>() {
 
             File file;
             Uri dataUri;
@@ -187,46 +186,46 @@ public class ImportWorkerFragment extends BaseFragment {
 
     private void stepThreeCheckDatabase(Uri dataUri, ImportMetadata data, File file, boolean deleteFile) {
 
-        if (data != null) {
-            try {
-
-                Paper paper = Paper.getPaperWithBookId(getActivity().getApplicationContext(), data.getBookId());
-                if (paper == null) throw new Paper.PaperNotFoundException();
-                if (paper.isDownloaded()) {
-
-                    if (noUserCallback) throw new Paper.PaperNotFoundException();
-                    else {
-                        if (callback != null) callback.onImportAlreadyExists(dataUri, data, file, deleteFile);
-                        else {
-                            onFinished(dataUri, file, deleteFile);
-                        }
-                    }
-                } else {
-                    throw new Paper.PaperNotFoundException();
-                }
-
-            } catch (Paper.PaperNotFoundException e) {
-                stepFourStartImport(dataUri, data, file, deleteFile);
-            }
-
-        }
+//        if (data != null) {
+//            try {
+//
+//                Paper paper = Paper.getPaperWithBookId(getActivity().getApplicationContext(), data.getBookId());
+//                if (paper == null) throw new Paper.PaperNotFoundException();
+//                if (paper.isDownloaded()) {
+//
+//                    if (noUserCallback) throw new Paper.PaperNotFoundException();
+//                    else {
+//                        if (callback != null) callback.onImportAlreadyExists(dataUri, data, file, deleteFile);
+//                        else {
+//                            onFinished(dataUri, file, deleteFile);
+//                        }
+//                    }
+//                } else {
+//                    throw new Paper.PaperNotFoundException();
+//                }
+//
+//            } catch (Paper.PaperNotFoundException e) {
+//                stepFourStartImport(dataUri, data, file, deleteFile);
+//            }
+//
+//        }
     }
 
     public void stepFourStartImport(Uri dataUri, ImportMetadata data, File file, boolean deleteFile) {
 
-        try {
-            switch (data.getType()) {
-                case TAZANDROID:
-                    importTazAndroid(dataUri, data, file, deleteFile);
-                    break;
-                case TPAPER:
-                    importTpaper(dataUri, data, file, deleteFile);
-                    break;
-            }
-
-        } catch (IOException | ImportException  e) {
-            onError(dataUri, e, file, deleteFile);
-        }
+//        try {
+//            switch (data.getType()) {
+//                case TAZANDROID:
+//                    importTazAndroid(dataUri, data, file, deleteFile);
+//                    break;
+//                case TPAPER:
+//                    importTpaper(dataUri, data, file, deleteFile);
+//                    break;
+//            }
+//
+//        } catch (IOException | ImportException  e) {
+//            onError(dataUri, e, file, deleteFile);
+//        }
     }
 
 
@@ -250,134 +249,142 @@ public class ImportWorkerFragment extends BaseFragment {
     }
 
 
-    private void importTazAndroid(Uri dataUri, ImportMetadata metadata, File cacheFile, boolean deleteFile) throws ImportException, IOException {
+    private void importTazAndroid(Uri dataUri, ImportMetadata metadata, File cacheFile, boolean deleteFile) {
 
-        StorageManager storage = StorageManager.getInstance(getActivity());
-
-        Paper paper;
-        try {
-            paper = Paper.getPaperWithBookId(getActivity().getApplicationContext(), metadata.getBookId());
-            if (paper == null) throw new Paper.PaperNotFoundException();
-            storage.deletePaperDir(paper);
-        } catch (Paper.PaperNotFoundException e) {
-            paper = new Paper();
-            paper.setBookId(metadata.getBookId());
-            paper.setDate(metadata.getDate());
-        }
-        if (!TextUtils.isEmpty(metadata.getArchive())) {
-            paper.setLink(Uri.parse(BuildConfig.ARCHIVEURL)
-                             .buildUpon()
-                             .appendEncodedPath(metadata.getArchive())
-                             .build()
-                             .toString());
-            paper.setHasupdate(true);
-        }
-        paper.setImage(null);
-        paper.setImageHash(null);
-        if (!preventImportFlag) paper.setImported(true);
-        paper.setDownloaded(false);
-        paper.setFileHash(null);
-//        paper.setResourceUrl(null);
-//        paper.setResourceFileHash(null);
-        paper.setResource(null);
-        if (paper.getId() != null) {
-            int affected = getActivity().getApplicationContext()
-                                        .getContentResolver()
-                                        .update(ContentUris.withAppendedId(Paper.CONTENT_URI, paper.getId()), paper.getContentValues(), null, null);
-            if (affected == 0) {
-                throw new ImportException("Could not update " + metadata.getBookId());
-            }
-        } else {
-            long newId = ContentUris.parseId(getActivity().getApplicationContext()
-                                                          .getContentResolver()
-                                                          .insert(Paper.CONTENT_URI, paper.getContentValues()));
-            if (newId == -1) throw new ImportException("Could not insert " + metadata.getBookId());
-            else paper.setId(newId);
-        }
-        importedPaperStack.add(paper);
-        onFinished(dataUri, cacheFile, deleteFile);
+//        StorageManager storage = StorageManager.getInstance(getActivity());
+//
+//        Paper paper;
+//        try {
+//            paper = Paper.getPaperWithBookId(getActivity().getApplicationContext(), metadata.getBookId());
+//            if (paper == null) throw new Paper.PaperNotFoundException();
+//            storage.deletePaperDir(paper);
+//        } catch (Paper.PaperNotFoundException e) {
+//            paper = new Paper();
+//            paper.setBookId(metadata.getBookId());
+//            paper.setDate(metadata.getDate());
+//        }
+//        if (!TextUtils.isEmpty(metadata.getArchive())) {
+//            paper.setLink(Uri.parse(BuildConfig.ARCHIVEURL)
+//                             .buildUpon()
+//                             .appendEncodedPath(metadata.getArchive())
+//                             .build()
+//                             .toString());
+//            paper.setHasUpdate(true);
+//        }
+//        paper.setImage(null);
+//        paper.setImageHash(null);
+//        if (!preventImportFlag) paper.setImported(true);
+//        paper.setDownloaded(false);
+//        paper.setFileHash(null);
+////        paper.setResourceUrl(null);
+////        paper.setResourceFileHash(null);
+//        paper.setResource(null);
+//
+//        getActivity().getApplicationContext()
+//                     .getContentResolver()
+//                     .insert(Paper.CONTENT_URI, paper.getContentValues());
+//
+////        if (!TextUtils.isEmpty(paper.getBookId())) {
+////            int affected = getActivity().getApplicationContext()
+////                                        .getContentResolver()
+////                                        .update(paper.getContentUri(), paper.getContentValues(), null, null);
+////            if (affected == 0) {
+////                throw new ImportException("Could not update " + metadata.getBookId());
+////            }
+////        } else {
+////            long newId = ContentUris.parseId(getActivity().getApplicationContext()
+////                                                          .getContentResolver()
+////                                                          .insert(Paper.CONTENT_URI, paper.getContentValues()));
+////            if (newId == -1) throw new ImportException("Could not insert " + metadata.getBookId());
+////            else paper.setId(newId);
+////        }
+//        importedPaperStack.add(paper);
+//        onFinished(dataUri, cacheFile, deleteFile);
     }
 
-    private void importTpaper(Uri dataUri, ImportMetadata metadata, File cacheFile, boolean deleteFile) throws IOException {
-        StorageManager storage = StorageManager.getInstance(getActivity());
-
-        Paper paper;
-
-        try {
-            paper = Paper.getPaperWithBookId(getActivity().getApplicationContext(), metadata.getBookId());
-            if (paper == null) throw new Paper.PaperNotFoundException();
-            storage.deletePaperDir(paper);
-        } catch (Paper.PaperNotFoundException e) {
-            paper = new Paper();
-            paper.setBookId(metadata.getBookId());
-            paper.setDate(metadata.getDate());
-
-        }
-        paper.setImage(null);
-        paper.setImageHash(null);
-        if (!preventImportFlag) paper.setImported(true);
-        paper.setDownloaded(true);
-        paper.setFileHash(null);
-//        paper.setResourceUrl(null);
-//        paper.setResourceFileHash(null);
-        paper.setResource(null);
-
-
-        new UnzipPaperTask(paper, cacheFile, storage.getPaperDirectory(paper), deleteFile) {
-            Context context;
-            Uri dataUri;
-            File cacheFile;
-            boolean deleteFile;
-
-            @Override
-            public File doInBackgroundWithException(Object... params) throws Exception {
-                context = (Context) params[0];
-                dataUri = (Uri) params[1];
-                cacheFile = (File) params[2];
-                deleteFile = (boolean) params[3];
-                return super.doInBackgroundWithException(params);
-            }
-
-            @Override
-            public void onPostError(Exception exception, File sourceZipFile) {
-                onError(dataUri, exception, cacheFile, deleteFile);
-            }
-
-            @Override
-            protected void onPostSuccess(File destinationFile) {
-                super.onPostSuccess(destinationFile);
-                try {
-                    Paper paper = getUnzipPaper().getPaper();
-                    paper.parseMissingAttributes(false);
-                    if (paper.getId() != null) {
-                        int affected = getActivity().getApplicationContext()
-                                                    .getContentResolver()
-                                                    .update(ContentUris.withAppendedId(Paper.CONTENT_URI, paper.getId()), paper.getContentValues(), null, null);
-                        if (affected == 0) {
-                            throw new ImportException("Could not update " + paper.getBookId());
-                        }
-                    } else {
-                        long newId = ContentUris.parseId(getActivity().getApplicationContext()
-                                                                      .getContentResolver()
-                                                                      .insert(Paper.CONTENT_URI, paper.getContentValues()));
-                        if (newId == -1) throw new ImportException("Could not insert " + paper.getBookId());
-                        else paper.setId(newId);
-                    }
-                    importedPaperStack.add(paper);
-                    onFinished(dataUri, cacheFile, deleteFile);
-                } catch (ImportException e) {
-                    onError(dataUri, e, cacheFile, deleteFile);
-                }
-            }
-        }.execute(getActivity().getApplicationContext(), dataUri, cacheFile, deleteFile);
+    private void importTpaper(Uri dataUri, ImportMetadata metadata, File cacheFile, boolean deleteFile) {
+//        StorageManager storage = StorageManager.getInstance(getActivity());
+//
+//        Paper paper;
+//
+//        try {
+//            paper = Paper.getPaperWithBookId(getActivity().getApplicationContext(), metadata.getBookId());
+//            if (paper == null) throw new Paper.PaperNotFoundException();
+//            storage.deletePaperDir(paper);
+//        } catch (Paper.PaperNotFoundException e) {
+//            paper = new Paper();
+//            paper.setBookId(metadata.getBookId());
+//            paper.setDate(metadata.getDate());
+//
+//        }
+//        paper.setImage(null);
+//        paper.setImageHash(null);
+//        if (!preventImportFlag) paper.setImported(true);
+//        paper.setDownloaded(true);
+//        paper.setFileHash(null);
+////        paper.setResourceUrl(null);
+////        paper.setResourceFileHash(null);
+//        paper.setResource(null);
+//
+//
+//        new UnzipPaperTask(paper, cacheFile, storage.getPaperDirectory(paper), deleteFile) {
+//            Context context;
+//            Uri dataUri;
+//            File cacheFile;
+//            boolean deleteFile;
+//
+//            @Override
+//            public File doInBackgroundWithException(Object... params) throws Exception {
+//                context = (Context) params[0];
+//                dataUri = (Uri) params[1];
+//                cacheFile = (File) params[2];
+//                deleteFile = (boolean) params[3];
+//                return super.doInBackgroundWithException(params);
+//            }
+//
+//            @Override
+//            public void onPostError(Exception exception, File sourceZipFile) {
+//                onError(dataUri, exception, cacheFile, deleteFile);
+//            }
+//
+//            @Override
+//            protected void onPostSuccess(File destinationFile) {
+//                super.onPostSuccess(destinationFile);
+////                try {
+//                    Paper paper = getUnzipPaper().getPaper();
+//                    paper.parseMissingAttributes(false);
+//                    getActivity().getApplicationContext()
+//                                 .getContentResolver()
+//                                 .insert(Paper.CONTENT_URI, paper.getContentValues());
+////                    if (paper.getId() != null) {
+////                        int affected = getActivity().getApplicationContext()
+////                                                    .getContentResolver()
+////                                                    .update(ContentUris.withAppendedId(Paper.CONTENT_URI, paper.getId()), paper.getContentValues(), null, null);
+////                        if (affected == 0) {
+////                            throw new ImportException("Could not update " + paper.getBookId());
+////                        }
+////                    } else {
+////                        long newId = ContentUris.parseId(getActivity().getApplicationContext()
+////                                                                      .getContentResolver()
+////                                                                      .insert(Paper.CONTENT_URI, paper.getContentValues()));
+////                        if (newId == -1) throw new ImportException("Could not insert " + paper.getBookId());
+////                        else paper.setId(newId);
+////                    }
+//                    importedPaperStack.add(paper);
+//                    onFinished(dataUri, cacheFile, deleteFile);
+////                } catch (ImportException e) {
+////                    onError(dataUri, e, cacheFile, deleteFile);
+////                }
+//            }
+//        }.execute(getActivity().getApplicationContext(), dataUri, cacheFile, deleteFile);
     }
 
 
     public interface ImportRetainFragmentCallback {
-        public void onImportRetainFragmentCreate(ImportWorkerFragment importRetainWorkerFragment);
-        public void onFinishedImporting(List<Paper> papersToDownload);
-        public void onErrorWhileImport(Uri dataUri, Exception e);
-        public void onImportAlreadyExists(Uri dataUri, ImportMetadata metadata, File cacheFile, boolean deleteFile);
+        void onImportRetainFragmentCreate(ImportWorkerFragment importRetainWorkerFragment);
+        void onFinishedImporting(List<Paper> papersToDownload);
+        void onErrorWhileImport(Uri dataUri, Exception e);
+        void onImportAlreadyExists(Uri dataUri, ImportMetadata metadata, File cacheFile, boolean deleteFile);
     }
 
 

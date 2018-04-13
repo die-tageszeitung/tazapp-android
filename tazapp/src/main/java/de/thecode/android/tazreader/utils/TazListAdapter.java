@@ -1,11 +1,12 @@
 package de.thecode.android.tazreader.utils;
 
 import android.support.annotation.NonNull;
-import android.support.v7.recyclerview.extensions.AsyncDifferConfig;
-import android.support.v7.recyclerview.extensions.AsyncListDiffer;
-import android.support.v7.util.AdapterListUpdateCallback;
 import android.support.v7.util.DiffUtil;
 import android.support.v7.widget.RecyclerView;
+
+import de.thecode.android.tazreader.utils.extendedasyncdiffer.ExtendedAsyncDifferConfig;
+import de.thecode.android.tazreader.utils.extendedasyncdiffer.ExtendedAdapterListUpdateCallback;
+import de.thecode.android.tazreader.utils.extendedasyncdiffer.ExtendedAsyncListDiffer;
 
 import java.util.List;
 
@@ -15,20 +16,24 @@ import java.util.List;
 
 public abstract class TazListAdapter<T, VH extends RecyclerView.ViewHolder> extends RecyclerView.Adapter<VH> {
 
-    private final AsyncListDiffer<T> mHelper;
+    private final ExtendedAsyncListDiffer<T> mHelper;
 
-    @SuppressWarnings("unused")
     public TazListAdapter(@NonNull DiffUtil.ItemCallback<T> diffCallback) {
-        mHelper = new AsyncListDiffer<>(new AdapterListUpdateCallback(this),
-                                        new AsyncDifferConfig.Builder<>(diffCallback).build());
+        mHelper = new ExtendedAsyncListDiffer<>(new ExtendedAdapterListUpdateCallback(this),
+                                                new ExtendedAsyncDifferConfig.Builder<>(diffCallback).build());
     }
 
-    @SuppressWarnings("unused")
-    public TazListAdapter(@NonNull AsyncDifferConfig<T> config) {
-        mHelper = new AsyncListDiffer<>(new AdapterListUpdateCallback(this), config);
+    public TazListAdapter(@NonNull DiffUtil.ItemCallback<T> diffCallback, ExtendedAdapterListUpdateCallback.OnFirstInsertedListener firstInsertedListener) {
+        mHelper = new ExtendedAsyncListDiffer<>(new ExtendedAdapterListUpdateCallback(this, firstInsertedListener),
+                                                new ExtendedAsyncDifferConfig.Builder<>(diffCallback).build());
     }
 
-    public AsyncListDiffer<T> getHelper() {
+
+    public TazListAdapter(@NonNull ExtendedAsyncDifferConfig<T> config) {
+        mHelper = new ExtendedAsyncListDiffer<>(new ExtendedAdapterListUpdateCallback(this), config);
+    }
+
+    public ExtendedAsyncListDiffer<T> getHelper() {
         return mHelper;
     }
 
@@ -57,7 +62,9 @@ public abstract class TazListAdapter<T, VH extends RecyclerView.ViewHolder> exte
                       .size();
     }
 
-    public int indexOf(T item){
-        return mHelper.getCurrentList().indexOf(item);
+    public int indexOf(T item) {
+        return mHelper.getCurrentList()
+                      .indexOf(item);
     }
+
 }

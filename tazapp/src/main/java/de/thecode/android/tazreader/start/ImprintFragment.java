@@ -19,13 +19,11 @@ import java.lang.ref.WeakReference;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class ImprintFragment extends BaseFragment {
+public class ImprintFragment extends StartBaseFragment {
 
 
     public static final String DIALOG_TECHINFO  = "dialogTechInfo";
     public static final String DIALOG_ERRORMAIL = "dialogErrorMail";
-
-    private WeakReference<IStartCallback> callback;
 
     public ImprintFragment() {
         // Required empty public constructor
@@ -34,13 +32,12 @@ public class ImprintFragment extends BaseFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-        callback = new WeakReference<>((IStartCallback) getActivity());
-        if (hasCallback()) getCallback().onUpdateDrawer(this);
+        getStartActivity().onUpdateDrawer(this);
 
 
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.start_imprint, container, false);
-        Button techInfoButton = (Button) view.findViewById(R.id.buttonTechInfo);
+        Button techInfoButton = view.findViewById(R.id.buttonTechInfo);
         techInfoButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -64,18 +61,10 @@ public class ImprintFragment extends BaseFragment {
             }
         });
 
-        WebView webView = (WebView) view.findViewById(R.id.webView);
+        WebView webView = view.findViewById(R.id.webView);
         webView.loadUrl("file:///android_asset/imprint.html");
 
 
         return view;
-    }
-
-    private boolean hasCallback() {
-        return callback.get() != null;
-    }
-
-    private IStartCallback getCallback() {
-        return callback.get();
     }
 }

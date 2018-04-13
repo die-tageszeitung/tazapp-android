@@ -5,8 +5,15 @@ import android.app.Activity;
 import android.content.Intent;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v7.preference.Preference;
 import android.text.TextUtils;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+
+import com.takisoft.fix.support.v7.preference.PreferenceFragmentCompatDividers;
 
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.TazSettings;
@@ -17,10 +24,19 @@ import timber.log.Timber;
  * Created by mate on 08.08.2017.
  */
 
-public abstract class PreferenceFragmentCompat extends com.takisoft.fix.support.v7.preference.PreferenceFragmentCompat {
+public abstract class PreferenceFragmentCompat extends PreferenceFragmentCompatDividers {
 
     public static final int REQUESTCODE_RINGTONE = 7491;
     public static String lastRingtoneRequestForKey;
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, @Nullable Bundle savedInstanceState) {
+        try {
+            return super.onCreateView(inflater, container, savedInstanceState);
+        } finally {
+            setDividerPreferences(DIVIDER_PADDING_CHILD | DIVIDER_CATEGORY_AFTER_LAST | DIVIDER_CATEGORY_BETWEEN);
+        }
+    }
 
     @Override
     public boolean onPreferenceTreeClick(Preference preference) {
@@ -44,7 +60,7 @@ public abstract class PreferenceFragmentCompat extends com.takisoft.fix.support.
         if (requestCode == REQUESTCODE_RINGTONE) {
             if (resultCode == Activity.RESULT_OK) {
                 if (data.hasExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI)) {
-                    Uri ringtoneUri = (Uri) data.getParcelableExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI);
+                    Uri ringtoneUri = data.getParcelableExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI);
                     if (!TextUtils.isEmpty(lastRingtoneRequestForKey)) {
                         TazSettings.getInstance(getContext()).setNotificationSoundUri(lastRingtoneRequestForKey,ringtoneUri);
                         Preference preference = findPreference(lastRingtoneRequestForKey);

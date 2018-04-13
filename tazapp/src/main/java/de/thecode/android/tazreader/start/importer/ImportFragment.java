@@ -1,4 +1,4 @@
-package de.thecode.android.tazreader.start;
+package de.thecode.android.tazreader.start.importer;
 
 
 import android.Manifest;
@@ -22,7 +22,7 @@ import android.widget.TextView;
 import de.mateware.dialog.Dialog;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.importer.ImportActivity;
-import de.thecode.android.tazreader.utils.BaseFragment;
+import de.thecode.android.tazreader.start.StartBaseFragment;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
@@ -32,7 +32,7 @@ import timber.log.Timber;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class ImportFragment extends BaseFragment implements ImportDataRetainFragment.ImportDataCallback {
+public class ImportFragment extends StartBaseFragment implements ImportDataRetainFragment.ImportDataCallback {
 
     public static final String DIALOG_PERMISSION_WRITE = "DialogPermissionWrite";
     private static int PERMISSION_REQUEST_IMPORT_WRITE = 345;
@@ -42,10 +42,9 @@ public class ImportFragment extends BaseFragment implements ImportDataRetainFrag
 
     ImportRecyclerAdapter adapter;
 
-    private WeakReference<IStartCallback> callback;
-    private ImportDataRetainFragment dataFragment;
-    private boolean isShowingExplenationDialog;
-    private boolean isRequestinPermission;
+    private ImportDataRetainFragment      dataFragment;
+    private boolean                       isShowingExplenationDialog;
+    private boolean                       isRequestinPermission;
 
     public ImportFragment() {
     }
@@ -54,8 +53,7 @@ public class ImportFragment extends BaseFragment implements ImportDataRetainFrag
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        callback = new WeakReference<>((IStartCallback) getActivity());
-        if (hasCallback()) getCallback().onUpdateDrawer(this);
+        getStartActivity().onUpdateDrawer(this);
         dataFragment = ImportDataRetainFragment.findOrCreateRetainFragment(getFragmentManager(), this);
         isShowingExplenationDialog = savedInstanceState != null && savedInstanceState.getBoolean(ARG_IS_SHOWING_EXPLENATION_DIALOG, false);
         isRequestinPermission = savedInstanceState != null && savedInstanceState.getBoolean(ARG_IS_REQUESTING_PERMISSION, false);
@@ -123,20 +121,12 @@ public class ImportFragment extends BaseFragment implements ImportDataRetainFrag
         }
     }
 
-    private boolean hasCallback() {
-        return callback.get() != null;
-    }
-
-    private IStartCallback getCallback() {
-        return callback.get();
-    }
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.start_import, container, false);
 
-        RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.recycler);
+        RecyclerView recyclerView = view.findViewById(R.id.recycler);
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         recyclerView.setItemAnimator(new DefaultItemAnimator());
@@ -275,8 +265,8 @@ public class ImportFragment extends BaseFragment implements ImportDataRetainFrag
         public ViewHolder(View itemView) {
             super(itemView);
             itemView.setClickable(true);
-            text = (TextView) itemView.findViewById(R.id.text);
-            image = (ImageView) itemView.findViewById(R.id.image);
+            text = itemView.findViewById(R.id.text);
+            image = itemView.findViewById(R.id.image);
         }
 
         public void setClickListener(View.OnClickListener onClickListener) {
@@ -310,7 +300,7 @@ public class ImportFragment extends BaseFragment implements ImportDataRetainFrag
 
         public FileViewHolder(View itemView) {
             super(itemView);
-            textDetail = (TextView) itemView.findViewById(R.id.textDetail);
+            textDetail = itemView.findViewById(R.id.textDetail);
         }
     }
 

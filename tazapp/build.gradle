@@ -1,14 +1,16 @@
 def versionMajor = 3
-def versionMinor = 5
-def versionPatch = 1
-def versionBuild = 1
+def versionMinor = 6
+def versionPatch = 0
+def versionBuild = 0
 
-def supportLibVer = "27.1.0"
+def supportLibVer = "27.1.1"
 def buildToolsVer = "27.0.3"
-def firebaseVer = "11.8.0"
+def firebaseVer = "12.0.1"
 def compileSdkVer = 27
 def targetSdkVer = 27
 def minSdkVer = 15
+
+def apkUrl = '"https://dl.taz.de/down/apk/"'
 
 def tazPlist = '"https://dl.taz.de/tpaperIssue.plist"'
 def tazPlistArchiv = '"https://dl.taz.de/tpaperIssue.plist?start=%1$s&end=%2$s"'
@@ -20,6 +22,7 @@ def tazResourceUrl = '"https://dl.taz.de/ressourcen"'
 def tazArchiveUrl = '"https://dl.taz.de/tpaperArchiv"'
 def tazPushRestUrl = '"https://dl.taz.de/tpaperPushInfo"'
 def tazStagingPushRestUrl = '"https://dl.taz.de/tpaperPushInfoTest"'
+def tazErrorMail = '"app@taz.de"'
 
 def lmdPlist = '"https://dl.monde-diplomatique.de/tpaperIssue.plist"'
 def lmdPlistArchiv = '"https://dl.monde-diplomatique.de/tpaperIssue.plist?start=%1$s&end=%2$s"'
@@ -31,6 +34,7 @@ def lmdResourceUrl = '"https://dl.monde-diplomatique.de/ressourcen"'
 def lmdArchiveUrl = '"https://dl.monde-diplomatique.de/tpaperArchiv"'
 def lmdPushRestUrl = '"https://dl.monde-diplomatique.de/tpaperPushInfo"'
 def lmdStagingPushRestUrl = '"https://dl.monde-diplomatique.de/tpaperPushInfoTest"'
+def lmdErrorMail = '"app@monde-diplomatique.de"'
 
 def plistUrl = "PLISTURL"
 def plistArchiveUrl = "PLISTARCHIVURL"
@@ -39,6 +43,7 @@ def checkLoginUrl = "CHECKLOGINURL"
 def resourceUrl = "RESOURCEURL"
 def archiveUrl = "ARCHIVEURL"
 def pushRestUrl = "PUSHRESTURL"
+def errorMail = "ERRORMAIL"
 
 apply plugin: 'idea'
 
@@ -133,9 +138,11 @@ android {
         versionName "${versionMajor}.${versionMinor}.${versionPatch}"
         javaCompileOptions {
             annotationProcessorOptions {
-                arguments = [eventBusIndex: 'de.thecode.android.tazreader.eventbus.EventBusIndex']
+                arguments = [eventBusIndex        : 'de.thecode.android.tazreader.eventbus.EventBusIndex',
+                             "room.schemaLocation": "$projectDir/schemas".toString()]
             }
         }
+        buildConfigField 'String', 'APKURL', apkUrl
     }
     splits {
         abi {
@@ -197,6 +204,8 @@ android {
             buildConfigField 'String', resourceUrl, tazResourceUrl
             buildConfigField 'String', archiveUrl, tazArchiveUrl
             buildConfigField 'String', pushRestUrl, tazPushRestUrl
+            buildConfigField 'String', pushRestUrl, tazPushRestUrl
+            buildConfigField 'String', errorMail, tazErrorMail
         }
         lmd {
             dimension "publication"
@@ -209,6 +218,7 @@ android {
             buildConfigField 'String', resourceUrl, lmdResourceUrl
             buildConfigField 'String', archiveUrl, lmdArchiveUrl
             buildConfigField 'String', pushRestUrl, lmdPushRestUrl
+            buildConfigField 'String', errorMail, lmdErrorMail
         }
     }
 
@@ -242,7 +252,7 @@ android {
     applicationVariants.all { variant ->
         variant.outputs.each { output ->
             def baseAbiVersionCode = abiCodes.get(output.getFilter(com.android.build.OutputFile.ABI))
-            output.versionCodeOverride = baseAbiVersionCode * 100000000 + variant.versionCode;
+            output.versionCodeOverride = baseAbiVersionCode * 100000000 + variant.versionCode
             output.versionNameOverride = variant.versionName + " " + abiCodes.find { it.value == baseAbiVersionCode }.key
         }
     }
@@ -285,40 +295,48 @@ repositories {
 }
 
 dependencies {
-    compile "com.android.support:appcompat-v7:$supportLibVer"
-    compile "com.android.support:recyclerview-v7:$supportLibVer"
-    compile "com.android.support:design:$supportLibVer"
-    compile "com.android.support:support-v4:$supportLibVer"
-    compile "com.android.support:cardview-v7:$supportLibVer"
-    compile "com.takisoft.fix:preference-v7:$supportLibVer" + ".0"
-    compile 'com.squareup.okhttp3:okhttp:3.10.0'
-    compile 'com.squareup.okhttp3:logging-interceptor:3.10.0'
-    compile 'com.squareup.picasso:picasso:2.5.2'
-    compile 'com.jakewharton.picasso:picasso2-okhttp3-downloader:1.1.0'
-    compile 'com.googlecode.plist:dd-plist:1.8'
-    compile 'com.commonsware.cwac:provider:0.2.3'
-    compile 'org.greenrobot:eventbus:3.0.0'
+    implementation "com.android.support:appcompat-v7:$supportLibVer"
+    implementation "com.android.support:recyclerview-v7:$supportLibVer"
+    implementation "com.android.support:design:$supportLibVer"
+    implementation "com.android.support:support-v4:$supportLibVer"
+    implementation "com.android.support:cardview-v7:$supportLibVer"
+    implementation "com.takisoft.fix:preference-v7:$supportLibVer" + ".0"
+    implementation 'com.squareup.okhttp3:okhttp:3.10.0'
+    implementation 'com.squareup.okhttp3:logging-interceptor:3.10.0'
+    implementation 'com.squareup.picasso:picasso:2.5.2'
+    implementation 'com.jakewharton.picasso:picasso2-okhttp3-downloader:1.1.0'
+    implementation 'com.googlecode.plist:dd-plist:1.8'
+    implementation 'com.commonsware.cwac:provider:0.5.3'
+    implementation 'org.greenrobot:eventbus:3.0.0'
     annotationProcessor 'org.greenrobot:eventbus-annotation-processor:3.0.1'
-    debugCompile 'com.facebook.stetho:stetho:1.5.0'
-    debugCompile 'com.facebook.stetho:stetho-okhttp3:1.5.0'
-    stagingCompile 'com.facebook.stetho:stetho:1.5.0'
-    stagingCompile 'com.facebook.stetho:stetho-okhttp3:1.5.0'
-    compile 'com.github.jrejaud:ViewPagerIndicator2:0.0.1'
-    compile 'com.jakewharton.timber:timber:4.5.1'
-    compile 'com.yqritc:recyclerview-flexibledivider:1.2.9'
-    compile('com.crashlytics.sdk.android:crashlytics:2.9.1@aar') {
-        transitive = true;
+    debugImplementation 'com.facebook.stetho:stetho:1.5.0'
+    debugImplementation 'com.facebook.stetho:stetho-okhttp3:1.5.0'
+    stagingImplementation 'com.facebook.stetho:stetho:1.5.0'
+    stagingImplementation 'com.facebook.stetho:stetho-okhttp3:1.5.0'
+    implementation 'com.github.jrejaud:ViewPagerIndicator2:0.0.1'
+    implementation 'com.jakewharton.timber:timber:4.5.1'
+    implementation 'com.yqritc:recyclerview-flexibledivider:1.2.9'
+    implementation('com.crashlytics.sdk.android:crashlytics:2.9.1@aar') {
+        transitive = true
     }
-    compile 'net.ypresto.timbertreeutils:timbertreeutils:1.0.0'
-    compile 'com.scottyab:aescrypt:0.0.1'
-    compile 'com.github.matecode:Snacky:1.0.3'
-    compile 'com.github.matecode:DataFragment:1.0.2'
-    compile 'com.github.matecode:androiddialog:1.2.32'
-    compile "com.google.firebase:firebase-messaging:$firebaseVer"
-    compile 'com.evernote:android-job:1.2.5'
-    compile 'com.google.code.gson:gson:2.8.2'
+    implementation 'net.ypresto.timbertreeutils:timbertreeutils:1.0.0'
+    implementation 'com.scottyab:aescrypt:0.0.1'
+    implementation 'com.github.matecode:Snacky:1.0.3'
+    implementation('com.github.matecode:androiddialog:1.2.34')
+//    implementation 'commons-io:commons-io:2.6'
+    implementation "com.google.firebase:firebase-messaging:$firebaseVer"
+    implementation 'com.evernote:android-job:1.2.5'
+    implementation 'com.google.code.gson:gson:2.8.2'
     implementation 'com.android.support.constraint:constraint-layout:1.0.2'
+
     implementation 'android.arch.lifecycle:extensions:1.1.1'
+    implementation "android.arch.persistence.room:runtime:1.0.0"
+    annotationProcessor "android.arch.persistence.room:compiler:1.0.0"
+    implementation "android.arch.lifecycle:common-java8:1.1.1"
+
+    implementation "org.apache.commons:commons-lang3:3.7"
+
+//    implementation "com.google.guava:guava:24.1-android"
 }
 
 class Download extends DefaultTask {

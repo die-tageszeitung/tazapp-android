@@ -161,7 +161,7 @@ public class PageTocAdapter extends TazListAdapter<PageTocItem, PageTocAdapter.V
 
 
     public interface IPageIndexViewHolderClicks {
-        public void onItemClick(int position);
+        void onItemClick(int position);
     }
 
     public static class PageIndexDiffCallback extends DiffUtil.ItemCallback<PageTocItem> {
@@ -202,7 +202,7 @@ public class PageTocAdapter extends TazListAdapter<PageTocItem, PageTocAdapter.V
 
         public SourceViewHolder(View itemView, IPageIndexViewHolderClicks clickListener) {
             super(itemView, clickListener);
-            text = (TextView) itemView.findViewById(R.id.text);
+            text = itemView.findViewById(R.id.text);
         }
     }
 
@@ -213,8 +213,8 @@ public class PageTocAdapter extends TazListAdapter<PageTocItem, PageTocAdapter.V
 
         public PageViewHolder(View itemView, IPageIndexViewHolderClicks clickListener) {
             super(itemView, clickListener);
-            image = (ImageView) itemView.findViewById(R.id.image);
-            articelOverlayImage = (ImageView) itemView.findViewById(R.id.articelOverlayImage);
+            image = itemView.findViewById(R.id.image);
+            articelOverlayImage = itemView.findViewById(R.id.articelOverlayImage);
         }
     }
 }

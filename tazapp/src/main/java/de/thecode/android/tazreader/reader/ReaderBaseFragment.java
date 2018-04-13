@@ -15,13 +15,13 @@ import timber.log.Timber;
 
 public class ReaderBaseFragment extends BaseFragment {
 
-    public static <T extends ReaderBaseFragment> T newInstance(Class<T> clazz, String bookId, String resourceKey) {
+    public static <T extends ReaderBaseFragment> T newInstance(Class<T> clazz, String bookId) {
         T fragment = null;
         try {
             fragment = clazz.newInstance();
             Bundle args = new Bundle();
             args.putString(ReaderActivity.KEY_EXTRA_BOOK_ID, bookId);
-            args.putString(ReaderActivity.KEY_EXTRA_RESOURCE_KEY, resourceKey);
+//            args.putString(ReaderActivity.KEY_EXTRA_RESOURCE_KEY, resourceKey);
             fragment.setArguments(args);
         } catch (java.lang.InstantiationException e) {
             Timber.e(e);
@@ -40,16 +40,15 @@ public class ReaderBaseFragment extends BaseFragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         String bookId = null;
-        String resourceKey = null;
+//        String resourceKey = null;
         if (getArguments() != null) {
             bookId = getArguments().getString(ReaderActivity.KEY_EXTRA_BOOK_ID);
-            resourceKey = getArguments().getString(ReaderActivity.KEY_EXTRA_RESOURCE_KEY);
+//            resourceKey = getArguments().getString(ReaderActivity.KEY_EXTRA_RESOURCE_KEY);
         }
-        if (!TextUtils.isEmpty(bookId) && !TextUtils.isEmpty(resourceKey)) {
+        if (!TextUtils.isEmpty(bookId)) {
             readerViewModel = ViewModelProviders.of(getActivity(),
                                                     ReaderViewModel.createFactory(getActivity().getApplication(),
-                                                                                  bookId,
-                                                                                  resourceKey))
+                                                                                  bookId))
                                                 .get(ReaderViewModel.class);
         }
     }

@@ -41,13 +41,12 @@ import okhttp3.Response;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class LoginFragment extends BaseFragment {
+public class LoginFragment extends StartBaseFragment {
 
     public static final String DIALOG_CHECK_CREDENTIALS = "checkCrd";
     public static final String DIALOG_ERROR_CREDENTIALS = "errorCrd";
     private EditText                      editUser;
     private EditText                      editPass;
-    private WeakReference<IStartCallback> callback;
     private Button                        loginButton;
 
     public LoginFragment() {
@@ -64,18 +63,17 @@ public class LoginFragment extends BaseFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-        callback = new WeakReference<>((IStartCallback) getActivity());
-        if (hasCallback()) getCallback().onUpdateDrawer(this);
+        getStartActivity().onUpdateDrawer(this);
 
         View view = inflater.inflate(R.layout.start_login, container, false);
-        loginButton = (Button) view.findViewById(R.id.buttonLogin);
+        loginButton = view.findViewById(R.id.buttonLogin);
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 checkLogin();
             }
         });
-        Button orderButton = (Button) view.findViewById(R.id.buttonOrder);
+        Button orderButton = view.findViewById(R.id.buttonOrder);
         orderButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -85,8 +83,8 @@ public class LoginFragment extends BaseFragment {
             }
         });
 
-        editUser = (EditText) view.findViewById(R.id.editUser);
-        editPass = (EditText) view.findViewById(R.id.editPass);
+        editUser = view.findViewById(R.id.editUser);
+        editPass = view.findViewById(R.id.editPass);
         editPass.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View v, int keyCode, KeyEvent event) {
@@ -104,14 +102,6 @@ public class LoginFragment extends BaseFragment {
                                       .getPassword(""));
 
         return view;
-    }
-
-    private boolean hasCallback() {
-        return callback.get() != null;
-    }
-
-    private IStartCallback getCallback() {
-        return callback.get();
     }
 
     private void blockUi(boolean block) {
@@ -184,7 +174,7 @@ public class LoginFragment extends BaseFragment {
                                          .setUser((String) getObject(0), (String) getObject(1));
                             hideWaitingDialog();
                             blockUi(false);
-                            if (hasCallback()) getCallback().onSuccessfulCredentialsCheck();
+                            getStartActivity().onSuccessfulCredentialsCheck();
                             //if (hasCallback()) getCallback().onDemoModeChanged(false);
                             Snacky.builder()
                                   .setView(getActivity().findViewById(R.id.content_frame))

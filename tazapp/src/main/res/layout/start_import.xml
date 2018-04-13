@@ -3,7 +3,7 @@
              android:layout_width="match_parent"
              android:layout_height="match_parent"
              android:background="@color/start_fragment_background"
-             tools:context="de.thecode.android.tazreader.start.ImportFragment">
+             tools:context="de.thecode.android.tazreader.start.importer.ImportFragment">
 
 
 

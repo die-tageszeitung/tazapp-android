@@ -1,8 +1,5 @@
 package de.thecode.android.tazreader.job;
 
-import android.content.ContentUris;
-import android.database.Cursor;
-import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
@@ -18,18 +15,19 @@ import com.squareup.picasso.Picasso;
 import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
+import de.thecode.android.tazreader.data.PaperRepository;
 import de.thecode.android.tazreader.data.Publication;
+import de.thecode.android.tazreader.data.PublicationRepository;
 import de.thecode.android.tazreader.data.Resource;
 import de.thecode.android.tazreader.data.ResourceRepository;
-import de.thecode.android.tazreader.data.Store;
 import de.thecode.android.tazreader.data.StoreRepository;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.download.DownloadManager;
 import de.thecode.android.tazreader.okhttp3.OkHttp3Helper;
 import de.thecode.android.tazreader.okhttp3.RequestHelper;
-import de.thecode.android.tazreader.start.ScrollToPaperEvent;
 import de.thecode.android.tazreader.sync.SyncErrorEvent;
 import de.thecode.android.tazreader.sync.SyncStateChangedEvent;
+import de.thecode.android.tazreader.update.UpdateHelper;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.greenrobot.eventbus.EventBus;
@@ -37,7 +35,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 import java.io.IOException;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -62,8 +59,10 @@ public class SyncJob extends Job {
     public static final String ARG_END_DATE          = "endDate";
     public static final String ARG_INITIATED_BY_USER = "initiatedByUser";
 
-    private Paper moveToPaperAtEnd;
 
+    private PaperRepository       paperRepository;
+    private ResourceRepository    resourceRepository;
+    private PublicationRepository publicationRepository;
 
     @NonNull
     @Override
@@ -71,6 +70,10 @@ public class SyncJob extends Job {
 
         EventBus.getDefault()
                 .postSticky(new SyncStateChangedEvent(true));
+
+        paperRepository = PaperRepository.getInstance(getContext());
+        resourceRepository = ResourceRepository.getInstance(getContext());
+        publicationRepository = PublicationRepository.getInstance(getContext());
 
         PersistableBundleCompat extras = params.getExtras();
 
@@ -95,19 +98,12 @@ public class SyncJob extends Job {
         }
 
         if (startDate == null && endDate == null) {
-            downloadLatestRessource();
+            downloadLatestResource();
         }
 
         cleanUpResources();
 
-
-        if (moveToPaperAtEnd != null) {
-            EventBus.getDefault()
-                    .post(new ScrollToPaperEvent(moveToPaperAtEnd.getId()));
-            moveToPaperAtEnd = null;
-        }
-
-        Paper latestPaper = Paper.getLatestPaper(getContext());
+        Paper latestPaper = paperRepository.getLatestPaper();
         if (latestPaper != null) AutoDownloadJob.scheduleJob(latestPaper);
 
         return endJob(Result.SUCCESS);
@@ -121,29 +117,27 @@ public class SyncJob extends Job {
 
 
     private void cleanUpResources() {
-        List<Paper> allPapers = Paper.getAllPapers(getContext());
+
+        List<Paper> allPapers = paperRepository.getAllPapers();
         List<Resource> keepResources = new ArrayList<>();
         if (allPapers != null) {
             for (Paper paper : allPapers) {
                 if (paper.isDownloaded() || paper.isDownloading()) {
-                    Resource resource = ResourceRepository.getInstance(getContext())
-                                                          .getResourceForPaper(paper);
+                    Resource resource = resourceRepository.getResourceForPaper(paper);
                     if (resource != null && !keepResources.contains(resource)) keepResources.add(resource);
                 }
             }
         }
-        List<Resource> deleteResources = ResourceRepository.getInstance(getContext())
-                                                           .getAllResources();
-        Paper latestPaper = Paper.getLatestPaper(getContext());
-        if (latestPaper != null) deleteResources.remove(ResourceRepository.getInstance(getContext())
-                                                                          .getWithKey(latestPaper.getResource()));
+        List<Resource> deleteResources = resourceRepository.getAllResources();
+        Paper latestPaper = paperRepository.getLatestPaper();
+        if (latestPaper != null) deleteResources.remove(resourceRepository.getWithKey(latestPaper.getResource()));
         for (Resource keepResource : keepResources) {
             if (deleteResources.contains(keepResource)) {
                 deleteResources.remove(keepResource);
             }
         }
         for (Resource deleteResource : deleteResources) {
-            deleteResource.delete(getContext());
+            resourceRepository.deleteResource(deleteResource);
         }
     }
 
@@ -151,119 +145,160 @@ public class SyncJob extends Job {
     public void handlePlist(NSDictionary root) {
         Publication publication = new Publication(root);
 
-        Cursor pubCursor = getContext().getContentResolver()
-                                       .query(Publication.CONTENT_URI,
-                                              null,
-                                              Publication.Columns.ISSUENAME + " LIKE '" + publication.getIssueName() + "'",
-                                              null,
-                                              null);
+//        Cursor pubCursor = getContext().getContentResolver()
+//                                       .query(Publication.CONTENT_URI,
+//                                              null,
+//                                              Publication.Columns.ISSUENAME + " LIKE '" + publication.getIssueName() + "'",
+//                                              null,
+//                                              null);
 
-        long publicationId;
         String publicationTitle = publication.getName();
         long validUntil = publication.getValidUntil();
         SyncJob.scheduleJobIn(TimeUnit.SECONDS.toMillis(validUntil) - System.currentTimeMillis());
         //minDataValidUntil = Math.min(minDataValidUntil, validUntil * 1000);
 
-        try {
-            if (pubCursor.moveToNext()) {
-                Publication oldPupdata = new Publication(pubCursor);
-                publicationId = oldPupdata.getId();
+        publicationRepository.savePublication(publication);
+        UpdateHelper.getInstance(getContext()).setLatestVersion(publication.getAppAndroidVersion());
 
-                oldPupdata.setCreated(publication.getCreated());
-                oldPupdata.setImage(publication.getImage());
-                oldPupdata.setIssueName(publication.getIssueName());
-                oldPupdata.setName(publication.getName());
-                oldPupdata.setTypeName(publication.getTypeName());
-                oldPupdata.setUrl(publication.getUrl());
-                oldPupdata.setValidUntil(publication.getValidUntil());
 
-                Uri updateUri = ContentUris.withAppendedId(Publication.CONTENT_URI, publicationId);
-                getContext().getContentResolver()
-                            .update(updateUri, oldPupdata.getContentValues(), null, null);
-            } else {
-                Uri newPublicationUri = getContext().getContentResolver()
-                                                    .insert(Publication.CONTENT_URI, publication.getContentValues());
-                publicationId = ContentUris.parseId(newPublicationUri);
-            }
-        } finally {
-            pubCursor.close();
-        }
+//        getContext().getContentResolver().insert(Publication.CONTENT_URI,publication.getContentValues());
+
+//        try {
+//            if (pubCursor.moveToNext()) {
+//                Publication oldPupdata = new Publication(pubCursor);
+//                publicationId = oldPupdata.getId();
+//
+//                oldPupdata.setCreated(publication.getCreated());
+//                oldPupdata.setImage(publication.getImage());
+//                oldPupdata.setIssueName(publication.getIssueName());
+//                oldPupdata.setName(publication.getName());
+//                oldPupdata.setTypeName(publication.getTypeName());
+//                oldPupdata.setUrl(publication.getUrl());
+//                oldPupdata.setValidUntil(publication.getValidUntil());
+//
+//                Uri updateUri = ContentUris.withAppendedId(Publication.CONTENT_URI, publicationId);
+//                getContext().getContentResolver()
+//                            .update(updateUri, oldPupdata.getContentValues(), null, null);
+//            } else {
+//                Uri newPublicationUri = getContext().getContentResolver()
+//                                                    .insert(Publication.CONTENT_URI, publication.getContentValues());
+//                publicationId = ContentUris.parseId(newPublicationUri);
+//            }
+//        } finally {
+//            pubCursor.close();
+//        }
 
         NSObject[] issues = ((NSArray) root.objectForKey(PLIST_KEY_ISSUES)).getArray();
+        List<Paper> newPapers = new ArrayList<>();
         for (NSObject issue : issues) {
             Paper newPaper = new Paper((NSDictionary) issue);
-            newPaper.setPublicationId(publicationId);
+            newPaper.setPublication(publication.getIssueName());
             newPaper.setTitle(publicationTitle);
             newPaper.setValidUntil(validUntil);
 
-            Uri bookIdUri = Paper.CONTENT_URI.buildUpon()
-                                             .appendPath(newPaper.getBookId())
-                                             .build();
-            Cursor cursor = getContext().getContentResolver()
-                                        .query(bookIdUri,
-                                               null, /*Paper.Columns.IMPORTED + "=0 AND " + Paper.Columns.KIOSK + "=0"*/
-                                               null,
-                                               null,
-                                               null);
-            try {
-                if (cursor.moveToNext()) {
-                    Paper oldPaper = new Paper(cursor);
-                    if (!newPaper.equals(oldPaper)) {
-                        Timber.d("found difference in paper");
-                        oldPaper.setImage(newPaper.getImage());
-                        boolean reloadImage = !new EqualsBuilder().append(oldPaper.getImageHash(), newPaper.getImageHash())
-                                                                  .isEquals();
-                        oldPaper.setImageHash(newPaper.getImageHash());
-                        if (!oldPaper.isImported() && !oldPaper.isKiosk()) {
+//            Uri bookIdUri = Paper.CONTENT_URI.buildUpon()
+//                                             .appendPath(newPaper.getBookId())
+//                                             .build();
+//            Cursor cursor = getContext().getContentResolver()
+//                                        .query(bookIdUri,
+//                                               null, /*Paper.Columns.IMPORTED + "=0 AND " + Paper.Columns.KIOSK + "=0"*/
+//                                               null,
+//                                               null,
+//                                               null);
 
-                            if (!new EqualsBuilder().append(oldPaper.getLastModified(), newPaper.getLastModified())
-                                                    .isEquals()) {
-                                oldPaper.setLastModified(newPaper.getLastModified());
-                                if (!new EqualsBuilder().append(oldPaper.getFileHash(), newPaper.getFileHash())
-                                                        .isEquals() && (oldPaper.isDownloaded() || oldPaper.isDownloading()))
-                                    oldPaper.setHasupdate(true);
-                            }
-                            oldPaper.setLink(newPaper.getLink());
-                            oldPaper.setLen(newPaper.getLen());
-                            oldPaper.setFileHash(newPaper.getFileHash());
-                            oldPaper.setResource(newPaper.getResource());
-//                            oldPaper.setResourceFileHash(newPaper.getResourceFileHash());
-//                            oldPaper.setResourceUrl(newPaper.getResourceUrl());
-//                            oldPaper.setResourceLen(newPaper.getResourceLen());
-                            oldPaper.setDemo(newPaper.isDemo());
-                            oldPaper.setValidUntil(newPaper.getValidUntil());
-                        }
-                        if (oldPaper.getPublicationId() == null) {
-                            oldPaper.setPublicationId(publicationId);
-                        }
-                        getContext().getContentResolver()
-                                    .update(oldPaper.getContentUri(), oldPaper.getContentValues(), null, null);
-                        if (reloadImage) preLoadImage(oldPaper);
-                        //setMoveToPaperAtEnd(oldPaper);
-                    }
-                    newPaper = oldPaper;
-                } else {
-                    Timber.d("notfound");
+            boolean loadImage = true;
 
-                    long newPaperId = ContentUris.parseId(getContext().getContentResolver()
-                                                                      .insert(Paper.CONTENT_URI, newPaper.getContentValues()));
-                    newPaper.setId(newPaperId);
-                    setMoveToPaperAtEnd(newPaper);
-                    preLoadImage(newPaper);
+
+            Paper oldPaper = paperRepository.getPaperWithBookId(newPaper.getBookId());
+            if (oldPaper != null) {
+                newPaper.setDownloaded(oldPaper.isDownloaded());
+                newPaper.setDownloadId(oldPaper.getDownloadId());
+                newPaper.setImported(oldPaper.isImported());
+                newPaper.setKiosk(oldPaper.isKiosk());
+                loadImage = !new EqualsBuilder().append(oldPaper.getImageHash(), newPaper.getImageHash())
+                                                .isEquals();
+                if (!oldPaper.isImported() && !oldPaper.isKiosk()) {
+                    if (!new EqualsBuilder().append(oldPaper.getFileHash(), newPaper.getFileHash())
+                                            .isEquals() && (oldPaper.isDownloaded() || oldPaper.isDownloading()))
+                        newPaper.setHasUpdate(true);
                 }
-                Resource resource = ResourceRepository.getInstance(getContext())
-                                                      .getWithKey(newPaper.getResource());
-                if (resource == null) {
-                    resource = new Resource((NSDictionary) issue);
-                    getContext().getContentResolver()
-                                .insert(Resource.CONTENT_URI, resource.getContentValues());
-                }
-            } finally {
-                cursor.close();
             }
+            if (loadImage) preLoadImage(newPaper);
+            newPapers.add(newPaper);
+//            getContext().getContentResolver()
+//                        .insert(Paper.CONTENT_URI, newPaper.getContentValues());
+            Resource resource = resourceRepository.getWithKey(newPaper.getResource());
+            if (resource == null) {
+                resourceRepository.saveResource(new Resource((NSDictionary) issue));
+            }
+
+//            Resource resource = ResourceRepository.getInstance(getContext())
+//                                                  .getWithKey(newPaper.getResource());
+//            if (resource == null) {
+//                resource = new Resource((NSDictionary) issue);
+//                getContext().getContentResolver()
+//                            .insert(Resource.CONTENT_URI, resource.getContentValues());
+//            }
+
+
+//                    if (!newPaper.equals(oldPaper)) {
+//                        Timber.d("found difference in paper");
+//                        oldPaper.setImage(newPaper.getImage());
+//                        boolean reloadImage = !new EqualsBuilder().append(oldPaper.getImageHash(), newPaper.getImageHash())
+//                                                                  .isEquals();
+//                        oldPaper.setImageHash(newPaper.getImageHash());
+//                        if (!oldPaper.isImported() && !oldPaper.isKiosk()) {
+//
+//                            if (!new EqualsBuilder().append(oldPaper.getLastModified(), newPaper.getLastModified())
+//                                                    .isEquals()) {
+//                                oldPaper.setLastModified(newPaper.getLastModified());
+//                                if (!new EqualsBuilder().append(oldPaper.getFileHash(), newPaper.getFileHash())
+//                                                        .isEquals() && (oldPaper.isDownloaded() || oldPaper.isDownloading()))
+//                                    oldPaper.setHasUpdate(true);
+//                            }
+//                            oldPaper.setLink(newPaper.getLink());
+//                            oldPaper.setLen(newPaper.getLen());
+//                            oldPaper.setFileHash(newPaper.getFileHash());
+//                            oldPaper.setResource(newPaper.getResource());
+////                            oldPaper.setResourceFileHash(newPaper.getResourceFileHash());
+////                            oldPaper.setResourceUrl(newPaper.getResourceUrl());
+////                            oldPaper.setResourceLen(newPaper.getResourceLen());
+//                            oldPaper.setDemo(newPaper.isDemo());
+//                            oldPaper.setValidUntil(newPaper.getValidUntil());
+//                        }
+//                        if (TextUtils.isEmpty(oldPaper.getPublication())) {
+//                            oldPaper.setPublication(publication.getIssueName());
+//                        }
+//                        getContext().getContentResolver()
+//                                    .update(oldPaper.getContentUri(), oldPaper.getContentValues(), null, null);
+//                        if (reloadImage) preLoadImage(oldPaper);
+//                        //setMoveToPaperAtEnd(oldPaper);
+//                    }
+//                    newPaper = oldPaper;
+//                } else {
+//                    Timber.d("notfound");
+//
+//                    long newPaperId = ContentUris.parseId(getContext().getContentResolver()
+//                                                                      .insert(Paper.CONTENT_URI, newPaper.getContentValues()));
+//                    newPaper.setId(newPaperId);
+//                    setMoveToPaperAtEnd(newPaper);
+//                    preLoadImage(newPaper);
+//                }
+//                Resource resource = ResourceRepository.getInstance(getContext())
+//                                                      .getWithKey(newPaper.getResource());
+//                if (resource == null) {
+//                    resource = new Resource((NSDictionary) issue);
+//                    getContext().getContentResolver()
+//                                .insert(Resource.CONTENT_URI, resource.getContentValues());
+//                }
+//            } finally {
+//                cursor.close();
+//            }
 
 
         }
+        paperRepository.savePapers(newPapers);
+
     }
 
     private NSDictionary callPlist(String startDate, String endDate) {
@@ -316,22 +351,21 @@ public class SyncJob extends Job {
                .fetch();
     }
 
-    private void setMoveToPaperAtEnd(Paper paper) {
-        try {
-            if (moveToPaperAtEnd == null || paper.getDateInMillis() > moveToPaperAtEnd.getDateInMillis()) {
-                moveToPaperAtEnd = paper;
-            }
-        } catch (ParseException e) {
-            Timber.e(e);
-            moveToPaperAtEnd = paper;
-        }
-    }
+//    private void setMoveToPaperAtEnd(Paper paper) {
+//        try {
+//            if (moveToPaperAtEnd == null || paper.getDateInMillis() > moveToPaperAtEnd.getDateInMillis()) {
+//                moveToPaperAtEnd = paper;
+//            }
+//        } catch (ParseException e) {
+//            Timber.e(e);
+//            moveToPaperAtEnd = paper;
+//        }
+//    }
 
-    private void downloadLatestRessource() {
-        Paper latestPaper = Paper.getLatestPaper(getContext());
+    private void downloadLatestResource() {
+        Paper latestPaper = paperRepository.getLatestPaper();
         if (latestPaper != null) {
-            Resource latestResource = ResourceRepository.getInstance(getContext())
-                                                        .getWithKey(latestPaper.getResource());
+            Resource latestResource = resourceRepository.getWithKey(latestPaper.getResource());
             if (latestResource != null && !latestResource.isDownloaded() && !latestResource.isDownloading()) {
                 try {
                     DownloadManager.getInstance(getContext())
@@ -347,30 +381,28 @@ public class SyncJob extends Job {
     private void autoDeleteTask() {
         if (TazSettings.getInstance(getContext())
                        .getPrefBoolean(TazSettings.PREFKEY.AUTODELETE, false)) {
-            long currentOpenPaperId = TazSettings.getInstance(getContext())
-                                                 .getPrefLong(TazSettings.PREFKEY.LASTOPENPAPER, -1L);
-            Timber.d("+++++++ TazSettings: Current Paper SyncAdapter View: %s", currentOpenPaperId);
+
+//            long currentOpenPaperId = TazSettings.getInstance(getContext())
+//                                                 .getPrefLong(TazSettings.PREFKEY.LASTOPENPAPER, -1L);
+//            Timber.d("+++++++ TazSettings: Current Paper SyncAdapter View: %s", currentOpenPaperId);
+
+            //TODO Get BookId from Setting, an set it in Reader
+            String currentOpenPaperBookId = null;
 
             int papersToKeep = TazSettings.getInstance(getContext())
                                           .getPrefInt(TazSettings.PREFKEY.AUTODELETE_VALUE, 0);
             if (papersToKeep > 0) {
-                Cursor deletePapersCursor = getContext().getContentResolver()
-                                                        .query(Paper.CONTENT_URI,
-                                                               null,
-                                                               Paper.Columns.ISDOWNLOADED + "=1 AND " + Paper.Columns.IMPORTED + "!=1 AND " + Paper.Columns.KIOSK + "!=1",
-                                                               null,
-                                                               Paper.Columns.DATE + " DESC");
-                try {
-                    int counter = 0;
-                    while (deletePapersCursor.moveToNext()) {
+                List<Paper> allPapers = paperRepository.getAllPapers();
+                int counter = 0;
+                for (Paper paper : allPapers) {
+                    if (paper.isDownloaded() && !paper.isImported() && !paper.isKiosk()) {
                         if (counter >= papersToKeep) {
-                            Paper deletePaper = new Paper(deletePapersCursor);
-                            Timber.d("PaperId: %s (currentOpen:%s)", deletePaper.getId(), currentOpenPaperId);
-                            if (!deletePaper.getId()
-                                            .equals(currentOpenPaperId)) {
+                            Timber.d("PaperId: %s (currentOpen:%s)", paper.getBookId(), currentOpenPaperBookId);
+                            if (!paper.getBookId()
+                                      .equals(currentOpenPaperBookId)) {
                                 boolean safeToDelete = true;
                                 String bookmarksJsonString = StoreRepository.getInstance(getContext())
-                                                                            .getStore(deletePaper.getBookId(),
+                                                                            .getStore(paper.getBookId(),
                                                                                       Paper.STORE_KEY_BOOKMARKS)
                                                                             .getValue();
                                 if (!TextUtils.isEmpty(bookmarksJsonString)) {
@@ -383,14 +415,13 @@ public class SyncJob extends Job {
                                     }
                                 }
                                 if (safeToDelete) {
-                                    deletePaper.delete(getContext());
+                                    PaperRepository.getInstance(getContext())
+                                                   .deletePaper(paper);
                                 }
                             }
                         }
                         counter++;
                     }
-                } finally {
-                    deletePapersCursor.close();
                 }
             }
         }

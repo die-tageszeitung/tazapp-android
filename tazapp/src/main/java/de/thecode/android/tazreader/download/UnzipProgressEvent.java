@@ -5,11 +5,11 @@ package de.thecode.android.tazreader.download;
  */
 public class UnzipProgressEvent {
 
-    long paperId;
-    int progress;
+    private final String bookId;
+    private final int progress;
 
-    public UnzipProgressEvent(long paperId, int progress) {
-        this.paperId = paperId;
+    public UnzipProgressEvent(String bookId, int progress) {
+        this.bookId = bookId;
         this.progress = progress;
     }
 
@@ -17,8 +17,7 @@ public class UnzipProgressEvent {
         return progress;
     }
 
-    public long getPaperId() {
-        return paperId;
+    public String getBookId() {
+        return bookId;
     }
-
 }

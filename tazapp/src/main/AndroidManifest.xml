@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest
         xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:tools="http://schemas.android.com/tools"
         package="de.thecode.android.tazreader">
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
 
     <supports-screens android:anyDensity="true"/>
 
@@ -67,47 +67,41 @@
                     android:value="de.thecode.android.tazreader.start.StartActivity" />
 
         </activity>
-        <activity android:name=".importer.ImportActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW"/>
+        <!--<activity android:name=".importer.ImportActivity">-->
+            <!--<intent-filter>-->
+                <!--<action android:name="android.intent.action.VIEW"/>-->
 
-                <category android:name="android.intent.category.DEFAULT"/>
-                <category android:name="android.intent.category.BROWSABLE"/>
+                <!--<category android:name="android.intent.category.DEFAULT"/>-->
+                <!--<category android:name="android.intent.category.BROWSABLE"/>-->
 
-                <data
-                        android:host="*"
-                        android:mimeType="application/taz+app"
-                        android:scheme="content"/>
-                <data
-                        android:host="*"
-                        android:mimeType="application/taz+app"
-                        android:scheme="file"/>
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW"/>
+                <!--<data-->
+                        <!--android:host="*"-->
+                        <!--android:mimeType="application/taz+app"-->
+                        <!--android:scheme="content"/>-->
+                <!--<data-->
+                        <!--android:host="*"-->
+                        <!--android:mimeType="application/taz+app"-->
+                        <!--android:scheme="file"/>-->
+            <!--</intent-filter>-->
+            <!--<intent-filter>-->
+                <!--<action android:name="android.intent.action.VIEW"/>-->
 
-                <category android:name="android.intent.category.DEFAULT"/>
-                <category android:name="android.intent.category.BROWSABLE"/>
+                <!--<category android:name="android.intent.category.DEFAULT"/>-->
+                <!--<category android:name="android.intent.category.BROWSABLE"/>-->
 
-                <data
-                        android:host="*"
-                        android:mimeType="*/*"
-                        android:pathPattern=".*\\.tazandroid"
-                        android:scheme="file"/>
-                <data
-                        android:host="*"
-                        android:mimeType="*/*"
-                        android:pathPattern=".*\\.tpaper"
-                        android:scheme="file"/>
-            </intent-filter>
-        </activity>
-        <activity android:name=".migration.MigrationActivity"/>
-
-        <provider
-                android:name="de.thecode.android.tazreader.provider.TazProvider"
-                android:authorities="${applicationId}.provider"
-                android:exported="false"
-                android:syncable="true"/>
+                <!--<data-->
+                        <!--android:host="*"-->
+                        <!--android:mimeType="*/*"-->
+                        <!--android:pathPattern=".*\\.tazandroid"-->
+                        <!--android:scheme="file"/>-->
+                <!--<data-->
+                        <!--android:host="*"-->
+                        <!--android:mimeType="*/*"-->
+                        <!--android:pathPattern=".*\\.tpaper"-->
+                        <!--android:scheme="file"/>-->
+            <!--</intent-filter>-->
+        <!--</activity>-->
+        <!--<activity android:name=".migration.MigrationActivity"/>-->
 
         <receiver android:name="de.thecode.android.tazreader.download.DownloadReceiver">
             <intent-filter>
