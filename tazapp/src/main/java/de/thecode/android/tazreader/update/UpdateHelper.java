@@ -3,15 +3,16 @@ package de.thecode.android.tazreader.update;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.text.TextUtils;
-import android.util.SparseArray;
+import android.support.annotation.NonNull;
 
 import de.thecode.android.tazreader.BuildConfig;
-import de.thecode.android.tazreader.data.Publication;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.download.DownloadManager;
 import de.thecode.android.tazreader.utils.UserDeviceInfo;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import timber.log.Timber;
@@ -32,30 +33,30 @@ public class UpdateHelper {
     }
 
 
-    private boolean storeVersion = false;
+    private boolean googlePlayVersion = false;
     private TazSettings    settings;
     private boolean        updateMessageShown;
     private UserDeviceInfo userDeviceInfo;
 
     private UpdateHelper(Context context) {
-        setStoreVersion(context);
+        setGooglePlayVersion(context);
         settings = TazSettings.getInstance(context);
         userDeviceInfo = UserDeviceInfo.getInstance(context);
     }
 
-    public boolean isStoreVersion() {
-        return storeVersion;
+    public boolean isGooglePlayVersion() {
+        return googlePlayVersion;
     }
 
     public boolean hasUpdate() {
         return settings.getLatestVersion() > BuildConfig.VERSION_CODE;
     }
 
-    private void setStoreVersion(Context context) {
+    private void setGooglePlayVersion(Context context) {
         try {
             String installer = context.getPackageManager()
                                       .getInstallerPackageName(userDeviceInfo.getPackageName());
-            storeVersion = !TextUtils.isEmpty(installer);
+            googlePlayVersion = InstallerID.GOOGLE_PLAY.containsId(installer);
         } catch (Throwable e) {
             Timber.w(e);
         }
@@ -78,16 +79,39 @@ public class UpdateHelper {
     }
 
     public void update(Context context) {
-        if (isStoreVersion()) {
+        if (isGooglePlayVersion()) {
             try {
                 context.startActivity(new Intent(Intent.ACTION_VIEW,
                                                  Uri.parse("market://details?id=" + userDeviceInfo.getPackageName())));
             } catch (android.content.ActivityNotFoundException anfe) {
-                context.startActivity(new Intent(Intent.ACTION_VIEW,
-                                                 Uri.parse("https://play.google.com/store/apps/details?id=" + userDeviceInfo)));
+                DownloadManager.getInstance(context)
+                               .downloadUpdate();
             }
         } else {
-            DownloadManager.getInstance(context).downloadUpdate();
+            DownloadManager.getInstance(context)
+                           .downloadUpdate();
+        }
+    }
+
+    public enum InstallerID {
+        GOOGLE_PLAY("com.android.vending", "com.google.android.feedback"), AMAZON_APP_STORE("com.amazon.venezia"), GALAXY_APPS(
+                "com.sec.android.app.samsungapps");
+
+        @NonNull
+        private final List<String> ids;
+
+        InstallerID(@NonNull String... id) {
+            if (id.length == 1) ids = Collections.singletonList(id[0]);
+            else ids = new ArrayList<>(Arrays.asList(id));
+        }
+
+        public @NonNull
+        List<String> getIds() {
+            return ids;
+        }
+
+        public boolean containsId(String id) {
+            return ids.contains(id);
         }
     }
 }
