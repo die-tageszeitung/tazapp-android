@@ -4,6 +4,7 @@ import android.app.Application;
 import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.MutableLiveData;
 import android.support.annotation.NonNull;
+import android.support.annotation.WorkerThread;
 import android.text.TextUtils;
 
 import de.thecode.android.tazreader.data.Paper;
@@ -22,14 +23,14 @@ public class StartViewModel extends AndroidViewModel {
     private final LibraryPaperLiveData libraryPaperLiveData;
 
     private final MutableLiveData<Boolean> demoModeLiveData = new MutableLiveData<>();
-//    private final LiveData<List<Paper>> livePapers;
-    private final TazSettings           settings;
+    //    private final LiveData<List<Paper>> livePapers;
+    private final TazSettings     settings;
     private final PaperRepository paperRepository;
     private final DownloadManager downloadManager;
-    private final List<String> downloadQueue = new ArrayList<>();
-    private final SingleLiveEvent<DownloadError> downloadErrorLiveSingleData = new SingleLiveEvent<>();
-    private final List<NavigationDrawerFragment.NavigationItem> navBackstack = new ArrayList<>();
-    private boolean mobileDownloadAllowed = false;
+    private final List<String>                                  downloadQueue               = new ArrayList<>();
+    private final SingleLiveEvent<DownloadError>                downloadErrorLiveSingleData = new SingleLiveEvent<>();
+    private final List<NavigationDrawerFragment.NavigationItem> navBackstack                = new ArrayList<>();
+    private       boolean                                       mobileDownloadAllowed       = false;
     private String openPaperIdAfterDownload;
     private boolean openReaderAfterDownload = false;
     private String paperWaitingForResource;
@@ -49,7 +50,7 @@ public class StartViewModel extends AndroidViewModel {
         settings = TazSettings.getInstance(application);
         settings.addDemoModeListener(demoModeListener);
         demoModeLiveData.setValue(settings.isDemoMode());
-        libraryPaperLiveData = new LibraryPaperLiveData(application,demoModeLiveData);
+        libraryPaperLiveData = new LibraryPaperLiveData(application, demoModeLiveData);
     }
 
     @Override
@@ -83,18 +84,18 @@ public class StartViewModel extends AndroidViewModel {
         return downloadErrorLiveSingleData;
     }
 
-    public void startDownloadQueue(){
-        new AsyncTaskListener<Void,Void>(new AsyncTaskListener.OnExecute<Void, Void>() {
+    public void startDownloadQueue() {
+        new AsyncTaskListener<Void, Void>(new AsyncTaskListener.OnExecute<Void, Void>() {
             @Override
             public Void execute(Void... aVoid) {
                 while (downloadQueue.size() > 0) {
                     String bookId = downloadQueue.get(0);
-                    DownloadManager.DownloadManagerResult result = downloadManager.downloadPaper(bookId,false);
+                    DownloadManager.DownloadManagerResult result = downloadManager.downloadPaper(bookId, false);
                     if (result.getState() != DownloadManager.DownloadManagerResult.STATE.SUCCESS) {
                         String title = "";
                         Paper paper = paperRepository.getPaperWithBookId(bookId);
                         if (paper != null) title = paper.getTitelWithDate(getApplication().getResources());
-                        downloadErrorLiveSingleData.postValue(new DownloadError(title,result.getDetails()));
+                        downloadErrorLiveSingleData.postValue(new DownloadError(title, result.getDetails()));
                     }
                     downloadQueue.remove(bookId);
                 }
@@ -151,6 +152,22 @@ public class StartViewModel extends AndroidViewModel {
 
     public void setOpenReaderAfterDownload(boolean openReaderAfterDownload) {
         this.openReaderAfterDownload = openReaderAfterDownload;
+    }
+
+    public void deleteSelected() {
+        new AsyncTaskListener<String, Void>(bookIds -> {
+
+            List<Paper> deletePapers = paperRepository.getPapersWithBookId(bookIds);
+            if (deletePapers != null) {
+                for (Paper paper : deletePapers) {
+                    if (paper.isDownloading()) downloadManager.cancelDownload(paper.getDownloadId());
+                    else paperRepository.deletePaper(paper);
+                }
+            }
+            return null;
+        }).execute(libraryPaperLiveData.getSelected()
+                                       .toArray(new String[libraryPaperLiveData.getSelected()
+                                                                               .size()]));
     }
 
     public boolean isActionMode() {

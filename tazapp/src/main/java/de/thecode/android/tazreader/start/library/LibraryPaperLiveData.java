@@ -72,13 +72,17 @@ public class LibraryPaperLiveData extends MutableLiveData<List<LibraryPaper>> {
             @Override
             public void run() {
                 final Map<String, Long> runningDownloadsCopy = new HashMap<>(runningDownloads);
+                final Map<String, Integer> progressMapCopy = new HashMap<>(progressMap);
                 for (Map.Entry<String, Long> runningDownload : runningDownloadsCopy.entrySet()) {
                     DownloadManager.DownloadState state = downloadManager.getDownloadState(runningDownload.getValue());
                     switch (state.getStatus()) {
                         case DownloadManager.DownloadState.STATUS_SUCCESSFUL:
+                            runningDownloads.remove(runningDownload.getKey());
+                            break;
                         case DownloadManager.DownloadState.STATUS_NOTFOUND:
                         case DownloadManager.DownloadState.STATUS_FAILED:
                             runningDownloads.remove(runningDownload.getKey());
+                            progressMap.put(runningDownload.getKey(),0);
                             break;
                         default:
                             int oldProgress = -1;
@@ -92,7 +96,8 @@ public class LibraryPaperLiveData extends MutableLiveData<List<LibraryPaper>> {
                     }
 
                 }
-                publish();
+                if (!progressMapCopy.equals(progressMap))
+                    publish();
                 if (!runningDownloads.isEmpty()) requestDownloadUpdate();
             }
         });

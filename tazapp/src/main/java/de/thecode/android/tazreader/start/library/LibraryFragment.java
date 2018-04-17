@@ -22,6 +22,7 @@ import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.download.CoverDownloadedEvent;
+import de.thecode.android.tazreader.download.DownloadManager;
 import de.thecode.android.tazreader.job.SyncJob;
 import de.thecode.android.tazreader.start.DrawerStateChangedEvent;
 import de.thecode.android.tazreader.start.StartBaseFragment;
@@ -127,9 +128,9 @@ public class LibraryFragment extends StartBaseFragment {
                           @Override
                           public void onChanged(@Nullable List<LibraryPaper> libraryPapers) {
                               if (actionMode != null) {
-                                  if (startViewModel.getLibraryPaperLiveData()
-                                                    .getSelectionSize() == 0) actionMode.finish();
-                                  else
+//                                  if (startViewModel.getLibraryPaperLiveData()
+//                                                    .getSelectionSize() == 0) actionMode.finish();
+//                                  else
                                       actionMode.invalidate();
                               }
                               adapter.submitList(libraryPapers);
@@ -337,23 +338,7 @@ public class LibraryFragment extends StartBaseFragment {
     }
 
 
-    private void deleteSelected() {
-        new AsyncTaskListener<String, Void>(bookIds -> {
 
-            List<Paper> deletePapers = startViewModel.getPaperRepository()
-                                                     .getPapersWithBookId(bookIds);
-            if (deletePapers != null) {
-                for (Paper paper : deletePapers) {
-                    startViewModel.getPaperRepository()
-                                  .deletePaper(paper);
-                }
-            }
-            return null;
-        }).execute(startViewModel.getLibraryPaperLiveData()
-                                 .getSelected()
-                                 .toArray(new String[startViewModel.getLibraryPaperLiveData()
-                                                                   .getSelected()
-                                                                   .size()]));
 
 //        if (adapter.getSelected() != null && adapter.getSelected()
 //                                                    .size() > 0) {
@@ -363,7 +348,6 @@ public class LibraryFragment extends StartBaseFragment {
 //            if (hasCallback()) getCallback().getRetainData()
 //                                            .deletePaper(ids);
 //        }
-    }
 
     private void downloadSelected() {
         new AsyncTaskListener<String, List<Paper>>(bookIds -> startViewModel.getPaperRepository()
@@ -441,28 +425,23 @@ public class LibraryFragment extends StartBaseFragment {
                     mode.finish();
                     return true;
                 case R.id.ic_action_delete:
-                    deleteSelected();
+                    startViewModel.deleteSelected();
                     mode.finish();
                     return true;
                 case R.id.ic_action_selectnone:
-                    startViewModel.getLibraryPaperLiveData()
-                                  .selectNone();
-//                    mode.invalidate();
+                    mode.finish();
                     return true;
                 case R.id.ic_action_selectall:
                     startViewModel.getLibraryPaperLiveData()
                                   .selectAll();
-//                    mode.invalidate();
                     return true;
                 case R.id.ic_action_selectinvert:
                     startViewModel.getLibraryPaperLiveData()
                                   .invertSelection();
-//                    mode.invalidate();
                     return true;
                 case R.id.ic_action_selectnotloaded:
                     startViewModel.getLibraryPaperLiveData()
                                   .selectNotDownloaded();
-//                    mode.invalidate();
                     return true;
             }
 
