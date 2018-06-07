@@ -3,6 +3,7 @@ package de.thecode.android.tazreader.reader.usertoc;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.util.DiffUtil;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -75,7 +76,7 @@ public class UserTocAdapter extends TazListAdapter<UserTocItem, UserTocAdapter.V
                 else image.setImageDrawable(ContextCompat.getDrawable(image.getContext(), R.drawable.ic_add_24dp));
                 break;
             case ARTICLE:
-                onBindArticleViewHolder((ArticleViewHolder) viewholder, item, position);
+                onBindArticleViewHolder((ArticleViewHolder) viewholder, (Paper.Plist.Page.Article) item, position);
                 break;
             case TOPLINK:
                 ((ToplinkViewHolder) viewholder).title.setText(item.getTitle());
@@ -83,17 +84,26 @@ public class UserTocAdapter extends TazListAdapter<UserTocItem, UserTocAdapter.V
         }
     }
 
-    private void onBindArticleViewHolder(ArticleViewHolder viewHolder, ITocItem item, int position) {
+    private void onBindArticleViewHolder(ArticleViewHolder viewHolder, Paper.Plist.Page.Article item, int position) {
 
 
         viewHolder.title.setText(item.getTitle());
 
-        if (((Paper.Plist.Page.Article) item).getSubtitle() == null || "".equals(((Paper.Plist.Page.Article) item).getSubtitle()) || !showSubtitles)
+        if (TextUtils.isEmpty(item.getSubtitle()) || !showSubtitles)
             viewHolder.subtitle.setVisibility(View.GONE);
         else {
             viewHolder.subtitle.setVisibility(View.VISIBLE);
-            viewHolder.subtitle.setText(((Paper.Plist.Page.Article) item).getSubtitle());
+            viewHolder.subtitle.setText(item.getSubtitle());
         }
+
+        if (TextUtils.isEmpty(item.getAuthor())) {
+            viewHolder.author.setVisibility(View.GONE);
+        } else {
+            viewHolder.author.setVisibility(View.VISIBLE);
+            viewHolder.author.setText(item.getAuthor());
+        }
+
+
         ImageView bookmark = viewHolder.bookmark;
         FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) bookmark.getLayoutParams();
         if (item.isBookmarked()) {
@@ -191,12 +201,14 @@ public class UserTocAdapter extends TazListAdapter<UserTocItem, UserTocAdapter.V
         ImageView bookmark;
         TextView  title;
         TextView  subtitle;
+        TextView  author;
         View      bookmarkLayout;
 
         public ArticleViewHolder(View itemView, UserTocAdapterClickListener clickListener) {
             super(itemView, clickListener);
             title = itemView.findViewById(R.id.title);
             subtitle = itemView.findViewById(R.id.subtitle);
+            author = itemView.findViewById(R.id.author);
             bookmark = itemView.findViewById(R.id.bookmark);
             bookmarkLayout = itemView.findViewById(R.id.bookmarkClickLayout);
             bookmarkLayout.setOnClickListener(v -> listener.onBookmarkClick(getAdapterPosition()));

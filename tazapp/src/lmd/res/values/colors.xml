@@ -38,6 +38,7 @@
     <item name="index_text_category" type="color">@android:color/black</item>
     <item name="index_text_page" type="color">@android:color/black</item>
     <item name="index_text_article" type="color">@android:color/black</item>
+    <item name="index_text_article_author" type="color">@color/grau</item>
     <item name="index_text_toplink" type="color">@android:color/black</item>
     <item name="index_bookmark_off" type="color">@color/grau</item>
     <item name="index_bookmark_on" type="color">@color/color_primary</item>

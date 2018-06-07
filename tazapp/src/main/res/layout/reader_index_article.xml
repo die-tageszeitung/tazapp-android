@@ -53,6 +53,13 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/dummy"/>
+
+            <TextView
+                    android:id="@+id/author"
+                    style="@style/IndexText.Article.Author"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/dummy"/>
         </LinearLayout>
     </RelativeLayout>
 

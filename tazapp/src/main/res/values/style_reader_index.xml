@@ -42,6 +42,12 @@
         <item name="android:textStyle">normal</item>
     </style>
 
+    <style name="IndexText.Article.Author">
+        <item name="android:textStyle">italic</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">@color/index_text_article_author</item>
+    </style>
+
     <style name="IndexText.Toplink">
         <item name="android:textColor">@color/index_text_toplink</item>
         <item name="android:textSize">16sp</item>
