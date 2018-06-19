@@ -6,7 +6,7 @@ buildscript {
         maven { url 'https://jitpack.io' }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.1.2'
+        classpath 'com.android.tools.build:gradle:3.1.3'
         classpath 'com.akaita.android:easylauncher:1.1.0'
         classpath 'com.github.Triple-T:gradle-play-publisher:4bb0bd9203' //Workaround for 50 Char Limit Bug and internal track, 'com.github.triplet.gradle:play-publisher:1.2.0'
         classpath 'com.google.gms:google-services:4.0.1'
