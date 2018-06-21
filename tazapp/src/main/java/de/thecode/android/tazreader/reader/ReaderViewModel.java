@@ -12,6 +12,8 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.WorkerThread;
 
+import com.artifex.mupdf.viewer.MuPDFCore;
+
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Resource;
 import de.thecode.android.tazreader.data.ResourceRepository;
@@ -53,6 +55,7 @@ public class ReaderViewModel extends AndroidViewModel {
     private final LiveData<List<Store>>     storeListLiveData;
     private final String                    bookId;
     private final StorageManager            storageManager;
+    private final Map<String, MuPDFCore> pdfCoreMap = new HashMap<>();
 
 
     public ReaderViewModel(@NonNull Application application, String bookId) {
@@ -120,8 +123,9 @@ public class ReaderViewModel extends AndroidViewModel {
         return storageManager.getPaperDirectory(paperLiveData.getValue());
     }
 
-    public File getResourceDirectory(){
-        return storageManager.getResourceDirectory(paperLiveData.getValue().getResource());
+    public File getResourceDirectory() {
+        return storageManager.getResourceDirectory(paperLiveData.getValue()
+                                                                .getResource());
     }
 
     public StoreRepository getStoreRepository() {
@@ -129,8 +133,8 @@ public class ReaderViewModel extends AndroidViewModel {
     }
 
     @WorkerThread
-    public Store getStore(String key){
-        return getStoreRepository().getStore(bookId,key);
+    public Store getStore(String key) {
+        return getStoreRepository().getStore(bookId, key);
     }
 
 //    public Resource getResource() {
@@ -217,6 +221,10 @@ public class ReaderViewModel extends AndroidViewModel {
     public void setIndexVerbose(boolean indexVerbose) {
         settings.setPref(TazSettings.PREFKEY.CONTENTVERBOSE, indexVerbose);
         indexVerboseLiveData.setValue(indexVerbose);
+    }
+
+    public Map<String, MuPDFCore> getPdfCoreMap() {
+        return pdfCoreMap;
     }
 
     public UserTocLiveData getUserTocLiveData() {

@@ -5,6 +5,8 @@ import android.arch.lifecycle.LiveData;
 import android.content.Context;
 import android.text.TextUtils;
 
+import com.artifex.mupdf.viewer.MuPDFCore;
+
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.PaperRepository;
 import de.thecode.android.tazreader.data.Resource;
@@ -37,6 +39,7 @@ public class PaperLiveData extends LiveData<Paper> {
     private final StoreRepository storeRepository;
     private final ResourceRepository resourceRepository;
     private Resource resource;
+    private Map<String, MuPDFCore> muPdfCores = new HashMap<>();
 
     public PaperLiveData(Context context, String bookId) {
         this.bookId = bookId;
@@ -57,7 +60,13 @@ public class PaperLiveData extends LiveData<Paper> {
                 if (paper == null) throw new Paper.PaperNotFoundException();
                 //paper.parsePlist(mStorage.getPaperFile(paper));
                 resource = resourceRepository.getResourceForPaper(paper);
-                paper.parsePlist(new File(storageManager.getPaperDirectory(paper), Paper.CONTENT_PLIST_FILENAME));
+                File paperDir = storageManager.getPaperDirectory(paper);
+                paper.parsePlist(new File(paperDir, Paper.CONTENT_PLIST_FILENAME));
+                for (Paper.Plist.Page page : paper.getPlist().getAllPages()) {
+                    File pdfFile = new File(paperDir, page.getKey());
+                    MuPDFCore core = new MuPDFCore(pdfFile.getAbsolutePath());
+                    muPdfCores.put(page.getKey(),core);
+                }
                 String bookmarkJsonString = storeRepository.getStore(bookId,Paper.STORE_KEY_BOOKMARKS)
                                                            .getValue();
                 if (!TextUtils.isEmpty(bookmarkJsonString)) {
@@ -145,4 +154,9 @@ public class PaperLiveData extends LiveData<Paper> {
     public Resource getResource() {
         return resource;
     }
+
+    public MuPDFCore getCore(String key){
+        return muPdfCores.get(key);
+    }
+
 }

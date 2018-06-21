@@ -9,12 +9,13 @@ import android.os.AsyncTask;
 import android.util.LruCache;
 import android.widget.ImageView;
 
-import com.artifex.mupdfdemo.MuPDFCore;
+
+import com.artifex.mupdf.fitz.Cookie;
+import com.artifex.mupdf.viewer.MuPDFCore;
 
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.FileCachePDFThumbHelper;
 import de.thecode.android.tazreader.data.Paper;
-import de.thecode.android.tazreader.reader.page.TAZMuPDFCore;
 import de.thecode.android.tazreader.utils.StorageManager;
 
 import java.io.File;
@@ -47,7 +48,7 @@ public class BitmapWorkerTask extends AsyncTask<Void, Void, Bitmap> {
     private final WeakReference<ImageView> imageViewReference;
     private final Paper.Plist.Page         page;
     private final String                   key;
-    private       MuPDFCore.Cookie         cookie;
+    private       Cookie                   cookie;
 
     private final int                     mThumbnailImageHeight;
     private final int                     mThumbnailImageWidth;
@@ -147,12 +148,10 @@ public class BitmapWorkerTask extends AsyncTask<Void, Void, Bitmap> {
             if (imageViewReference.get() != null) {
 
 
-                TAZMuPDFCore core = new TAZMuPDFCore(imageViewReference.get()
-                                                                       .getContext(),
-                                                     new File(paperDirectory, key).getAbsolutePath());
+                MuPDFCore core = new MuPDFCore(new File(paperDirectory, key).getAbsolutePath());
                 core.countPages();
-                core.setPageSize(core.getPageSize(0));
-                cookie = core.new Cookie();
+                //core.setPageSize(core.getPageSize(0));
+                cookie = new Cookie();
 
                 core.drawPage(lq,
                               0,

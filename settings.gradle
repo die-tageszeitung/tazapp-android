@@ -1,1 +1,1 @@
-include ':tazapp'
+include ':tazapp',':mupdf-lib'

@@ -3,14 +3,20 @@ package de.thecode.android.tazreader.reader.page;
 import android.arch.lifecycle.Observer;
 import android.graphics.Bitmap;
 import android.graphics.Point;
+import android.graphics.PointF;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.Toast;
+
+import com.artifex.mupdf.viewer.PageView;
+import com.artifex.mupdf.viewer.ReaderView;
 
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper.Plist.Page;
@@ -29,14 +35,10 @@ import timber.log.Timber;
 public class PagesFragment extends AbstractContentFragment {
 
 
-    TAZReaderView _readerView;
-    ShareButton   mShareButton;
+    ReaderView  _readerView;
+    ShareButton mShareButton;
 
     TazReaderViewAdaper _adapter;
-
-//    List<Page> pages;
-
-//    String _startKey;
 
     String currentKey;
 
@@ -47,49 +49,20 @@ public class PagesFragment extends AbstractContentFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        AnalyticsWrapper.getInstance()
-//                        .trackBreadcrumb("onCreate in PagesFragment");
-//        if (savedInstanceState == null) {
-//            if (getArguments() != null) _startKey = getArguments().getString(ARG_STARTKEY);
-//        } else {
-//            _startKey = savedInstanceState.getString(ARG_STARTKEY);
-//        }
-//        pages = new ArrayList<>();
-//        Paper paper = getReaderViewModel().getPaper();
-//        if (paper != null){
-//            for (Paper.Plist.Source source : paper
-//                                                     .getPlist()
-//                                                     .getSources()) {
-//                for (Paper.Plist.Book book : source.getBooks()) {
-//                    for (Paper.Plist.Category category : book.getCategories()) {
-//                        pages.addAll(category.getPages());
-//                    }
-//                }
-//            }
-//
-//        }
         _adapter = new TazReaderViewAdaper();
-        //setRetainInstance(true);
     }
 
-//    @Override
-//    public void onSaveInstanceState(Bundle outState) {
-//        super.onSaveInstanceState(outState);
-//        outState.putString(ARG_STARTKEY, _startKey);
-//    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-//        AnalyticsWrapper.getInstance()
-//                        .trackBreadcrumb("onCreateView in PagesFragment");
         View view = inflater.inflate(R.layout.reader_pagereader, container, false);
         _readerView = view.findViewById(R.id.readerview);
-        _readerView.setListener(new TAZReaderView.TAZReaderViewListener() {
-            @Override
-            public void onMoveToChild(String key) {
-                getReaderViewModel().setCurrentKey(key);
-            }
-        });
+//        _readerView.setListener(new TAZReaderView.TAZReaderViewListener() {
+//            @Override
+//            public void onMoveToChild(String key) {
+//                getReaderViewModel().setCurrentKey(key);
+//            }
+//        });
         _readerView.setAdapter(_adapter);
         mShareButton = view.findViewById(R.id.share);
         ReaderButton mPageIndexButton = view.findViewById(R.id.pageindex);
@@ -134,9 +107,6 @@ public class PagesFragment extends AbstractContentFragment {
             });
         } else mIndexButton.setVisibility(View.GONE);
 
-
-//        if (!TextUtils.isEmpty(_startKey)) setPage(_startKey);
-
         return view;
     }
 
@@ -159,30 +129,13 @@ public class PagesFragment extends AbstractContentFragment {
                                         int moveToPos = _adapter.pages.indexOf(tocItem);
                                         int readerPos = _readerView.getDisplayedViewIndex();
                                         if (moveToPos != -1 && readerPos != moveToPos) {
-                                            _readerView.resetScale();
+//                                            _readerView.resetScale();
                                             _readerView.setDisplayedViewIndex(moveToPos);
                                         }
                                     }
                                 }
                             });
     }
-
-//    public void setPage(String key) {
-////        Timber.d("key: %s", key);
-////        if (_readerView != null) {
-////            for (Page page : pages) {
-////                if (page.getKey()
-////                        .equals(key)) {
-////                    Timber.d("setting page with key: %s", key);
-////                    _readerView.resetScale();
-////                    _readerView.setDisplayedViewIndex(pages.indexOf(page));
-////                    break;
-////                }
-////            }
-////        } else {
-////            _startKey = key;
-////        }
-//    }
 
     public void setShareButtonCallback(ITocItem item) {
         if (mShareButton != null) mShareButton.setCallback(item);
@@ -196,24 +149,14 @@ public class PagesFragment extends AbstractContentFragment {
     @Override
     public void onDestroy() {
 
-        if (_readerView != null) {
-            if (_readerView.mChildViews != null) {
-                for (int i = 0; i < _readerView.mChildViews.size(); i++) {
-                    if (_readerView.mChildViews.get(_readerView.mChildViews.keyAt(i)) instanceof TAZPageView) {
-                        TAZPageView pageView = (TAZPageView) _readerView.mChildViews.get(_readerView.mChildViews.keyAt(i));
-                        if (pageView.mCore != null) pageView.mCore.onDestroy();
-                        pageView.releaseBitmaps();
-                    }
-                }
-            }
-        }
         super.onDestroy();
     }
 
     public class TazReaderViewAdaper extends BaseAdapter {
 
         private Bitmap mSharedHqBm;
-        private List<Page> pages = new ArrayList<>();
+        private       List<Page>          pages      = new ArrayList<>();
+        private final SparseArray<PointF> mPageSizes = new SparseArray<>();
 
         public void update(List<Page> newPages) {
             pages.clear();
@@ -244,29 +187,63 @@ public class PagesFragment extends AbstractContentFragment {
         public View getView(int position, View convertView, ViewGroup parent) {
             Timber.d("position: %s, convertView: %s, parent: %s", position, convertView, parent);
 
-            TAZPageView pageView;
+//            TAZPageView pageView;
+//
+//            if (convertView == null) {
+//                if (mSharedHqBm == null || mSharedHqBm.getWidth() != parent.getWidth() || mSharedHqBm.getHeight() != parent.getHeight())
+//                    mSharedHqBm = Bitmap.createBitmap(parent.getWidth(), parent.getHeight(), Bitmap.Config.ARGB_8888);
+//                pageView = new TAZPageView(getActivity(), new Point(parent.getWidth(), parent.getHeight()), mSharedHqBm);
+//            } else {
+//                pageView = (TAZPageView) convertView;
+//            }
+//
+//            try {
+//                pageView.init(pages.get(position));
+//            } catch (IndexOutOfBoundsException e) {
+//                Timber.w(e);
+//            }
 
+            final PageView pageView;
             if (convertView == null) {
                 if (mSharedHqBm == null || mSharedHqBm.getWidth() != parent.getWidth() || mSharedHqBm.getHeight() != parent.getHeight())
                     mSharedHqBm = Bitmap.createBitmap(parent.getWidth(), parent.getHeight(), Bitmap.Config.ARGB_8888);
-                pageView = new TAZPageView(getActivity(), new Point(parent.getWidth(), parent.getHeight()), mSharedHqBm);
+
+                pageView = new PageView(parent.getContext(), new Point(parent.getWidth(), parent.getHeight()), mSharedHqBm);
             } else {
-                pageView = (TAZPageView) convertView;
+                pageView = (PageView) convertView;
             }
+            pageView.setCore(getReaderViewModel().getPaperLiveData().getCore(pages.get(position).getKey()));
 
-            try {
-                pageView.init(pages.get(position));
-            } catch (IndexOutOfBoundsException e) {
-                Timber.w(e);
+            PointF pageSize = mPageSizes.get(position);
+            if (pageSize != null) {
+                // We already know the page size. Set it up
+                // immediately
+                pageView.setPage(position, pageSize);
+            } else {
+                // Page size as yet unknown. Blank it for now, and
+                // start a background task to find the size
+                pageView.blank(position);
+                AsyncTask<Void, Void, PointF> sizingTask = new AsyncTask<Void, Void, PointF>() {
+                    @Override
+                    protected PointF doInBackground(Void... arg0) {
+                        return pageView.getCore().getPageSize(0);
+                    }
+
+                    @Override
+                    protected void onPostExecute(PointF result) {
+                        super.onPostExecute(result);
+                        // We now know the page size
+                        mPageSizes.put(position, result);
+                        // Check that this view hasn't been reused for
+                        // another page since we started
+                        if (pageView.getPage() == position) pageView.setPage(position, result);
+                    }
+                };
+
+                sizingTask.execute((Void) null);
             }
-
             return pageView;
         }
 
     }
-
-//    @Override
-//    public void onTtsStateChanged(ReaderTtsFragment.TTS state) {
-//        Timber.d("state: %s", state);
-//    }
 }

@@ -46,6 +46,7 @@ import de.thecode.android.tazreader.reader.pagetoc.PageTocFragment;
 import de.thecode.android.tazreader.reader.usertoc.UserTocFragment;
 import de.thecode.android.tazreader.utils.AsyncTaskListener;
 import de.thecode.android.tazreader.utils.BaseActivity;
+import de.thecode.android.tazreader.utils.ParametrizedRunnable;
 import de.thecode.android.tazreader.utils.StorageManager;
 import de.thecode.android.tazreader.utils.TintHelper;
 
@@ -165,10 +166,16 @@ public class ReaderActivity extends BaseActivity
                        .observe(this, new Observer<ITocItem>() {
                            @Override
                            public void onChanged(@Nullable ITocItem iTocItem) {
-                               mLoadingProgress.setVisibility(View.GONE);
-                               if (mContentFragment == null && iTocItem != null) {
-                                   loadContentFragment(iTocItem.getKey());
-                               }
+                               runOnUiThread(new ParametrizedRunnable<ITocItem>() {
+                                   @Override
+                                   public void run(ITocItem parameter) {
+                                       mLoadingProgress.setVisibility(View.GONE);
+                                       if (mContentFragment == null && parameter != null) {
+                                           loadContentFragment(parameter.getKey());
+                                       }
+
+                                   }
+                               }.set(iTocItem));
                            }
                        });
 
