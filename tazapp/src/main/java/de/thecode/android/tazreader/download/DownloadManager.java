@@ -516,7 +516,11 @@ public class DownloadManager {
         }
 
         public Uri getUri() {
-            return Uri.parse(uri);
+            try {
+                return Uri.parse(uri);
+            } catch (Exception e) {
+                return null;
+            }
         }
 
         public String getDescription() {

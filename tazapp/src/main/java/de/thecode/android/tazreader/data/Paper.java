@@ -49,7 +49,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.zip.ZipException;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -103,7 +102,6 @@ public class Paper {
 
     public Paper() {
     }
-
 
 
     public Paper(NSDictionary nsDictionary) {
@@ -401,8 +399,8 @@ public class Paper {
         parsePlist(is, true);
     }
 
-    public void parsePlist(InputStream is, boolean parseIndex) throws IOException, PropertyListFormatException,
-            ParseException, ParserConfigurationException, SAXException {
+    public void parsePlist(InputStream is, boolean parseIndex) throws IOException, PropertyListFormatException, ParseException,
+            ParserConfigurationException, SAXException {
         Timber.i("Start parsing Plist - parse Index: %s", parseIndex);
         plist = new Plist(is, parseIndex);
         Timber.i("Finished parsing Plist");
@@ -958,7 +956,7 @@ public class Paper {
 //                                        .appendEncodedPath(pagePath)
 //                                        .build();
 
-                    Uri contentUri = StreamProvider.getUriForFile(BuildConfig.APPLICATION_ID + ".streamprovider",pdfFile);
+                    Uri contentUri = StreamProvider.getUriForFile(BuildConfig.APPLICATION_ID + ".streamprovider", pdfFile);
 
                     //share Intent
                     Intent intent = new Intent(Intent.ACTION_SEND);
@@ -1059,11 +1057,13 @@ public class Paper {
 
                 private static final String KEY_TITLE      = "Titel";
                 private static final String KEY_SUBTITLE   = "Untertitel";
+                private static final String KEY_AUTHOR     = "Autor";
                 private static final String KEY_ONLINELINK = "OnlineLink";
 
                 private String key;
                 private String title;
                 private String subtitle;
+                private String author;
                 private String onlinelink;
                 private Page   realPage;
 
@@ -1071,6 +1071,7 @@ public class Paper {
                     this.key = key;
                     this.title = PlistHelper.getString(dict, KEY_TITLE);
                     this.subtitle = PlistHelper.getString(dict, KEY_SUBTITLE);
+                    this.author = PlistHelper.getString(dict, KEY_AUTHOR);
                     this.onlinelink = PlistHelper.getString(dict, KEY_ONLINELINK);
                 }
 
@@ -1085,6 +1086,10 @@ public class Paper {
 
                 public String getSubtitle() {
                     return subtitle;
+                }
+
+                public String getAuthor() {
+                    return author;
                 }
 
                 public String getOnlinelink() {
@@ -1351,7 +1356,8 @@ public class Paper {
         }
     }
 
-    public @NonNull JSONArray getBookmarkJson() {
+    public @NonNull
+    JSONArray getBookmarkJson() {
         JSONArray array = new JSONArray();
         try {
 

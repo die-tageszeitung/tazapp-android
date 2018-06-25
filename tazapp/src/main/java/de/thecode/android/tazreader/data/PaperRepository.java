@@ -6,6 +6,7 @@ import android.support.annotation.WorkerThread;
 import com.squareup.picasso.Picasso;
 
 import de.thecode.android.tazreader.BuildConfig;
+import de.thecode.android.tazreader.download.DownloadManager;
 import de.thecode.android.tazreader.download.PaperDeletedEvent;
 import de.thecode.android.tazreader.room.AppDatabase;
 import de.thecode.android.tazreader.utils.StorageManager;

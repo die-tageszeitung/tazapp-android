@@ -39,9 +39,9 @@ public class UpdateHelper {
     private UserDeviceInfo userDeviceInfo;
 
     private UpdateHelper(Context context) {
-        setGooglePlayVersion(context);
         settings = TazSettings.getInstance(context);
         userDeviceInfo = UserDeviceInfo.getInstance(context);
+        setGooglePlayVersion(context);
     }
 
     public boolean isGooglePlayVersion() {

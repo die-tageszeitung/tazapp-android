@@ -37,7 +37,8 @@ public class NewLibraryAdapter extends TazListAdapter<LibraryPaper, NewLibraryAd
 
     private static final String PAYLOAD_PROGRESS = "plProgress";
     private static final String PAYLOAD_SELECTED = "plSelected";
-    private static final String PAYLOAD_STATE = "plState";
+    private static final String PAYLOAD_STATE    = "plState";
+    private static final String PAYLOAD_CHANGE = "plChange";
 
     private final ViewHolder.OnClickListener clickListener = new ViewHolder.OnClickListener() {
         @Override
@@ -53,7 +54,8 @@ public class NewLibraryAdapter extends TazListAdapter<LibraryPaper, NewLibraryAd
 
     private final OnItemClickListener itemClickListener;
 
-    public NewLibraryAdapter(OnItemClickListener itemClickListener, ExtendedAdapterListUpdateCallback.OnFirstInsertedListener firstInsertedListener) {
+    public NewLibraryAdapter(OnItemClickListener itemClickListener,
+                             ExtendedAdapterListUpdateCallback.OnFirstInsertedListener firstInsertedListener) {
         super(new LibraryAdapterCallback(), firstInsertedListener);
         this.itemClickListener = itemClickListener;
     }
@@ -67,12 +69,12 @@ public class NewLibraryAdapter extends TazListAdapter<LibraryPaper, NewLibraryAd
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position, @NonNull List<Object> payloads) {
-        Timber.d("pos: %d payload: %s",position,payloads);
+        Timber.d("pos: %d payload: %s", position, payloads);
         if (!payloads.isEmpty()) {
             LibraryPaper libraryPaper = getItem(position);
-            if (payloads.contains(PAYLOAD_PROGRESS)) bindProgress(holder, libraryPaper);
-            if (payloads.contains(PAYLOAD_STATE)) bindState(holder, libraryPaper);
-            if (payloads.contains(PAYLOAD_SELECTED)) bindSelected(holder, libraryPaper);
+            bindProgress(holder, libraryPaper);
+            bindState(holder, libraryPaper.getPaper());
+            bindSelected(holder, libraryPaper);
         } else super.onBindViewHolder(holder, position, payloads);
     }
 
@@ -80,19 +82,21 @@ public class NewLibraryAdapter extends TazListAdapter<LibraryPaper, NewLibraryAd
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         LibraryPaper libraryPaper = getItem(position);
-        try {
-            holder.date.setText(libraryPaper.getPaper()
-                                            .getDate(DateFormat.MEDIUM));
-        } catch (ParseException e) {
-            holder.date.setText(e.getMessage());
-        }
+        bindImage(holder, libraryPaper.getPaper());
+        bindBadge(holder, libraryPaper.getPaper());
+        bindDate(holder, libraryPaper.getPaper());
 
+        bindProgress(holder, libraryPaper);
+        bindState(holder, libraryPaper.getPaper());
+        bindSelected(holder, libraryPaper);
+    }
+
+    private void bindImage(ViewHolder holder, Paper paper) {
         Picasso.with(holder.image.getContext())
-               .load(libraryPaper.getPaper()
-                                 .getImage())
+               .load(paper.getImage())
                .placeholder(R.drawable.dummy)
                .networkPolicy(NetworkPolicy.OFFLINE)
-               .into(holder.image, new MissingCoverCallback(holder.image, libraryPaper.getPaper()) {
+               .into(holder.image, new MissingCoverCallback(holder.image, paper) {
                    @Override
                    public void onError(ImageView imageView, Paper paper) {
                        Picasso.with(imageView.getContext())
@@ -106,43 +110,46 @@ public class NewLibraryAdapter extends TazListAdapter<LibraryPaper, NewLibraryAd
 
                    }
                });
+    }
 
-        if (libraryPaper.getPaper()
-                        .isKiosk()) {
+    private void bindBadge(ViewHolder holder, Paper paper) {
+        if (paper.isKiosk()) {
             holder.badge.setText(R.string.string_badge_kiosk);
             holder.badge.setVisibility(View.VISIBLE);
         } else holder.badge.setVisibility(View.GONE);
+
+    }
+
+    private void bindDate(ViewHolder holder, Paper paper) {
         try {
-            holder.card.setContentDescription(libraryPaper.getPaper()
-                                                          .getDate(DateFormat.LONG));
+            holder.date.setText(paper.getDate(DateFormat.MEDIUM));
+        } catch (ParseException e) {
+            holder.date.setText(e.getMessage());
+        }
+        try {
+            holder.card.setContentDescription(paper.getDate(DateFormat.LONG));
         } catch (ParseException e) {
             Timber.e(e);
         }
 
-        bindProgress(holder, libraryPaper);
-        bindState(holder,libraryPaper);
-        bindSelected(holder, libraryPaper);
     }
 
     private void bindProgress(ViewHolder holder, LibraryPaper libraryPaper) {
         holder.progress.setProgress(100 - libraryPaper.getProgress());
     }
 
-    private void bindState(ViewHolder holder, LibraryPaper libraryPaper) {
-        if (libraryPaper.getPaper()
-                        .isDownloading()) {
+    private void bindState(ViewHolder holder, Paper paper) {
+        if (paper.isDownloading()) {
             holder.wait.setVisibility(View.VISIBLE);
         } else {
             holder.wait.setVisibility(View.GONE);
         }
     }
 
-    private void bindSelected(ViewHolder holder, LibraryPaper libraryPaper){
+    private void bindSelected(ViewHolder holder, LibraryPaper libraryPaper) {
         if (libraryPaper.isSelected()) holder.selected.setVisibility(View.VISIBLE);
         else holder.selected.setVisibility(View.INVISIBLE);
     }
-
-
 
 
     private static class LibraryAdapterCallback extends DiffUtil.ItemCallback<LibraryPaper> {
@@ -160,11 +167,15 @@ public class NewLibraryAdapter extends TazListAdapter<LibraryPaper, NewLibraryAd
 
         @Override
         public Object getChangePayload(LibraryPaper oldItem, LibraryPaper newItem) {
-            Timber.i("%s %s",oldItem,newItem);
-            if (oldItem.getPaper().isDownloading() != newItem.getPaper().isDownloading()) return PAYLOAD_STATE;
-            if (oldItem.isSelected() != newItem.isSelected()) return PAYLOAD_SELECTED;
-            if (oldItem.getProgress() != newItem.getProgress()) return PAYLOAD_PROGRESS;
-            return null;
+            return PAYLOAD_CHANGE;
+//
+//            Timber.i("%s %s", oldItem, newItem);
+//            if (oldItem.getPaper()
+//                       .isDownloading() != newItem.getPaper()
+//                                                  .isDownloading()) return PAYLOAD_STATE;
+//            if (oldItem.isSelected() != newItem.isSelected()) return PAYLOAD_SELECTED;
+//            if (oldItem.getProgress() != newItem.getProgress()) return PAYLOAD_PROGRESS;
+//            return null;
         }
     }
 

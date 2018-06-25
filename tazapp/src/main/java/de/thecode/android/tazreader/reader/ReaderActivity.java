@@ -165,8 +165,8 @@ public class ReaderActivity extends BaseActivity
                        .observe(this, new Observer<ITocItem>() {
                            @Override
                            public void onChanged(@Nullable ITocItem iTocItem) {
+                               mLoadingProgress.setVisibility(View.GONE);
                                if (mContentFragment == null && iTocItem != null) {
-                                   mLoadingProgress.setVisibility(View.GONE);
                                    loadContentFragment(iTocItem.getKey());
                                }
                            }
