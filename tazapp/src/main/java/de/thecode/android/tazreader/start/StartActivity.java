@@ -565,19 +565,28 @@ public class StartActivity extends BaseActivity
                                             DIALOG_ERROR_OPEN_PAPER);
                             break;
                         default:
-                            try {
-                                DownloadManager.getInstance(StartActivity.this)
-                                               .enqueResource(resource, false);
-                                startViewModel.setPaperWaitingForResource(paper.getBookId());
-                                Timber.e(new Resource.MissingResourceException());
-                                showWaitDialog(DIALOG_WAIT + paper.getBookId(),
-                                               getString(R.string.dialog_meassage_loading_missing_resource));
-                            } catch (DownloadManager.NotEnoughSpaceException e) {
-                                Timber.e(e);
-                                showDownloadErrorDialog(getString(R.string.message_resourcedownload_error),
-                                                        getString(R.string.message_not_enough_space),
-                                                        e);
-                            }
+                            new AsyncTaskListener<Resource, Exception>(resources -> {
+                                try {
+                                    DownloadManager.getInstance(StartActivity.this)
+                                                   .enqueResource(resources[0], false);
+                                } catch (DownloadManager.NotEnoughSpaceException e) {
+                                    return e;
+                                }
+                                return null;
+                            }, exception -> {
+                                if (exception instanceof DownloadManager.NotEnoughSpaceException) {
+                                    Timber.e(exception);
+                                    showDownloadErrorDialog(getString(R.string.message_resourcedownload_error),
+                                                            getString(R.string.message_not_enough_space),
+                                                            exception);
+                                } else {
+                                    startViewModel.setPaperWaitingForResource(paper.getBookId());
+                                    Timber.e(new Resource.MissingResourceException());
+                                    showWaitDialog(DIALOG_WAIT + paper.getBookId(),
+                                                   getString(R.string.dialog_meassage_loading_missing_resource));
+
+                                }
+                            }).execute(resource);
 
                     }
                 }
@@ -786,7 +795,8 @@ public class StartActivity extends BaseActivity
         } else if (DIALOG_UPDATE_AVAILABLE.equals(tag)) {
             switch (which) {
                 case Dialog.BUTTON_POSITIVE:
-                    UpdateHelper.getInstance(this).update(this);
+                    UpdateHelper.getInstance(this)
+                                .update(this);
                     break;
             }
         }
