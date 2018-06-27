@@ -181,10 +181,21 @@ public class StartViewModel extends AndroidViewModel {
     public static class DownloadError {
         final String title;
         final String details;
+        final Exception exception;
 
-        public DownloadError(String title, String details) {
+        public DownloadError(String title, String details, Exception exception) {
             this.title = title;
             this.details = details;
+            this.exception = exception;
+        }
+
+        public DownloadError(String title, String details) {
+            this(title,details,null);
+        }
+
+
+        public Exception getException() {
+            return exception;
         }
 
         public String getTitle() {

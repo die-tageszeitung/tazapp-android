@@ -1,12 +1,14 @@
 package de.thecode.android.tazreader.start;
 
 
+import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
@@ -272,6 +274,15 @@ public class StartActivity extends BaseActivity
         //Intent intent = getIntent();
         openReaderFromDownloadNotificationIntent(getIntent());
         checkForNewerVersion();
+        startViewModel.getDownloadErrorLiveSingleData()
+                      .observe(this, new Observer<StartViewModel.DownloadError>() {
+                          @Override
+                          public void onChanged(@Nullable StartViewModel.DownloadError downloadError) {
+                              if (downloadError != null) showDownloadErrorDialog(downloadError.getTitle(),
+                                                                                 downloadError.getDetails(),
+                                                                                 downloadError.getException());
+                          }
+                      });
     }
 
     public void checkForNewerVersion() {

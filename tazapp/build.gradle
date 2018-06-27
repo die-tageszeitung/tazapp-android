@@ -1,6 +1,6 @@
 def versionMajor = 3
-def versionMinor = 7
-def versionPatch = 0
+def versionMinor = 6
+def versionPatch = 2
 def versionBuild = 0
 
 def supportLibVer = "27.1.1"

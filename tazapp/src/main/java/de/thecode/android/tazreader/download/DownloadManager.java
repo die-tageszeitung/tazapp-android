@@ -209,7 +209,7 @@ public class DownloadManager {
         } catch (NotEnoughSpaceException e) {
             Timber.e(e);
             result.setState(DownloadManagerResult.STATE.NOSPACE);
-            result.setDetails(e.toString());
+            result.setDetails(appResources.getString(R.string.message_not_enough_space));
         } catch (DownloadNotAllowedException e) {
             Timber.e(e);
             result.setState(DownloadManagerResult.STATE.NOTALLOWED);
