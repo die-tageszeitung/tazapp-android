@@ -1,3 +1,5 @@
+* Bugfix Download fehlende Ressourcen
+* Bugfix für Fälle, in denen App nach Update nicht startet
 * Autor im Inhaltsverzeichnis
 * Updatehinweis
 * Bugfix Mail an Autor 

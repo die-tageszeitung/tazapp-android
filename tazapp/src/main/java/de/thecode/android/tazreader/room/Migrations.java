@@ -31,6 +31,10 @@ public class Migrations {
 
             //TODO Update PAPER / muss zuerst
             db.execSQL("ALTER TABLE PAPER RENAME TO PAPER_REN;");
+            //Lösche alle doppelten
+            db.execSQL("DELETE FROM PAPER_REN WHERE bookId IN (SELECT bookId FROM PAPER_REN GROUP BY bookId HAVING COUNT(bookId) > 1) AND isDownloaded = 0;");
+            db.execSQL("DELETE FROM PAPER_REN WHERE bookId IN (SELECT bookId FROM PAPER_REN GROUP BY bookId HAVING COUNT(bookId) > 1);");
+
             db.execSQL(CREATE_SQL_PAPER);
             db.execSQL(
                     "INSERT INTO PAPER (bookId,date,image,imageHash,link,fileHash,len,lastModified,resource,demo,hasUpdate,downloadId,downloaded,kiosk,imported,title,validUntil,publication) SELECT bookId,date,image,imageHash,link,fileHash,len,lastModified,resource,isDemo,hasUpdate,downloadId,isDownloaded,kiosk,imported,title,validUntil,publicationId FROM PAPER_REN;");
@@ -49,6 +53,8 @@ public class Migrations {
 
             //TODO Update Publication
             db.execSQL("ALTER TABLE PUBLICATION RENAME TO PUBLICATION_REN;");
+            //Doppelte löschen
+            db.execSQL("DELETE FROM PUBLICATION_REN WHERE issueName IN (SELECT issueName FROM PUBLICATION_REN GROUP BY issueName HAVING COUNT(issueName) > 1);");
             db.execSQL(CREATE_SQL_PUBLICATION);
             db.execSQL(
                     "INSERT INTO PUBLICATION (issueName,created,image,name,typeName,url,validUntil) SELECT issueName,created,image,name,typeName,url,validUntil FROM PUBLICATION_REN");
@@ -57,7 +63,19 @@ public class Migrations {
 
             Timber.d("Umbenennen der alten Store Tabelle");
             db.execSQL("ALTER TABLE STORE RENAME TO STORE_REN;");
-            db.execSQL("UPDATE STORE_REN SET value = replace(value,substr(value,instr(value,'?')),'') WHERE key LIKE '%/currentPosition' AND value LIKE '%?%'");
+
+            Cursor cursor2 = db.query("SELECT * FROM STORE_REN WHERE key LIKE '%/currentPosition' AND value LIKE '%?%'");
+            try {
+                while (cursor2.moveToNext()) {
+                    String key = cursor2.getString(cursor2.getColumnIndex("key"));
+                    String value = cursor2.getString(cursor2.getColumnIndex("value"));
+                    value = value.substring(0,value.indexOf('?'));
+                    db.execSQL("UPDATE STORE_REN SET value = '"+value+"' WHERE key LIKE '"+key+"';");
+                }
+            } finally {
+                cursor2.close();
+            }
+
             Timber.d("Anlegen der neuen Store Tabelle");
             db.execSQL(CREATE_SQL_STORE);
             db.execSQL("INSERT INTO STORE (path, value) SELECT key, value FROM STORE_REN;");
