@@ -219,6 +219,7 @@ public class DownloadManager {
     }
 
 
+    @WorkerThread
     @SuppressLint("NewApi")
     public void enqueResource(Resource resource, boolean wifiOnly) throws IllegalArgumentException, NotEnoughSpaceException {
         //Paper paper = new Paper(mContext, paperId);
