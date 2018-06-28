@@ -31,6 +31,7 @@ public class Migrations {
 
             //TODO Update PAPER / muss zuerst
             db.execSQL("ALTER TABLE PAPER RENAME TO PAPER_REN;");
+            db.execSQL("DELETE FROM PAPER_REN WHERE bookId IS NULL;");
             //Lösche alle doppelten
             db.execSQL("DELETE FROM PAPER_REN WHERE bookId IN (SELECT bookId FROM PAPER_REN GROUP BY bookId HAVING COUNT(bookId) > 1) AND isDownloaded = 0;");
             db.execSQL("DELETE FROM PAPER_REN WHERE bookId IN (SELECT bookId FROM PAPER_REN GROUP BY bookId HAVING COUNT(bookId) > 1);");
@@ -53,6 +54,7 @@ public class Migrations {
 
             //TODO Update Publication
             db.execSQL("ALTER TABLE PUBLICATION RENAME TO PUBLICATION_REN;");
+            db.execSQL("DELETE FROM PUBLICATION_REN WHERE issueName IS NULL;");
             //Doppelte löschen
             db.execSQL("DELETE FROM PUBLICATION_REN WHERE issueName IN (SELECT issueName FROM PUBLICATION_REN GROUP BY issueName HAVING COUNT(issueName) > 1);");
             db.execSQL(CREATE_SQL_PUBLICATION);
@@ -63,6 +65,7 @@ public class Migrations {
 
             Timber.d("Umbenennen der alten Store Tabelle");
             db.execSQL("ALTER TABLE STORE RENAME TO STORE_REN;");
+            db.execSQL("DELETE FROM STORE_REN WHERE key IS NULL;");
 
             Cursor cursor2 = db.query("SELECT * FROM STORE_REN WHERE key LIKE '%/currentPosition' AND value LIKE '%?%'");
             try {
@@ -82,6 +85,7 @@ public class Migrations {
             db.execSQL("DROP TABLE STORE_REN;");
 
             db.execSQL("ALTER TABLE RESOURCE RENAME TO RESOURCE_REN;");
+            db.execSQL("DELETE FROM RESOURCE_REN WHERE key IS NULL;");
             db.execSQL(CREATE_SQL_RESOURCE);
             db.execSQL(
                     "INSERT INTO RESOURCE (key,downloadId,downloaded,len,fileHash,url) SELECT key,downloadID,downloaded,len,fileHash,url FROM RESOURCE_REN");

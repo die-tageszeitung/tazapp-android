@@ -1,11 +1,6 @@
+* Bugfix: laufende Downloads können wieder abgebrochen werden
 * Bugfix Download fehlende Ressourcen
 * Bugfix für Fälle, in denen App nach Update nicht startet
 * Autor im Inhaltsverzeichnis
 * Updatehinweis
-* Bugfix Mail an Autor 
-* Bugfix für Bilder in Artikeln
-* Bugfix Abstürze beim starten der App aus dem Hintergrund
-* Bugfix Downloads
-* Adaptive Icons für Android 8
-* Bilder werden jetzt auch beim Blättern angezeigt
-* Möglichkeit Fehler per Mail zu melden (Impressum)
+* Bugfix Mail an Autor
