@@ -39,4 +39,17 @@
             android:layout_height="wrap_content"
             android:id="@+id/installationid"
             style="@style/TechInfo"/>
+
+    <TextView
+            android:text="@string/dialog_techinfo_android_version"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/TechInfo.Header"/>
+
+    <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/androidVersion"
+            style="@style/TechInfo"/>
+
 </LinearLayout>

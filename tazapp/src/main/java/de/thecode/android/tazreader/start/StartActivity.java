@@ -7,6 +7,7 @@ import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
@@ -47,6 +48,7 @@ import de.thecode.android.tazreader.importer.ImportActivity;
 import de.thecode.android.tazreader.job.SyncJob;
 import de.thecode.android.tazreader.migration.MigrationActivity;
 import de.thecode.android.tazreader.notifications.NotificationUtils;
+import de.thecode.android.tazreader.push.PushHelper;
 import de.thecode.android.tazreader.reader.ReaderActivity;
 import de.thecode.android.tazreader.start.importer.ImportFragment;
 import de.thecode.android.tazreader.start.library.LibraryFragment;
@@ -306,7 +308,7 @@ public class StartActivity extends BaseActivity
             if (intent.hasExtra(NotificationUtils.NOTIFICATION_EXTRA_TYPE_ID) && intent.hasExtra(NotificationUtils.NOTIFICATION_EXTRA_BOOKID)) {
                 String bookId = intent.getStringExtra(NotificationUtils.NOTIFICATION_EXTRA_BOOKID);
                 int type = intent.getIntExtra(NotificationUtils.NOTIFICATION_EXTRA_TYPE_ID, -1);
-                if (type == NotificationUtils.DOWNLOAD_NOTIFICTAION_ID && !TextUtils.isEmpty(bookId)) {
+                if (type == NotificationUtils.DOWNLOAD_NOTIFICATION_ID && !TextUtils.isEmpty(bookId)) {
                     openReader(bookId);
                 }
             }
@@ -644,8 +646,9 @@ public class StartActivity extends BaseActivity
     public void onPaperDownloadFailed(PaperDownloadFailedEvent event) {
         showDownloadErrorDialog(event.getPaper()
                                      .getTitelWithDate(this), null, event.getException());
-        new NotificationUtils(this).removeDownloadNotification(event.getPaper()
-                                                                    .getBookId());
+        NotificationUtils.getInstance(this)
+                         .removeDownloadNotification(event.getPaper()
+                                                          .getBookId());
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -780,6 +783,8 @@ public class StartActivity extends BaseActivity
                             body = body.replaceFirst("\\{appversion\\}", userDeviceInfo.getVersionName());
                             body = body.replaceFirst("\\{installid\\}", userDeviceInfo.getInstallationId());
                             body = body.replaceFirst("\\{aboid\\}", aboId);
+                            body = body.replaceFirst("\\{androidVersion\\}", Build.VERSION.SDK_INT + " (" + Build.VERSION.RELEASE + ")");
+                            body = body.replaceFirst("\\{pushToken\\}", TazSettings.getInstance(this).getFirebaseToken());
 
 
                             StringBuilder mailToBuilder = new StringBuilder("mailto:");
