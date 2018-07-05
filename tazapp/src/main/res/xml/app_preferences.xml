@@ -1,24 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v7.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" android:key="mainPreferenceScreen">
+<android.support.v7.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+                                                android:key="mainPreferenceScreen">
     <android.support.v7.preference.PreferenceCategory
             android:title="@string/category_abo">
 
         <android.support.v7.preference.SwitchPreferenceCompat
                 android:key="@string/pref_key_autoload"
                 android:title="@string/pref_title_autoload"
-                android:defaultValue="@bool/pref_default_autoload" />
+                android:defaultValue="@bool/pref_default_autoload"/>
 
         <android.support.v7.preference.SwitchPreferenceCompat
                 android:dependency="@string/pref_key_autoload"
                 android:key="@string/pref_key_autoload_wifi"
                 android:title="@string/pref_title_autoload_wifi"
-                android:defaultValue="@bool/pref_default_autoload_wifi" />
+                android:defaultValue="@bool/pref_default_autoload_wifi"/>
 
         <android.support.v7.preference.SwitchPreferenceCompat
                 android:key="@string/pref_key_autodelete"
                 android:title="@string/pref_title_autodelete"
                 android:summary="@string/pref_summary_autodelete"
-                android:defaultValue="@bool/pref_default_autodelete" />
+                android:defaultValue="@bool/pref_default_autodelete"/>
 
         <de.thecode.android.tazreader.preferences.IntegerEditTextPreference
                 android:key="@string/pref_key_autodelete_days"
@@ -28,8 +29,7 @@
                 android:ems="3"
                 android:title="@string/pref_title_autodelete_days"
                 android:summary="@string/pref_summary_autodelete_days"
-                android:defaultValue="@string/pref_default_autodelete_days" />
-
+                android:defaultValue="@string/pref_default_autodelete_days"/>
 
 
     </android.support.v7.preference.PreferenceCategory>
@@ -40,7 +40,7 @@
         <android.support.v7.preference.SwitchPreferenceCompat
                 android:key="@string/pref_key_keepscreen"
                 android:title="@string/pref_title_keepscreen"
-                android:defaultValue="@bool/pref_default_keepscreen" />
+                android:defaultValue="@bool/pref_default_keepscreen"/>
 
         <android.support.v7.preference.ListPreference
                 android:key="@string/pref_key_orientation"
@@ -49,7 +49,7 @@
                 android:entries="@array/pref_names_orientation"
                 android:summary="%s"
                 android:entryValues="@array/pref_values_orientation"
-            />
+                />
 
     </android.support.v7.preference.PreferenceCategory>
     <android.support.v7.preference.PreferenceCategory
@@ -59,13 +59,13 @@
                 android:key="@string/pref_key_index_button"
                 android:title="@string/pref_title_index_button"
                 android:summary="@string/pref_summary_index_button"
-                android:defaultValue="@bool/pref_default_index_button" />
+                android:defaultValue="@bool/pref_default_index_button"/>
 
         <android.support.v7.preference.SwitchPreferenceCompat
                 android:key="@string/pref_key_pageindex_button"
                 android:title="@string/pref_title_pageindex_button"
                 android:summary="@string/pref_summary_pageindex_button"
-                android:defaultValue="@bool/pref_default_pageindex_button" />
+                android:defaultValue="@bool/pref_default_pageindex_button"/>
 
     </android.support.v7.preference.PreferenceCategory>
     <android.support.v7.preference.PreferenceCategory
@@ -74,15 +74,15 @@
         <android.support.v7.preference.SwitchPreferenceCompat
                 android:key="@string/pref_key_page_tap_border_turn"
                 android:title="@string/pref_title_page_tap_border_turn"
-                android:defaultValue="@bool/pref_default_page_tap_border_turn" />
+                android:defaultValue="@bool/pref_default_page_tap_border_turn"/>
         <android.support.v7.preference.SwitchPreferenceCompat
                 android:key="@string/pref_key_page_tap_to_article"
                 android:title="@string/pref_title_page_tap_to_article"
-                android:defaultValue="@bool/pref_default_page_tap_to_article" />
+                android:defaultValue="@bool/pref_default_page_tap_to_article"/>
         <android.support.v7.preference.SwitchPreferenceCompat
                 android:key="@string/pref_key_page_doubletap_zoom"
                 android:title="@string/pref_title_page_doubletap_zoom"
-                android:defaultValue="@bool/pref_default_page_doubletap_zoom" />
+                android:defaultValue="@bool/pref_default_page_doubletap_zoom"/>
 
     </android.support.v7.preference.PreferenceCategory>
     <android.support.v7.preference.PreferenceCategory
@@ -91,33 +91,43 @@
         <android.support.v7.preference.SwitchPreferenceCompat
                 android:key="@string/pref_key_tts_active"
                 android:title="@string/pref_title_tts_active"
-                android:defaultValue="@bool/pref_default_tts_active" />
+                android:defaultValue="@bool/pref_default_tts_active"/>
 
     </android.support.v7.preference.PreferenceCategory>
+
     <android.support.v7.preference.PreferenceCategory
-            android:key="pushCat"
+            android:key="@string/category_notifications_key"
+            android:title="@string/category_notifications">
+        <android.support.v7.preference.Preference
+                android:key="@string/pref_key_notification_settings"
+                android:title="@string/pref_title_notification_settings"/>
+
+
+    </android.support.v7.preference.PreferenceCategory>
+
+    <android.support.v7.preference.PreferenceCategory
+            android:key="@string/category_notification_push_key"
             android:title="@string/category_notification_push">
 
         <android.support.v7.preference.SwitchPreferenceCompat
                 android:key="@string/pref_key_notification_push"
                 android:title="@string/pref_title_notification_push"
-                android:defaultValue="@bool/pref_default_notification_push" />
+                android:defaultValue="@bool/pref_default_notification_push"/>
 
         <de.thecode.android.tazreader.preferences.NotificationSoundPreference
                 android:key="@string/pref_key_notification_push_ringtone"
                 android:dependency="@string/pref_key_notification_push"
                 android:title="@string/pref_title_notification_push_ringtone"/>
 
-
     </android.support.v7.preference.PreferenceCategory>
     <android.support.v7.preference.PreferenceCategory
-            android:key="downloadNotificationCat"
+            android:key="@string/category_notification_download_key"
             android:title="@string/category_notification_download">
 
         <android.support.v7.preference.SwitchPreferenceCompat
                 android:key="@string/pref_key_notification_download_vibrate"
                 android:title="@string/pref_title_notification_download_vibrate"
-                android:defaultValue="@bool/pref_default_notification_download_vibrate" />
+                android:defaultValue="@bool/pref_default_notification_download_vibrate"/>
 
         <de.thecode.android.tazreader.preferences.NotificationSoundPreference
                 android:key="@string/pref_key_notification_download_ringtone"

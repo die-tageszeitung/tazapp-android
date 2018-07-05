@@ -26,6 +26,8 @@ import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.start.StartActivity;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by mate on 12.10.2017.
@@ -33,27 +35,51 @@ import java.io.IOException;
 
 public class NotificationUtils extends ContextWrapper {
 
-    public static final  int    DOWNLOAD_NOTIFICTAION_ID = 1;
+
+
+
+    public static final  int    DOWNLOAD_NOTIFICATION_ID = 1;
     private static final String DOWNLOAD_GROUP_KEY       = "notificationDownloadGroup";
     public static final  String DOWNLOAD_CHANNEL_ID      = BuildConfig.APPLICATION_ID + ".DOWNLOAD";
+    public static final String MESSAGE_CHANNEL_ID = "MESSAGE";
 
     public static final String TAG_NOTIFICATION_UPDATE = "appUpdate";
 
     public static final String NOTIFICATION_EXTRA_TYPE_ID = "typeId";
     public static final String NOTIFICATION_EXTRA_BOOKID  = "notificationBookId";
 
-    private NotificationManager notificationManager;
-    private String              downloadChannelName;
+    private static volatile NotificationUtils mInstance;
 
-
-    public NotificationUtils(Context base) {
-        super(base);
-        downloadChannelName = base.getString(R.string.notification_channel_download);
-        createChannels();
+    public static NotificationUtils getInstance(Context context) {
+        if (mInstance == null) {
+            synchronized (NotificationUtils.class) {
+                if (mInstance == null) {
+                    mInstance = new NotificationUtils(context.getApplicationContext());
+                }
+            }
+        }
+        return mInstance;
     }
 
-    private void createChannels() {
+
+
+    private NotificationManager notificationManager;
+    private String              downloadChannelName;
+    private String              messageChannelName;
+
+
+    private NotificationUtils(Context base) {
+        super(base);
+        downloadChannelName = base.getString(R.string.notification_channel_download);
+        messageChannelName = base.getString(R.string.notification_channel_message);
+    }
+
+    public void createChannels() {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+
+            List<NotificationChannel> channelList = new ArrayList<>();
+
+
             NotificationChannel downloadChannel = new NotificationChannel(DOWNLOAD_CHANNEL_ID,
                                                                           downloadChannelName,
                                                                           NotificationManager.IMPORTANCE_DEFAULT);
@@ -61,7 +87,19 @@ public class NotificationUtils extends ContextWrapper {
             downloadChannel.enableVibration(true);
             downloadChannel.setLightColor(ContextCompat.getColor(this, R.color.color_primary));
             downloadChannel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
-            getManager().createNotificationChannel(downloadChannel);
+            channelList.add(downloadChannel);
+
+            NotificationChannel messageChannel = new NotificationChannel(MESSAGE_CHANNEL_ID,
+                                                                          messageChannelName,
+                                                                          NotificationManager.IMPORTANCE_DEFAULT);
+            messageChannel.enableLights(true);
+            messageChannel.enableVibration(true);
+            messageChannel.setLightColor(ContextCompat.getColor(this, R.color.color_primary));
+            messageChannel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
+            channelList.add(messageChannel);
+
+            getManager().createNotificationChannels(channelList);
+
         }
     }
 
@@ -105,7 +143,7 @@ public class NotificationUtils extends ContextWrapper {
         int defaults = Notification.DEFAULT_LIGHTS;
         if (withVibration) defaults |= Notification.DEFAULT_VIBRATE;
         builder.setDefaults(defaults);
-        getManager().notify(paper.getBookId(), DOWNLOAD_NOTIFICTAION_ID, builder.build());
+        getManager().notify(paper.getBookId(), DOWNLOAD_NOTIFICATION_ID, builder.build());
     }
 
     public void showDownloadFinishedNotification(Paper paper) {
@@ -117,7 +155,7 @@ public class NotificationUtils extends ContextWrapper {
 
         Intent intent = new Intent(this, StartActivity.class);
         intent.putExtra(NOTIFICATION_EXTRA_BOOKID, paper.getBookId());
-        intent.putExtra(NOTIFICATION_EXTRA_TYPE_ID, DOWNLOAD_NOTIFICTAION_ID);
+        intent.putExtra(NOTIFICATION_EXTRA_TYPE_ID, DOWNLOAD_NOTIFICATION_ID);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
         int uniqueInt = (int) (System.currentTimeMillis() & 0xfffffff);
         PendingIntent contentIntent = PendingIntent.getActivity(this, uniqueInt, intent, PendingIntent.FLAG_UPDATE_CURRENT);
@@ -152,11 +190,11 @@ public class NotificationUtils extends ContextWrapper {
 
         }
 
-        getManager().notify(paper.getBookId(), DOWNLOAD_NOTIFICTAION_ID, builder.build());
+        getManager().notify(paper.getBookId(), DOWNLOAD_NOTIFICATION_ID, builder.build());
     }
 
     public void removeDownloadNotification(String bookId) {
-        getManager().cancel(bookId, DOWNLOAD_NOTIFICTAION_ID);
+        getManager().cancel(bookId, DOWNLOAD_NOTIFICATION_ID);
     }
 
 

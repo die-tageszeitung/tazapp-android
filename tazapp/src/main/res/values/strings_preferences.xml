@@ -6,8 +6,12 @@
     <string name="category_read">ANSICHT</string>
     <string name="category_readpage">SEITENANSICHT</string>
     <string name="category_readarticle">ARTIKELANSICHT</string>
+    <string name="category_notifications">BENACHRICHTIGUNGEN</string>
+    <string name="category_notifications_key">catNotifications</string>
     <string name="category_notification_push">PUSH BENACHRICHTIGUNG</string>
+    <string name="category_notification_push_key">catPush</string>
     <string name="category_notification_download">DOWNLOAD BENACHRICHTIGUNG</string>
+    <string name="category_notification_download_key">catDownloadNotification</string>
     <string name="category_other">SONSTIGES</string>
     <!--  -->
     <string name="pref_key_autoload">autoload</string>
@@ -88,5 +92,9 @@
     <string name="pref_key_notification_push">notification_push</string>
     <string name="pref_title_notification_push">Push Benachrichtigungen erhalten"</string>
     <bool name="pref_default_notification_push">true</bool>
+    <!--  -->
+    <string name="pref_key_notification_settings">notification_settings</string>
+    <string name="pref_title_notification_settings">Benachrichtigungs-Einstellungen öffnen"</string>
+
 
 </resources>

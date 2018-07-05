@@ -128,7 +128,8 @@ public class ReaderActivity extends BaseActivity
 
         mStorage = StorageManager.getInstance(this);
 
-        new NotificationUtils(this).removeDownloadNotification(bookId);
+        NotificationUtils.getInstance(this)
+                         .removeDownloadNotification(bookId);
 
         setContentView(R.layout.activity_reader);
 

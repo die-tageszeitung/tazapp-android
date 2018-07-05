@@ -42,28 +42,31 @@ public class AutoDownloadJob extends Job {
         if (settings.getPrefBoolean(TazSettings.PREFKEY.AUTOLOAD, false)) {
 
             PersistableBundleCompat extras = params.getExtras();
-            String bookId = extras.getString(ARG_PAPER_BOOKID,null);
+            String bookId = extras.getString(ARG_PAPER_BOOKID, null);
             if (!TextUtils.isEmpty(bookId)) {
                 paperRepository = PaperRepository.getInstance(getContext());
                 Paper paper = paperRepository.getPaperWithBookId(bookId);
                 if (paper != null) {
-                        Store autoDownloadedStore = StoreRepository.getInstance(getContext())
-                                                                   .getStore(paper.getBookId(), Paper.STORE_KEY_AUTO_DOWNLOADED);
-                        boolean isAutoDownloaded = Boolean.parseBoolean(autoDownloadedStore.getValue("false"));
-                        if (!isAutoDownloaded && (System.currentTimeMillis() - TimeUnit.DAYS.toMillis(1)) < paper.getDateInMillis()) {
-                            boolean wifiOnly = TazSettings.getInstance(getContext())
-                                                          .getPrefBoolean(TazSettings.PREFKEY.AUTOLOAD_WIFI, false);
-                            if (!(paper.isDownloaded() || paper.isDownloading())) {
-                                DownloadManager.DownloadManagerResult result = DownloadManager.getInstance(getContext()).downloadPaper(bookId, wifiOnly);
-                                if (result.getState() == DownloadManager.DownloadManagerResult.STATE.SUCCESS){
-                                    autoDownloadedStore.setValue("true");
-                                    StoreRepository.getInstance(getContext())
-                                                   .saveStore(autoDownloadedStore);
-                                } else if (result.getState() == DownloadManager.DownloadManagerResult.STATE.NOSPACE) {
-                                    new NotificationUtils(getContext()).showDownloadErrorNotification(paper, getContext().getString(R.string.message_not_enough_space));
-                                }
+                    Store autoDownloadedStore = StoreRepository.getInstance(getContext())
+                                                               .getStore(paper.getBookId(), Paper.STORE_KEY_AUTO_DOWNLOADED);
+                    boolean isAutoDownloaded = Boolean.parseBoolean(autoDownloadedStore.getValue("false"));
+                    if (!isAutoDownloaded && (System.currentTimeMillis() - TimeUnit.DAYS.toMillis(1)) < paper.getDateInMillis()) {
+                        boolean wifiOnly = TazSettings.getInstance(getContext())
+                                                      .getPrefBoolean(TazSettings.PREFKEY.AUTOLOAD_WIFI, false);
+                        if (!(paper.isDownloaded() || paper.isDownloading())) {
+                            DownloadManager.DownloadManagerResult result = DownloadManager.getInstance(getContext())
+                                                                                          .downloadPaper(bookId, wifiOnly);
+                            if (result.getState() == DownloadManager.DownloadManagerResult.STATE.SUCCESS) {
+                                autoDownloadedStore.setValue("true");
+                                StoreRepository.getInstance(getContext())
+                                               .saveStore(autoDownloadedStore);
+                            } else if (result.getState() == DownloadManager.DownloadManagerResult.STATE.NOSPACE) {
+                                NotificationUtils.getInstance(getContext())
+                                                 .showDownloadErrorNotification(paper,
+                                                                                getContext().getString(R.string.message_not_enough_space));
                             }
                         }
+                    }
                 }
             }
         }

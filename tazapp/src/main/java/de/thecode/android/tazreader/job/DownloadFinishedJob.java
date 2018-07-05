@@ -1,6 +1,5 @@
 package de.thecode.android.tazreader.job;
 
-import android.database.Cursor;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
@@ -111,8 +110,8 @@ public class DownloadFinishedJob extends Job {
                                        .exists()) //noinspection ResultOfMethodCallIgnored
                         externalStorage.getDownloadFile(paper)
                                        .delete();
-                    new NotificationUtils(getContext()).showDownloadErrorNotification(paper,
-                                                                                      getContext().getString(R.string.download_error_hints));
+                    NotificationUtils.getInstance(getContext())
+                                     .showDownloadErrorNotification(paper, getContext().getString(R.string.download_error_hints));
                     //NotificationHelper.showDownloadErrorNotification(context, null, paper.getId());
 
                     EventBus.getDefault()
@@ -125,50 +124,51 @@ public class DownloadFinishedJob extends Job {
             Resource resource = resourceRepository.getWithDownloadId(downloadId);
             if (resource != null) {
 
-                    //DownloadHelper.DownloadState downloadDownloadState = downloadHelper.getDownloadState(downloadId);
-                    Timber.i("Download complete for resource: %s, %s", resource, state);
-                    try {
-                        if (state.getStatus() == DownloadManager.DownloadState.STATUS_FAILED) {
-                            throw new DownloadException(state.getStatusText() + ": " + state.getReasonText());
-                        } else if (state.getStatus() == DownloadManager.DownloadState.STATUS_SUCCESSFUL) {
-                            File downloadFile = externalStorage.getDownloadFile(resource);
-                            if (!downloadFile.exists()) throw new DownloadException("Downloaded resource file missing");
-                            Timber.i("... checked file existence");
-                            if (resource.getLen() != 0 && downloadFile.length() != resource.getLen())
+                //DownloadHelper.DownloadState downloadDownloadState = downloadHelper.getDownloadState(downloadId);
+                Timber.i("Download complete for resource: %s, %s", resource, state);
+                try {
+                    if (state.getStatus() == DownloadManager.DownloadState.STATUS_FAILED) {
+                        throw new DownloadException(state.getStatusText() + ": " + state.getReasonText());
+                    } else if (state.getStatus() == DownloadManager.DownloadState.STATUS_SUCCESSFUL) {
+                        File downloadFile = externalStorage.getDownloadFile(resource);
+                        if (!downloadFile.exists()) throw new DownloadException("Downloaded resource file missing");
+                        Timber.i("... checked file existence");
+                        if (resource.getLen() != 0 && downloadFile.length() != resource.getLen())
+                            throw new DownloadException(String.format(Locale.GERMANY,
+                                                                      "Wrong size of resource download. expected: %d, file: %d, downloaded: %d",
+                                                                      resource.getLen(),
+                                                                      downloadFile.length(),
+                                                                      state.getBytesDownloaded()));
+                        Timber.i("... checked correct size of resource download");
+                        try {
+                            String fileHash = HashHelper.getHash(downloadFile, HashHelper.SHA_1);
+                            if (!TextUtils.isEmpty(resource.getFileHash()) && !resource.getFileHash()
+                                                                                       .equals(fileHash))
                                 throw new DownloadException(String.format(Locale.GERMANY,
-                                                                          "Wrong size of resource download. expected: %d, file: %d, downloaded: %d",
-                                                                          resource.getLen(),
-                                                                          downloadFile.length(),
-                                                                          state.getBytesDownloaded()));
-                            Timber.i("... checked correct size of resource download");
-                            try {
-                                String fileHash = HashHelper.getHash(downloadFile, HashHelper.SHA_1);
-                                if (!TextUtils.isEmpty(resource.getFileHash()) && !resource.getFileHash()
-                                                                                           .equals(fileHash))
-                                    throw new DownloadException(String.format(Locale.GERMANY,
-                                                                              "Wrong resource file hash. Expected: %s, calculated: %s",
-                                                                              resource.getFileHash(),
-                                                                              fileHash));
-                                Timber.i("... checked correct hash of resource download");
-                            } catch (NoSuchAlgorithmException e) {
-                                Timber.w(e);
-                            } catch (IOException e) {
-                                Timber.e(e);
-                                throw new DownloadException(e);
-                            }
-                            DownloadFinishedResourceJob.scheduleJob(resource);
+                                                                          "Wrong resource file hash. Expected: %s, calculated: %s",
+                                                                          resource.getFileHash(),
+                                                                          fileHash));
+                            Timber.i("... checked correct hash of resource download");
+                        } catch (NoSuchAlgorithmException e) {
+                            Timber.w(e);
+                        } catch (IOException e) {
+                            Timber.e(e);
+                            throw new DownloadException(e);
                         }
-                    } catch (DownloadException e) {
-                        Timber.e(e);
-                        resource.setDownloadId(0);
-                        resourceRepository.saveResource(resource);
-                        EventBus.getDefault()
-                                .post(new ResourceDownloadEvent(resource.getKey(), e));
+                        DownloadFinishedResourceJob.scheduleJob(resource);
                     }
+                } catch (DownloadException e) {
+                    Timber.e(e);
+                    resource.setDownloadId(0);
+                    resourceRepository.saveResource(resource);
+                    EventBus.getDefault()
+                            .post(new ResourceDownloadEvent(resource.getKey(), e));
+                }
 
             }
 
-        } return Result.SUCCESS;
+        }
+        return Result.SUCCESS;
     }
 
     public static void scheduleJob(long downloadId) {
