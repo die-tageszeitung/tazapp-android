@@ -1,5 +1,7 @@
 package de.thecode.android.tazreader;
 
+import com.google.firebase.iid.FirebaseInstanceId;
+
 import android.app.Application;
 import android.os.Build;
 import android.util.Log;
@@ -13,6 +15,7 @@ import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.eventbus.EventBusIndex;
 import de.thecode.android.tazreader.job.TazJobCreator;
 import de.thecode.android.tazreader.job.TazJobLogger;
+import de.thecode.android.tazreader.notifications.NotificationUtils;
 import de.thecode.android.tazreader.picasso.PicassoHelper;
 import de.thecode.android.tazreader.reader.ReaderActivity;
 import de.thecode.android.tazreader.room.AppDatabase;
@@ -46,6 +49,8 @@ public class TazReaderApplication extends Application {
         EventBus.builder()
                 .addIndex(new EventBusIndex())
                 .installDefaultEventBus();
+
+        NotificationUtils.getInstance(this).createChannels();
 
         JobConfig.addLogger(new TazJobLogger());
         JobConfig.setLogcatEnabled(false);
@@ -149,7 +154,7 @@ public class TazReaderApplication extends Application {
         TazSettings.getInstance(this)
                    .setDefaultPref(TazSettings.PREFKEY.PAGETAPBORDERTOTURN, getResources().getBoolean(R.bool.isTablet));
 
-        //Timber.d("Token: %s", FirebaseInstanceId.getInstance().getToken());
+        Timber.d("Token: %s", TazSettings.getInstance(this).getFirebaseToken());
 
     }
 

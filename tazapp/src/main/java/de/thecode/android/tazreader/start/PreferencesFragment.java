@@ -3,6 +3,8 @@ package de.thecode.android.tazreader.start;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.preference.Preference;
+import android.support.v7.preference.PreferenceCategory;
+import android.support.v7.preference.PreferenceGroup;
 import android.support.v7.preference.PreferenceScreen;
 import android.support.v7.preference.SwitchPreferenceCompat;
 import android.text.TextUtils;
@@ -57,6 +59,10 @@ public class PreferencesFragment extends PreferenceFragmentCompat {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             Preference downloadNotificationCat = findPreference("downloadNotificationCat");
             mainPreferenceScreen.removePreference(downloadNotificationCat);
+            PreferenceCategory pushNotificationCat = (PreferenceCategory) findPreference("pushCat");
+            if (pushNotificationCat != null) {
+                pushNotificationCat.removePreference(pushNotificationCat.findPreference(getString(R.string.pref_key_notification_push_ringtone)));
+            }
 
         }
         crashlyticsAlwaysSendPreference = (SwitchPreferenceCompat) findPreference(getString(R.string.pref_key_crashlytics_always_send));

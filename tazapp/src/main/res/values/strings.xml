@@ -109,8 +109,11 @@
     <string name="dialog_techinfo_version">Version</string>
     <string name="dialog_techinfo_supported_abis">Unterstützte ABIs</string>
     <string name="dialog_techinfo_installations_id">Installations ID</string>
+    <string name="dialog_techinfo_android_version">Android Version</string>
+    <string name="dialog_techinfo_push_token">Push Token</string>
     <string name="sync_job_plist_empty">Fehler beim Laden der Daten</string>
     <string name="notification_channel_download">Downloads</string>
+    <string name="notification_channel_message">Mitteilungen</string>
     <string name="dialog_meassage_loading_missing_resource">Lade fehlende Ressourcen für die Ausgabe herunter, bitte warten…</string>
     <string name="dialog_message_delete_wait">Lösche Ausgabe(n), bitte warten…</string>
     <string name="download_error_hints">Sollten Sie AdBlocker, Antiviren- oder Proxy-Software verwenden, deaktivieren Sie diese bzw. fügen Sie eine Ausnahme hinzu.</string>
