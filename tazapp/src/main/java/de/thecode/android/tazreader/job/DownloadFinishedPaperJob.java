@@ -109,7 +109,8 @@ public class DownloadFinishedPaperJob extends Job implements UnzipStream.UnzipSt
 
             //NotificationHelper.showDownloadFinishedNotification(getContext(), paper.getId());
 
-            new NotificationUtils(getContext()).showDownloadFinishedNotification(paper);
+            NotificationUtils.getInstance(getContext())
+                             .showDownloadFinishedNotification(paper);
 
             EventBus.getDefault()
                     .post(new PaperDownloadFinishedEvent(paper.getBookId()));
@@ -120,7 +121,8 @@ public class DownloadFinishedPaperJob extends Job implements UnzipStream.UnzipSt
         } else {
             Timber.e(exception);
             //AnalyticsWrapper.getInstance().logException(exception);
-            new NotificationUtils(getContext()).showDownloadErrorNotification(paper, null);
+            NotificationUtils.getInstance(getContext())
+                             .showDownloadErrorNotification(paper, null);
             //NotificationHelper.showDownloadErrorNotification(getContext(), null, paper.getId());
             EventBus.getDefault()
                     .post(new PaperDownloadFailedEvent(paper, exception));

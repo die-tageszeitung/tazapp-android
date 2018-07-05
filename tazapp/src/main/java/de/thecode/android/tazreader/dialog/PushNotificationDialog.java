@@ -30,7 +30,7 @@ import java.io.InputStream;
 public class PushNotificationDialog extends DialogCustomView {
 
     private static final String ARG_PUSH_NOTIFICATION = "pushNotification";
-    private PushNotification   pushNotification;
+    //private PushNotification   pushNotification;
     private WebView            mWebView;
     private PaperRepository    paperRepository;
     private ResourceRepository resourceRepository;
@@ -49,20 +49,24 @@ public class PushNotificationDialog extends DialogCustomView {
         webView.getSettings()
                .setJavaScriptEnabled(true);
 
-        pushNotification = getArguments().getParcelable(ARG_PUSH_NOTIFICATION);
+        PushNotification pushNotification = getArguments().getParcelable(ARG_PUSH_NOTIFICATION);
         if (pushNotification != null) {
             if (!TextUtils.isEmpty(pushNotification.getUrl())) {
                 webView.loadUrl(pushNotification.getUrl());
             } else {
                 webView.getSettings()
                        .setAllowFileAccess(true);
-                new AsyncTaskListener<Void, Void>(new AsyncTaskListener.OnExecute<Void, Void>() {
+                new AsyncTaskListener<PushNotification, String>(new AsyncTaskListener.OnExecute<PushNotification, String>() {
                     @Override
-                    public Void execute(Void... voids) {
-                        mWebView.loadDataWithBaseURL("file:///android_asset/push/", getHtml(), "text/html", "utf-8", null);
-                        return null;
+                    public String execute(PushNotification... pushNotifications) {
+                        return getHtml(pushNotifications[0]);
                     }
-                }).execute();
+                }, new AsyncTaskListener.OnSuccess<String>() {
+                    @Override
+                    public void onSuccess(String html) {
+                        mWebView.loadDataWithBaseURL("file:///android_asset/push/", html, "text/html", "utf-8", null);
+                    }
+                }).execute(pushNotification);
             }
         }
         return webView;
@@ -83,7 +87,7 @@ public class PushNotificationDialog extends DialogCustomView {
 
     }
 
-    private String getHtml() {
+    private String getHtml(PushNotification pushNotification) {
 
 
         String html;
