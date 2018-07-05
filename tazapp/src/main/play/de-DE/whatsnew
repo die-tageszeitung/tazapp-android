@@ -1,3 +1,5 @@
+* Notification-Channel für Push in Android 8
+* Bugfix Push-Nachrichten-Anzeige
 * Bugfix: laufende Downloads können wieder abgebrochen werden
 * Bugfix Download fehlende Ressourcen
 * Bugfix für Fälle, in denen App nach Update nicht startet
