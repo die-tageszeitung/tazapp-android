@@ -1,5 +1,6 @@
+* Link zu System-Benachrichtungseinstellungen 
 * Notification-Channel für Push in Android 8
-* Bugfix Push-Nachrichten-Anzeige
+* Bugfix Push-Nachrichten-Anzeige in der App
 * Bugfix: laufende Downloads können wieder abgebrochen werden
 * Bugfix Download fehlende Ressourcen
 * Bugfix für Fälle, in denen App nach Update nicht startet
