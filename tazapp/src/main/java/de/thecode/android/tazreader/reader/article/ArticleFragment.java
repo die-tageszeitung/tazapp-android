@@ -5,7 +5,6 @@ import android.animation.AnimatorListenerAdapter;
 import android.annotation.SuppressLint;
 import android.arch.lifecycle.Observer;
 import android.content.Intent;
-import android.net.MailTo;
 import android.net.ParseException;
 import android.net.Uri;
 import android.os.Bundle;
@@ -46,11 +45,12 @@ import de.thecode.android.tazreader.reader.ReaderBaseFragment;
 import de.thecode.android.tazreader.reader.article.ArticleWebView.ArticleWebViewCallback;
 import de.thecode.android.tazreader.utils.AsyncTaskListener;
 import de.thecode.android.tazreader.utils.Charsets;
-import de.thecode.android.tazreader.utils.FileUtils;
 import de.thecode.android.tazreader.utils.StorageManager;
 import de.thecode.android.tazreader.utils.TintHelper;
 import de.thecode.android.tazreader.widget.ReaderButton;
 import de.thecode.android.tazreader.widget.ShareButton;
+
+import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -705,7 +705,8 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
         String result = null;
         try {
-            result = FileUtils.readFile(articleFile, Charsets.UTF_8);
+            result = FileUtils.readFileToString(articleFile, Charsets.UTF_8);
+//            result = FileUtilsOld.readFile(articleFile, Charsets.UTF_8);
 //            result = Files.asCharSource(articleFile, Charsets.UTF_8).read();
 //            result = IOUtils.toString(new FileInputStream(articleFile), "UTF-8");
 

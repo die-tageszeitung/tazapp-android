@@ -1,6 +1,6 @@
 package de.thecode.android.tazreader.download;
 
-import de.thecode.android.tazreader.utils.FileUtils;
+import org.apache.commons.io.FileUtils;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -111,10 +111,8 @@ public class UnzipStream {
     public void onError(Exception e) {
         Timber.e(e);
         if (deleteDestinationOnFailure) {
-            if (destinationDir.exists()) FileUtils.deleteContentsAndDir(destinationDir);
-            //Utils.deleteDir(destinationDir);
+            if (destinationDir.exists()) FileUtils.deleteQuietly(destinationDir);
         }
-        //Log.sendExceptionWithCrashlytics(e);
     }
 
     public void onSuccess() {

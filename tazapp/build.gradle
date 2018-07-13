@@ -1,7 +1,8 @@
 def versionMajor = 3
 def versionMinor = 6
-def versionPatch = 5
+def versionPatch = 6
 def versionBuild = 1
+
 
 def supportLibVer = "27.1.1"
 def buildToolsVer = "27.0.3"
@@ -335,6 +336,7 @@ dependencies {
 //    implementation "android.arch.lifecycle:common-java8:1.1.1"
 
     implementation "org.apache.commons:commons-lang3:3.7"
+    implementation "commons-io:commons-io:2.5" // Dont update until Android 4 is supported
 
 //    implementation "com.google.guava:guava:24.1-android"
 }
