@@ -335,6 +335,7 @@ dependencies {
 //    implementation "android.arch.lifecycle:common-java8:1.1.1"
 
     implementation "org.apache.commons:commons-lang3:3.7"
+    implementation "commons-io:commons-io:2.5" // Dont update until Android 4 is supported
 
 //    implementation "com.google.guava:guava:24.1-android"
 }
