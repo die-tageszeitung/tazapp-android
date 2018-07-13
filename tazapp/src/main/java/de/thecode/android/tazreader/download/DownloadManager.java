@@ -364,15 +364,11 @@ public class DownloadManager {
     }
 
 
-
     public void cancelDownload(long downloadId) {
-        DownloadState state = getDownloadState(downloadId);
-        if (state != null && state.getStatus() != DownloadState.STATUS_SUCCESSFUL) {
-            mDownloadManager.remove(downloadId);
-            Paper paper = paperRepository.getPaperWithDownloadId(downloadId);
-            if (paper != null) {
-                  paperRepository.deletePaper(paper);
-            }
+        mDownloadManager.remove(downloadId);
+        Paper paper = paperRepository.getPaperWithDownloadId(downloadId);
+        if (paper != null) {
+            paperRepository.deletePaper(paper);
         }
     }
 

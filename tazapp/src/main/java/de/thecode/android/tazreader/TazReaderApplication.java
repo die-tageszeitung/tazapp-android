@@ -1,7 +1,5 @@
 package de.thecode.android.tazreader;
 
-import com.google.firebase.iid.FirebaseInstanceId;
-
 import android.app.Application;
 import android.os.Build;
 import android.util.Log;
@@ -18,12 +16,11 @@ import de.thecode.android.tazreader.job.TazJobLogger;
 import de.thecode.android.tazreader.notifications.NotificationUtils;
 import de.thecode.android.tazreader.picasso.PicassoHelper;
 import de.thecode.android.tazreader.reader.ReaderActivity;
-import de.thecode.android.tazreader.room.AppDatabase;
 import de.thecode.android.tazreader.timber.TazTimberTree;
 import de.thecode.android.tazreader.utils.BuildTypeProvider;
-import de.thecode.android.tazreader.utils.FileUtils;
 import de.thecode.android.tazreader.utils.StorageManager;
 
+import org.apache.commons.io.FileUtils;
 import org.greenrobot.eventbus.EventBus;
 
 import java.io.File;
@@ -97,7 +94,7 @@ public class TazReaderApplication extends Application {
             }
             File oldLibImageDir = StorageManager.getInstance(this)
                                                 .getCache("library");
-            FileUtils.deleteContentsAndDir(oldLibImageDir);
+            FileUtils.deleteQuietly(oldLibImageDir);
         }
 
 
