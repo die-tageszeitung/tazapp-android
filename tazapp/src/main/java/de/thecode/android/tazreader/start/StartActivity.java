@@ -14,8 +14,12 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.view.View;
+
+import com.commonsware.cwac.provider.StreamProvider;
 
 import de.mateware.dialog.Dialog;
 import de.mateware.dialog.DialogAdapterList;
@@ -48,7 +52,6 @@ import de.thecode.android.tazreader.importer.ImportActivity;
 import de.thecode.android.tazreader.job.SyncJob;
 import de.thecode.android.tazreader.migration.MigrationActivity;
 import de.thecode.android.tazreader.notifications.NotificationUtils;
-import de.thecode.android.tazreader.push.PushHelper;
 import de.thecode.android.tazreader.reader.ReaderActivity;
 import de.thecode.android.tazreader.start.importer.ImportFragment;
 import de.thecode.android.tazreader.start.library.LibraryFragment;
@@ -59,6 +62,7 @@ import de.thecode.android.tazreader.utils.AsyncTaskListener;
 import de.thecode.android.tazreader.utils.BaseActivity;
 import de.thecode.android.tazreader.utils.Charsets;
 import de.thecode.android.tazreader.utils.Connection;
+import de.thecode.android.tazreader.utils.StorageManager;
 import de.thecode.android.tazreader.utils.StreamUtils;
 import de.thecode.android.tazreader.utils.UserDeviceInfo;
 import de.thecode.android.tazreader.widget.CustomToolbar;
@@ -66,6 +70,7 @@ import de.thecode.android.tazreader.widget.CustomToolbar;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.ConnectException;
@@ -106,6 +111,7 @@ public class StartActivity extends BaseActivity
 
     private CustomToolbar            toolbar;
     private NavigationDrawerFragment mDrawerFragment;
+    private View                     logWritingMessageView;
 
 //    RetainDataFragment retainDataFragment;
 
@@ -128,17 +134,29 @@ public class StartActivity extends BaseActivity
         }
     };
 
+    TazSettings.OnPreferenceChangeListener logWritingListener = new TazSettings.OnPreferenceChangeListener<Boolean>() {
+
+        @Override
+        public void onPreferenceChanged(Boolean changedValue) {
+            onLogWriting(changedValue);
+        }
+    };
+
     @Override
     public void onStart() {
         super.onStart();
         startViewModel.getSettings()
                       .addOnPreferenceChangeListener(TazSettings.PREFKEY.DEMOMODE, demoModeChanged);
+        startViewModel.getSettings()
+                      .addOnPreferenceChangeListener(TazSettings.PREFKEY.LOGFILE, logWritingListener);
     }
 
     @Override
     public void onStop() {
         startViewModel.getSettings()
                       .removeOnPreferenceChangeListener(demoModeChanged);
+        startViewModel.getSettings()
+                      .removeOnPreferenceChangeListener(logWritingListener);
         super.onStop();
     }
 
@@ -197,6 +215,10 @@ public class StartActivity extends BaseActivity
 
         if (getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         updateTitle();
+
+        logWritingMessageView = findViewById(R.id.logWritingMessage);
+        onLogWriting(TazSettings.getInstance(this)
+                                .isWriteLogfile());
 
         mDrawerFragment = (NavigationDrawerFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_navigation_drawer);
         mDrawerFragment.setUp(R.id.fragment_navigation_drawer, findViewById(R.id.drawer_layout), toolbar);
@@ -380,6 +402,10 @@ public class StartActivity extends BaseActivity
 
     public void onDemoModeChanged(boolean demoMode) {
         updateTitle();
+    }
+
+    public void onLogWriting(boolean writeToLog) {
+        logWritingMessageView.setVisibility(writeToLog ? View.VISIBLE : View.GONE);
     }
 
 
@@ -783,21 +809,18 @@ public class StartActivity extends BaseActivity
                             body = body.replaceFirst("\\{appversion\\}", userDeviceInfo.getVersionName());
                             body = body.replaceFirst("\\{installid\\}", userDeviceInfo.getInstallationId());
                             body = body.replaceFirst("\\{aboid\\}", aboId);
-                            body = body.replaceFirst("\\{androidVersion\\}", Build.VERSION.SDK_INT + " (" + Build.VERSION.RELEASE + ")");
-                            body = body.replaceFirst("\\{pushToken\\}", TazSettings.getInstance(this).getFirebaseToken());
+                            body = body.replaceFirst("\\{androidVersion\\}",
+                                                     Build.VERSION.SDK_INT + " (" + Build.VERSION.RELEASE + ")");
+                            body = body.replaceFirst("\\{pushToken\\}",
+                                                     TazSettings.getInstance(this)
+                                                                .getFirebaseToken());
 
-
-                            StringBuilder mailToBuilder = new StringBuilder("mailto:");
-                            mailToBuilder.append(BuildConfig.ERRORMAIL);
-                            mailToBuilder.append("?subject=")
-                                         .append(Uri.encode(getString(R.string.errormail_subject,
-                                                                      getString(R.string.app_name),
-                                                                      aboId)));
-                            mailToBuilder.append("&body=")
-                                         .append(Uri.encode(body));
-
-                            Intent emailIntent = new Intent(Intent.ACTION_SENDTO);
-                            emailIntent.setData(Uri.parse(mailToBuilder.toString()));
+                            Intent emailIntent = new Intent(Intent.ACTION_SEND);
+                            emailIntent.setType("message/rfc822");
+                            emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[]{BuildConfig.ERRORMAIL});
+                            emailIntent.putExtra(Intent.EXTRA_SUBJECT,
+                                                 getString(R.string.errormail_subject, getString(R.string.app_name), aboId));
+                            emailIntent.putExtra(Intent.EXTRA_TEXT, body);
                             startActivity(emailIntent);
                         }
                     } catch (IOException | ActivityNotFoundException e) {

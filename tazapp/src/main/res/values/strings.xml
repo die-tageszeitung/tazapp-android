@@ -69,7 +69,8 @@
 
     <string name="imprint_licenses">Lizenzen</string>
     <string name="imprint_error_report">Fehler melden</string>
-    <string name="imprint_error_report_dialog_message"><b>Vielen Dank, dass Sie einen Fehler melden möchten.</b>\n\nDamit wir möglichst viele Informationen zur Fehlerbehebung haben, sollte in den <b>Einstellungen</b> \"Fehlerreports automatisch senden\" aktiviert sein.\n\nAnschließend sollten Sie wenn möglich den Fehler reproduzieren. Erst dann werden Fehler protokolliert.\n\nWenn Sie OK drücken öffnet sich Ihr installiertes Mail-Programm. Wir bitten Sie die fehlenden Informationen möglichst <b>genau und umfassend</b> auszufüllen und uns anschließend die Mail zuzusenden.\n\n<b>Vielen Dank für Ihre Unterstützung.</b></string>    <string name="imprint_tech_info">Technische Informationen</string>
+    <string name="imprint_error_report_dialog_message"><b>Vielen Dank, dass Sie einen Fehler melden möchten.</b>\n\nDamit wir möglichst viele Informationen zur Fehlerbehebung haben, aktivieren Sie bitte in den <b>Einstellungen</b> \"Fehlerreports automatisch senden\".\n\nAnschließend sollten Sie wenn möglich den Fehler reproduzieren. Erst dann werden Fehler protokolliert.\n\nDrücken Sie dann <B>OK</B> und öffnen Sie Ihr installiertes Mail-Programm. Wir bitten Sie die fehlenden Informationen möglichst <b>genau und umfassend</b> auszufüllen und uns anschließend die Mail zuzusenden.\n\n<b>Vielen Dank für Ihre Unterstützung.</b></string>
+    <string name="imprint_tech_info">Technische Informationen</string>
 
     <string name="import_parent_directory">Übergeordnetes Verzeichnis</string>
     <string name="import_wait">Lade Verzeichnis…</string>
@@ -119,10 +120,13 @@
     <string name="download_error_hints">Sollten Sie AdBlocker, Antiviren- oder Proxy-Software verwenden, deaktivieren Sie diese bzw. fügen Sie eine Ausnahme hinzu.</string>
 
     <string name="errormail_subject">Fehler in %1$s - Abo-ID: %2$s</string>
+    <string name="logsmail_subject">Logfiles für %1$s - Abo-ID: %2$s</string>
     <string name="dialog_update_available_title">Update verfügbar</string>
     <string name="dialog_update_available_message">Es steht ein Update für %1$s zur Verfügung, bitte aktualisieren Sie die App.</string>
     <string name="dialog_update_available_ok">Aktualisieren</string>
     <string name="dialog_update_available_no">Ignorieren</string>
     <string name="update_app_download_notification">%1$s Update</string>
+    <string name="logfileWriteMessage">Log-Datei schreiben aktiv!</string>
+    <string name="logfileWriteMessageSub">Bitte deaktivieren diese Einstellung, wenn Sie sie nicht mehr benötigen.</string>
 
 </resources>

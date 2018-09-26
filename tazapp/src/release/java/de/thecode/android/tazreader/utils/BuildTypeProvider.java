@@ -16,8 +16,4 @@ public class BuildTypeProvider {
     public static void addStethoInterceptor(OkHttpClient.Builder builder) {
     }
 
-    public static void addLoggingInterceptor(OkHttpClient.Builder builder) {
-
-    }
-
 }

@@ -15,11 +15,48 @@
             android:id="@+id/toolbar"
             layout="@layout/toolbar" />
 
+
+
+
+
+            <LinearLayout
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentBottom="true"
+                    android:layout_width="match_parent"
+                    android:id="@+id/logWritingMessage"
+                    android:background="@color/debug_writelog_background"
+                    android:padding="4dp"
+                    android:gravity="center"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_alignParentLeft="true">
+
+                <TextView
+                        android:textColor="@color/debug_writelog_text"
+                        android:gravity="center"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/logfileWriteMessage"/>
+
+                <TextView
+                        android:textColor="@color/debug_writelog_text"
+                        android:textSize="10sp"
+                        android:gravity="center"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/logfileWriteMessageSub"/>
+
+            </LinearLayout>
+
+
         <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:id="@+id/content_frame"
-            android:layout_below="@+id/toolbar"/>
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/content_frame"
+                android:layout_below="@+id/toolbar"
+                android:layout_above="@+id/logWritingMessage"/>
 
     </RelativeLayout>
 

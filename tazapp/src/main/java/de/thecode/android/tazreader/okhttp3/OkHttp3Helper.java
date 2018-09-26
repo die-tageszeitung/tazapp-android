@@ -3,6 +3,8 @@ package de.thecode.android.tazreader.okhttp3;
 import android.content.Context;
 import android.text.TextUtils;
 
+import de.thecode.android.tazreader.BuildConfig;
+import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.utils.BuildTypeProvider;
 
 import java.util.Map;
@@ -12,6 +14,8 @@ import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
+import okhttp3.logging.HttpLoggingInterceptor;
+import timber.log.Timber;
 
 /**
  * Created by mate on 17.02.2017.
@@ -38,12 +42,14 @@ public class OkHttp3Helper {
 
     private final UserAgentInterceptor userAgentInterceptor;
     private final RequestHelper        requestHelper;
+    private final TazSettings          settings;
 
     private OkHttp3Helper(Context context) {
         standardHeaders = HeaderHelper.getInstance(context)
                                       .getStandardHeader();
         userAgentInterceptor = new UserAgentInterceptor(context);
         requestHelper = RequestHelper.getInstance(context);
+        settings = TazSettings.getInstance(context);
     }
 
 
@@ -55,8 +61,21 @@ public class OkHttp3Helper {
             httpClientBuilder.addInterceptor(new BasicAuthenticationInterceptor(username, password));
         }
         BuildTypeProvider.addStethoInterceptor(httpClientBuilder);
-        BuildTypeProvider.addLoggingInterceptor(httpClientBuilder);
+        addLoggingInterceptor(httpClientBuilder);
         return httpClientBuilder;
+    }
+
+    private void addLoggingInterceptor(OkHttpClient.Builder builder) {
+        if (BuildConfig.DEBUG || settings.isWriteLogfile()) {
+            HttpLoggingInterceptor logging = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
+                @Override
+                public void log(String message) {
+                    Timber.d("%s", message);
+                }
+            });
+            logging.setLevel(HttpLoggingInterceptor.Level.BODY);
+            builder.addNetworkInterceptor(logging);
+        }
     }
 
     public OkHttpClient.Builder getOkHttpClientBuilder() {
@@ -64,7 +83,6 @@ public class OkHttp3Helper {
     }
 
     public Call getCall(HttpUrl url, String username, String password, RequestBody requestBody) {
-
 
 
         OkHttpClient client = getOkHttpClientBuilder(username, password).build();
@@ -81,7 +99,7 @@ public class OkHttp3Helper {
     }
 
     public Call getCall(HttpUrl url, String username, String password) {
-        return getCall(url,username,password,null);
+        return getCall(url, username, password, null);
     }
 
     public Call getCall(HttpUrl url) {

@@ -27,6 +27,8 @@ public class StorageManager extends ContextWrapper {
     private static final String DOWNLOAD = "download";
     private static final String IMPORT   = "import";
     private static final String APPUPDATE   = "appUpdate";
+    private static final String LOG = "logs";
+
 
     private static StorageManager instance;
 
@@ -82,6 +84,10 @@ public class StorageManager extends ContextWrapper {
         return getCache(APPUPDATE);
     }
 
+    public File getLogCache() {
+        return getCache(LOG);
+    }
+
 
     public File getDownloadFile(Paper paper) {
         try {
@@ -127,6 +133,5 @@ public class StorageManager extends ContextWrapper {
         if (dir.exists()) FileUtils.deleteQuietly(getResourceDirectory(key));
         //Utils.deleteDir(getResourceDirectory(key));
     }
-
 
 }

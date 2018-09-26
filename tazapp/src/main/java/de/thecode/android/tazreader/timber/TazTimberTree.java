@@ -33,4 +33,8 @@ public class TazTimberTree extends Timber.DebugTree {
                                                                                                        .getName() + "]";
     }
 
+    @Override
+    public void e(String message, Object... args) {
+        super.e(message, args);
+    }
 }

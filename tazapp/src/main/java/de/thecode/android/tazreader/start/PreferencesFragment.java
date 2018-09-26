@@ -1,6 +1,8 @@
 package de.thecode.android.tazreader.start;
 
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
@@ -15,11 +17,25 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.commonsware.cwac.provider.StreamProvider;
+
+import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.preferences.PreferenceFragmentCompat;
+import de.thecode.android.tazreader.sync.AccountHelper;
+import de.thecode.android.tazreader.utils.Charsets;
+import de.thecode.android.tazreader.utils.StorageManager;
+import de.thecode.android.tazreader.utils.StreamUtils;
+import de.thecode.android.tazreader.utils.UserDeviceInfo;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+
+import timber.log.Timber;
 
 /**
  * Created by mate on 07.08.2017.
@@ -29,11 +45,18 @@ public class PreferencesFragment extends PreferenceFragmentCompat {
 
     PreferenceCategory     pushPreferenceCat;
     SwitchPreferenceCompat crashlyticsAlwaysSendPreference;
+    Preference             sendLogPreference;
 
-    TazSettings.OnPreferenceChangeListener<String> firebaseTokenPrefrenceListener = new TazSettings.OnPreferenceChangeListener<String>() {
+    TazSettings.OnPreferenceChangeListener<String>  firebaseTokenPrefrenceListener = new TazSettings.OnPreferenceChangeListener<String>() {
         @Override
         public void onPreferenceChanged(String changedValue) {
             setPushPrefState(!TextUtils.isEmpty(changedValue));
+        }
+    };
+    TazSettings.OnPreferenceChangeListener<Boolean> logWritingPrefrenceListener    = new TazSettings.OnPreferenceChangeListener<Boolean>() {
+        @Override
+        public void onPreferenceChanged(Boolean changedValue) {
+            setSendLogPrefenceState(changedValue);
         }
     };
 
@@ -75,11 +98,16 @@ public class PreferencesFragment extends PreferenceFragmentCompat {
                     Intent intent = new Intent();
                     intent.setAction("android.settings.APP_NOTIFICATION_SETTINGS");
                     if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-                        intent.putExtra("app_package", preference.getContext().getPackageName());
-                        intent.putExtra("app_uid", preference.getContext().getApplicationInfo().uid);
-                    }
-                    else {
-                        intent.putExtra("android.provider.extra.APP_PACKAGE", preference.getContext().getPackageName());
+                        intent.putExtra("app_package",
+                                        preference.getContext()
+                                                  .getPackageName());
+                        intent.putExtra("app_uid",
+                                        preference.getContext()
+                                                  .getApplicationInfo().uid);
+                    } else {
+                        intent.putExtra("android.provider.extra.APP_PACKAGE",
+                                        preference.getContext()
+                                                  .getPackageName());
                     }
                     startActivity(intent);
                     return true;
@@ -101,11 +129,80 @@ public class PreferencesFragment extends PreferenceFragmentCompat {
         });
         setPushPrefState(!TextUtils.isEmpty(TazSettings.getInstance(getContext())
                                                        .getFirebaseToken()));
+
+        sendLogPreference = findPreference(getString(R.string.pref_key_send_log_file));
+        setSendLogPrefenceState(TazSettings.getInstance(getContext())
+                                           .isWriteLogfile());
+        sendLogPreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+
+                try {
+                    try (InputStream bodyInputStream = getContext().getAssets()
+                                                                   .open("errorReportMail/logfiles.txt")) {
+
+                        String aboId = AccountHelper.getInstance(getContext())
+                                                    .getUser("");
+                        UserDeviceInfo userDeviceInfo = UserDeviceInfo.getInstance(getContext());
+
+                        String body = StreamUtils.toString(bodyInputStream, Charsets.UTF_8);
+                        body = body.replaceFirst("\\{appversion\\}", userDeviceInfo.getVersionName());
+                        body = body.replaceFirst("\\{installid\\}", userDeviceInfo.getInstallationId());
+                        body = body.replaceFirst("\\{aboid\\}", aboId);
+                        body = body.replaceFirst("\\{androidVersion\\}",
+                                                 Build.VERSION.SDK_INT + " (" + Build.VERSION.RELEASE + ")");
+                        body = body.replaceFirst("\\{pushToken\\}",
+                                                 TazSettings.getInstance(getContext())
+                                                            .getFirebaseToken());
+
+                        Intent emailIntent = new Intent(Intent.ACTION_SEND_MULTIPLE);
+                        emailIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                        emailIntent.setType("message/rfc822");
+                        emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[]{BuildConfig.ERRORMAIL});
+                        emailIntent.putExtra(Intent.EXTRA_SUBJECT,
+                                             getString(R.string.logsmail_subject, getString(R.string.app_name), aboId));
+                        emailIntent.putExtra(Intent.EXTRA_TEXT, body);
+
+
+                        if (TazSettings.getInstance(getContext())
+                                       .isWriteLogfile()) {
+                            File logDir = StorageManager.getInstance(getContext())
+                                                        .getLogCache();
+                            if (logDir != null) {
+                                File[] logfiles = logDir.listFiles();
+                                ArrayList<Uri> uris = new ArrayList<>();
+                                for (File logfile : logfiles) {
+                                    if (!logfile.isDirectory()) {
+                                        Uri contentUri = StreamProvider.getUriForFile(BuildConfig.APPLICATION_ID + ".streamprovider",
+                                                                                      logfile);
+                                        uris.add(contentUri);
+                                    }
+                                }
+                                if (!uris.isEmpty()) {
+                                    emailIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
+                                }
+                            }
+                        }
+
+                        startActivity(emailIntent);
+                    }
+                } catch (NullPointerException | IOException | ActivityNotFoundException e) {
+                    Timber.e(e);
+                }
+
+
+                return true;
+            }
+        });
     }
 
 
     public void setPushPrefState(boolean enabled) {
         pushPreferenceCat.setEnabled(enabled);
+    }
+
+    public void setSendLogPrefenceState(boolean enabled) {
+        sendLogPreference.setEnabled(enabled);
     }
 
 
@@ -114,12 +211,19 @@ public class PreferencesFragment extends PreferenceFragmentCompat {
         super.onStart();
         TazSettings.getInstance(getContext())
                    .addOnPreferenceChangeListener(TazSettings.PREFKEY.FIREBASETOKEN, firebaseTokenPrefrenceListener);
+        TazSettings.getInstance(getContext())
+                   .addOnPreferenceChangeListener(TazSettings.PREFKEY.LOGFILE, logWritingPrefrenceListener);
+
     }
 
     @Override
     public void onStop() {
         TazSettings.getInstance(getContext())
                    .removeOnPreferenceChangeListener(firebaseTokenPrefrenceListener);
+        TazSettings.getInstance(getContext())
+                   .removeOnPreferenceChangeListener(logWritingPrefrenceListener);
+
+
         super.onStop();
     }
 }

@@ -12,7 +12,7 @@
     <string name="category_notification_push_key">catPush</string>
     <string name="category_notification_download">DOWNLOAD BENACHRICHTIGUNG</string>
     <string name="category_notification_download_key">catDownloadNotification</string>
-    <string name="category_other">SONSTIGES</string>
+    <string name="category_debug">FEHLERSUCHE</string>
     <!--  -->
     <string name="pref_key_autoload">autoload</string>
     <string name="pref_title_autoload">Nächste Ausgabe automatisch laden</string>
@@ -95,6 +95,15 @@
     <!--  -->
     <string name="pref_key_notification_settings">notification_settings</string>
     <string name="pref_title_notification_settings">Benachrichtigungs-Einstellungen öffnen"</string>
+    <!--  -->
+    <string name="pref_key_log_file">logfile</string>
+    <string name="pref_title_log_file">Log-Datei schreiben</string>
+    <string name="pref_summary_log_file">Kann die Ausführung der App verlangsamen, bitte nur aktivieren wenn Sie dazu aufgefordert werden. Beim deaktivieren der Option werden alle gesammelten Daten gelöscht.</string>
+    <bool name="pref_default_log_file">false</bool>
+    <!--  -->
+    <string name="pref_key_send_log_file">sendlogfile</string>
+    <string name="pref_title_send_log_file">Log-Datei übermitteln</string>
+    <string name="pref_summary_send_log_file">Senden sie die gesammelten Log-Dateien per Mail an die taz.</string>
 
 
 </resources>

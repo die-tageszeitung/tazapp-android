@@ -1,3 +1,8 @@
 <paths>
-    <external-files-path name="papers" path="paper/"/>
+    <external-files-path
+            name="papers"
+            path="paper/"/>
+    <external-cache-path
+            name="logs"
+            path="logs/"/>
 </paths>

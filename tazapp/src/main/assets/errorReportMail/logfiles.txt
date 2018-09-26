@@ -1,0 +1,5 @@
+Version: {appversion}
+Abo-ID: {aboid}
+Installations-ID: {installid}
+Android Version: {androidVersion}
+Push Token: {pushToken}

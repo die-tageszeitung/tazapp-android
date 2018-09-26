@@ -135,11 +135,21 @@
 
     </android.support.v7.preference.PreferenceCategory>
     <android.support.v7.preference.PreferenceCategory
-            android:title="@string/category_other">
+            android:title="@string/category_debug">
 
         <android.support.v7.preference.SwitchPreferenceCompat
                 android:key="@string/pref_key_crashlytics_always_send"
                 android:title="@string/pref_title_crashlytics_always_send"/>
+        <android.support.v7.preference.SwitchPreferenceCompat
+                android:key="@string/pref_key_log_file"
+                android:title="@string/pref_title_log_file"
+                android:summary="@string/pref_summary_log_file"
+                android:defaultValue="@bool/pref_default_log_file"/>
+
+        <android.support.v7.preference.Preference
+                android:key="@string/pref_key_send_log_file"
+                android:title="@string/pref_title_send_log_file"
+                android:summary="@string/pref_summary_send_log_file"/>
 
 
     </android.support.v7.preference.PreferenceCategory>

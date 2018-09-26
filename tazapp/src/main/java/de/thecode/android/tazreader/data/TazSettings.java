@@ -3,6 +3,7 @@ package de.thecode.android.tazreader.data;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.content.res.Resources;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.preference.PreferenceManager;
@@ -12,6 +13,7 @@ import com.crashlytics.android.core.CrashlyticsCore;
 import com.scottyab.aescrypt.AESCrypt;
 
 import de.thecode.android.tazreader.BuildConfig;
+import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.secure.SimpleCrypto;
 
 import java.security.GeneralSecurityException;
@@ -77,12 +79,14 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
         public static final  String NOTIFICATION_PUSH           = "notification_push";
         public static final  String CRASHLYTICS_ALWAYS_SEND     = "always_send_reports_opt_in";
         private static final String LATEST_VERSION              = "latestVersion";
+        public static final String LOGFILE = "logfile";
     }
 
 
     private static TazSettings       instance;
     private        SharedPreferences sharedPreferences;
     private        SharedPreferences crashlyticsSharedPreferences;
+    private Resources resources;
 
     public static synchronized TazSettings getInstance(Context context) {
         if (instance == null) instance = new TazSettings(context.getApplicationContext());
@@ -94,6 +98,7 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
         crashlyticsSharedPreferences = context.getSharedPreferences("com.crashlytics.sdk.android.crashlytics-core:" + CrashlyticsCore.class.getName(),
                                                                     Context.MODE_PRIVATE);
         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
+        resources = context.getResources();
     }
 
     @Override
@@ -279,6 +284,11 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
         addOnPreferenceChangeListener(PREFKEY.DEMOMODE, listener);
     }
 
+    public void addLogFileListener(OnPreferenceChangeListener<Boolean> listener) {
+        addOnPreferenceChangeListener(PREFKEY.LOGFILE, listener);
+    }
+
+
     public boolean isIndexAlwaysExpanded() {
         return sharedPreferences.getBoolean(PREFKEY.INDEXALWAYSEXPANDED, false);
     }
@@ -318,6 +328,10 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
         sharedPreferences.edit()
                          .putBoolean(PREFKEY.INDEXBUTTON, show)
                          .apply();
+    }
+
+    public boolean isWriteLogfile(){
+        return sharedPreferences.getBoolean(PREFKEY.LOGFILE,resources.getBoolean(R.bool.pref_default_log_file));
     }
 
     private Map<String, List<OnPreferenceChangeListener>> changeListeners = new HashMap<>();

@@ -17,6 +17,7 @@ import de.thecode.android.tazreader.notifications.NotificationUtils;
 import de.thecode.android.tazreader.picasso.PicassoHelper;
 import de.thecode.android.tazreader.reader.ReaderActivity;
 import de.thecode.android.tazreader.timber.TazTimberTree;
+import de.thecode.android.tazreader.timber.TimberHelper;
 import de.thecode.android.tazreader.utils.BuildTypeProvider;
 import de.thecode.android.tazreader.utils.StorageManager;
 
@@ -37,7 +38,7 @@ public class TazReaderApplication extends Application {
 
         super.onCreate();
 
-        Timber.plant(new TazTimberTree(BuildConfig.DEBUG ? Log.VERBOSE : Log.WARN));
+        TimberHelper.initialize(this);
 
         AnalyticsWrapper.initialize(this);
 

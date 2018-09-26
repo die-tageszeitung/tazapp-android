@@ -91,4 +91,7 @@
 
     <item name="notification" type="color">@color/color_primary</item>
 
+    <item name="debug_writelog_text" type="color">#FFFFFF</item>
+    <item name="debug_writelog_background" type="color">#FF0000</item>
+
 </resources>
