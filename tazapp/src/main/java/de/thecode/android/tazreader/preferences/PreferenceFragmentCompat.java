@@ -13,7 +13,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.takisoft.fix.support.v7.preference.PreferenceFragmentCompatDividers;
 
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.TazSettings;
@@ -24,19 +23,19 @@ import timber.log.Timber;
  * Created by mate on 08.08.2017.
  */
 
-public abstract class PreferenceFragmentCompat extends PreferenceFragmentCompatDividers {
+public abstract class PreferenceFragmentCompat extends com.takisoft.fix.support.v7.preference.PreferenceFragmentCompat {
 
     public static final int REQUESTCODE_RINGTONE = 7491;
     public static String lastRingtoneRequestForKey;
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, @Nullable Bundle savedInstanceState) {
-        try {
-            return super.onCreateView(inflater, container, savedInstanceState);
-        } finally {
-            setDividerPreferences(DIVIDER_PADDING_CHILD | DIVIDER_CATEGORY_AFTER_LAST | DIVIDER_CATEGORY_BETWEEN);
-        }
-    }
+//
+//    @Override
+//    public View onCreateView(LayoutInflater inflater, ViewGroup container, @Nullable Bundle savedInstanceState) {
+//        try {
+//            return super.onCreateView(inflater, container, savedInstanceState);
+//        } finally {
+//            setDividerPreferences(DIVIDER_PADDING_CHILD | DIVIDER_CATEGORY_AFTER_LAST | DIVIDER_CATEGORY_BETWEEN);
+//        }
+//    }
 
     @Override
     public boolean onPreferenceTreeClick(Preference preference) {

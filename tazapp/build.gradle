@@ -3,10 +3,10 @@ def versionMinor = 7
 def versionPatch = 0
 def versionBuild = 1
 
-def supportLibVer = "27.1.1"
-def buildToolsVer = "27.0.3"
-def compileSdkVer = 27
-def targetSdkVer = 27
+def supportLibVer = "28.0.0"
+def buildToolsVer = "28.0.3"
+def compileSdkVer = 28
+def targetSdkVer = 28
 def minSdkVer = 15
 
 def apkUrl = '"https://dl.taz.de/down/apk/"'
@@ -300,6 +300,7 @@ dependencies {
     implementation "com.android.support:support-v4:$supportLibVer"
     implementation "com.android.support:cardview-v7:$supportLibVer"
     implementation "com.takisoft.fix:preference-v7:$supportLibVer" + ".0"
+    implementation "com.takisoft.fix:preference-v7-material:$supportLibVer" + ".0"
     implementation 'com.squareup.okhttp3:okhttp:3.11.0'
     implementation 'com.squareup.okhttp3:logging-interceptor:3.11.0'
     implementation 'com.squareup.picasso:picasso:2.5.2'

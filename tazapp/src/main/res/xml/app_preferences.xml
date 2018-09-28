@@ -1,22 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.v7.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+                                                xmlns:app="http://schemas.android.com/apk/res-auto"
                                                 android:key="mainPreferenceScreen">
     <android.support.v7.preference.PreferenceCategory
+            app:singleLineTitle="false"
             android:title="@string/category_abo">
 
         <android.support.v7.preference.SwitchPreferenceCompat
                 android:key="@string/pref_key_autoload"
                 android:title="@string/pref_title_autoload"
+                app:singleLineTitle="false"
                 android:defaultValue="@bool/pref_default_autoload"/>
 
         <android.support.v7.preference.SwitchPreferenceCompat
                 android:dependency="@string/pref_key_autoload"
                 android:key="@string/pref_key_autoload_wifi"
-                android:title="@string/pref_title_autoload_wifi"
+                app:singleLineTitle="false"
+                android:summary="@string/pref_title_autoload_wifi"
                 android:defaultValue="@bool/pref_default_autoload_wifi"/>
 
         <android.support.v7.preference.SwitchPreferenceCompat
                 android:key="@string/pref_key_autodelete"
+                app:singleLineTitle="false"
                 android:title="@string/pref_title_autodelete"
                 android:summary="@string/pref_summary_autodelete"
                 android:defaultValue="@bool/pref_default_autodelete"/>
@@ -25,6 +30,7 @@
                 android:key="@string/pref_key_autodelete_days"
                 android:dependency="@string/pref_key_autodelete"
                 android:inputType="number"
+                app:singleLineTitle="false"
                 android:maxLength="3"
                 android:ems="3"
                 android:title="@string/pref_title_autodelete_days"
@@ -35,10 +41,12 @@
     </android.support.v7.preference.PreferenceCategory>
 
     <android.support.v7.preference.PreferenceCategory
+            app:singleLineTitle="false"
             android:title="@string/category_screen">
 
         <android.support.v7.preference.SwitchPreferenceCompat
                 android:key="@string/pref_key_keepscreen"
+                app:singleLineTitle="false"
                 android:title="@string/pref_title_keepscreen"
                 android:defaultValue="@bool/pref_default_keepscreen"/>
 
@@ -46,6 +54,7 @@
                 android:key="@string/pref_key_orientation"
                 android:title="@string/pref_title_orientation"
                 android:defaultValue="@string/pref_default_orientation"
+                app:singleLineTitle="false"
                 android:entries="@array/pref_names_orientation"
                 android:summary="%s"
                 android:entryValues="@array/pref_values_orientation"
@@ -53,10 +62,12 @@
 
     </android.support.v7.preference.PreferenceCategory>
     <android.support.v7.preference.PreferenceCategory
+            app:singleLineTitle="false"
             android:title="@string/category_read">
 
         <android.support.v7.preference.SwitchPreferenceCompat
                 android:key="@string/pref_key_index_button"
+                app:singleLineTitle="false"
                 android:title="@string/pref_title_index_button"
                 android:summary="@string/pref_summary_index_button"
                 android:defaultValue="@bool/pref_default_index_button"/>
@@ -64,6 +75,7 @@
         <android.support.v7.preference.SwitchPreferenceCompat
                 android:key="@string/pref_key_pageindex_button"
                 android:title="@string/pref_title_pageindex_button"
+                app:singleLineTitle="false"
                 android:summary="@string/pref_summary_pageindex_button"
                 android:defaultValue="@bool/pref_default_pageindex_button"/>
 
@@ -73,23 +85,28 @@
 
         <android.support.v7.preference.SwitchPreferenceCompat
                 android:key="@string/pref_key_page_tap_border_turn"
+                app:singleLineTitle="false"
                 android:title="@string/pref_title_page_tap_border_turn"
                 android:defaultValue="@bool/pref_default_page_tap_border_turn"/>
         <android.support.v7.preference.SwitchPreferenceCompat
                 android:key="@string/pref_key_page_tap_to_article"
+                app:singleLineTitle="false"
                 android:title="@string/pref_title_page_tap_to_article"
                 android:defaultValue="@bool/pref_default_page_tap_to_article"/>
         <android.support.v7.preference.SwitchPreferenceCompat
                 android:key="@string/pref_key_page_doubletap_zoom"
+                app:singleLineTitle="false"
                 android:title="@string/pref_title_page_doubletap_zoom"
                 android:defaultValue="@bool/pref_default_page_doubletap_zoom"/>
 
     </android.support.v7.preference.PreferenceCategory>
     <android.support.v7.preference.PreferenceCategory
+            app:singleLineTitle="false"
             android:title="@string/category_readarticle">
 
         <android.support.v7.preference.SwitchPreferenceCompat
                 android:key="@string/pref_key_tts_active"
+                app:singleLineTitle="false"
                 android:title="@string/pref_title_tts_active"
                 android:defaultValue="@bool/pref_default_tts_active"/>
 
@@ -97,9 +114,11 @@
 
     <android.support.v7.preference.PreferenceCategory
             android:key="@string/category_notifications_key"
+            app:singleLineTitle="false"
             android:title="@string/category_notifications">
         <android.support.v7.preference.Preference
                 android:key="@string/pref_key_notification_settings"
+                app:singleLineTitle="false"
                 android:title="@string/pref_title_notification_settings"/>
 
 
@@ -107,41 +126,50 @@
 
     <android.support.v7.preference.PreferenceCategory
             android:key="@string/category_notification_push_key"
+            app:singleLineTitle="false"
             android:title="@string/category_notification_push">
 
         <android.support.v7.preference.SwitchPreferenceCompat
                 android:key="@string/pref_key_notification_push"
+                app:singleLineTitle="false"
                 android:title="@string/pref_title_notification_push"
                 android:defaultValue="@bool/pref_default_notification_push"/>
 
         <de.thecode.android.tazreader.preferences.NotificationSoundPreference
                 android:key="@string/pref_key_notification_push_ringtone"
+                app:singleLineTitle="false"
                 android:dependency="@string/pref_key_notification_push"
                 android:title="@string/pref_title_notification_push_ringtone"/>
 
     </android.support.v7.preference.PreferenceCategory>
     <android.support.v7.preference.PreferenceCategory
             android:key="@string/category_notification_download_key"
+            app:singleLineTitle="false"
             android:title="@string/category_notification_download">
 
         <android.support.v7.preference.SwitchPreferenceCompat
                 android:key="@string/pref_key_notification_download_vibrate"
                 android:title="@string/pref_title_notification_download_vibrate"
+                app:singleLineTitle="false"
                 android:defaultValue="@bool/pref_default_notification_download_vibrate"/>
 
         <de.thecode.android.tazreader.preferences.NotificationSoundPreference
                 android:key="@string/pref_key_notification_download_ringtone"
+                app:singleLineTitle="false"
                 android:title="@string/pref_title_notification_download_ringtone"/>
 
     </android.support.v7.preference.PreferenceCategory>
     <android.support.v7.preference.PreferenceCategory
+            app:singleLineTitle="false"
             android:title="@string/category_debug">
 
         <android.support.v7.preference.SwitchPreferenceCompat
                 android:key="@string/pref_key_crashlytics_always_send"
+                app:singleLineTitle="false"
                 android:title="@string/pref_title_crashlytics_always_send"/>
         <android.support.v7.preference.SwitchPreferenceCompat
                 android:key="@string/pref_key_log_file"
+                app:singleLineTitle="false"
                 android:title="@string/pref_title_log_file"
                 android:summary="@string/pref_summary_log_file"
                 android:defaultValue="@bool/pref_default_log_file"/>
@@ -149,6 +177,7 @@
         <android.support.v7.preference.Preference
                 android:key="@string/pref_key_send_log_file"
                 android:title="@string/pref_title_send_log_file"
+                app:singleLineTitle="false"
                 android:summary="@string/pref_summary_send_log_file"/>
 
 
