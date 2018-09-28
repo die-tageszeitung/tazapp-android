@@ -301,7 +301,7 @@ dependencies {
     implementation "com.android.support:cardview-v7:$supportLibVer"
     implementation "com.takisoft.fix:preference-v7:$supportLibVer" + ".0"
     implementation 'com.squareup.okhttp3:okhttp:3.11.0'
-    implementation 'com.squareup.okhttp3:logging-interceptor:3.10.0'
+    implementation 'com.squareup.okhttp3:logging-interceptor:3.11.0'
     implementation 'com.squareup.picasso:picasso:2.5.2'
     implementation 'com.jakewharton.picasso:picasso2-okhttp3-downloader:1.1.0'
     implementation 'com.googlecode.plist:dd-plist:1.8'
@@ -336,8 +336,6 @@ dependencies {
 
     implementation "org.apache.commons:commons-lang3:3.7"
     implementation "commons-io:commons-io:2.5" // Dont update until Android 4 is supported
-
-    implementation 'com.novoda:download-manager:2.0.1'
 
     implementation 'com.github.bosphere.android-filelogger:filelogger:1.0.6'
 

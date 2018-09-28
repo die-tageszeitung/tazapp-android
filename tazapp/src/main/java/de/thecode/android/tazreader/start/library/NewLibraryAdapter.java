@@ -29,16 +29,20 @@ import de.thecode.android.tazreader.utils.extendedasyncdiffer.ExtendedAdapterLis
 
 import java.text.DateFormat;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import timber.log.Timber;
 
-public class NewLibraryAdapter extends TazListAdapter<LibraryPaper, NewLibraryAdapter.ViewHolder> {
+public class NewLibraryAdapter extends TazListAdapter<Paper, NewLibraryAdapter.ViewHolder> {
+
 
     private static final String PAYLOAD_PROGRESS = "plProgress";
     private static final String PAYLOAD_SELECTED = "plSelected";
     private static final String PAYLOAD_STATE    = "plState";
-    private static final String PAYLOAD_CHANGE = "plChange";
+    private static final String PAYLOAD_CHANGE   = "plChange";
 
     private final ViewHolder.OnClickListener clickListener = new ViewHolder.OnClickListener() {
         @Override
@@ -48,16 +52,23 @@ public class NewLibraryAdapter extends TazListAdapter<LibraryPaper, NewLibraryAd
 
         @Override
         public void onLongClick(int position) {
-            if (itemClickListener != null) itemClickListener.onLongClick(getItem(position), position);
+            Paper paper = getItem(position);
+            toggleSelection(paper, position);
         }
     };
 
     private final OnItemClickListener itemClickListener;
+    private final PaperMetaData       paperMetaData;
 
-    public NewLibraryAdapter(OnItemClickListener itemClickListener,
+    public NewLibraryAdapter(PaperMetaData paperMetaData, OnItemClickListener itemClickListener,
                              ExtendedAdapterListUpdateCallback.OnFirstInsertedListener firstInsertedListener) {
         super(new LibraryAdapterCallback(), firstInsertedListener);
         this.itemClickListener = itemClickListener;
+        this.paperMetaData = paperMetaData;
+    }
+
+    public PaperMetaData getPaperMetaData() {
+        return paperMetaData;
     }
 
     @NonNull
@@ -71,23 +82,21 @@ public class NewLibraryAdapter extends TazListAdapter<LibraryPaper, NewLibraryAd
     public void onBindViewHolder(@NonNull ViewHolder holder, int position, @NonNull List<Object> payloads) {
         Timber.d("pos: %d payload: %s", position, payloads);
         if (!payloads.isEmpty()) {
-            LibraryPaper libraryPaper = getItem(position);
-            bindProgress(holder, libraryPaper);
-            bindState(holder, libraryPaper.getPaper());
-            bindSelected(holder, libraryPaper);
+            Paper libraryPaper = getItem(position);
+            if (payloads.contains(PAYLOAD_SELECTED)) bindSelected(holder, libraryPaper);
+            if (payloads.contains(PAYLOAD_PROGRESS)) bindProgress(holder, libraryPaper);
         } else super.onBindViewHolder(holder, position, payloads);
     }
 
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        LibraryPaper libraryPaper = getItem(position);
-        bindImage(holder, libraryPaper.getPaper());
-        bindBadge(holder, libraryPaper.getPaper());
-        bindDate(holder, libraryPaper.getPaper());
-
+        Paper libraryPaper = getItem(position);
+        bindImage(holder, libraryPaper);
+        bindBadge(holder, libraryPaper);
+        bindDate(holder, libraryPaper);
         bindProgress(holder, libraryPaper);
-        bindState(holder, libraryPaper.getPaper());
+        bindState(holder, libraryPaper);
         bindSelected(holder, libraryPaper);
     }
 
@@ -134,65 +143,88 @@ public class NewLibraryAdapter extends TazListAdapter<LibraryPaper, NewLibraryAd
 
     }
 
-    private void bindProgress(ViewHolder holder, LibraryPaper libraryPaper) {
-        holder.progress.setProgress(100 - libraryPaper.getProgress());
+    private void bindProgress(ViewHolder holder, Paper libraryPaper) {
+        holder.progress.setProgress(100 - paperMetaData.getProgress(libraryPaper.getBookId()));
     }
 
     private void bindState(ViewHolder holder, Paper paper) {
-        if (paper.isDownloading()) {
-            holder.wait.setVisibility(View.VISIBLE);
-        } else {
-            holder.wait.setVisibility(View.GONE);
-        }
+        holder.progress.setVisibility(paper.isDownloaded() ? View.GONE : View.VISIBLE);
+        holder.wait.setVisibility(paper.isDownloading() ? View.VISIBLE : View.GONE);
     }
 
-    private void bindSelected(ViewHolder holder, LibraryPaper libraryPaper) {
-        if (libraryPaper.isSelected()) holder.selected.setVisibility(View.VISIBLE);
+    private void bindSelected(ViewHolder holder, Paper libraryPaper) {
+        if (paperMetaData.isSelected(libraryPaper.getBookId())) holder.selected.setVisibility(View.VISIBLE);
         else holder.selected.setVisibility(View.INVISIBLE);
     }
 
+    public void toggleSelection(Paper paper, int position) {
+        if (paperMetaData.setSelected(paper.getBookId(), !paperMetaData.isSelected(paper.getBookId()))) {
+            notifyItemChanged(position, PAYLOAD_SELECTED);
+            if (itemClickListener != null) itemClickListener.onSelectionChanged();
+        }
+    }
 
-    private static class LibraryAdapterCallback extends DiffUtil.ItemCallback<LibraryPaper> {
+    public void selectNone() {
+        if (paperMetaData.clearSelected()) notifyItemRangeChanged(0, getItemCount(), PAYLOAD_SELECTED);
+    }
+
+    public void selectAll() {
+        boolean changed = false;
+        for (Paper paper : getHelper().getCurrentList()) {
+            if (paperMetaData.setSelected(paper.getBookId(), true)) {
+                changed = true;
+            }
+        }
+        if (changed) {
+            notifyItemRangeChanged(0, getItemCount(), PAYLOAD_SELECTED);
+            if (itemClickListener != null) itemClickListener.onSelectionChanged();
+        }
+    }
+
+    public void selectionInverse() {
+        boolean changed = false;
+        for (Paper paper : getHelper().getCurrentList()) {
+            if (paperMetaData.setSelected(paper.getBookId(), !paperMetaData.isSelected(paper.getBookId()))) {
+                changed = true;
+            }
+        }
+        if (changed) {
+            notifyItemRangeChanged(0, getItemCount(), PAYLOAD_SELECTED);
+            if (itemClickListener != null) itemClickListener.onSelectionChanged();
+        }
+
+    }
+
+
+    private static class LibraryAdapterCallback extends DiffUtil.ItemCallback<Paper> {
 
         @Override
-        public boolean areItemsTheSame(LibraryPaper oldItem, LibraryPaper newItem) {
+        public boolean areItemsTheSame(Paper oldItem, Paper newItem) {
             return oldItem.getBookId()
                           .equals(newItem.getBookId());
         }
 
         @Override
-        public boolean areContentsTheSame(LibraryPaper oldItem, LibraryPaper newItem) {
+        public boolean areContentsTheSame(Paper oldItem, Paper newItem) {
             return oldItem.equals(newItem);
         }
 
-        @Override
-        public Object getChangePayload(LibraryPaper oldItem, LibraryPaper newItem) {
-            return PAYLOAD_CHANGE;
-//
-//            Timber.i("%s %s", oldItem, newItem);
-//            if (oldItem.getPaper()
-//                       .isDownloading() != newItem.getPaper()
-//                                                  .isDownloading()) return PAYLOAD_STATE;
-//            if (oldItem.isSelected() != newItem.isSelected()) return PAYLOAD_SELECTED;
-//            if (oldItem.getProgress() != newItem.getProgress()) return PAYLOAD_PROGRESS;
-//            return null;
-        }
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
 
-        CardView        card;
-        TextView        date;
-        TextView        badge;
-        ImageView       image;
-        ProgressBar     wait;
-        ProgressBar     progress;
-        FrameLayout     selected;
-        OnClickListener clickListener;
+        final CardView        card;
+        final TextView        date;
+        final TextView        badge;
+        final ImageView       image;
+        final ProgressBar     wait;
+        final ProgressBar     progress;
+        final FrameLayout     selected;
+        final OnClickListener listener;
 
         public ViewHolder(View itemView, OnClickListener clickListener) {
             super(itemView);
-            this.clickListener = clickListener;
+            this.listener = clickListener;
             card = itemView.findViewById(R.id.lib_item_card);
             date = itemView.findViewById(R.id.lib_item_date);
             badge = itemView.findViewById(R.id.lib_item_badge);
@@ -210,18 +242,12 @@ public class NewLibraryAdapter extends TazListAdapter<LibraryPaper, NewLibraryAd
             }
             progress = itemView.findViewById(R.id.lib_item_progress);
             selected = itemView.findViewById(R.id.lib_item_selected_overlay);
-            card.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (clickListener != null) clickListener.onClick(getAdapterPosition());
-                }
+            card.setOnClickListener(v -> {
+                if (listener != null) listener.onClick(getAdapterPosition());
             });
-            card.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-                    if (clickListener != null) clickListener.onLongClick(getAdapterPosition());
-                    return true;
-                }
+            card.setOnLongClickListener(v -> {
+                if (listener != null) listener.onLongClick(getAdapterPosition());
+                return true;
             });
             ViewCompat.setImportantForAccessibility(badge, ViewCompat.IMPORTANT_FOR_ACCESSIBILITY_NO);
             ViewCompat.setImportantForAccessibility(date, ViewCompat.IMPORTANT_FOR_ACCESSIBILITY_NO);
@@ -229,17 +255,14 @@ public class NewLibraryAdapter extends TazListAdapter<LibraryPaper, NewLibraryAd
 
         public interface OnClickListener {
             void onClick(int position);
-
             void onLongClick(int position);
         }
     }
 
     public interface OnItemClickListener {
-        void onClick(LibraryPaper libraryPaper, int position);
-
-        void onLongClick(LibraryPaper libraryPaper, int position);
+        void onClick(Paper libraryPaper, int position);
+        void onSelectionChanged();
     }
-
 
     private static abstract class MissingCoverCallback extends PreloadImageCallback {
 
@@ -257,4 +280,56 @@ public class NewLibraryAdapter extends TazListAdapter<LibraryPaper, NewLibraryAd
 
         public abstract void onError(ImageView imageView, Paper paper);
     }
+
+    public static class PaperMetaData {
+
+        public final List<String>         selectedList = new ArrayList<>();
+        public final Map<String, Integer> progressMap  = new HashMap<>();
+
+        public int getSelectedCount() {
+            return selectedList.size();
+        }
+
+        public boolean setSelected(String bookId, boolean selected) {
+            boolean changed = selected != isSelected(bookId);
+            if (selected) {
+                selectedList.add(bookId);
+            } else {
+                selectedList.remove(bookId);
+            }
+            return changed;
+        }
+
+        public boolean isSelected(String bookId) {
+            return selectedList.contains(bookId);
+        }
+
+        public boolean clearSelected() {
+            if (selectedList.size() == 0) {
+                return false;
+            } else {
+                selectedList.clear();
+                return true;
+            }
+        }
+
+        public String[] getSelected() {
+            return selectedList.toArray(new String[0]);
+        }
+
+        public int getProgress(String bookId) {
+            if (progressMap.containsKey(bookId)) return progressMap.get(bookId);
+            else return 0;
+        }
+
+        public boolean setProgress(String bookId, int value) {
+            if (progressMap.containsKey(bookId) && progressMap.get(bookId) == value) return false;
+            Timber.i("progress for %s %d", bookId, value);
+            progressMap.put(bookId, value);
+            return true;
+        }
+
+
+    }
+
 }

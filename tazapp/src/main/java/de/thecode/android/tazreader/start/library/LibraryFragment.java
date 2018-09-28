@@ -22,7 +22,6 @@ import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.download.CoverDownloadedEvent;
-import de.thecode.android.tazreader.download.DownloadManager;
 import de.thecode.android.tazreader.job.SyncJob;
 import de.thecode.android.tazreader.start.DrawerStateChangedEvent;
 import de.thecode.android.tazreader.start.StartBaseFragment;
@@ -36,7 +35,6 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.lang.ref.WeakReference;
 import java.util.List;
 
 import timber.log.Timber;
@@ -46,8 +44,8 @@ import timber.log.Timber;
  */
 public class LibraryFragment extends StartBaseFragment {
     //    LibraryAdapter                adapter;
-    NewLibraryAdapter             adapter;
-    SwipeRefreshLayout            swipeRefresh;
+    NewLibraryAdapter  adapter;
+    SwipeRefreshLayout swipeRefresh;
 
     ActionMode actionMode;
 
@@ -75,14 +73,15 @@ public class LibraryFragment extends StartBaseFragment {
         startViewModel = ViewModelProviders.of(getActivity())
                                            .get(StartViewModel.class);
 
-        adapter = new NewLibraryAdapter(new NewLibraryAdapter.OnItemClickListener() {
+        adapter = new NewLibraryAdapter(startViewModel.getPaperMetaDataMap(), new NewLibraryAdapter.OnItemClickListener() {
             @Override
-            public void onClick(LibraryPaper libraryPaper, int position) {
+            public void onClick(Paper paper, int position) {
 
-                Timber.d("position: %s, paper: %s", position, libraryPaper);
-                if (actionMode != null) onLongClick(libraryPaper, position);
-                else {
-                    Paper paper = libraryPaper.getPaper();
+                Timber.d("position: %s, paper: %s", position, paper);
+                if (actionMode != null) {
+                    adapter.toggleSelection(paper, position);
+                    //onLongClick(paper, position);
+                } else {
                     switch (paper.getState()) {
                         case Paper.DOWNLOADED_READABLE:
                         case Paper.DOWNLOADED_BUT_UPDATE:
@@ -104,12 +103,22 @@ public class LibraryFragment extends StartBaseFragment {
 
             }
 
+//            @Override
+//            public void onLongClick(Paper libraryPaper, int position) {
+////                startViewModel.getLibraryPaperLiveData()
+////                              .toggleSelection(libraryPaper.getBookId());
+//                setActionMode();
+//            }
+
             @Override
-            public void onLongClick(LibraryPaper libraryPaper, int position) {
-                startViewModel.getLibraryPaperLiveData()
-                              .toggleSelection(libraryPaper.getBookId());
-                setActionMode();
-//                actionMode.invalidate();
+            public void onSelectionChanged() {
+                if (actionMode != null) {
+                    if (adapter.getPaperMetaData()
+                               .getSelectedCount() == 0) actionMode.finish();
+                    else actionMode.invalidate();
+                } else {
+                    setActionMode();
+                }
             }
         }, new ExtendedAdapterListUpdateCallback.OnFirstInsertedListener() {
             @Override
@@ -118,21 +127,21 @@ public class LibraryFragment extends StartBaseFragment {
                 try {
                     recyclerView.smoothScrollToPosition(firstInserted);
                 } catch (Exception e) {
-                    Timber.w("Can't scroll, dont worry!", e);
+                    Timber.w(e, "Can't scroll, don't worry!");
                 }
             }
         });
 
-        startViewModel.getLibraryPaperLiveData()
-                      .observe(this, new Observer<List<LibraryPaper>>() {
+        startViewModel.getLivePapers()
+                      .observe(this, new Observer<List<Paper>>() {
                           @Override
-                          public void onChanged(@Nullable List<LibraryPaper> libraryPapers) {
-                              if (actionMode != null) {
+                          public void onChanged(@Nullable List<Paper> libraryPapers) {
+//                              if (actionMode != null) {
 //                                  if (startViewModel.getLibraryPaperLiveData()
 //                                                    .getSelectionSize() == 0) actionMode.finish();
 //                                  else
-                                      actionMode.invalidate();
-                              }
+//                                      actionMode.invalidate();
+//                              }
                               adapter.submitList(libraryPapers);
                           }
                       });
@@ -298,6 +307,7 @@ public class LibraryFragment extends StartBaseFragment {
     @Override
     public void onDestroy() {
 //        adapter.removeClickLIstener();
+        startViewModel.setPaperMetaDataMap(adapter.getPaperMetaData());
         super.onDestroy();
     }
 
@@ -338,8 +348,6 @@ public class LibraryFragment extends StartBaseFragment {
     }
 
 
-
-
 //        if (adapter.getSelected() != null && adapter.getSelected()
 //                                                    .size() > 0) {
 //            Long[] ids = adapter.getSelected()
@@ -350,18 +358,28 @@ public class LibraryFragment extends StartBaseFragment {
 //        }
 
     private void downloadSelected() {
-        new AsyncTaskListener<String, List<Paper>>(bookIds -> startViewModel.getPaperRepository()
-                                                                            .getPapersWithBookId(bookIds), papers -> {
-            if (papers != null) {
-                for (Paper paper : papers) {
-                    getStartActivity().startDownload(paper);
-                }
+
+        new AsyncTaskListener<String, Void>(bookIdsParam -> {
+            List<Paper> papersToDownload = startViewModel.getPaperRepository()
+                                                         .getPapersWithBookId(bookIdsParam);
+            for (Paper paperToDownload : papersToDownload) {
+                getStartActivity().startDownload(paperToDownload);
             }
-        }).execute(startViewModel.getLibraryPaperLiveData()
-                                 .getSelected()
-                                 .toArray(new String[startViewModel.getLibraryPaperLiveData()
-                                                                   .getSelected()
-                                                                   .size()]));
+            return null;
+        }).execute(adapter.getPaperMetaData()
+                          .getSelected());
+//        new AsyncTaskListener<String, List<Paper>>(bookIds -> startViewModel.getPaperRepository()
+//                                                                            .getPapersWithBookId(bookIds), papers -> {
+//            if (papers != null) {
+//                for (Paper paper : papers) {
+//
+//                }
+//            }
+//        }).execute(startViewModel.getLibraryPaperLiveData()
+//                                 .getSelected()
+//                                 .toArray(new String[startViewModel.getLibraryPaperLiveData()
+//                                                                   .getSelected()
+//                                                                   .size()]));
 
     }
 
@@ -402,8 +420,8 @@ public class LibraryFragment extends StartBaseFragment {
         public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
             Timber.d("mode: %s, menu: %s", mode, menu);
             menu.clear();
-            int countSelected = startViewModel.getLibraryPaperLiveData()
-                                              .getSelectionSize();
+            int countSelected = adapter.getPaperMetaData()
+                                       .getSelectedCount();
             mode.setTitle(getString(R.string.string_library_selected, countSelected));
             mode.getMenuInflater()
                 .inflate(R.menu.start_library_selectmode, menu);
@@ -425,23 +443,26 @@ public class LibraryFragment extends StartBaseFragment {
                     mode.finish();
                     return true;
                 case R.id.ic_action_delete:
-                    startViewModel.deleteSelected();
+                    startViewModel.deletePaper(adapter.getPaperMetaData()
+                                                      .getSelected());
                     mode.finish();
                     return true;
                 case R.id.ic_action_selectnone:
                     mode.finish();
                     return true;
                 case R.id.ic_action_selectall:
-                    startViewModel.getLibraryPaperLiveData()
-                                  .selectAll();
+                    adapter.selectAll();
+//                    startViewModel.getLibraryPaperLiveData()
+//                                  .selectAll();
                     return true;
                 case R.id.ic_action_selectinvert:
-                    startViewModel.getLibraryPaperLiveData()
-                                  .invertSelection();
+                    adapter.selectionInverse();
+//                    startViewModel.getLibraryPaperLiveData()
+//                                  .invertSelection();
                     return true;
                 case R.id.ic_action_selectnotloaded:
-                    startViewModel.getLibraryPaperLiveData()
-                                  .selectNotDownloaded();
+//                    startViewModel.getLibraryPaperLiveData()
+//                                  .selectNotDownloaded();
                     return true;
             }
 
@@ -450,8 +471,10 @@ public class LibraryFragment extends StartBaseFragment {
 
         @Override
         public void onDestroyActionMode(ActionMode mode) {
-            startViewModel.getLibraryPaperLiveData()
-                          .selectNone();
+//            adapter.getPaperMetaData().
+//            startViewModel.getLibraryPaperLiveData()
+//                          .selectNone();
+            adapter.selectNone();
             Timber.d("mode: %s", mode);
 //            adapter.deselectAll();
             startViewModel.setActionMode(false);

@@ -59,9 +59,7 @@ public class DownloadFinishedJob extends Job {
             if (paper != null) {
                 Timber.i("Download complete for paper: %s, %s", paper, state);
                 try {
-                    if (state.getStatus() == DownloadManager.DownloadState.STATUS_FAILED) {
-                        throw new DownloadException(state.getStatusText() + ": " + state.getReasonText());
-                    } else if (state.getStatus() == DownloadManager.DownloadState.STATUS_SUCCESSFUL) {
+                    if (state.getStatus() == DownloadManager.DownloadState.STATUS_SUCCESSFUL) {
                         File downloadFile = externalStorage.getDownloadFile(paper);
                         if (!downloadFile.exists()) throw new DownloadException("Downloaded paper file missing");
                         Timber.i("... checked file existence");
@@ -89,6 +87,8 @@ public class DownloadFinishedJob extends Job {
                             throw new DownloadException(e);
                         }
                         DownloadFinishedPaperJob.scheduleJob(paper);
+                    } else {
+                        throw new DownloadException(state.getStatusText() + ": " + state.getReasonText());
                     }
                 } catch (DownloadException e) {
                     Timber.e(e);
@@ -110,12 +110,14 @@ public class DownloadFinishedJob extends Job {
                                        .exists()) //noinspection ResultOfMethodCallIgnored
                         externalStorage.getDownloadFile(paper)
                                        .delete();
-                    NotificationUtils.getInstance(getContext())
-                                     .showDownloadErrorNotification(paper, getContext().getString(R.string.download_error_hints));
-                    //NotificationHelper.showDownloadErrorNotification(context, null, paper.getId());
+                    if (state.getStatus() != DownloadManager.DownloadState.STATUS_NOTFOUND) {
+                        NotificationUtils.getInstance(getContext())
+                                         .showDownloadErrorNotification(paper, getContext().getString(R.string.download_error_hints));
+                        //NotificationHelper.showDownloadErrorNotification(context, null, paper.getId());
 
-                    EventBus.getDefault()
-                            .post(new PaperDownloadFailedEvent(paper, e));
+                        EventBus.getDefault()
+                                .post(new PaperDownloadFailedEvent(paper, e));
+                    }
 
                 }
 
@@ -127,9 +129,7 @@ public class DownloadFinishedJob extends Job {
                 //DownloadHelper.DownloadState downloadDownloadState = downloadHelper.getDownloadState(downloadId);
                 Timber.i("Download complete for resource: %s, %s", resource, state);
                 try {
-                    if (state.getStatus() == DownloadManager.DownloadState.STATUS_FAILED) {
-                        throw new DownloadException(state.getStatusText() + ": " + state.getReasonText());
-                    } else if (state.getStatus() == DownloadManager.DownloadState.STATUS_SUCCESSFUL) {
+                    if (state.getStatus() == DownloadManager.DownloadState.STATUS_SUCCESSFUL) {
                         File downloadFile = externalStorage.getDownloadFile(resource);
                         if (!downloadFile.exists()) throw new DownloadException("Downloaded resource file missing");
                         Timber.i("... checked file existence");
@@ -156,6 +156,8 @@ public class DownloadFinishedJob extends Job {
                             throw new DownloadException(e);
                         }
                         DownloadFinishedResourceJob.scheduleJob(resource);
+                    } else {
+                        throw new DownloadException(state.getStatusText() + ": " + state.getReasonText());
                     }
                 } catch (DownloadException e) {
                     Timber.e(e);

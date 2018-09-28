@@ -1,5 +1,6 @@
 package de.thecode.android.tazreader.data;
 
+import android.arch.lifecycle.LiveData;
 import android.content.Context;
 import android.support.annotation.WorkerThread;
 
@@ -114,5 +115,17 @@ public class PaperRepository {
     public Paper getLatestPaper() {
         return appDatabase.paperDao()
                    .getLatestPaper();
+    }
+
+
+    public LiveData<List<Paper>> getLivePapersForDemoLibrary() {
+        return appDatabase.paperDao()
+                          .getLivePapersForDemoLibrary();
+    }
+
+    public LiveData<List<Paper>> getLivePapersForLibrary() {
+
+        return appDatabase.paperDao()
+                          .getLivePapersForLibrary();
     }
 }
