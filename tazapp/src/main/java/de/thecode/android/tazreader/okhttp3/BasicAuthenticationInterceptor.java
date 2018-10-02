@@ -3,8 +3,6 @@ package de.thecode.android.tazreader.okhttp3;
 import android.support.annotation.NonNull;
 import android.util.Base64;
 
-import de.thecode.android.tazreader.sync.AccountHelper;
-
 import java.io.IOException;
 
 import okhttp3.Interceptor;
@@ -17,25 +15,18 @@ import okhttp3.Response;
 
 public class BasicAuthenticationInterceptor implements Interceptor {
 
-    //    final String basic;
-    private final AccountHelper accountHelper;
+    private final String basic;
 
-    public BasicAuthenticationInterceptor(@NonNull AccountHelper accountHelper) {
-        this.accountHelper = accountHelper;
+    public BasicAuthenticationInterceptor(@NonNull String username, @NonNull String password) {
+        String credentials = username + ":" + password;
+        basic = "Basic " + Base64.encodeToString(credentials.getBytes(), Base64.NO_WRAP);
     }
 
     @Override
-    public Response intercept(Chain chain) throws IOException {
-        Request authorisedRequest = chain.request()
-                                         .newBuilder()
-                                         .header("Authorization", createBasicAuthValue())
-                                         .build();
-        return chain.proceed(authorisedRequest);
-    }
+    public Response intercept(@NonNull Chain chain) throws IOException {
+        Request authorisedRequest = chain.request().newBuilder()
 
-    private String createBasicAuthValue() {
-        String credentials = accountHelper.getUser(AccountHelper.ACCOUNT_DEMO_USER) + ":" + accountHelper.getPassword(
-                AccountHelper.ACCOUNT_DEMO_PASS);
-        return "Basic " + Base64.encodeToString(credentials.getBytes(), Base64.NO_WRAP);
+                                         .header("Authorization", basic).build();
+        return chain.proceed(authorisedRequest);
     }
 }
