@@ -5,7 +5,6 @@ import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -14,12 +13,9 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.widget.CardView;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.View;
-
-import com.commonsware.cwac.provider.StreamProvider;
 
 import de.mateware.dialog.Dialog;
 import de.mateware.dialog.DialogAdapterList;
@@ -49,7 +45,6 @@ import de.thecode.android.tazreader.download.PaperDownloadFailedEvent;
 import de.thecode.android.tazreader.download.PaperDownloadFinishedEvent;
 import de.thecode.android.tazreader.download.ResourceDownloadEvent;
 import de.thecode.android.tazreader.importer.ImportActivity;
-import de.thecode.android.tazreader.job.SyncJob;
 import de.thecode.android.tazreader.migration.MigrationActivity;
 import de.thecode.android.tazreader.notifications.NotificationUtils;
 import de.thecode.android.tazreader.reader.ReaderActivity;
@@ -62,15 +57,14 @@ import de.thecode.android.tazreader.utils.AsyncTaskListener;
 import de.thecode.android.tazreader.utils.BaseActivity;
 import de.thecode.android.tazreader.utils.Charsets;
 import de.thecode.android.tazreader.utils.Connection;
-import de.thecode.android.tazreader.utils.StorageManager;
 import de.thecode.android.tazreader.utils.StreamUtils;
 import de.thecode.android.tazreader.utils.UserDeviceInfo;
 import de.thecode.android.tazreader.widget.CustomToolbar;
+import de.thecode.android.tazreader.worker.SyncWorker;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.ConnectException;
@@ -277,7 +271,7 @@ public class StartActivity extends BaseActivity
 
         if (TazSettings.getInstance(this)
                        .getPrefBoolean(TazSettings.PREFKEY.FISRTSTART, true)) {
-            SyncJob.scheduleJobImmediately(false);
+            SyncWorker.scheduleJobImmediately(false);
             TazSettings.getInstance(this)
                        .setPref(TazSettings.PREFKEY.FISRTSTART, false);
             TazSettings.getInstance(this)
@@ -854,7 +848,7 @@ public class StartActivity extends BaseActivity
                 Calendar endCal = Calendar.getInstance();
                 startCal.set(year, Calendar.JANUARY, 1);
                 endCal.set(year, Calendar.DECEMBER, 31);
-                SyncJob.scheduleJobImmediately(true, startCal, endCal);
+                SyncWorker.scheduleJobImmediately(true, startCal, endCal);
                 //SyncHelper.requestSync(this, startCal, endCal);
             }
         } else if (DIALOG_ARCHIVE_MONTH.equals(tag)) {
@@ -866,7 +860,7 @@ public class StartActivity extends BaseActivity
             int lastDayOfMont = startCal.getActualMaximum(Calendar.DAY_OF_MONTH);
             endCal.set(year, month, lastDayOfMont);
             //SyncHelper.requestSync(this, startCal, endCal);
-            SyncJob.scheduleJobImmediately(true, startCal, endCal);
+            SyncWorker.scheduleJobImmediately(true, startCal, endCal);
         }
     }
 

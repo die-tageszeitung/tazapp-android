@@ -26,8 +26,8 @@ import de.thecode.android.tazreader.download.DownloadManager;
 import de.thecode.android.tazreader.okhttp3.OkHttp3Helper;
 import de.thecode.android.tazreader.okhttp3.RequestHelper;
 import de.thecode.android.tazreader.sync.SyncErrorEvent;
-import de.thecode.android.tazreader.sync.SyncStateChangedEvent;
 import de.thecode.android.tazreader.update.UpdateHelper;
+import de.thecode.android.tazreader.worker.AutoDownloadWorker;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.greenrobot.eventbus.EventBus;
@@ -68,8 +68,8 @@ public class SyncJob extends Job {
     @Override
     protected Result onRunJob(Params params) {
 
-        EventBus.getDefault()
-                .postSticky(new SyncStateChangedEvent(true));
+//        EventBus.getDefault()
+//                .postSticky(new SyncStateChangedEvent(true));
 
         paperRepository = PaperRepository.getInstance(getContext());
         resourceRepository = ResourceRepository.getInstance(getContext());
@@ -104,14 +104,14 @@ public class SyncJob extends Job {
         cleanUpResources();
 
         Paper latestPaper = paperRepository.getLatestPaper();
-        if (latestPaper != null) AutoDownloadJob.scheduleJob(latestPaper);
+        if (latestPaper != null) AutoDownloadWorker.scheduleNow(latestPaper);
 
         return endJob(Result.SUCCESS);
     }
 
     private Result endJob(Result result) {
-        EventBus.getDefault()
-                .postSticky(new SyncStateChangedEvent(false));
+//        EventBus.getDefault()
+//                .postSticky(new SyncStateChangedEvent(false));
         return result;
     }
 

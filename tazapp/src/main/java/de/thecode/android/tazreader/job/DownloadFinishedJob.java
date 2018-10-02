@@ -20,6 +20,7 @@ import de.thecode.android.tazreader.notifications.NotificationUtils;
 import de.thecode.android.tazreader.secure.HashHelper;
 import de.thecode.android.tazreader.utils.ReadableException;
 import de.thecode.android.tazreader.utils.StorageManager;
+import de.thecode.android.tazreader.worker.SyncWorker;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -99,7 +100,7 @@ public class DownloadFinishedJob extends Job {
                     paper.setState(Paper.STATE_NONE);
                     paperRepository.savePaper(paper);
                     if (state.getReason() == 406) {
-                        SyncJob.scheduleJobImmediately(false);
+                        SyncWorker.scheduleJobImmediately(false);
                         //SyncHelper.requestSync(context);
                     }
                     //AnalyticsWrapper.getInstance().logException(exception);

@@ -21,16 +21,14 @@ import android.view.ViewGroup;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.TazSettings;
-import de.thecode.android.tazreader.download.CoverDownloadedEvent;
 import de.thecode.android.tazreader.download.UnzipProgressEvent;
-import de.thecode.android.tazreader.job.SyncJob;
 import de.thecode.android.tazreader.start.DrawerStateChangedEvent;
 import de.thecode.android.tazreader.start.StartBaseFragment;
 import de.thecode.android.tazreader.start.StartViewModel;
-import de.thecode.android.tazreader.sync.SyncStateChangedEvent;
 import de.thecode.android.tazreader.utils.AsyncTaskListener;
 import de.thecode.android.tazreader.utils.extendedasyncdiffer.ExtendedAdapterListUpdateCallback;
 import de.thecode.android.tazreader.widget.AutofitRecyclerView;
+import de.thecode.android.tazreader.worker.SyncWorker;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -38,6 +36,9 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.List;
 
+import androidx.work.State;
+import androidx.work.WorkManager;
+import androidx.work.WorkStatus;
 import timber.log.Timber;
 
 /**
@@ -161,7 +162,7 @@ public class LibraryFragment extends StartBaseFragment {
             public void onRefresh() {
 
                 hideFab();
-                SyncJob.scheduleJobImmediately(true);
+                SyncWorker.scheduleJobImmediately(true);
                 //SyncHelper.requestSync(getContext());
             }
         });
@@ -224,7 +225,24 @@ public class LibraryFragment extends StartBaseFragment {
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
+        WorkManager.getInstance()
+                   .getStatusesByTag(SyncWorker.TAG)
+                   .observe(this, new Observer<List<WorkStatus>>() {
+                       @Override
+                       public void onChanged(@Nullable List<WorkStatus> workStatuses) {
+                           boolean isSyncRunning = false;
+                           if (workStatuses != null) {
+                               for (WorkStatus workStatus : workStatuses) {
+                                   Timber.i("%s",workStatus);
+                                   isSyncRunning = workStatus.getState() == State.RUNNING;
+                                   if (isSyncRunning) break;
+                               }
+                               if (isSyncRunning != swipeRefresh.isRefreshing()) swipeRefresh.setRefreshing(isSyncRunning);
+                               if (isSyncRunning) hideFab();
+                               else showFab();
+                           }
+                       }
+                   });
     }
 
 
@@ -316,26 +334,26 @@ public class LibraryFragment extends StartBaseFragment {
     }
 
 
-    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
-    public void onSyncStateChanged(SyncStateChangedEvent event) {
-        isSyncing = event.isRunning();
-        Timber.d("SyncStateChanged running: %s", isSyncing);
-        if (swipeRefresh.isRefreshing() != event.isRunning()) swipeRefresh.setRefreshing(event.isRunning());
-        if (isSyncing) hideFab();
-        else showFab();
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onCoverDowloaded(CoverDownloadedEvent event) {
-        //TODO onCoverDownloaded
-//        try {
-//            LibraryAdapter.ViewHolder viewHolder = (LibraryAdapter.ViewHolder) recyclerView.findViewHolderForItemId(event.getPaperId());
-//            if (viewHolder != null) viewHolder.image.setTag(null);
-////            adapter.notifyItemChanged(adapter.getItemPosition(event.getPaperId()));
-//        } catch (IllegalStateException e) {
-//            Timber.w(e);
-//        }
-    }
+//    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+//    public void onSyncStateChanged(SyncStateChangedEvent event) {
+//        isSyncing = event.isRunning();
+//        Timber.d("SyncStateChanged running: %s", isSyncing);
+//        if (swipeRefresh.isRefreshing() != event.isRunning()) swipeRefresh.setRefreshing(event.isRunning());
+//        if (isSyncing) hideFab();
+//        else showFab();
+//    }
+//
+//    @Subscribe(threadMode = ThreadMode.MAIN)
+//    public void onCoverDowloaded(CoverDownloadedEvent event) {
+//        //TODO onCoverDownloaded
+////        try {
+////            LibraryAdapter.ViewHolder viewHolder = (LibraryAdapter.ViewHolder) recyclerView.findViewHolderForItemId(event.getPaperId());
+////            if (viewHolder != null) viewHolder.image.setTag(null);
+//////            adapter.notifyItemChanged(adapter.getItemPosition(event.getPaperId()));
+////        } catch (IllegalStateException e) {
+////            Timber.w(e);
+////        }
+//    }
 
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -347,7 +365,7 @@ public class LibraryFragment extends StartBaseFragment {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onUnzipProgress(UnzipProgressEvent event) {
-        adapter.setProgress(event.getBookId(),event.getProgress());
+        adapter.setProgress(event.getBookId(), event.getProgress());
     }
 
 //        if (adapter.getSelected() != null && adapter.getSelected()

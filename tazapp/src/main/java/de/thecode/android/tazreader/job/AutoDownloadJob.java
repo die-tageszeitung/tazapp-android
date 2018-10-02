@@ -32,8 +32,6 @@ public class AutoDownloadJob extends Job {
 
     private static final String ARG_PAPER_BOOKID = "paper_bookid";
 
-    PaperRepository paperRepository;
-
     @NonNull
     @Override
     protected Result onRunJob(Params params) {
@@ -44,7 +42,7 @@ public class AutoDownloadJob extends Job {
             PersistableBundleCompat extras = params.getExtras();
             String bookId = extras.getString(ARG_PAPER_BOOKID, null);
             if (!TextUtils.isEmpty(bookId)) {
-                paperRepository = PaperRepository.getInstance(getContext());
+                PaperRepository paperRepository = PaperRepository.getInstance(getContext());
                 Paper paper = paperRepository.getPaperWithBookId(bookId);
                 if (paper != null) {
                     Store autoDownloadedStore = StoreRepository.getInstance(getContext())

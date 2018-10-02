@@ -16,10 +16,10 @@ public class TazJobCreator implements JobCreator {
         switch (tag) {
             case PushRestApiJob.TAG:
                 return new PushRestApiJob();
-            case SyncJob.TAG:
-                return new SyncJob();
-            case AutoDownloadJob.TAG:
-                return new AutoDownloadJob();
+//            case SyncJob.TAG:
+//                return new SyncJob();
+//            case AutoDownloadJob.TAG:
+//                return new AutoDownloadJob();
             case DownloadFinishedPaperJob.TAG:
                 return new DownloadFinishedPaperJob();
             case DownloadFinishedResourceJob.TAG:
