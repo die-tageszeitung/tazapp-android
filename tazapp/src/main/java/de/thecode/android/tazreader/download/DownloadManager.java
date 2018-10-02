@@ -6,11 +6,9 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.Build;
-import android.os.Environment;
-import android.os.StatFs;
 import android.support.annotation.WorkerThread;
 import android.text.TextUtils;
+import android.util.Base64;
 
 import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.R;
@@ -22,7 +20,6 @@ import de.thecode.android.tazreader.data.Store;
 import de.thecode.android.tazreader.data.StoreRepository;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.okhttp3.RequestHelper;
-import de.thecode.android.tazreader.secure.Base64;
 import de.thecode.android.tazreader.sync.AccountHelper;
 import de.thecode.android.tazreader.utils.ReadableException;
 import de.thecode.android.tazreader.utils.StorageManager;
@@ -146,9 +143,10 @@ public class DownloadManager {
             addUserAgent(request);
 
             if (!TextUtils.isEmpty(paper.getPublication())) {
+                String credentials = accountHelper.getUser(AccountHelper.ACCOUNT_DEMO_USER) + ":" + accountHelper.getPassword(
+                        AccountHelper.ACCOUNT_DEMO_PASS);
                 request.addRequestHeader("Authorization",
-                                         "Basic " + Base64.encodeToString((accountHelper.getUser(AccountHelper.ACCOUNT_DEMO_USER) + ":" + accountHelper.getPassword(
-                                                 AccountHelper.ACCOUNT_DEMO_PASS)).getBytes(), Base64.NO_WRAP));
+                                         "Basic " + Base64.encodeToString(credentials.getBytes(), Base64.NO_WRAP));
             }
 
             File destinationFile = mStorage.getDownloadFile(paper);
@@ -647,13 +645,13 @@ public class DownloadManager {
 
     private static void assertEnoughSpaceForDownload(File dir, long requested) throws NotEnoughSpaceException {
         if (requested <= 0) return;
-        StatFs statFs = new StatFs(dir.getAbsolutePath());
-        long available;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-            available = statFs.getAvailableBlocksLong() * statFs.getBlockSizeLong();
-        } else {
-            available = (long) statFs.getAvailableBlocks() * (long) statFs.getBlockSize();
-        }
+//        StatFs statFs = new StatFs(dir.getAbsolutePath());
+        long available = dir.getFreeSpace();
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+//            available = statFs.getAvailableBlocksLong() * statFs.getBlockSizeLong();
+//        } else {
+//            available = (long) statFs.getAvailableBlocks() * (long) statFs.getBlockSize();
+//        }
         if (available < requested) throw new NotEnoughSpaceException(requested, available);
         return;
     }
