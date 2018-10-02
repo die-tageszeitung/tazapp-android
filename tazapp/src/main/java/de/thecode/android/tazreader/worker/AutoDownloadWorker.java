@@ -25,7 +25,7 @@ import androidx.work.WorkerParameters;
 
 public class AutoDownloadWorker extends Worker {
 
-    private static final  String TAG_PREFIX              = BuildConfig.FLAVOR + "_autodownload_job_";
+    private static final String TAG_PREFIX       = BuildConfig.FLAVOR + "_autodownload_job_";
     private static final String ARG_PAPER_BOOKID = "paper_bookid";
 
     private final TazSettings       settings;
@@ -72,16 +72,24 @@ public class AutoDownloadWorker extends Worker {
         return Result.SUCCESS;
     }
 
-    public static String getTag(@NonNull String bookId){
+    public static String getTag(@NonNull String bookId) {
         return TAG_PREFIX + bookId;
     }
 
     public static void scheduleNow(@NonNull Paper paper) {
+
+        String tag = getTag(paper.getBookId());
+
+        WorkManager.getInstance().cancelAllWorkByTag(tag);
+
         Data data = new Data.Builder().putString(ARG_PAPER_BOOKID, paper.getBookId())
                                       .build();
+
         WorkRequest request = new OneTimeWorkRequest.Builder(AutoDownloadWorker.class).setInputData(data)
-                                                                       .addTag(getTag(paper.getBookId()))
-                                                                       .build();
-        WorkManager.getInstance().enqueue(request);
+                                                                                      .addTag(tag)
+                                                                                      .addTag(paper.getBookId())
+                                                                                      .build();
+        WorkManager.getInstance()
+                   .enqueue(request);
     }
 }

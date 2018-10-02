@@ -280,6 +280,8 @@ public class SyncWorker extends Worker {
 
     public static void scheduleJobImmediately(boolean byUser, Calendar start, Calendar end) {
 
+        WorkManager.getInstance().cancelAllWorkByTag(TAG);
+
         Data.Builder dataBuilder = new Data.Builder().putBoolean(ARG_INITIATED_BY_USER, byUser);
 
         if (start != null && end != null) {
@@ -296,6 +298,8 @@ public class SyncWorker extends Worker {
     }
 
     private static void scheduleJobIn(long latestMillis) {
+
+        WorkManager.getInstance().cancelAllWorkByTag(TAG);
 
         Constraints.Builder constraintsBuilder = new Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED);
 

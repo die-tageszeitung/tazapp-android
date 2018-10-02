@@ -24,8 +24,8 @@ public class TazJobCreator implements JobCreator {
                 return new DownloadFinishedPaperJob();
             case DownloadFinishedResourceJob.TAG:
                 return new DownloadFinishedResourceJob();
-            case DownloadFinishedJob.TAG:
-                return new DownloadFinishedJob();
+//            case DownloadFinishedJob.TAG:
+//                return new DownloadFinishedJob();
 
             default:
                 return null;
