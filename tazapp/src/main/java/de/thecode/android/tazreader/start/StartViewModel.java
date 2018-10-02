@@ -18,9 +18,7 @@ import de.thecode.android.tazreader.utils.SingleLiveEvent;
 import de.thecode.android.tazreader.utils.StorageManager;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 //import de.thecode.android.tazreader.start.library.LibraryPaperLiveData;
 
@@ -61,9 +59,17 @@ public class StartViewModel extends AndroidViewModel {
         settings = TazSettings.getInstance(application);
         settings.addDemoModeListener(demoModeListener);
         demoModeLiveData.setValue(settings.isDemoMode());
-        livePapers = Transformations.switchMap(demoModeLiveData,
-                                               demoMode -> demoMode ? paperRepository.getLivePapersForDemoLibrary() : paperRepository.getLivePapersForLibrary());
-//        libraryPaperLiveData = new LibraryPaperLiveData(application, demoModeLiveData);
+        LiveData<List<Paper>> sourceLivePapers = Transformations.switchMap(demoModeLiveData,
+                                                                           demoMode -> demoMode ? paperRepository.getLivePapersForDemoLibrary() : paperRepository.getLivePapersForLibrary());
+        livePapers = Transformations.map(sourceLivePapers, this::filterLibraryList);
+    }
+
+    private List<Paper> filterLibraryList(List<Paper> input) {
+        List<Paper> result = new ArrayList<>();
+        for (Paper paper : input) {
+            if (paper.getValidUntil() >= System.currentTimeMillis() / 1000) result.add(paper);
+        }
+        return result;
     }
 
     @Override
@@ -73,7 +79,7 @@ public class StartViewModel extends AndroidViewModel {
     }
 
     public void addToNavBackstack(NavigationDrawerFragment.NavigationItem item) {
-        if (navBackstack.contains(item)) navBackstack.remove(item);
+        navBackstack.remove(item);
         navBackstack.add(item);
     }
 
