@@ -58,6 +58,8 @@ public class DownloadFinishedJob extends Job {
             Paper paper = paperRepository.getPaperWithDownloadId(downloadId);
             if (paper != null) {
                 Timber.i("Download complete for paper: %s, %s", paper, state);
+                paper.setDownloadId(0);
+
                 try {
                     if (state.getStatus() == DownloadManager.DownloadState.STATUS_SUCCESSFUL) {
                         File downloadFile = externalStorage.getDownloadFile(paper);
@@ -86,21 +88,21 @@ public class DownloadFinishedJob extends Job {
                             Timber.e(e);
                             throw new DownloadException(e);
                         }
+                        paper.setState(Paper.STATE_DOWNLOADED);
+                        paperRepository.savePaper(paper);
                         DownloadFinishedPaperJob.scheduleJob(paper);
                     } else {
                         throw new DownloadException(state.getStatusText() + ": " + state.getReasonText());
                     }
                 } catch (DownloadException e) {
                     Timber.e(e);
+                    paper.setState(Paper.STATE_NONE);
+                    paperRepository.savePaper(paper);
                     if (state.getReason() == 406) {
                         SyncJob.scheduleJobImmediately(false);
                         //SyncHelper.requestSync(context);
                     }
                     //AnalyticsWrapper.getInstance().logException(exception);
-                    paper.setDownloadId(0);
-
-                    paperRepository.savePaper(paper);
-
 //                        context.getContentResolver()
 //                               .update(TazProvider.getContentUri(Paper.CONTENT_URI, paper.getBookId()),
 //                                       paper.getContentValues(),

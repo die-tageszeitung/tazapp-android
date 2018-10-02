@@ -13,7 +13,7 @@ import de.thecode.android.tazreader.data.Store;
 @Database(entities = {Paper.class, Resource.class, Store.class, Publication.class}, version = AppDatabase.VERSION)
 public abstract class AppDatabase extends RoomDatabase {
 
-    public static final int VERSION = 8;
+    public static final int VERSION = 9;
     private static final String DB_NAME = "db";
 
     private static volatile AppDatabase instance;

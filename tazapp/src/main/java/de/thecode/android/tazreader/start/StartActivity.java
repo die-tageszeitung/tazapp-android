@@ -431,7 +431,7 @@ public class StartActivity extends BaseActivity
 
 
     public void startDownload(Paper downloadPaper) {
-        if (!downloadPaper.isDownloading()) {
+        if (downloadPaper.hasNoneState()) {
             switch (Connection.getConnectionType(this)) {
                 case Connection.CONNECTION_NOT_AVAILABLE:
                     showNoConnectionDialog();
@@ -580,7 +580,7 @@ public class StartActivity extends BaseActivity
     public void openReader(String bookId) {
         new AsyncTaskListener<String, Paper>(bookIdParams -> startViewModel.getPaperRepository()
                                                                            .getPaperWithBookId(bookIdParams[0]), paper -> {
-            if (!paper.isDownloaded()) {
+            if (!paper.hasReadyState()) {
                 showErrorDialog(getString(R.string.message_paper_not_downloaded), DIALOG_ERROR_OPEN_PAPER);
             }
             new AsyncTaskListener<Paper, Resource>(papers -> ResourceRepository.getInstance(StartActivity.this)
@@ -720,7 +720,7 @@ public class StartActivity extends BaseActivity
             boolean foundDownloaded = false;
             for (Paper paper : allPapers) {
                 if (foundDownloaded) break;
-                foundDownloaded = paper.isDownloaded() || paper.isDownloading();
+                foundDownloaded = !paper.hasNoneState();
             }
             if (!foundDownloaded) {
                 showDialog = startViewModel.getSettings()

@@ -65,35 +65,43 @@ public class Paper {
 
     public static final String CONTENT_PLIST_FILENAME = "content.plist";
 
-    public final static int NOT_DOWNLOADED        = 1;
-    public final static int DOWNLOADED_READABLE   = 2;
-    public final static int DOWNLOADED_BUT_UPDATE = 3;
-    public final static int IS_DOWNLOADING        = 4;
-    public final static int NOT_DOWNLOADED_IMPORT = 5;
+//    public final static int NOT_DOWNLOADED        = 1;
+//    public final static int DOWNLOADED_READABLE   = 2;
+//    public final static int DOWNLOADED_BUT_UPDATE = 3;
+//    public final static int IS_DOWNLOADING        = 4;
+//    public final static int NOT_DOWNLOADED_IMPORT = 5;
+
+    public final static int STATE_NONE = 0;
+    public final static int STATE_DOWNLOADING = 1;
+    public final static int STATE_DOWNLOADED = 2;
+    public final static int STATE_EXTRACTING = 3;
+    public final static int STATE_READY = 4;
+    public final static int STATE_UPDATE = 5;
 
     //    private Long    id;
     @NonNull
     @PrimaryKey
-    private String  bookId;
-    private String  date;
-    private String  image;
-    private String  imageHash;
-    private String  link;
-    private String  fileHash;
-    private long    len;
-    private long    lastModified;
-    private String  resource;
-    private boolean demo;
-    private boolean hasUpdate;
-    private long    downloadId;
-    private boolean downloaded;
-    private boolean kiosk;
-    private boolean imported;
-    private String  title;
-    private long    validUntil;
-    private String  publication;
-    @Ignore
-    private int progress = 0;
+    private String               bookId;
+    private String               date;
+    private String               image;
+    private String               imageHash;
+    private String               link;
+    private String               fileHash;
+    private long                 len;
+    private long                 lastModified;
+    private String               resource;
+    private boolean              demo;
+    //    private boolean hasUpdate;
+    private int                  state ;
+    private long                 downloadId;
+//    private boolean              downloaded;
+//    private boolean              kiosk;
+//    private boolean              imported;
+    private String               title;
+    private long                 validUntil;
+    private String               publication;
+//    @Ignore
+//    private int                  progress = 0;
     @Ignore
     private Map<String, Integer> articleCollectionOrder;
     @Ignore
@@ -117,6 +125,7 @@ public class Paper {
         this.resource = PlistHelper.getString(nsDictionary, de.thecode.android.tazreader.sync.model.Plist.Fields.RESOURCE);
     }
 
+    @NonNull
     public String getBookId() {
         return bookId;
     }
@@ -147,15 +156,15 @@ public class Paper {
     public String getTitelWithDate(Resources resources) {
         return getTitelWithDate(resources.getString(R.string.string_titel_seperator));
     }
-
-
-    public int getProgress() {
-        return progress;
-    }
-
-    public void setProgress(int progress) {
-        this.progress = progress;
-    }
+//
+//
+//    public int getProgress() {
+//        return progress;
+//    }
+//
+//    public void setProgress(int progress) {
+//        this.progress = progress;
+//    }
 
     public String getImage() {
         return image;
@@ -165,39 +174,58 @@ public class Paper {
         return demo;
     }
 
-    public boolean isDownloaded() {
-        return downloaded;
+    public boolean hasNoneState() { return state == STATE_NONE; }
+
+    public boolean hasDownloadingState() {
+        return state == STATE_DOWNLOADING;
     }
 
-    public boolean isDownloading() {
-        return downloadId != 0;
+    public boolean hasDownloadedState() {
+        return state == STATE_DOWNLOADED;
     }
 
-    public boolean hasUpdate() {
-        return hasUpdate;
+    public boolean hasExtractingState() {
+        return state == STATE_EXTRACTING;
     }
 
-    public boolean isImported() {
-        return imported;
+    public boolean hasReadyState() {
+        return state == STATE_READY || hasUpdateState();
+    }
+    public boolean hasUpdateState() {
+        return state == STATE_UPDATE;
     }
 
-    public boolean isKiosk() {
-        return kiosk;
-    }
+
+//    public boolean hasUpdate() {
+//        return hasUpdate;
+//    }
+
+//    public boolean isImported() {
+//        return imported;
+//    }
+//
+//    public boolean isKiosk() {
+//        return kiosk;
+//    }
 
     public int getState() {
 
-        if (this.isDownloaded() && !this.isDownloading() && !this.hasUpdate()) {
-            return DOWNLOADED_READABLE;
-        } else if (this.isDownloading()) {
-            return IS_DOWNLOADING;
-        } else if (this.isDownloaded() && this.hasUpdate() && !this.isDownloading()) {
-            return DOWNLOADED_BUT_UPDATE;
-        } else if (!this.isDownloaded() && (this.isKiosk() || this.isImported())) {
-            return NOT_DOWNLOADED_IMPORT;
-        }
+//        if (this.isDownloaded() && !this.isDownloading() && !this.hasUpdate()) {
+//            return DOWNLOADED_READABLE;
+//        } else if (this.isDownloading()) {
+//            return IS_DOWNLOADING;
+//        } else if (this.isDownloaded() && this.hasUpdate() && !this.isDownloading()) {
+//            return DOWNLOADED_BUT_UPDATE;
+//        } else if (!this.isDownloaded() && (this.isKiosk() || this.isImported())) {
+//            return NOT_DOWNLOADED_IMPORT;
+//        }
+//
+//        return NOT_DOWNLOADED;
+        return state;
+    }
 
-        return NOT_DOWNLOADED;
+    public void setState(int state) {
+        this.state = state;
     }
 
     public String getDate() {
@@ -266,25 +294,25 @@ public class Paper {
     }
 
 
-    public void setHasUpdate(boolean hasupdate) {
-        this.hasUpdate = hasupdate;
-    }
+//    public void setHasUpdate(boolean hasupdate) {
+//        this.hasUpdate = hasupdate;
+//    }
 
-    public void setDownloaded(boolean downloaded) {
-        this.downloaded = downloaded;
-    }
+//    public void setDownloaded(boolean downloaded) {
+//        this.downloaded = downloaded;
+//    }
 
     public void setBookId(String bookId) {
         this.bookId = bookId;
     }
 
-    public void setImported(boolean imported) {
-        this.imported = imported;
-    }
-
-    public void setKiosk(boolean kiosk) {
-        this.kiosk = kiosk;
-    }
+//    public void setImported(boolean imported) {
+//        this.imported = imported;
+//    }
+//
+//    public void setKiosk(boolean kiosk) {
+//        this.kiosk = kiosk;
+//    }
 
     public String getTitle() {
         if (title == null) return "";
@@ -441,8 +469,8 @@ public class Paper {
 
         private NSDictionary root;
 
-        private List<Source>  sources;
-        private List<TopLink> toplinks;
+        private List<Source>          sources;
+        private List<TopLink>         toplinks;
         private Map<String, ITocItem> indexMap = new LinkedHashMap<>();
 
         public Plist(InputStream is, boolean parseIndex) throws IOException, PropertyListFormatException, ParseException,
@@ -1411,7 +1439,7 @@ public class Paper {
                                   .append(publication, rhs.publication)
                                   .append(validUntil, rhs.validUntil)
                                   .append(downloadId, rhs.downloadId)
-                                  .append(downloaded, rhs.downloaded)
+                                  .append(state, rhs.state)
                                   .isEquals();
     }
 

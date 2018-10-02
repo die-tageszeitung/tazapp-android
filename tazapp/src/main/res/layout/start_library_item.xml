@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
              xmlns:app="http://schemas.android.com/apk/res-auto"
+             xmlns:tools="http://schemas.android.com/tools"
              android:layout_gravity="center"
 
              android:layout_width="match_parent"
@@ -18,7 +19,7 @@
         android:clickable="true"
         app:cardCornerRadius="@dimen/lib_cardview_corner_radius">
 
-        <RelativeLayout
+        <android.support.constraint.ConstraintLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">
 
@@ -29,74 +30,123 @@
                 android:src="@drawable/dummy"
                 android:scaleType="centerCrop"/>
 
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/lib_item_date"
+                    android:layout_below="@id/lib_item_facsimile"
+                    android:text="00.00.0000"
+                    android:textColor="@color/library_item_text"
+                    android:gravity="center"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/lib_item_facsimile"/>
+
             <ProgressBar
-                android:id="@+id/lib_item_progress"
-                style="?android:attr/progressBarStyleHorizontal"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:progress="100"
-                android:progressDrawable="@drawable/progresspic"
-                android:alpha="@dimen/library_overlay_alpha"
-                android:layout_alignParentLeft="true"
-                android:layout_alignParentStart="true"
-                android:layout_alignRight="@+id/lib_item_facsimile"
-                android:layout_alignEnd="@+id/lib_item_facsimile"
-                android:layout_alignBottom="@+id/lib_item_facsimile"
-                android:layout_alignParentTop="true"
-                android:indeterminate="false"/>
+                    android:id="@+id/lib_item_progress"
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:progress="100"
+                    android:progressDrawable="@drawable/progresspic"
+                    android:alpha="@dimen/library_overlay_alpha"
+                    android:indeterminate="false"
+                    app:layout_constraintTop_toTopOf="@+id/lib_item_facsimile"
+                    app:layout_constraintStart_toStartOf="@+id/lib_item_facsimile"
+                    app:layout_constraintEnd_toEndOf="@+id/lib_item_facsimile"
+                    app:layout_constraintBottom_toBottomOf="@+id/lib_item_facsimile"/>
+
             <FrameLayout
-                android:id="@+id/lib_item_selected_overlay"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@color/library_item_selected_overlay"
-                android:alpha="@dimen/library_overlay_alpha"
-                android:layout_alignParentLeft="true"
-                android:layout_alignParentStart="true"
-                android:layout_alignParentTop="true"
-                android:layout_alignBottom="@+id/lib_item_date"
-                android:layout_alignRight="@+id/lib_item_facsimile"
-                android:layout_alignEnd="@+id/lib_item_facsimile"/>
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/lib_item_date"
-                android:layout_below="@id/lib_item_facsimile"
-                android:text="00.00.0000"
-                android:background="@color/library_item_background"
-                android:textColor="@color/library_item_text"
-                android:layout_centerVertical="true"
-                android:layout_alignParentLeft="true"
-                android:layout_alignParentStart="true"
-                android:layout_alignRight="@+id/lib_item_facsimile"
-                android:layout_alignEnd="@+id/lib_item_facsimile"
-                android:gravity="center"/>
+                    android:id="@+id/lib_item_selected_overlay"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:background="@color/library_item_selected_overlay"
+                    android:alpha="@dimen/library_overlay_alpha"
+                    app:layout_constraintTop_toTopOf="@+id/lib_item_facsimile"
+                    app:layout_constraintStart_toStartOf="@+id/lib_item_facsimile"
+                    app:layout_constraintEnd_toEndOf="@+id/lib_item_facsimile"
+                    app:layout_constraintBottom_toBottomOf="@+id/lib_item_facsimile">
+
+            </FrameLayout>
+
+            <FrameLayout
+                    android:id="@+id/lib_item_overlay"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:background="@color/library_item_progress_overlay"
+                    android:alpha="@dimen/library_overlay_alpha"
+                    app:layout_constraintTop_toTopOf="@+id/lib_item_facsimile"
+                    app:layout_constraintStart_toStartOf="@+id/lib_item_facsimile"
+                    app:layout_constraintEnd_toEndOf="@+id/lib_item_facsimile"
+                    app:layout_constraintBottom_toBottomOf="@+id/lib_item_facsimile">
+
+            </FrameLayout>
 
             <TextView
-                android:id="@+id/lib_item_badge"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignBottom="@+id/lib_item_facsimile"
-                android:layout_alignRight="@+id/lib_item_facsimile"
-                android:background="@color/library_item_badge"
-                android:padding="5dp"
-                android:layout_marginBottom="10dp"
-                android:text="@string/string_badge_update"
-                android:textColor="@color/library_item_badge_text"
-                android:textStyle="bold" />
+                    android:id="@+id/lib_item_badge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@color/library_item_badge"
+                    android:padding="5dp"
+                    android:text="@string/string_badge_update"
+                    android:textColor="@color/library_item_badge_text"
+                    android:textStyle="bold"
+                    app:layout_constraintEnd_toEndOf="@+id/lib_item_selected_overlay"
+                    android:layout_marginBottom="8dp"
+                    app:layout_constraintBottom_toBottomOf="@+id/lib_item_selected_overlay"/>
+
+            <!--<ProgressBar-->
+                    <!--android:layout_width="wrap_content"-->
+                    <!--android:layout_height="wrap_content"-->
+                    <!--android:id="@+id/lib_item_wait"-->
+                    <!--app:layout_constraintBottom_toBottomOf="@+id/lib_item_date"-->
+                    <!--app:layout_constraintStart_toStartOf="parent"-->
+                    <!--app:layout_constraintTop_toTopOf="@+id/lib_item_progress"-->
+                    <!--app:layout_constraintEnd_toEndOf="parent"-->
+                    <!--style="@style/Widget.AppCompat.ProgressBar"/>-->
 
 
+            <android.support.constraint.ConstraintLayout
 
-            <ProgressBar
-                style="?android:attr/progressBarStyleSmall"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/lib_item_wait"
-                android:layout_alignBottom="@+id/lib_item_date"
-                android:layout_alignParentLeft="true"
-                android:layout_alignParentStart="true"
-                android:layout_alignTop="@+id/lib_item_date"/>
+                    android:background="@color/library_card_background"
+                    app:layout_constraintEnd_toEndOf="@+id/lib_item_facsimile"
+                    app:layout_constraintStart_toStartOf="@+id/lib_item_facsimile"
+                    app:layout_constraintBottom_toBottomOf="@+id/lib_item_facsimile"
+                    app:layout_constraintTop_toTopOf="@+id/lib_item_facsimile"
+                    app:layout_constraintVertical_bias="0.0"
+                    android:layout_width="0dp"
+                    android:id="@+id/lib_item_state"
+                    android:layout_height="24dp">
 
-        </RelativeLayout>
+                <ProgressBar
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/lib_item_state_wait"
+                        app:layout_constraintStart_toStartOf="parent"
+                        style="?android:attr/progressBarStyleSmall"
+                        app:layout_constraintTop_toTopOf="@+id/lib_item_state_text"
+                        app:layout_constraintBottom_toBottomOf="@+id/lib_item_state_text"
+                        android:layout_marginLeft="2dp"
+                        android:layout_marginStart="2dp"/>
+
+                <TextView
+                        android:padding="2dp"
+                        android:text="@string/string_library_item_extract_state"
+                        android:textColor="#FFF"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/lib_item_state_text"
+                        android:textSize="12sp"
+                        android:gravity="center"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toEndOf="@+id/lib_item_state_wait"
+                        />
+            </android.support.constraint.ConstraintLayout>
+
+
+        </android.support.constraint.ConstraintLayout>
 
     </android.support.v7.widget.CardView>
 </FrameLayout>

@@ -22,6 +22,7 @@ import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.download.CoverDownloadedEvent;
+import de.thecode.android.tazreader.download.UnzipProgressEvent;
 import de.thecode.android.tazreader.job.SyncJob;
 import de.thecode.android.tazreader.start.DrawerStateChangedEvent;
 import de.thecode.android.tazreader.start.StartBaseFragment;
@@ -82,18 +83,15 @@ public class LibraryFragment extends StartBaseFragment {
                     adapter.toggleSelection(paper, position);
                     //onLongClick(paper, position);
                 } else {
+
+                    //TODO CHECK STATES
                     switch (paper.getState()) {
-                        case Paper.DOWNLOADED_READABLE:
-                        case Paper.DOWNLOADED_BUT_UPDATE:
+                        case Paper.STATE_READY:
+                        case Paper.STATE_UPDATE:
                             //openPlayer(paper.getId());
                             getStartActivity().openReader(paper.getBookId());
                             break;
-                        case Paper.IS_DOWNLOADING:
-
-                            break;
-
-                        case Paper.NOT_DOWNLOADED:
-                        case Paper.NOT_DOWNLOADED_IMPORT:
+                        case Paper.STATE_NONE:
                             getStartActivity().startDownload(paper);
                             break;
 
@@ -347,6 +345,10 @@ public class LibraryFragment extends StartBaseFragment {
         else swipeRefresh.setEnabled(false);
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onUnzipProgress(UnzipProgressEvent event) {
+        adapter.setProgress(event.getBookId(),event.getProgress());
+    }
 
 //        if (adapter.getSelected() != null && adapter.getSelected()
 //                                                    .size() > 0) {

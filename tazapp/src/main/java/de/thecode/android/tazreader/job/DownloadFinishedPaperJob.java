@@ -41,10 +41,10 @@ public class DownloadFinishedPaperJob extends Job implements UnzipStream.UnzipSt
     //    private static final String ARG_PAPER_ID = "paper_id";
 //
 //    private long       currentPaperId = -1;
-    private String currentPaperBookId;
+    private              String currentPaperBookId;
 
     private UnzipPaper currentUnzipPaper;
-    private int lastEmittedProgress = 0;
+    private int        lastEmittedProgress = 0;
 
     private PaperRepository paperRepository;
 
@@ -59,6 +59,8 @@ public class DownloadFinishedPaperJob extends Job implements UnzipStream.UnzipSt
             if (paper != null) {
                 try {
                     Timber.i("%s", paper);
+                    paper.setState(Paper.STATE_EXTRACTING);
+                    paperRepository.savePaper(paper);
                     StorageManager storageManager = StorageManager.getInstance(getContext());
                     currentPaperBookId = bookId;
                     currentUnzipPaper = new UnzipPaper(paper,
@@ -68,9 +70,27 @@ public class DownloadFinishedPaperJob extends Job implements UnzipStream.UnzipSt
                     currentUnzipPaper.getUnzipFile()
                                      .addProgressListener(this);
                     currentUnzipPaper.start();
-                    savePaper(paper, null);
+                    paper.parseMissingAttributes(false);
+                    paper.setState(Paper.STATE_READY);
+                    paperRepository.savePaper(paper);
+                    NotificationUtils.getInstance(getContext())
+                                     .showDownloadFinishedNotification(paper);
+                    EventBus.getDefault()
+                            .post(new PaperDownloadFinishedEvent(paper.getBookId()));
                 } catch (ParserConfigurationException | IOException | SAXException | ParseException | PropertyListFormatException | UnzipCanceledException e) {
-                    savePaper(paper, e);
+                    paper.setState(Paper.STATE_NONE);
+                    paperRepository.savePaper(paper);
+                    if (e instanceof UnzipCanceledException) {
+                        Timber.w(e);
+                    } else {
+                        Timber.e(e);
+                        //AnalyticsWrapper.getInstance().logException(exception);
+                        NotificationUtils.getInstance(getContext())
+                                         .showDownloadErrorNotification(paper, null);
+                        //NotificationHelper.showDownloadErrorNotification(getContext(), null, paper.getId());
+                        EventBus.getDefault()
+                                .post(new PaperDownloadFailedEvent(paper, e));
+                    }
                 }
             }
         }
@@ -95,39 +115,38 @@ public class DownloadFinishedPaperJob extends Job implements UnzipStream.UnzipSt
         cancel();
     }
 
-    private void savePaper(Paper paper, Exception exception) {
-        paper.setDownloadId(0);
-
-        if (exception == null) {
-            paper.parseMissingAttributes(false);
-            paper.setHasUpdate(false);
-            paper.setDownloaded(true);
-        }
-
-        paperRepository.savePaper(paper);
-        if (exception == null) {
-
-            //NotificationHelper.showDownloadFinishedNotification(getContext(), paper.getId());
-
-            NotificationUtils.getInstance(getContext())
-                             .showDownloadFinishedNotification(paper);
-
-            EventBus.getDefault()
-                    .post(new PaperDownloadFinishedEvent(paper.getBookId()));
-
-
-        } else if (exception instanceof UnzipCanceledException) {
-            Timber.w(exception);
-        } else {
-            Timber.e(exception);
-            //AnalyticsWrapper.getInstance().logException(exception);
-            NotificationUtils.getInstance(getContext())
-                             .showDownloadErrorNotification(paper, null);
-            //NotificationHelper.showDownloadErrorNotification(getContext(), null, paper.getId());
-            EventBus.getDefault()
-                    .post(new PaperDownloadFailedEvent(paper, exception));
-        }
-    }
+//    private void savePaper(Paper paper, Exception exception) {
+//        if (exception == null) {
+//            paper.parseMissingAttributes(false);
+//            paper.setState(Paper.STATE_READY);
+////            paper.setHasUpdate(false);
+////            paper.setDownloaded(true);
+//        }
+//
+//        paperRepository.savePaper(paper);
+//        if (exception == null) {
+//
+//            //NotificationHelper.showDownloadFinishedNotification(getContext(), paper.getId());
+//
+//            NotificationUtils.getInstance(getContext())
+//                             .showDownloadFinishedNotification(paper);
+//
+//            EventBus.getDefault()
+//                    .post(new PaperDownloadFinishedEvent(paper.getBookId()));
+//
+//
+//        } else if (exception instanceof UnzipCanceledException) {
+//            Timber.w(exception);
+//        } else {
+//            Timber.e(exception);
+//            //AnalyticsWrapper.getInstance().logException(exception);
+//            NotificationUtils.getInstance(getContext())
+//                             .showDownloadErrorNotification(paper, null);
+//            //NotificationHelper.showDownloadErrorNotification(getContext(), null, paper.getId());
+//            EventBus.getDefault()
+//                    .post(new PaperDownloadFailedEvent(paper, exception));
+//        }
+//    }
 
 
     public static void scheduleJob(Paper paper) {

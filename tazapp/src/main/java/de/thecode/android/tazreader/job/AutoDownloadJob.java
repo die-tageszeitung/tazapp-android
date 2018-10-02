@@ -53,7 +53,7 @@ public class AutoDownloadJob extends Job {
                     if (!isAutoDownloaded && (System.currentTimeMillis() - TimeUnit.DAYS.toMillis(1)) < paper.getDateInMillis()) {
                         boolean wifiOnly = TazSettings.getInstance(getContext())
                                                       .getPrefBoolean(TazSettings.PREFKEY.AUTOLOAD_WIFI, false);
-                        if (!(paper.isDownloaded() || paper.isDownloading())) {
+                        if (paper.hasNoneState()) {
                             DownloadManager.DownloadManagerResult result = DownloadManager.getInstance(getContext())
                                                                                           .downloadPaper(bookId, wifiOnly);
                             if (result.getState() == DownloadManager.DownloadManagerResult.STATE.SUCCESS) {

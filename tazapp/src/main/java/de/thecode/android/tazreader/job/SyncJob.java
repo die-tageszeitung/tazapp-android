@@ -122,7 +122,7 @@ public class SyncJob extends Job {
         List<Resource> keepResources = new ArrayList<>();
         if (allPapers != null) {
             for (Paper paper : allPapers) {
-                if (paper.isDownloaded() || paper.isDownloading()) {
+                if (!paper.hasNoneState()) {
                     Resource resource = resourceRepository.getResourceForPaper(paper);
                     if (resource != null && !keepResources.contains(resource)) keepResources.add(resource);
                 }
@@ -158,7 +158,8 @@ public class SyncJob extends Job {
         //minDataValidUntil = Math.min(minDataValidUntil, validUntil * 1000);
 
         publicationRepository.savePublication(publication);
-        UpdateHelper.getInstance(getContext()).setLatestVersion(publication.getAppAndroidVersion());
+        UpdateHelper.getInstance(getContext())
+                    .setLatestVersion(publication.getAppAndroidVersion());
 
 
 //        getContext().getContentResolver().insert(Publication.CONTENT_URI,publication.getContentValues());
@@ -211,17 +212,18 @@ public class SyncJob extends Job {
 
             Paper oldPaper = paperRepository.getPaperWithBookId(newPaper.getBookId());
             if (oldPaper != null) {
-                newPaper.setDownloaded(oldPaper.isDownloaded());
+//                newPaper.setDownloaded(oldPaper.isDownloaded());
+                newPaper.setState(oldPaper.getState());
                 newPaper.setDownloadId(oldPaper.getDownloadId());
-                newPaper.setImported(oldPaper.isImported());
-                newPaper.setKiosk(oldPaper.isKiosk());
+//                newPaper.setImported(oldPaper.isImported());
+//                newPaper.setKiosk(oldPaper.isKiosk());
                 loadImage = !new EqualsBuilder().append(oldPaper.getImageHash(), newPaper.getImageHash())
                                                 .isEquals();
-                if (!oldPaper.isImported() && !oldPaper.isKiosk()) {
-                    if (!new EqualsBuilder().append(oldPaper.getFileHash(), newPaper.getFileHash())
-                                            .isEquals() && (oldPaper.isDownloaded() || oldPaper.isDownloading()))
-                        newPaper.setHasUpdate(true);
-                }
+//                if (!oldPaper.isImported() && !oldPaper.isKiosk()) {
+//                    if (!new EqualsBuilder().append(oldPaper.getFileHash(), newPaper.getFileHash())
+//                                            .isEquals() && (oldPaper.isDownloaded() || oldPaper.isDownloading()))
+//                        newPaper.setHasUpdate(true);
+//                }
             }
             if (loadImage) preLoadImage(newPaper);
             newPapers.add(newPaper);
@@ -395,7 +397,7 @@ public class SyncJob extends Job {
                 List<Paper> allPapers = paperRepository.getAllPapers();
                 int counter = 0;
                 for (Paper paper : allPapers) {
-                    if (paper.isDownloaded() && !paper.isImported() && !paper.isKiosk()) {
+                    if (paper.hasReadyState()/* && !paper.isImported() && !paper.isKiosk()*/) {
                         if (counter >= papersToKeep) {
                             Timber.d("PaperId: %s (currentOpen:%s)", paper.getBookId(), currentOpenPaperBookId);
                             if (!paper.getBookId()

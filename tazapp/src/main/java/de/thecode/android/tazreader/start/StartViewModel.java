@@ -187,7 +187,7 @@ public class StartViewModel extends AndroidViewModel {
         new AsyncTaskListener<String, Void>(bookIdsParam -> {
             List<Paper> papersToDelete = paperRepository.getPapersWithBookId(bookIdsParam);
             for (Paper paperToDelete : papersToDelete) {
-                if (paperToDelete.isDownloading()) downloadManager.cancelDownload(paperToDelete.getDownloadId());
+                if (paperToDelete.hasDownloadingState()) downloadManager.cancelDownload(paperToDelete.getDownloadId());
                 paperRepository.deletePaper(paperToDelete);
             }
             return null;

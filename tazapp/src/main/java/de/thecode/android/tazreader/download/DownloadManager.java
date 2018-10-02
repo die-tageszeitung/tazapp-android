@@ -179,8 +179,9 @@ public class DownloadManager {
 
             //paper.setDownloadprogress(0);
             paper.setDownloadId(downloadId);
-            paper.setDownloaded(false);
-            paper.setHasUpdate(false);
+            paper.setState(Paper.STATE_DOWNLOADING);
+//            paper.setDownloaded(false);
+//            paper.setHasUpdate(false);
 
             paperRepository.savePaper(paper);
             result.setState(DownloadManagerResult.STATE.SUCCESS);

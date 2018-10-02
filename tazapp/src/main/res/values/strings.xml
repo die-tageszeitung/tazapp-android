@@ -19,6 +19,8 @@
     <string name="string_login_button">Daten prüfen</string>
     <string name="string_deleteAccount_button">Daten löschen</string>
     <string name="string_library_selected">%1$d ausgewählt</string>
+    <string name="string_library_item_download_state">wird geladen…</string>
+    <string name="string_library_item_extract_state">wird entpackt…</string>
     <string name="dialog_error_title">Fehler</string>
     <string name="dialog_error_unknown">Es ist ein Fehler aufgetreten.</string>
     <string name="dialog_check_credentials">Kontaktiere Server und überprüfe Daten</string>
