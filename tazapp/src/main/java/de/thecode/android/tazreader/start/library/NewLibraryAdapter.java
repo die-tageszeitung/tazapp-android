@@ -1,7 +1,5 @@
 package de.thecode.android.tazreader.start.library;
 
-import com.google.android.gms.common.util.ListUtils;
-
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
@@ -21,15 +19,12 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.facebook.stetho.common.ListUtil;
 import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
-import de.thecode.android.tazreader.download.DownloadManager;
 import de.thecode.android.tazreader.sync.PreloadImageCallback;
-import de.thecode.android.tazreader.utils.ParametrizedRunnable;
 import de.thecode.android.tazreader.utils.TazListAdapter;
 import de.thecode.android.tazreader.utils.extendedasyncdiffer.ExtendedAdapterListUpdateCallback;
 
