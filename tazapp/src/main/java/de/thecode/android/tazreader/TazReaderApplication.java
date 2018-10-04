@@ -2,21 +2,14 @@ package de.thecode.android.tazreader;
 
 import android.app.Application;
 import android.os.Build;
-import android.util.Log;
 import android.webkit.WebView;
-
-import com.evernote.android.job.JobConfig;
-import com.evernote.android.job.JobManager;
 
 import de.thecode.android.tazreader.analytics.AnalyticsWrapper;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.eventbus.EventBusIndex;
-import de.thecode.android.tazreader.job.TazJobCreator;
-import de.thecode.android.tazreader.job.TazJobLogger;
 import de.thecode.android.tazreader.notifications.NotificationUtils;
 import de.thecode.android.tazreader.picasso.PicassoHelper;
 import de.thecode.android.tazreader.reader.ReaderActivity;
-import de.thecode.android.tazreader.timber.TazTimberTree;
 import de.thecode.android.tazreader.timber.TimberHelper;
 import de.thecode.android.tazreader.utils.BuildTypeProvider;
 import de.thecode.android.tazreader.utils.StorageManager;
@@ -49,11 +42,6 @@ public class TazReaderApplication extends Application {
                 .installDefaultEventBus();
 
         NotificationUtils.getInstance(this).createChannels();
-
-        JobConfig.addLogger(new TazJobLogger());
-        JobConfig.setLogcatEnabled(false);
-        JobManager.create(this)
-                  .addJobCreator(new TazJobCreator());
 
         PicassoHelper.initPicasso(this);
 

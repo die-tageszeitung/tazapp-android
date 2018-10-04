@@ -13,8 +13,6 @@ import de.thecode.android.tazreader.data.ResourceRepository;
 import de.thecode.android.tazreader.download.DownloadManager;
 import de.thecode.android.tazreader.download.PaperDownloadFailedEvent;
 import de.thecode.android.tazreader.download.ResourceDownloadEvent;
-import de.thecode.android.tazreader.job.DownloadFinishedPaperJob;
-import de.thecode.android.tazreader.job.DownloadFinishedResourceJob;
 import de.thecode.android.tazreader.notifications.NotificationUtils;
 import de.thecode.android.tazreader.secure.HashHelper;
 import de.thecode.android.tazreader.utils.ReadableException;
@@ -31,11 +29,10 @@ import androidx.work.Data;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 import androidx.work.WorkRequest;
-import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 import timber.log.Timber;
 
-public class DownloadFinishedWorker extends Worker {
+public class DownloadFinishedWorker extends LoggingWorker {
 
     private static final String TAG_PREFIX      = BuildConfig.FLAVOR + "_" + "download_finished_job_";
     private static final String ARG_DOWNLOAD_ID = "downloadId";
@@ -55,7 +52,7 @@ public class DownloadFinishedWorker extends Worker {
 
     @NonNull
     @Override
-    public Result doWork() {
+    public Result doBackgroundWork() {
 
         long downloadId = getInputData().getLong(ARG_DOWNLOAD_ID, -1);
         if (downloadId != -1) {
@@ -103,7 +100,7 @@ public class DownloadFinishedWorker extends Worker {
                         }
                         paper.setState(Paper.STATE_DOWNLOADED);
                         paperRepository.savePaper(paper);
-                        DownloadFinishedPaperJob.scheduleJob(paper);
+                        DownloadFinishedPaperWorker.scheduleNow(paper);
                     } else {
                         throw new DownloadException(state.getStatusText() + ": " + state.getReasonText());
                     }
@@ -172,7 +169,7 @@ public class DownloadFinishedWorker extends Worker {
                             Timber.e(e);
                             throw new DownloadException(e);
                         }
-                        DownloadFinishedResourceJob.scheduleJob(resource);
+                        DownloadFinishedResourceWorker.scheduleNow(resource);
                     } else {
                         throw new DownloadException(state.getStatusText() + ": " + state.getReasonText());
                     }

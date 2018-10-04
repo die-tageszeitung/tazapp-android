@@ -7,7 +7,6 @@ import android.support.annotation.WorkerThread;
 import com.squareup.picasso.Picasso;
 
 import de.thecode.android.tazreader.BuildConfig;
-import de.thecode.android.tazreader.download.DownloadManager;
 import de.thecode.android.tazreader.download.PaperDeletedEvent;
 import de.thecode.android.tazreader.room.AppDatabase;
 import de.thecode.android.tazreader.utils.StorageManager;
@@ -16,6 +15,8 @@ import org.greenrobot.eventbus.EventBus;
 
 import java.util.Collections;
 import java.util.List;
+
+import androidx.work.WorkManager;
 
 /**
  * Created by mate on 02.03.18.
@@ -81,6 +82,7 @@ public class PaperRepository {
 
     @WorkerThread
     public void deletePaper(Paper paper) {
+        WorkManager.getInstance().cancelAllWorkByTag(paper.getBookId());
         storageManager.deletePaperDir(paper);
         picasso.invalidate(paper.getImage());
         storeRepository.deletePath(Store.getPath(paper.getBookId(), Paper.STORE_KEY_RESOURCE_PARTNER));

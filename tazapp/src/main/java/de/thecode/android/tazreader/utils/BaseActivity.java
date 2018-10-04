@@ -19,7 +19,7 @@ import de.thecode.android.tazreader.dialog.HelpDialog;
 import de.thecode.android.tazreader.dialog.PushNotificationDialog;
 import de.thecode.android.tazreader.push.PushHelper;
 import de.thecode.android.tazreader.push.PushNotification;
-import de.thecode.android.tazreader.job.PushRestApiJob;
+import de.thecode.android.tazreader.worker.PushRestApiWorker;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -46,7 +46,7 @@ public class BaseActivity extends AppCompatActivity
     private TazSettings.OnPreferenceChangeListener<Object> pushPreferenceListener        = new TazSettings.OnPreferenceChangeListener<Object>() {
         @Override
         public void onPreferenceChanged(Object changedValue) {
-            PushRestApiJob.scheduleJob();
+            PushRestApiWorker.scheduleNow();
         }
     };
 

@@ -20,10 +20,9 @@ import androidx.work.Data;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 import androidx.work.WorkRequest;
-import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
-public class AutoDownloadWorker extends Worker {
+public class AutoDownloadWorker extends LoggingWorker {
 
     private static final String TAG_PREFIX       = BuildConfig.FLAVOR + "_autodownload_job_";
     private static final String ARG_PAPER_BOOKID = "paper_bookid";
@@ -45,7 +44,7 @@ public class AutoDownloadWorker extends Worker {
 
     @NonNull
     @Override
-    public Result doWork() {
+    public Result doBackgroundWork() {
         if (settings.getPrefBoolean(TazSettings.PREFKEY.AUTOLOAD, false)) {
             String bookId = getInputData().getString(ARG_PAPER_BOOKID);
             if (!TextUtils.isEmpty(bookId)) {

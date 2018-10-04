@@ -45,12 +45,11 @@ import androidx.work.NetworkType;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 import androidx.work.WorkRequest;
-import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 import okhttp3.HttpUrl;
 import timber.log.Timber;
 
-public class SyncWorker extends Worker {
+public class SyncWorker extends LoggingWorker {
 
 
     public static final String TAG = BuildConfig.FLAVOR + "_sync_job";
@@ -79,7 +78,7 @@ public class SyncWorker extends Worker {
 
     @NonNull
     @Override
-    public Result doWork() {
+    public Result doBackgroundWork() {
 //        EventBus.getDefault()
 //                .postSticky(new SyncStateChangedEvent(true));
 
