@@ -163,6 +163,7 @@ android {
     packagingOptions {
         exclude 'META-INF/LICENSE.txt'
         exclude 'META-INF/NOTICE.txt'
+        exclude 'META-INF/proguard/androidx-annotations.pro'
     }
     lintOptions {
         abortOnError false
@@ -341,6 +342,8 @@ dependencies {
     implementation 'com.github.bosphere.android-filelogger:filelogger:1.0.6'
 
 //    implementation "com.google.guava:guava:24.1-android"
+
+    implementation "android.arch.work:work-runtime:1.0.0-alpha09"
 }
 
 class Download extends DefaultTask {

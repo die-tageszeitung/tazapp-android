@@ -6,8 +6,8 @@ import android.content.Intent;
 import android.text.TextUtils;
 
 import de.thecode.android.tazreader.BuildConfig;
-import de.thecode.android.tazreader.job.DownloadFinishedJob;
 import de.thecode.android.tazreader.start.StartActivity;
+import de.thecode.android.tazreader.worker.DownloadFinishedWorker;
 
 import timber.log.Timber;
 
@@ -30,7 +30,7 @@ public class DownloadReceiver extends BroadcastReceiver {
         boolean isAppUpdate = false;
         if (!TextUtils.isEmpty(downloadStateUri) && downloadStateUri.startsWith(BuildConfig.APKURL)) isAppUpdate = true;
         if (android.app.DownloadManager.ACTION_DOWNLOAD_COMPLETE.equals(action)) {
-            if (!isAppUpdate) DownloadFinishedJob.scheduleJob(downloadId);
+            if (!isAppUpdate) DownloadFinishedWorker.scheduleNow(downloadId);
         } else if (android.app.DownloadManager.ACTION_NOTIFICATION_CLICKED.equals(action)) {
             if (!isAppUpdate) {
                 Intent libIntent = new Intent(context, StartActivity.class);

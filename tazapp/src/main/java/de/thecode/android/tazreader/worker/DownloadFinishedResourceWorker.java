@@ -1,13 +1,10 @@
-package de.thecode.android.tazreader.job;
+package de.thecode.android.tazreader.worker;
 
-import android.net.Uri;
+import android.content.Context;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import com.dd.plist.PropertyListFormatException;
-import com.evernote.android.job.Job;
-import com.evernote.android.job.JobRequest;
-import com.evernote.android.job.util.support.PersistableBundleCompat;
 
 import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.data.Resource;
@@ -25,29 +22,35 @@ import java.text.ParseException;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import androidx.work.Data;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
+import androidx.work.WorkRequest;
+import androidx.work.WorkerParameters;
 import timber.log.Timber;
 
-/**
- * Created by mate on 11.10.2017.
- */
+public class DownloadFinishedResourceWorker extends LoggingWorker {
 
-public class DownloadFinishedResourceJob extends Job {
-
-    public static final  String TAG              = BuildConfig.FLAVOR + "_" + "download_finished_resource_job";
+    public static final  String TAG_PREFIX       = BuildConfig.FLAVOR + "_" + "download_finished_resource_job_";
     private static final String ARG_RESOURCE_KEY = "resource_key";
-    private ResourceRepository resourceRepository;
+
+    private final ResourceRepository resourceRepository;
+    private final StorageManager storageManager;
+
+    public DownloadFinishedResourceWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
+        super(context, workerParams);
+        resourceRepository = ResourceRepository.getInstance(context);
+        storageManager = StorageManager.getInstance(context);
+    }
 
     @NonNull
     @Override
-    protected Result onRunJob(Params params) {
-        PersistableBundleCompat extras = params.getExtras();
-        String resourceKey = extras.getString(ARG_RESOURCE_KEY, null);
+    public Result doBackgroundWork() {
+        String resourceKey = getInputData().getString(ARG_RESOURCE_KEY);
         if (!TextUtils.isEmpty(resourceKey)) {
-            resourceRepository = ResourceRepository.getInstance(getContext());
             Resource resource = resourceRepository.getWithKey(resourceKey);
             Timber.i("%s", resource);
             if (resource != null && resource.isDownloading()) {
-                StorageManager storageManager = StorageManager.getInstance(getContext());
 
                 try {
 
@@ -63,6 +66,7 @@ public class DownloadFinishedResourceJob extends Job {
         }
 
         return Result.SUCCESS;
+
     }
 
     private void saveResource(Resource resource, Exception e) {
@@ -75,17 +79,26 @@ public class DownloadFinishedResourceJob extends Job {
         }
         resourceRepository.saveResource(resource);
         EventBus.getDefault()
-                .post(new ResourceDownloadEvent(resource.getKey(),e));
+                .post(new ResourceDownloadEvent(resource.getKey(), e));
     }
 
-    public static void scheduleJob(Resource resource) {
-        PersistableBundleCompat extras = new PersistableBundleCompat();
-        extras.putString(ARG_RESOURCE_KEY, resource.getKey());
 
-        new JobRequest.Builder(TAG).setExtras(extras)
-                                   .startNow()
-                                   .build()
-                                   .schedule();
+    public static String getTag(@NonNull String resourceKey) {
+        return TAG_PREFIX + resourceKey;
     }
 
+    public static void scheduleNow(Resource resource) {
+        String tag = getTag(resource.getKey());
+
+        Data data = new Data.Builder().putString(ARG_RESOURCE_KEY, resource.getKey())
+                                      .build();
+
+        WorkRequest request = new OneTimeWorkRequest.Builder(DownloadFinishedResourceWorker.class).setInputData(data)
+                                                                                                  .addTag(tag)
+                                                                                                  .addTag(resource.getKey())
+                                                                                                  .build();
+
+        WorkManager.getInstance()
+                   .enqueue(request);
+    }
 }
