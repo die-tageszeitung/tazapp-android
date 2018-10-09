@@ -13,6 +13,7 @@
     <string name="category_notification_download">DOWNLOAD BENACHRICHTIGUNG</string>
     <string name="category_notification_download_key">catDownloadNotification</string>
     <string name="category_debug">FEHLERSUCHE</string>
+    <string name="category_storage">SPEICHER</string>
     <!--  -->
     <string name="pref_key_autoload">autoload</string>
     <string name="pref_title_autoload">Nächste Ausgabe automatisch laden</string>
@@ -104,6 +105,9 @@
     <string name="pref_key_send_log_file">sendlogfile</string>
     <string name="pref_title_send_log_file">Log-Datei übermitteln</string>
     <string name="pref_summary_send_log_file">Senden sie die gesammelten Log-Dateien per Mail an die taz.</string>
+    <!--  -->
+    <string name="pref_key_storage_folder">storageFolder</string>
+    <string name="pref_title_storage_folder">Datenordner auswählen</string>
 
 
 </resources>

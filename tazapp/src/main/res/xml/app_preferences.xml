@@ -39,6 +39,16 @@
 
 
     </android.support.v7.preference.PreferenceCategory>
+    <android.support.v7.preference.PreferenceCategory
+            app:singleLineTitle="false"
+            android:title="@string/category_storage">
+
+        <android.support.v7.preference.Preference
+                android:key="@string/pref_key_storage_folder"
+                android:title="@string/pref_title_storage_folder"
+                app:singleLineTitle="false"/>
+
+    </android.support.v7.preference.PreferenceCategory>
 
     <android.support.v7.preference.PreferenceCategory
             app:singleLineTitle="false"

@@ -7,7 +7,7 @@ def supportLibVer = "28.0.0"
 def buildToolsVer = "28.0.3"
 def compileSdkVer = 28
 def targetSdkVer = 28
-def minSdkVer = 15
+def minSdkVer = 16
 
 def apkUrl = '"https://dl.taz.de/down/apk/"'
 
@@ -344,6 +344,8 @@ dependencies {
 //    implementation "com.google.guava:guava:24.1-android"
 
     implementation "android.arch.work:work-runtime:1.0.0-alpha09"
+
+    implementation 'com.afollestad.material-dialogs:core:2.0.0-beta3'
 }
 
 class Download extends DefaultTask {
