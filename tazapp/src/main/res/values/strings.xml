@@ -65,6 +65,8 @@
     <string name="drawer_imprint">Impressum</string>
     <string name="drawer_privacy_terms">Datenschutz</string>
     <string name="drawer_import">Importieren</string>
+    <string name="drawer_rate_app">App bewerten</string>
+    <string name="drawer_report_error">Fehler melden</string>
 
     <string name="drawer_header_alpha" translatable="false">α</string>
     <string name="drawer_header_beta" translatable="false">β</string>

@@ -124,6 +124,8 @@ public class StartActivity extends BaseActivity
     NavigationDrawerFragment.NavigationItem imprintItem;
     NavigationDrawerFragment.ClickItem      privacyTermsItem;
     // NavigationDrawerFragment.NavigationItem importItem;
+    NavigationDrawerFragment.ClickItem      rateAppItem;
+    NavigationDrawerFragment.ClickItem      reportErrorItem;
 
     private StartViewModel startViewModel;
     private MaterialDialog migrationDialog;
@@ -231,38 +233,45 @@ public class StartActivity extends BaseActivity
 //                                                                 ImportFragment.class);
 //        importItem.setAccessibilty(false);
         libraryItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_library),
-                                                                  R.drawable.ic_library,
+                                                                  R.drawable.ic_local_library_black_24dp,
                                                                   LibraryFragment.class);
 //        settingsItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_settings), R.drawable.ic_settings,
 //                                                                   SettingsFragment.class);
 //        settingsItem.setAccessibilty(false);
 
         preferencesItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_preferences),
-                                                                      R.drawable.ic_settings,
+                                                                      R.drawable.ic_settings_black_24dp,
                                                                       PreferencesFragment.class);
         preferencesItem.setAccessibilty(false);
 
 
-        helpItem = new NavigationDrawerFragment.ClickItem(getString(R.string.drawer_help), R.drawable.ic_help);
+        helpItem = new NavigationDrawerFragment.ClickItem(getString(R.string.drawer_help), R.drawable.ic_help_black_24dp);
         helpItem.setAccessibilty(false);
         privacyTermsItem = new NavigationDrawerFragment.ClickItem(getString(R.string.drawer_privacy_terms),
                                                                   R.drawable.ic_security_black_24dp);
-        helpItem.setAccessibilty(false);
+        privacyTermsItem.setAccessibilty(false);
         imprintItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_imprint),
-                                                                  R.drawable.ic_imprint,
+                                                                  R.drawable.ic_info_variant_black_24dp,
                                                                   ImprintFragment.class);
 
+        rateAppItem = new NavigationDrawerFragment.ClickItem(getString(R.string.drawer_rate_app), R.drawable.ic_star_black_24dp);
+        rateAppItem.setAccessibilty(false);
+        reportErrorItem = new NavigationDrawerFragment.ClickItem(getString(R.string.drawer_report_error), R.drawable.ic_bug_report_black_24dp);
+        reportErrorItem.setAccessibilty(false);
 
         mDrawerFragment.addItem(libraryItem);
         mDrawerFragment.addDividerItem();
         mDrawerFragment.addItem(userItem);
 //        mDrawerFragment.addItem(importItem);
         mDrawerFragment.addItem(helpItem);
+        mDrawerFragment.addItem(preferencesItem);
+        mDrawerFragment.addDividerItem();
+        mDrawerFragment.addItem(rateAppItem);
+        mDrawerFragment.addItem(reportErrorItem);
         mDrawerFragment.addDividerItem();
         mDrawerFragment.addItem(imprintItem);
         mDrawerFragment.addItem(privacyTermsItem);
         // mDrawerFragment.addItem(settingsItem);
-        mDrawerFragment.addItem(preferencesItem);
 
 
         //has to be after adding useritem
