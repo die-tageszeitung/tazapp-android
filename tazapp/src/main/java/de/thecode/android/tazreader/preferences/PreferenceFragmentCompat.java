@@ -5,25 +5,19 @@ import android.app.Activity;
 import android.content.Intent;
 import android.media.RingtoneManager;
 import android.net.Uri;
-import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v7.preference.Preference;
 import android.text.TextUtils;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-
 
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.TazSettings;
 
+import androidx.preference.Preference;
 import timber.log.Timber;
 
 /**
  * Created by mate on 08.08.2017.
  */
 
-public abstract class PreferenceFragmentCompat extends com.takisoft.fix.support.v7.preference.PreferenceFragmentCompat {
+public abstract class PreferenceFragmentCompat extends com.takisoft.preferencex.PreferenceFragmentCompat {
 
     public static final int REQUESTCODE_RINGTONE = 7491;
     public static String lastRingtoneRequestForKey;

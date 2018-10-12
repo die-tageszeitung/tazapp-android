@@ -1,13 +1,12 @@
 package de.thecode.android.tazreader.reader.usertoc;
 
 import android.annotation.SuppressLint;
-import android.arch.lifecycle.LiveData;
-import android.arch.lifecycle.Observer;
-import android.support.v4.util.Pair;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.Observer;
+import androidx.core.util.Pair;
 
 import de.thecode.android.tazreader.data.ITocItem;
 import de.thecode.android.tazreader.data.Paper;
-import de.thecode.android.tazreader.reader.ReaderViewModel;
 import de.thecode.android.tazreader.utils.ParametrizedRunnable;
 
 import java.util.ArrayList;
@@ -102,6 +101,7 @@ public class UserTocLiveData extends LiveData<UserTocLiveData.ResultWrapper> {
 
     @SuppressLint("StaticFieldLeak")
     public void create(Paper.Plist plist) {
+        currentKeyLiveData.observeForever(currentKeyObserver);
         executor.execute(new ParametrizedRunnable<Paper.Plist>() {
             @Override
             public void run(Paper.Plist plist) {
@@ -127,7 +127,7 @@ public class UserTocLiveData extends LiveData<UserTocLiveData.ResultWrapper> {
                 }
                 userTocMap.clear();
                 userTocMap.putAll(result);
-                currentKeyLiveData.observeForever(currentKeyObserver);
+
             }
         }.set(plist));
     }

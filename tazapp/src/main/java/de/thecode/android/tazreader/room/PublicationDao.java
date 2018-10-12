@@ -1,6 +1,6 @@
 package de.thecode.android.tazreader.room;
 
-import android.arch.persistence.room.Dao;
+import androidx.room.Dao;
 
 import de.thecode.android.tazreader.data.Publication;
 

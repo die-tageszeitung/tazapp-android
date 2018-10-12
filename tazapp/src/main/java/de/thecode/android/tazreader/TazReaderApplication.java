@@ -1,6 +1,5 @@
 package de.thecode.android.tazreader;
 
-import android.app.Application;
 import android.os.Build;
 import android.webkit.WebView;
 
@@ -12,19 +11,18 @@ import de.thecode.android.tazreader.picasso.PicassoHelper;
 import de.thecode.android.tazreader.reader.ReaderActivity;
 import de.thecode.android.tazreader.timber.TimberHelper;
 import de.thecode.android.tazreader.utils.BuildTypeProvider;
+import de.thecode.android.tazreader.utils.ExtensionsKt;
 import de.thecode.android.tazreader.utils.StorageManager;
 
-import org.apache.commons.io.FileUtils;
 import org.greenrobot.eventbus.EventBus;
 
 import java.io.File;
 
+import androidx.multidex.MultiDexApplication;
 import timber.log.Timber;
 
 
-public class TazReaderApplication extends Application {
-
-    private static volatile TazReaderApplication application;
+public class TazReaderApplication extends MultiDexApplication {
 
     @Override
     public void onCreate() {
@@ -83,7 +81,7 @@ public class TazReaderApplication extends Application {
             }
             File oldLibImageDir = StorageManager.getInstance(this)
                                                 .getCache("library");
-            FileUtils.deleteQuietly(oldLibImageDir);
+            ExtensionsKt.deleteQuietly(oldLibImageDir);
         }
 
 

@@ -1,7 +1,6 @@
 package de.thecode.android.tazreader.worker;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import com.dd.plist.PropertyListFormatException;
@@ -26,6 +25,7 @@ import java.text.ParseException;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import androidx.annotation.NonNull;
 import androidx.work.Data;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;

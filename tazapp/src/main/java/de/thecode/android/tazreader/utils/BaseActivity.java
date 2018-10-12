@@ -3,8 +3,8 @@ package de.thecode.android.tazreader.utils;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.FragmentManager;
-import android.support.v7.app.AppCompatActivity;
+import androidx.fragment.app.FragmentManager;
+import androidx.appcompat.app.AppCompatActivity;
 
 import de.mateware.dialog.DialogAdapterList;
 import de.mateware.dialog.listener.DialogAdapterListListener;

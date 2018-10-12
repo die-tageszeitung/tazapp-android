@@ -1,11 +1,6 @@
 package de.thecode.android.tazreader.start;
 
 import android.app.Application;
-import android.arch.lifecycle.AndroidViewModel;
-import android.arch.lifecycle.LiveData;
-import android.arch.lifecycle.MutableLiveData;
-import android.arch.lifecycle.Transformations;
-import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import de.thecode.android.tazreader.data.Paper;
@@ -19,6 +14,12 @@ import de.thecode.android.tazreader.utils.StorageManager;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import androidx.annotation.NonNull;
+import androidx.lifecycle.AndroidViewModel;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Transformations;
 
 //import de.thecode.android.tazreader.start.library.LibraryPaperLiveData;
 
@@ -67,7 +68,7 @@ public class StartViewModel extends AndroidViewModel {
     private List<Paper> filterLibraryList(List<Paper> input) {
         List<Paper> result = new ArrayList<>();
         for (Paper paper : input) {
-            if (paper.getValidUntil() >= System.currentTimeMillis() / 1000) result.add(paper);
+            if ((paper.getValidUntil() >= System.currentTimeMillis() / 1000) || !paper.hasNoneState()) result.add(paper);
         }
         return result;
     }

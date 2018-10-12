@@ -2,7 +2,7 @@ package de.thecode.android.tazreader.start;
 
 
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
+import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,9 +12,6 @@ import android.widget.Button;
 import de.mateware.dialog.Dialog;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.dialog.TechInfoDialog;
-import de.thecode.android.tazreader.utils.BaseFragment;
-
-import java.lang.ref.WeakReference;
 
 /**
  * A simple {@link Fragment} subclass.

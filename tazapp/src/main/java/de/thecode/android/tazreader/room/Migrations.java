@@ -1,14 +1,12 @@
 package de.thecode.android.tazreader.room;
 
-import android.arch.persistence.db.SupportSQLiteDatabase;
-import android.arch.persistence.db.SupportSQLiteQuery;
-import android.arch.persistence.db.SupportSQLiteQueryBuilder;
-import android.arch.persistence.room.migration.Migration;
+import androidx.sqlite.db.SupportSQLiteDatabase;
+import androidx.sqlite.db.SupportSQLiteQuery;
+import androidx.sqlite.db.SupportSQLiteQueryBuilder;
+import androidx.room.migration.Migration;
 import android.database.Cursor;
 import android.provider.BaseColumns;
-import android.support.annotation.NonNull;
-
-import de.thecode.android.tazreader.data.Store;
+import androidx.annotation.NonNull;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;

@@ -8,7 +8,7 @@
              android:layout_height="@dimen/lib_item_height">
     <!--android:layout_width="@dimen/lib_item_width"-->
 
-    <android.support.v7.widget.CardView
+    <androidx.cardview.widget.CardView
         android:id="@+id/lib_item_card"
         android:layout_width="wrap_content"
         android:layout_gravity="center"
@@ -19,7 +19,7 @@
         android:clickable="true"
         app:cardCornerRadius="@dimen/lib_cardview_corner_radius">
 
-        <android.support.constraint.ConstraintLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">
 
@@ -106,7 +106,7 @@
                     <!--style="@style/Widget.AppCompat.ProgressBar"/>-->
 
 
-            <android.support.constraint.ConstraintLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
 
                     android:background="@color/library_card_background"
                     app:layout_constraintEnd_toEndOf="@+id/lib_item_facsimile"
@@ -143,10 +143,10 @@
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintStart_toEndOf="@+id/lib_item_state_wait"
                         />
-            </android.support.constraint.ConstraintLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
 
-        </android.support.constraint.ConstraintLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
-    </android.support.v7.widget.CardView>
+    </androidx.cardview.widget.CardView>
 </FrameLayout>

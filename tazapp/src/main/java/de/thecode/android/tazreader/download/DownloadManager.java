@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.net.Uri;
-import android.support.annotation.WorkerThread;
 import android.text.TextUtils;
 import android.util.Base64;
 
@@ -35,6 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import androidx.annotation.WorkerThread;
 import timber.log.Timber;
 
 public class DownloadManager {
@@ -234,7 +234,7 @@ public class DownloadManager {
 //                    .insert(Resource.CONTENT_URI, resource.getContentValues());
 //        }
 
-        if (!resource.isDownloaded()) {
+        if (!resource.isDownloaded() || !mStorage.getResourceDirectory(resource).exists()) {
 //            resource.setFileHash(paper.getResourceFileHash());
 //            resource.setUrl(paper.getResourceUrl());
 //            resource.setLen(paper.getResourceLen());

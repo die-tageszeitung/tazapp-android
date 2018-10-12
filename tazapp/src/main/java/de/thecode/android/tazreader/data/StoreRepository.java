@@ -1,9 +1,9 @@
 package de.thecode.android.tazreader.data;
 
-import android.arch.lifecycle.LiveData;
+import androidx.lifecycle.LiveData;
 import android.content.Context;
-import android.net.Uri;
-import android.support.annotation.WorkerThread;
+
+import androidx.annotation.WorkerThread;
 
 import de.thecode.android.tazreader.room.AppDatabase;
 

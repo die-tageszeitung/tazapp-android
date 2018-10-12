@@ -5,8 +5,8 @@ import android.content.res.TypedArray;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
-import android.support.v4.content.res.TypedArrayUtils;
-import android.support.v7.preference.Preference;
+import androidx.core.content.res.TypedArrayUtils;
+import androidx.preference.Preference;
 import android.util.AttributeSet;
 
 import de.thecode.android.tazreader.R;
@@ -23,10 +23,10 @@ public class NotificationSoundPreference extends Preference {
     public NotificationSoundPreference(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
         TypedArray a = context.obtainStyledAttributes(attrs,
-                                                      android.support.v7.preference.R.styleable.Preference, defStyleAttr, defStyleRes);
+                                                      androidx.preference.R.styleable.Preference, defStyleAttr, defStyleRes);
 
-        mSummary = TypedArrayUtils.getString(a, android.support.v7.preference.R.styleable.Preference_summary,
-                                             android.support.v7.preference.R.styleable.Preference_android_summary);
+        mSummary = TypedArrayUtils.getString(a, androidx.preference.R.styleable.Preference_summary,
+                                             androidx.preference.R.styleable.Preference_android_summary);
 
         a.recycle();
     }
@@ -36,7 +36,7 @@ public class NotificationSoundPreference extends Preference {
     }
 
     public NotificationSoundPreference(Context context, AttributeSet attrs) {
-        this(context, attrs, TypedArrayUtils.getAttr(context, android.support.v7.preference.R.attr.preferenceStyle,
+        this(context, attrs, TypedArrayUtils.getAttr(context, androidx.preference.R.attr.preferenceStyle,
                                                      android.R.attr.preferenceStyle));
     }
 

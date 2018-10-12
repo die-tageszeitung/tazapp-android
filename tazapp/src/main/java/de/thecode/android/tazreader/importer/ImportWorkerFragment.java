@@ -5,12 +5,9 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.app.FragmentManager;
-import android.text.TextUtils;
+import androidx.fragment.app.FragmentManager;
 
-import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.data.Paper;
-import de.thecode.android.tazreader.download.UnzipPaperTask;
 import de.thecode.android.tazreader.utils.AsyncTaskWithException;
 import de.thecode.android.tazreader.utils.BaseFragment;
 import de.thecode.android.tazreader.utils.ReadableException;

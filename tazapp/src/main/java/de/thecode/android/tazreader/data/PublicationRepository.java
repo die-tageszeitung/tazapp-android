@@ -1,7 +1,7 @@
 package de.thecode.android.tazreader.data;
 
 import android.content.Context;
-import android.support.annotation.WorkerThread;
+import androidx.annotation.WorkerThread;
 
 import de.thecode.android.tazreader.room.AppDatabase;
 

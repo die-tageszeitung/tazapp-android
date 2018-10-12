@@ -2,10 +2,10 @@ package de.thecode.android.tazreader.utils.extendedasyncdiffer;
 
 import android.os.Handler;
 import android.os.Looper;
-import android.support.annotation.NonNull;
-import android.support.annotation.RestrictTo;
+import androidx.annotation.NonNull;
+import androidx.annotation.RestrictTo;
 
-import android.support.v7.util.DiffUtil;
+import androidx.recyclerview.widget.DiffUtil;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -49,7 +49,7 @@ public final class ExtendedAsyncDifferConfig<T> {
     }
 
     /**
-     * Builder class for {@link android.support.v7.recyclerview.extensions.AsyncDifferConfig}.
+     * Builder class for {@link androidx.recyclerview.widget.AsyncDifferConfig}.
      *
      * @param <T>
      */

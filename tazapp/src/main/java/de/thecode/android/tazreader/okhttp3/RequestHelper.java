@@ -2,7 +2,7 @@ package de.thecode.android.tazreader.okhttp3;
 
 import android.content.Context;
 import android.net.Uri;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.text.TextUtils;
 
 import de.thecode.android.tazreader.BuildConfig;

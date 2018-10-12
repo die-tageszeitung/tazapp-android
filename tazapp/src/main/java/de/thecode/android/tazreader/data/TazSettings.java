@@ -16,6 +16,8 @@ import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.secure.SimpleCrypto;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -79,14 +81,16 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
         public static final  String NOTIFICATION_PUSH           = "notification_push";
         public static final  String CRASHLYTICS_ALWAYS_SEND     = "always_send_reports_opt_in";
         private static final String LATEST_VERSION              = "latestVersion";
-        public static final String LOGFILE = "logfile";
+        public static final  String LOGFILE                     = "logfile";
+        public static final  String DATA_FOLDER                 = "storageFolder";
     }
 
 
     private static TazSettings       instance;
     private        SharedPreferences sharedPreferences;
     private        SharedPreferences crashlyticsSharedPreferences;
-    private Resources resources;
+    private        Resources         resources;
+
 
     public static synchronized TazSettings getInstance(Context context) {
         if (instance == null) instance = new TazSettings(context.getApplicationContext());
@@ -270,6 +274,16 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
 //                         .apply();
 //    }
 
+    public String getDataFolderPath() {
+        return sharedPreferences.getString(PREFKEY.DATA_FOLDER, null);
+    }
+
+    public void setDataFolderPath(@NotNull String newPath) {
+        sharedPreferences.edit()
+                         .putString(PREFKEY.DATA_FOLDER, newPath)
+                         .apply();
+    }
+
     public boolean isDemoMode() {
         return sharedPreferences.getBoolean(PREFKEY.DEMOMODE, true);
     }
@@ -330,8 +344,8 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
                          .apply();
     }
 
-    public boolean isWriteLogfile(){
-        return sharedPreferences.getBoolean(PREFKEY.LOGFILE,resources.getBoolean(R.bool.pref_default_log_file));
+    public boolean isWriteLogfile() {
+        return sharedPreferences.getBoolean(PREFKEY.LOGFILE, resources.getBoolean(R.bool.pref_default_log_file));
     }
 
     private Map<String, List<OnPreferenceChangeListener>> changeListeners = new HashMap<>();

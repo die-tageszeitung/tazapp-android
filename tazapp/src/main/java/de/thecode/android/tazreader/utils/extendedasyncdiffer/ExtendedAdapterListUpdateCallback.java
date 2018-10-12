@@ -1,8 +1,8 @@
 package de.thecode.android.tazreader.utils.extendedasyncdiffer;
 
-import android.support.annotation.NonNull;
-import android.support.v7.util.ListUpdateCallback;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.ListUpdateCallback;
+import androidx.recyclerview.widget.RecyclerView;
 
 public class ExtendedAdapterListUpdateCallback implements ListUpdateCallback {
 

@@ -2,13 +2,12 @@ package de.thecode.android.tazreader.timber;
 
 import android.content.Context;
 import android.os.Process;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.util.Log;
 
 import com.bosphere.filelogger.FL;
 import com.bosphere.filelogger.FLConfig;
 import com.bosphere.filelogger.FileFormatter;
-import com.bosphere.filelogger.Loggable;
 
 import de.thecode.android.tazreader.utils.StorageManager;
 import de.thecode.android.tazreader.utils.UserDeviceInfo;

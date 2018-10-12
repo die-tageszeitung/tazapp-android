@@ -3,16 +3,12 @@ package de.thecode.android.tazreader.reader.article;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.SuppressLint;
-import android.arch.lifecycle.Observer;
 import android.content.Intent;
 import android.net.ParseException;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.content.ContextCompat;
 import android.text.Html;
 import android.text.TextUtils;
 import android.util.TypedValue;
@@ -50,14 +46,16 @@ import de.thecode.android.tazreader.utils.TintHelper;
 import de.thecode.android.tazreader.widget.ReaderButton;
 import de.thecode.android.tazreader.widget.ShareButton;
 
-import org.apache.commons.io.FileUtils;
-
 import java.io.File;
-import java.io.IOException;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
+import androidx.lifecycle.Observer;
+import kotlin.io.FilesKt;
 import timber.log.Timber;
 
 public class ArticleFragment extends AbstractContentFragment implements ArticleWebViewCallback {
@@ -704,8 +702,8 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
         String tazapiReplacement = "file:///android_asset/js/TAZAPI.js";
 
         String result = null;
-        try {
-            result = FileUtils.readFileToString(articleFile, Charsets.UTF_8);
+
+            result = FilesKt.readText(articleFile, Charsets.UTF_8);
 //            result = FileUtilsOld.readFile(articleFile, Charsets.UTF_8);
 //            result = Files.asCharSource(articleFile, Charsets.UTF_8).read();
 //            result = IOUtils.toString(new FileInputStream(articleFile), "UTF-8");
@@ -724,9 +722,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
             Matcher matcher2 = tazapiPattern.matcher(result);
             result = matcher2.replaceAll(tazapiReplacement);
 
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
 
         if (TextUtils.isEmpty(result)) result = "Fehler beim Laden des Artikels";
 

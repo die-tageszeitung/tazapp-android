@@ -42,7 +42,7 @@
                 android:text="@string/theme_night"
                 android:textAppearance="@style/SettingsTextAppearance" />
         </LinearLayout>
-        <android.support.v7.widget.SwitchCompat
+        <androidx.appcompat.widget.SwitchCompat
             android:id="@+id/switchFullscreen"
             style="@style/SettingsWidget"
             android:layout_width="match_parent"
@@ -52,7 +52,7 @@
             android:textAppearance="@style/SettingsTextAppearance"
             app:switchTextAppearance="@style/SettingsTextAppearance" />
 
-        <android.support.v7.widget.SwitchCompat
+        <androidx.appcompat.widget.SwitchCompat
             android:id="@+id/switchIsScroll"
             style="@style/SettingsWidget"
             android:layout_width="match_parent"
@@ -62,7 +62,7 @@
             android:textAppearance="@style/SettingsTextAppearance"
             app:switchTextAppearance="@style/SettingsTextAppearance" />
 
-        <android.support.v7.widget.SwitchCompat
+        <androidx.appcompat.widget.SwitchCompat
                 android:id="@+id/switchIsPaging"
                 style="@style/SettingsWidget"
                 android:layout_width="match_parent"
@@ -72,7 +72,7 @@
                 android:textAppearance="@style/SettingsTextAppearance"
                 app:switchTextAppearance="@style/SettingsTextAppearance" />
 
-        <android.support.v7.widget.SwitchCompat
+        <androidx.appcompat.widget.SwitchCompat
                 android:id="@+id/switchIsScrollToNext"
                 style="@style/SettingsWidget"
                 android:layout_width="match_parent"
@@ -81,7 +81,7 @@
                 android:textAppearance="@style/SettingsTextAppearance"
                 app:switchTextAppearance="@style/SettingsTextAppearance" />
 
-        <android.support.v7.widget.SwitchCompat
+        <androidx.appcompat.widget.SwitchCompat
                 android:id="@+id/switchIsJustify"
                 style="@style/SettingsWidget"
                 android:layout_width="match_parent"

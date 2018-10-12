@@ -108,6 +108,7 @@
     <!--  -->
     <string name="pref_key_storage_folder">storageFolder</string>
     <string name="pref_title_storage_folder">Datenordner auswählen</string>
+    <string name="pref_summary_storage_folder">Ordner, in dem die Ausgaben und Ressourcen gepeichert werden. Aktuell:\n%1$s [verwendet %2$s]</string>
 
 
 </resources>

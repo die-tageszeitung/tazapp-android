@@ -43,6 +43,7 @@
     <string name="message_download_not_allowed">Der Download ist nicht gestattet.</string>
     <string name="message_paper_not_found">Ausgabe nicht gefunden.</string>
     <string name="message_paper_not_downloaded">Ausgabe nicht heruntergeladen.</string>
+    <string name="message_paper_files_not_downloaded">Dateien zur Ausgabe nicht gefunden. Bitte kontrollieren Sie die Einstellungen zum Speicherort oder laden Sie die Ausgabe gegebenenfalls erneut herunter.</string>
     <string name="message_resource_not_downloaded_no_connection">Eine benötigte Ressource steht nicht zur Verfügung und muss heruntergeladen werden. Bitte aktivieren Sie Ihre Internetverbindung.</string>
     <string name="notification_message_install_finished">Download fertig!</string>
     <string name="notification_content_text_summary">%1$d Ausgaben heruntergeladen</string>
@@ -131,4 +132,8 @@
     <string name="logfileWriteMessage">Log-Datei schreiben aktiv!</string>
     <string name="logfileWriteMessageSub">Bitte deaktivieren diese Einstellung, wenn Sie sie nicht mehr benötigen.</string>
 
+    <string name="dialog_data_folder_entry">%1$s [%2$s frei]</string>
+    <string name="dialog_data_folder_migration_title">Bitte warten…</string>
+    <string name="dialog_data_folder_migration_message">Alle Daten werden jetzt kopiert. Das kann je nach Menge der Daten und Beschaffenheit der Speichermedien einige Zeit in Anspruch nehmen. Sollte eine Fehler auftreten wird automatisch der alte Speicherort wieder verwendet.</string>
+    <string name="toast_data_folder_migration_not_enough_space">Nicht genügend Speicherplatz bei %s</string>
 </resources>

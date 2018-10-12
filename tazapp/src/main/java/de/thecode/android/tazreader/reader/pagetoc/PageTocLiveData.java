@@ -1,13 +1,13 @@
 package de.thecode.android.tazreader.reader.pagetoc;
 
-import android.arch.lifecycle.LiveData;
-import android.arch.lifecycle.Observer;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.Observer;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.support.v4.content.ContextCompat;
+import androidx.core.content.ContextCompat;
 
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.ITocItem;
@@ -117,6 +117,7 @@ public class PageTocLiveData extends LiveData<PageTocLiveData.ResultWrapper> {
     }
 
     public void create(Paper.Plist plist) {
+        currentKeyLiveData.observeForever(currentKeyObserver);
         executor.execute(new ParametrizedRunnable<Paper.Plist>() {
             @Override
             public void run(Paper.Plist plist) {
@@ -136,7 +137,7 @@ public class PageTocLiveData extends LiveData<PageTocLiveData.ResultWrapper> {
                 }
                 pageTocMap.clear();
                 pageTocMap.putAll(result);
-                currentKeyLiveData.observeForever(currentKeyObserver);
+
             }
         }.set(plist));
     }

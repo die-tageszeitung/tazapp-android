@@ -1,8 +1,8 @@
 package de.thecode.android.tazreader.data;
 
-import android.arch.persistence.room.Entity;
-import android.arch.persistence.room.PrimaryKey;
-import android.support.annotation.NonNull;
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
+import androidx.annotation.NonNull;
 
 import com.dd.plist.NSDictionary;
 

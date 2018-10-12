@@ -1,8 +1,8 @@
 package de.thecode.android.tazreader.data;
 
-import android.arch.lifecycle.LiveData;
+import androidx.lifecycle.LiveData;
 import android.content.Context;
-import android.support.annotation.WorkerThread;
+import androidx.annotation.WorkerThread;
 
 import com.squareup.picasso.Picasso;
 

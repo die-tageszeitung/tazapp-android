@@ -1,6 +1,6 @@
 package de.thecode.android.tazreader.okhttp3;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.util.Base64;
 
 import java.io.IOException;
