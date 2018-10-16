@@ -8,7 +8,6 @@ import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.widget.Button;
 
-import de.mateware.dialog.Dialog;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.dialog.TechInfoDialog;
 
@@ -43,19 +42,6 @@ public class ImprintFragment extends StartBaseFragment {
                                             .setNeutralButton(R.string.imprint_licenses)
                                             .buildSupport()
                                             .show(getFragmentManager(), DIALOG_TECHINFO);
-            }
-        });
-
-        Button errorReportButton = view.findViewById(R.id.buttonErrorReport);
-        errorReportButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                new Dialog.Builder().setMessage(R.string.error_report_request_log_dialog_message)
-                                    .setNegativeButton()
-                                    .setPositiveButton()
-                                    .setNeutralButton(R.string.drawer_settings)
-                                    .buildSupport()
-                                    .show(getFragmentManager(),DIALOG_ERRORMAIL);
             }
         });
 

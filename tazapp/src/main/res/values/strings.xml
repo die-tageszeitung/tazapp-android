@@ -73,7 +73,6 @@
     <string name="drawer_header_debug" translatable="false">δ</string>
 
     <string name="imprint_licenses">Lizenzen</string>
-    <string name="imprint_error_report">Fehler melden</string>
     <string name="imprint_tech_info">Technische Informationen</string>
 
     <string name="import_parent_directory">Übergeordnetes Verzeichnis</string>
