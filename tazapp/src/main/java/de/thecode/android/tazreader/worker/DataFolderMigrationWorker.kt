@@ -15,13 +15,13 @@ import timber.log.Timber
 import java.io.File
 
 
-class DataFolderMigrationWorker(context: Context, workerParams: WorkerParameters) : Worker(context, workerParams) {
+class DataFolderMigrationWorker(context: Context, workerParams: WorkerParameters) : LoggingWorker(context, workerParams) {
 
     val settings: TazSettings by lazy {
         TazSettings.getInstance(applicationContext)
     }
 
-    override fun doWork(): Result {
+    override fun doBackgroundWork(): Result {
         val newPath = File(inputData.getString(ARG_NEW_PATH))
         val oldPath = File(settings.dataFolderPath)
         Timber.i("Data migration from %s to %s ", oldPath, newPath)

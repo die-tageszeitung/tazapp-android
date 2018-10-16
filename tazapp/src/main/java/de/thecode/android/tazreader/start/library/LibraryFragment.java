@@ -482,6 +482,7 @@ public class LibraryFragment extends StartBaseFragment {
 //                                  .invertSelection();
                     return true;
                 case R.id.ic_action_selectnotloaded:
+                    adapter.selectNotDownloadedPapers();
 //                    startViewModel.getLibraryPaperLiveData()
 //                                  .selectNotDownloaded();
                     return true;

@@ -3,14 +3,6 @@ package de.thecode.android.tazreader.start.library;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
-import androidx.core.graphics.drawable.DrawableCompat;
-import androidx.core.view.ViewCompat;
-import androidx.recyclerview.widget.DiffUtil;
-import androidx.cardview.widget.CardView;
-import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,6 +27,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.cardview.widget.CardView;
+import androidx.core.content.ContextCompat;
+import androidx.core.graphics.drawable.DrawableCompat;
+import androidx.core.view.ViewCompat;
+import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.RecyclerView;
 import timber.log.Timber;
 
 public class NewLibraryAdapter extends TazListAdapter<Paper, NewLibraryAdapter.ViewHolder> {
@@ -248,6 +248,19 @@ public class NewLibraryAdapter extends TazListAdapter<Paper, NewLibraryAdapter.V
             if (itemClickListener != null) itemClickListener.onSelectionChanged();
         }
 
+    }
+
+    public void selectNotDownloadedPapers(){
+        boolean changed = false;
+        for (Paper paper : getHelper().getCurrentList()) {
+            if (paperMetaData.setSelected(paper.getBookId(),paper.hasNoneState())) {
+                changed = true;
+            }
+        }
+        if (changed) {
+            notifyItemRangeChanged(0, getItemCount(), PAYLOAD_SELECTED);
+            if (itemClickListener != null) itemClickListener.onSelectionChanged();
+        }
     }
 
 
