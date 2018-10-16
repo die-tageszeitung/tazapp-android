@@ -34,7 +34,7 @@ public class TimberHelper extends ContextWrapper {
         super(base);
         TazSettings settings = TazSettings.getInstance(this);
 
-        settings.addLogFileListener(new TazSettings.OnPreferenceChangeListener<Boolean>() {
+        settings.addOnPreferenceChangeListener(TazSettings.PREFKEY.LOGFILE, new TazSettings.OnPreferenceChangeListener<Boolean>() {
             @Override
             public void onPreferenceChanged(Boolean changedValue) {
                 forrestFileLoggingTree(changedValue);

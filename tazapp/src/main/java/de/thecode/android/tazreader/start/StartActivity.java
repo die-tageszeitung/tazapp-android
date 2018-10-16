@@ -3,11 +3,13 @@ package de.thecode.android.tazreader.start;
 
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
+import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 
@@ -256,15 +258,17 @@ public class StartActivity extends BaseActivity
 
         rateAppItem = new NavigationDrawerFragment.ClickItem(getString(R.string.drawer_rate_app), R.drawable.ic_star_black_24dp);
         rateAppItem.setAccessibilty(false);
-        reportErrorItem = new NavigationDrawerFragment.ClickItem(getString(R.string.drawer_report_error), R.drawable.ic_bug_report_black_24dp);
+        reportErrorItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_report_error),
+                                                                      R.drawable.ic_bug_report_black_24dp,
+                                                                      ReportErrorFragment.class);
         reportErrorItem.setAccessibilty(false);
 
         mDrawerFragment.addItem(libraryItem);
         mDrawerFragment.addDividerItem();
         mDrawerFragment.addItem(userItem);
 //        mDrawerFragment.addItem(importItem);
-        mDrawerFragment.addItem(helpItem);
         mDrawerFragment.addItem(preferencesItem);
+        mDrawerFragment.addItem(helpItem);
         mDrawerFragment.addDividerItem();
         mDrawerFragment.addItem(rateAppItem);
         mDrawerFragment.addItem(reportErrorItem);
@@ -408,6 +412,22 @@ public class StartActivity extends BaseActivity
             showHelpDialog(HelpDialog.HELP_LIBRARY);
         } else if (privacyTermsItem.equals(item)) {
             showHelpDialog(HelpDialog.HELP_PRIVACY);
+        } else if (rateAppItem.equals(item)) {
+            Intent rateIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + BuildConfig.APPLICATION_ID));
+            rateIntent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
+
+            if (rateIntent.resolveActivity(getPackageManager()) != null) {
+                startActivity(rateIntent);
+            } else {
+                rateIntent = new Intent(Intent.ACTION_VIEW,
+                                Uri.parse("http://play.google.com/store/apps/details?id=" + BuildConfig.APPLICATION_ID));
+                if (rateIntent.resolveActivity(getPackageManager()) != null) {
+                    startActivity(rateIntent);
+                } else {
+                    Toast.makeText(this, "No play store or browser app", Toast.LENGTH_LONG)
+                         .show();
+                }
+            }
         }
 
     }
@@ -616,55 +636,65 @@ public class StartActivity extends BaseActivity
             if (!paper.hasReadyState()) {
                 showErrorDialog(getString(R.string.message_paper_not_downloaded), DIALOG_ERROR_OPEN_PAPER);
             } else {
-                if (!startViewModel.getStorageManager().getPaperDirectory(paper).exists()) {
+                if (!startViewModel.getStorageManager()
+                                   .getPaperDirectory(paper)
+                                   .exists()) {
                     showErrorDialog(getString(R.string.message_paper_files_not_downloaded), DIALOG_ERROR_OPEN_PAPER);
                 } else {
                     new AsyncTaskListener<Paper, Resource>(papers -> ResourceRepository.getInstance(StartActivity.this)
-                                                                                       .getResourceForPaper(papers[0]), resource -> {
-                        if (resource.isDownloaded() && startViewModel.getStorageManager().getResourceDirectory(resource).exists()) {
-                            Timber.i("start reader for paper: %s", paper);
-                            Intent intent = new Intent(StartActivity.this, ReaderActivity.class);
+                                                                                       .getResourceForPaper(papers[0]),
+                                                           resource -> {
+                                                               if (resource.isDownloaded() && startViewModel.getStorageManager()
+                                                                                                            .getResourceDirectory(
+                                                                                                                    resource)
+                                                                                                            .exists()) {
+                                                                   Timber.i("start reader for paper: %s", paper);
+                                                                   Intent intent = new Intent(StartActivity.this,
+                                                                                              ReaderActivity.class);
 //                intent.putExtra(ReaderActivity.KEY_EXTRA_PAPER_ID, id);
-                            intent.putExtra(ReaderActivity.KEY_EXTRA_BOOK_ID, paper.getBookId());
+                                                                   intent.putExtra(ReaderActivity.KEY_EXTRA_BOOK_ID,
+                                                                                   paper.getBookId());
 //                    intent.putExtra(ReaderActivity.KEY_EXTRA_RESOURCE_KEY, resource.getKey());
-                            startActivity(intent);
-                        } else {
-                            AnalyticsWrapper.getInstance()
-                                            .logData("PAPER", paper.toString());
-                            AnalyticsWrapper.getInstance()
-                                            .logData("RESOURCE", resource.toString());
-                            switch (Connection.getConnectionType(StartActivity.this)) {
-                                case Connection.CONNECTION_NOT_AVAILABLE:
-                                    Timber.e(new ConnectException("Keine Verbindung"));
-                                    showErrorDialog(getString(R.string.message_resource_not_downloaded_no_connection),
-                                                    DIALOG_ERROR_OPEN_PAPER);
-                                    break;
-                                default:
-                                    new AsyncTaskListener<Resource, Exception>(resources -> {
-                                        try {
-                                            DownloadManager.getInstance(StartActivity.this)
-                                                           .enqueResource(resources[0], false);
-                                        } catch (DownloadManager.NotEnoughSpaceException e) {
-                                            return e;
-                                        }
-                                        return null;
-                                    }, exception -> {
-                                        if (exception instanceof DownloadManager.NotEnoughSpaceException) {
-                                            Timber.e(exception);
-                                            showDownloadErrorDialog(getString(R.string.message_resourcedownload_error),
-                                                                    getString(R.string.message_not_enough_space),
-                                                                    exception);
-                                        } else {
-                                            startViewModel.setPaperWaitingForResource(paper.getBookId());
-                                            Timber.e(new Resource.MissingResourceException());
-                                            showWaitDialog(DIALOG_WAIT + paper.getBookId(), getString(R.string.dialog_meassage_loading_missing_resource));
+                                                                   startActivity(intent);
+                                                               } else {
+                                                                   AnalyticsWrapper.getInstance()
+                                                                                   .logData("PAPER", paper.toString());
+                                                                   AnalyticsWrapper.getInstance()
+                                                                                   .logData("RESOURCE", resource.toString());
+                                                                   switch (Connection.getConnectionType(StartActivity.this)) {
+                                                                       case Connection.CONNECTION_NOT_AVAILABLE:
+                                                                           Timber.e(new ConnectException("Keine Verbindung"));
+                                                                           showErrorDialog(getString(R.string.message_resource_not_downloaded_no_connection),
+                                                                                           DIALOG_ERROR_OPEN_PAPER);
+                                                                           break;
+                                                                       default:
+                                                                           new AsyncTaskListener<Resource, Exception>(resources -> {
+                                                                               try {
+                                                                                   DownloadManager.getInstance(StartActivity.this)
+                                                                                                  .enqueResource(resources[0],
+                                                                                                                 false);
+                                                                               } catch (DownloadManager.NotEnoughSpaceException e) {
+                                                                                   return e;
+                                                                               }
+                                                                               return null;
+                                                                           }, exception -> {
+                                                                               if (exception instanceof DownloadManager.NotEnoughSpaceException) {
+                                                                                   Timber.e(exception);
+                                                                                   showDownloadErrorDialog(getString(R.string.message_resourcedownload_error),
+                                                                                                           getString(R.string.message_not_enough_space),
+                                                                                                           exception);
+                                                                               } else {
+                                                                                   startViewModel.setPaperWaitingForResource(paper.getBookId());
+                                                                                   Timber.e(new Resource.MissingResourceException());
+                                                                                   showWaitDialog(DIALOG_WAIT + paper.getBookId(),
+                                                                                                  getString(R.string.dialog_meassage_loading_missing_resource));
 
-                                        }
-                                    }).execute(resource);
+                                                                               }
+                                                                           }).execute(resource);
 
-                            }
-                        }
-                    }).execute(paper);
+                                                                   }
+                                                               }
+                                                           }).execute(paper);
                 }
             }
         }).execute(bookId);

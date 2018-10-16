@@ -169,28 +169,28 @@
                 android:title="@string/pref_title_notification_download_ringtone"/>
 
     </PreferenceCategory>
-    <PreferenceCategory
-            app:singleLineTitle="false"
-            android:title="@string/category_debug">
+    <!--<PreferenceCategory-->
+            <!--app:singleLineTitle="false"-->
+            <!--android:title="@string/category_debug">-->
 
-        <SwitchPreferenceCompat
-                android:key="@string/pref_key_crashlytics_always_send"
-                app:singleLineTitle="false"
-                android:title="@string/pref_title_crashlytics_always_send"/>
-        <SwitchPreferenceCompat
-                android:key="@string/pref_key_log_file"
-                app:singleLineTitle="false"
-                android:title="@string/pref_title_log_file"
-                android:summary="@string/pref_summary_log_file"
-                android:defaultValue="@bool/pref_default_log_file"/>
+        <!--<SwitchPreferenceCompat-->
+                <!--android:key="@string/pref_key_crashlytics_always_send"-->
+                <!--app:singleLineTitle="false"-->
+                <!--android:title="@string/pref_title_crashlytics_always_send"/>-->
+        <!--<SwitchPreferenceCompat-->
+                <!--android:key="@string/pref_key_log_file"-->
+                <!--app:singleLineTitle="false"-->
+                <!--android:title="@string/pref_title_log_file"-->
+                <!--android:summary="@string/pref_summary_log_file"-->
+                <!--android:defaultValue="@bool/pref_default_log_file"/>-->
 
-        <Preference
-                android:key="@string/pref_key_send_log_file"
-                android:title="@string/pref_title_send_log_file"
-                app:singleLineTitle="false"
-                android:summary="@string/pref_summary_send_log_file"/>
+        <!--<Preference-->
+                <!--android:key="@string/pref_key_send_log_file"-->
+                <!--android:title="@string/pref_title_send_log_file"-->
+                <!--app:singleLineTitle="false"-->
+                <!--android:summary="@string/pref_summary_send_log_file"/>-->
 
 
-    </PreferenceCategory>
+    <!--</PreferenceCategory>-->
 
 </PreferenceScreen>

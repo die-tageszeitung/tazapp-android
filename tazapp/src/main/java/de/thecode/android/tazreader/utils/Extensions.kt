@@ -1,21 +1,21 @@
 package de.thecode.android.tazreader.utils
 
+
 import timber.log.Timber
 import java.io.File
 import java.text.DecimalFormat
 import java.util.concurrent.atomic.AtomicLong
-
-
 import kotlin.math.log10
 import kotlin.math.pow
 
+
 class FileUtils {
     companion object {
-        fun readableSize(size:Long) : String {
+        fun readableSize(size: Long): String {
             if (size <= 0) return "0"
             val units = arrayOf("B", "KB", "MB", "GB", "TB")
-            val digitGroups = (log10(size.toDouble())/log10(1024.0)).toInt()
-            return (DecimalFormat("#,##0.#").format(size /  1024.0.pow(digitGroups.toDouble()))
+            val digitGroups = (log10(size.toDouble()) / log10(1024.0)).toInt()
+            return (DecimalFormat("#,##0.#").format(size / 1024.0.pow(digitGroups.toDouble()))
                     + units[digitGroups])
         }
     }

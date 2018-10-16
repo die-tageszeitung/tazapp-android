@@ -67,6 +67,8 @@ public class StorageManager {
 
         cacheFolder = context.getExternalCacheDir();
         createNoMediaFileInDir(cacheFolder);
+
+        if (!settings.isWriteLogfile()) ExtensionsKt.deleteQuietly(getLogCache());
     }
 
     private void createNoMediaFileInDir(File dir) {

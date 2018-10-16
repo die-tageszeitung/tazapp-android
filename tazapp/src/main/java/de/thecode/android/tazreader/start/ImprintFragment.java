@@ -2,7 +2,6 @@ package de.thecode.android.tazreader.start;
 
 
 import android.os.Bundle;
-import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +11,8 @@ import android.widget.Button;
 import de.mateware.dialog.Dialog;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.dialog.TechInfoDialog;
+
+import androidx.fragment.app.Fragment;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -49,7 +50,7 @@ public class ImprintFragment extends StartBaseFragment {
         errorReportButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new Dialog.Builder().setMessage(R.string.imprint_error_report_dialog_message)
+                new Dialog.Builder().setMessage(R.string.error_report_request_log_dialog_message)
                                     .setNegativeButton()
                                     .setPositiveButton()
                                     .setNeutralButton(R.string.drawer_settings)

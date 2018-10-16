@@ -298,11 +298,6 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
         addOnPreferenceChangeListener(PREFKEY.DEMOMODE, listener);
     }
 
-    public void addLogFileListener(OnPreferenceChangeListener<Boolean> listener) {
-        addOnPreferenceChangeListener(PREFKEY.LOGFILE, listener);
-    }
-
-
     public boolean isIndexAlwaysExpanded() {
         return sharedPreferences.getBoolean(PREFKEY.INDEXALWAYSEXPANDED, false);
     }
@@ -341,6 +336,12 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
     public void setIndexButton(boolean show) {
         sharedPreferences.edit()
                          .putBoolean(PREFKEY.INDEXBUTTON, show)
+                         .apply();
+    }
+
+    public void setWriteLogfile(boolean writeToLogFile) {
+        sharedPreferences.edit()
+                         .putBoolean(PREFKEY.LOGFILE, writeToLogFile)
                          .apply();
     }
 
