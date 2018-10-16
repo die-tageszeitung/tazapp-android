@@ -134,9 +134,9 @@
 
     <string name="dialog_data_folder_entry">%1$s [%2$s frei]</string>
     <string name="dialog_data_folder_migration_title">Bitte warten…</string>
-    <string name="dialog_data_folder_migration_message">Alle Daten werden jetzt kopiert. Das kann je nach Menge der Daten und Beschaffenheit der Speichermedien einige Zeit in Anspruch nehmen. Sollte eine Fehler auftreten wird automatisch der alte Speicherort wieder verwendet.</string>
+    <string name="dialog_data_folder_migration_message">Alle Daten werden jetzt kopiert. Das kann je nach Menge der Daten und Beschaffenheit der Speichermedien einige Zeit in Anspruch nehmen. Sollte ein Fehler auftreten wird automatisch der alte Speicherort wieder verwendet. <b>Bitte die App während dieses Prozesses nicht beenden, um Fehler zu vermeiden.</b></string>
     <string name="toast_data_folder_migration_not_enough_space">Nicht genügend Speicherplatz bei %s</string>
 
-    <string name="error_report_request_log_dialog_message"><b>Vielen Dank, dass Sie einen Fehler melden möchten.</b>\n\nDamit wir möglichst viele Informationen zur Fehlerbehebung haben, aktivieren Sie bitte die Option <b>Log-Datei schreiben</b>.\n\nAnschließend sollten Sie wenn möglich den Fehler reproduzieren.\n\nDrücken Sie dann <B>OK</B> und öffnen Sie Ihr installiertes Mail-Programm. Wir bitten Sie die fehlenden Informationen möglichst <b>genau und umfassend</b> auszufüllen und uns anschließend die Mail zuzusenden.\n\n<b>Vielen Dank für Ihre Unterstützung.</b></string>
+    <string name="error_report_request_log_dialog_message"><b>Vielen Dank, dass Sie einen Fehler melden möchten.</b>\n\nDamit wir möglichst viele Informationen zur Fehlerbehebung haben, aktivieren Sie bitte die Option <b>Log-Datei schreiben</b>.\n\nAnschließend sollten Sie wenn möglich den Fehler reproduzieren.\n\nDrücken Sie dann <b>OK</b> und öffnen Sie Ihr installiertes Mail-Programm. Wir bitten Sie die fehlenden Informationen möglichst <b>genau und umfassend</b> auszufüllen und uns anschließend die Mail zuzusenden.\n\n<b>Vielen Dank für Ihre Unterstützung.</b></string>
 
 </resources>

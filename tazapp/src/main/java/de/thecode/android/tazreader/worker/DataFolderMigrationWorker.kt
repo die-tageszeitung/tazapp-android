@@ -22,37 +22,41 @@ class DataFolderMigrationWorker(context: Context, workerParams: WorkerParameters
     }
 
     override fun doBackgroundWork(): Result {
+
         val newPath = File(inputData.getString(ARG_NEW_PATH))
         val oldPath = File(settings.dataFolderPath)
         Timber.i("Data migration from %s to %s ", oldPath, newPath)
         if (oldPath != newPath) {
-            if (oldPath.exists()) {
-                if (oldPath.folderSize() < newPath.freeSpace - 100 * 1024 * 1024) {
-                    newPath.mkdirs()
-                    var success = true
-                    oldPath.copyRecursively(target = newPath, overwrite = true, onError = { file, ioException ->
-                        Timber.e(ioException, "File: %s", file)
-                        success = false
-                        OnErrorAction.TERMINATE
-                    })
-                    if (success) {
-                        oldPath.deleteRecursively()
-                        settings.dataFolderPath = newPath.absolutePath
-                        Timber.i("Data migration to %s finished", newPath)
+            newPath.mkdirs()
+            if (newPath.exists()) {
+                if (oldPath.exists()) {
+                    if (oldPath.folderSize() < newPath.freeSpace - 100 * 1024 * 1024) {
+                        newPath.mkdirs()
+                        var success = true
+                        oldPath.copyRecursively(target = newPath, overwrite = true, onError = { file, ioException ->
+                            Timber.e(ioException, "File: %s", file)
+                            success = false
+                            OnErrorAction.TERMINATE
+                        })
+                        if (success) {
+                            oldPath.deleteRecursively()
+                            settings.dataFolderPath = newPath.absolutePath
+                            Timber.i("Data migration to %s finished", newPath)
+                        } else {
+                            newPath.deleteRecursively()
+                        }
                     } else {
-                        newPath.deleteRecursively()
-                    }
-                } else {
-                    Handler(Looper.getMainLooper()).post {
-                        kotlin.run {
-                            Toast.makeText(applicationContext, applicationContext.getString(R.string.toast_data_folder_migration_not_enough_space, newPath), Toast.LENGTH_LONG)
-                                    .show()
+                        Handler(Looper.getMainLooper()).post {
+                            kotlin.run {
+                                Toast.makeText(applicationContext, applicationContext.getString(R.string.toast_data_folder_migration_not_enough_space, newPath), Toast.LENGTH_LONG)
+                                        .show()
 
+                            }
                         }
                     }
+                } else {
+                    settings.dataFolderPath = newPath.absolutePath
                 }
-            } else {
-                settings.dataFolderPath = newPath.absolutePath
             }
         }
         return Result.SUCCESS
