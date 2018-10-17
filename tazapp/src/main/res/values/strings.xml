@@ -123,13 +123,12 @@
     <string name="download_error_hints">Sollten Sie AdBlocker, Antiviren- oder Proxy-Software verwenden, deaktivieren Sie diese bzw. fügen Sie eine Ausnahme hinzu.</string>
 
     <string name="errormail_subject">Fehler in %1$s - Abo-ID: %2$s</string>
-    <string name="logsmail_subject">Logfiles für %1$s - Abo-ID: %2$s</string>
     <string name="dialog_update_available_title">Update verfügbar</string>
     <string name="dialog_update_available_message">Es steht ein Update für %1$s zur Verfügung, bitte aktualisieren Sie die App.</string>
     <string name="dialog_update_available_ok">Aktualisieren</string>
     <string name="dialog_update_available_no">Ignorieren</string>
     <string name="update_app_download_notification">%1$s Update</string>
-    <string name="logfileWriteMessage">Log-Datei schreiben aktiv!</string>
+    <string name="logfileWriteMessage">Protokoll schreiben aktiv!</string>
     <string name="logfileWriteMessageSub">Bitte deaktivieren diese Einstellung, wenn Sie sie nicht mehr benötigen.</string>
 
     <string name="dialog_data_folder_entry">%1$s [%2$s frei]</string>
@@ -137,7 +136,9 @@
     <string name="dialog_data_folder_migration_message">Alle Daten werden jetzt kopiert. Das kann je nach Menge der Daten und Beschaffenheit der Speichermedien einige Zeit in Anspruch nehmen. Sollte ein Fehler auftreten wird automatisch der alte Speicherort wieder verwendet. <b>Bitte die App während dieses Prozesses nicht beenden, um Fehler zu vermeiden.</b></string>
     <string name="toast_data_folder_migration_not_enough_space">Nicht genügend Speicherplatz bei %s</string>
 
-    <string name="error_report_request_log_dialog_message"><b>Vielen Dank, dass Sie einen Fehler melden möchten.</b>\n\nDamit wir möglichst viele Informationen zur Fehlerbehebung haben, aktivieren Sie bitte die Option <b>Log-Datei schreiben</b>.\n\nAnschließend sollten Sie wenn möglich den Fehler reproduzieren.\n\nDrücken Sie dann <b>OK</b> und öffnen Sie Ihr installiertes Mail-Programm. Wir bitten Sie die fehlenden Informationen möglichst <b>genau und umfassend</b> auszufüllen und uns anschließend die Mail zuzusenden.\n\n<b>Vielen Dank für Ihre Unterstützung.</b></string>
+    <string name="error_report_request_log_dialog_message"><b>Vielen Dank, dass Sie einen Fehler melden möchten.</b>\n\nDamit wir möglichst viele Informationen zur Fehlerbehebung haben, aktivieren Sie bitte die Option <b>Protokoll schreiben</b>.\n\nAnschließend sollten Sie wenn möglich den Fehler reproduzieren und dann erneut auf <b>Fehler melden</b> klicken um Ihr installiertes Mail-Programm zu öffnen. Wir bitten Sie die fehlenden Informationen möglichst <b>genau und umfassend</b> auszufüllen und uns anschließend die Mail zuzusenden.\n\n<b>Vielen Dank für Ihre Unterstützung.</b></string>
+    <string name="error_report_request_log_activate">Protkoll schreiben aktivieren</string>
+    <string name="error_report_request_log_ok_without">Ohne Protkoll senden</string>
     <string name="dialog_ask_for_help_title">Helfen Sie mit…</string>
     <string name="dialog_ask_for_help_message">…die App zu verbessern, indem Sie uns App Abstürze und Fehler automatisch übermitteln. <b>Vielen Dank!</b>\n\nDetails dazu finden Sie in der Datenschutzerklärung</string>
     <string name="dialog_neutral_button_later">Später</string>
