@@ -1,9 +1,3 @@
-* Link zu System-Benachrichtungseinstellungen 
-* Notification-Channel für Push in Android 8
-* Bugfix Push-Nachrichten-Anzeige in der App
-* Bugfix: laufende Downloads können wieder abgebrochen werden
-* Bugfix Download fehlende Ressourcen
-* Bugfix für Fälle, in denen App nach Update nicht startet
-* Autor im Inhaltsverzeichnis
-* Updatehinweis
-* Bugfix Mail an Autor
+* Endlich: Ausgaben auf der SD-Karte speichern
+* Fehler melden vereinfacht, Möglichkeit Logs zu erstellen
+* UI Anpassungen in der Ausgabenübersicht
