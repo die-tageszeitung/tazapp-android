@@ -17,16 +17,14 @@ class ReportErrorFragment : PreferenceFragmentCompat() {
 
 
     private val logFileListener = TazSettings.OnPreferenceChangeListener<Boolean> {
-        logFileWritePreference.isChecked = it
+        logFileWritePreference?.isChecked = it
     }
 
     val settings: TazSettings by lazy {
         TazSettings.getInstance(context)
     }
 
-    private val logFileWritePreference by lazy {
-        findPreference(getString(R.string.pref_key_log_file)) as SwitchPreferenceCompat
-    }
+    private var logFileWritePreference : SwitchPreferenceCompat? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         (activity as StartActivity).onUpdateDrawer(this)
@@ -37,11 +35,12 @@ class ReportErrorFragment : PreferenceFragmentCompat() {
 
     override fun onCreatePreferencesFix(savedInstanceState: Bundle?, rootKey: String?) {
         addPreferencesFromResource(R.xml.report_error_preferences)
-
+        logFileWritePreference = findPreference(getString(R.string.pref_key_log_file)) as SwitchPreferenceCompat?
         val crashlyticsPreference = findPreference(getString(R.string.pref_key_crashlytics_always_send)) as SwitchPreferenceCompat
         crashlyticsPreference.isChecked = settings.crashlyticsAlwaysSend
         crashlyticsPreference.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _, newValue ->
             settings.crashlyticsAlwaysSend = newValue as Boolean
+            settings.isAskForHelpAllowed = !newValue
             return@OnPreferenceChangeListener true
         }
 
@@ -54,14 +53,14 @@ class ReportErrorFragment : PreferenceFragmentCompat() {
         }
     }
 
-    override fun onStart() {
-        super.onStart()
+    override fun onResume() {
+        super.onResume()
         settings.addOnPreferenceChangeListener(TazSettings.PREFKEY.LOGFILE, logFileListener )
     }
 
-    override fun onStop() {
+    override fun onPause() {
         settings.removeOnPreferenceChangeListener { logFileListener }
-        super.onStop()
+        super.onPause()
     }
 }
 

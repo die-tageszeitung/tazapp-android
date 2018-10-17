@@ -36,6 +36,7 @@ import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.dialog.ArchiveDialog;
 import de.thecode.android.tazreader.dialog.ArchiveEntry;
 import de.thecode.android.tazreader.dialog.HelpDialog;
+import de.thecode.android.tazreader.dialognew.AskForHelpDialog;
 import de.thecode.android.tazreader.download.DownloadManager;
 import de.thecode.android.tazreader.download.PaperDownloadFailedEvent;
 import de.thecode.android.tazreader.download.PaperDownloadFinishedEvent;
@@ -420,7 +421,7 @@ public class StartActivity extends BaseActivity
                 startActivity(rateIntent);
             } else {
                 rateIntent = new Intent(Intent.ACTION_VIEW,
-                                Uri.parse("http://play.google.com/store/apps/details?id=" + BuildConfig.APPLICATION_ID));
+                                        Uri.parse("http://play.google.com/store/apps/details?id=" + BuildConfig.APPLICATION_ID));
                 if (rateIntent.resolveActivity(getPackageManager()) != null) {
                     startActivity(rateIntent);
                 } else {
@@ -795,7 +796,24 @@ public class StartActivity extends BaseActivity
             }
             return showDialog;
         }, aBoolean -> {
-            if (aBoolean) showHelpDialog(HelpDialog.HELP_INTRO);
+            if (aBoolean) {
+                showHelpDialog(HelpDialog.HELP_INTRO);
+            } else {
+                if (getSupportFragmentManager().findFragmentByTag(AskForHelpDialog.TAG) == null && startViewModel.getSettings().isAskForHelpAllowed()) {
+                    int currentStartCount = startViewModel.getSettings()
+                                                          .getAskForHelpCount();
+                    if (currentStartCount >= 20) {
+                        startViewModel.getSettings()
+                                      .setAskForHelpCounter(0);
+                        AskForHelpDialog.Companion.newInstance()
+                                                  .show(getSupportFragmentManager(), AskForHelpDialog.TAG);
+                    } else {
+                        currentStartCount++;
+                        startViewModel.getSettings()
+                                      .setAskForHelpCounter(currentStartCount);
+                    }
+                }
+            }
         }).execute();
     }
 

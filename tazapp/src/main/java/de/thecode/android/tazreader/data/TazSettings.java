@@ -83,6 +83,8 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
         private static final String LATEST_VERSION              = "latestVersion";
         public static final  String LOGFILE                     = "logfile";
         public static final  String DATA_FOLDER                 = "storageFolder";
+        public static final  String ASK_HELP_ALLOWED            = "askHelpAllowed";
+        public static final  String ASK_HELP_COUNTER            = "askHelpCounter";
     }
 
 
@@ -273,6 +275,27 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
 //                         .putLong(PREFKEY.SYNCSERVICENEXTRUN, timeInMillis)
 //                         .apply();
 //    }
+
+    public int getAskForHelpCount() {
+        return sharedPreferences.getInt(PREFKEY.ASK_HELP_COUNTER, 0);
+    }
+
+    public void setAskForHelpCounter(int counter) {
+        sharedPreferences.edit()
+                         .putInt(PREFKEY.ASK_HELP_COUNTER, counter)
+                         .apply();
+    }
+
+    public boolean isAskForHelpAllowed() {
+        return sharedPreferences.getBoolean(PREFKEY.ASK_HELP_ALLOWED, true);
+    }
+
+    public void setAskForHelpAllowed(boolean isAllowed) {
+        sharedPreferences.edit()
+                         .putBoolean(PREFKEY.ASK_HELP_ALLOWED, isAllowed)
+                         .apply();
+    }
+
 
     public String getDataFolderPath() {
         return sharedPreferences.getString(PREFKEY.DATA_FOLDER, null);
