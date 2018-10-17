@@ -1,7 +1,7 @@
 def versionMajor = 3
 def versionMinor = 7
 def versionPatch = 0
-def versionBuild = 6
+def versionBuild = 7
 
 def androidXVer = "1.0.0"
 def buildToolsVer = "28.0.3"

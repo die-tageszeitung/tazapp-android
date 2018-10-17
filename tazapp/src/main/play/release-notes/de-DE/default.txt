@@ -1,3 +1,4 @@
 * Endlich: Ausgaben auf der SD-Karte speichern
 * Fehler melden vereinfacht, Möglichkeit Logs zu erstellen
 * UI Anpassungen in der Ausgabenübersicht
+* BugFixes
