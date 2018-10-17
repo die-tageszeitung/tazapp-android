@@ -1,7 +1,7 @@
 package de.thecode.android.tazreader.reader;
 
 import android.annotation.SuppressLint;
-import android.arch.lifecycle.LiveData;
+import androidx.lifecycle.LiveData;
 import android.content.Context;
 import android.text.TextUtils;
 

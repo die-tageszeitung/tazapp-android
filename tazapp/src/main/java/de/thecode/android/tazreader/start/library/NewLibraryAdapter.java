@@ -3,13 +3,6 @@ package de.thecode.android.tazreader.start.library;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
-import android.support.annotation.NonNull;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.graphics.drawable.DrawableCompat;
-import android.support.v4.view.ViewCompat;
-import android.support.v7.util.DiffUtil;
-import android.support.v7.widget.CardView;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,16 +22,29 @@ import de.thecode.android.tazreader.utils.extendedasyncdiffer.ExtendedAdapterLis
 
 import java.text.DateFormat;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.cardview.widget.CardView;
+import androidx.core.content.ContextCompat;
+import androidx.core.graphics.drawable.DrawableCompat;
+import androidx.core.view.ViewCompat;
+import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.RecyclerView;
 import timber.log.Timber;
 
-public class NewLibraryAdapter extends TazListAdapter<LibraryPaper, NewLibraryAdapter.ViewHolder> {
+public class NewLibraryAdapter extends TazListAdapter<Paper, NewLibraryAdapter.ViewHolder> {
+
 
     private static final String PAYLOAD_PROGRESS = "plProgress";
     private static final String PAYLOAD_SELECTED = "plSelected";
     private static final String PAYLOAD_STATE    = "plState";
-    private static final String PAYLOAD_CHANGE = "plChange";
+    private static final String PAYLOAD_CHANGE   = "plChange";
+    private static final String PAYLOAD_OTHER    = "plOther";
 
     private final ViewHolder.OnClickListener clickListener = new ViewHolder.OnClickListener() {
         @Override
@@ -48,16 +54,23 @@ public class NewLibraryAdapter extends TazListAdapter<LibraryPaper, NewLibraryAd
 
         @Override
         public void onLongClick(int position) {
-            if (itemClickListener != null) itemClickListener.onLongClick(getItem(position), position);
+            Paper paper = getItem(position);
+            toggleSelection(paper, position);
         }
     };
 
     private final OnItemClickListener itemClickListener;
+    private final PaperMetaData       paperMetaData;
 
-    public NewLibraryAdapter(OnItemClickListener itemClickListener,
+    public NewLibraryAdapter(PaperMetaData paperMetaData, OnItemClickListener itemClickListener,
                              ExtendedAdapterListUpdateCallback.OnFirstInsertedListener firstInsertedListener) {
         super(new LibraryAdapterCallback(), firstInsertedListener);
         this.itemClickListener = itemClickListener;
+        this.paperMetaData = paperMetaData;
+    }
+
+    public PaperMetaData getPaperMetaData() {
+        return paperMetaData;
     }
 
     @NonNull
@@ -68,26 +81,34 @@ public class NewLibraryAdapter extends TazListAdapter<LibraryPaper, NewLibraryAd
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position, @NonNull List<Object> payloads) {
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position, @NonNull List<Object> payloadsParameter) {
+        List<Object> payloads = new ArrayList<>();
+        for (Object payloadParamObject : payloadsParameter) {
+            if (payloadParamObject instanceof List) {
+                payloads.addAll((List) payloadParamObject);
+            } else payloads.add(payloadParamObject);
+        }
         Timber.d("pos: %d payload: %s", position, payloads);
-        if (!payloads.isEmpty()) {
-            LibraryPaper libraryPaper = getItem(position);
-            bindProgress(holder, libraryPaper);
-            bindState(holder, libraryPaper.getPaper());
-            bindSelected(holder, libraryPaper);
-        } else super.onBindViewHolder(holder, position, payloads);
+        if (payloads.isEmpty() || payloads.contains(PAYLOAD_OTHER)) {
+            super.onBindViewHolder(holder, position, payloads);
+        } else {
+            Paper libraryPaper = getItem(position);
+            if (payloads.contains(PAYLOAD_SELECTED)) bindSelected(holder, libraryPaper);
+            if (payloads.contains(PAYLOAD_STATE)) bindState(holder, libraryPaper);
+            if (payloads.contains(PAYLOAD_PROGRESS)) bindProgress(holder, libraryPaper);
+        }
     }
 
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        LibraryPaper libraryPaper = getItem(position);
-        bindImage(holder, libraryPaper.getPaper());
-        bindBadge(holder, libraryPaper.getPaper());
-        bindDate(holder, libraryPaper.getPaper());
-
+        Paper libraryPaper = getItem(position);
+        paperMetaData.setPosition(libraryPaper.getBookId(), position);
+        bindImage(holder, libraryPaper);
+        bindBadge(holder, libraryPaper);
+        bindDate(holder, libraryPaper);
         bindProgress(holder, libraryPaper);
-        bindState(holder, libraryPaper.getPaper());
+        bindState(holder, libraryPaper);
         bindSelected(holder, libraryPaper);
     }
 
@@ -113,11 +134,26 @@ public class NewLibraryAdapter extends TazListAdapter<LibraryPaper, NewLibraryAd
     }
 
     private void bindBadge(ViewHolder holder, Paper paper) {
-        if (paper.isKiosk()) {
-            holder.badge.setText(R.string.string_badge_kiosk);
-            holder.badge.setVisibility(View.VISIBLE);
-        } else holder.badge.setVisibility(View.GONE);
 
+//        if (paper.isKiosk()) {
+//            holder.badge.setText(R.string.string_badge_kiosk);
+//            holder.badge.setVisibility(View.VISIBLE);
+//        } else
+//        if (paper.hasDownloadingState() || paper.hasExtractingState()) {
+//            switch (paper.getState()) {
+//                case Paper.STATE_DOWNLOADING:
+//                    holder.badge.setText("Herunterladen");
+//                    break;
+//                case Paper.STATE_EXTRACTING:
+//                    holder.badge.setText("Entpacken");
+//                    break;
+//
+//            }
+//            holder.badge.setVisibility(View.VISIBLE);
+//        } else {
+//
+//        }
+        holder.badge.setVisibility(View.GONE);
     }
 
     private void bindDate(ViewHolder holder, Paper paper) {
@@ -134,72 +170,149 @@ public class NewLibraryAdapter extends TazListAdapter<LibraryPaper, NewLibraryAd
 
     }
 
-    private void bindProgress(ViewHolder holder, LibraryPaper libraryPaper) {
-        holder.progress.setProgress(100 - libraryPaper.getProgress());
+    private void bindProgress(ViewHolder holder, Paper libraryPaper) {
+        holder.progress.setProgress(100 - paperMetaData.getProgress(libraryPaper.getBookId()));
     }
 
     private void bindState(ViewHolder holder, Paper paper) {
-        if (paper.isDownloading()) {
-            holder.wait.setVisibility(View.VISIBLE);
+//        if (paper.hasNoneState()) holder.progress.post(new ParametrizedRunnable<String>() {
+//            @Override
+//            public void run(String parameter) {
+//                setProgress(parameter, 0);
+//            }
+//        }.set(paper.getBookId()));
+        holder.overlay.setVisibility(paper.hasExtractingState() || paper.hasReadyState() ? View.GONE : View.VISIBLE);
+        holder.progress.setVisibility(paper.hasExtractingState() ? View.VISIBLE : View.GONE);
+        if (paper.hasDownloadingState() || paper.hasDownloadedState() || paper.hasExtractingState()) {
+            holder.stateLayout.setVisibility(View.VISIBLE);
+            switch (paper.getState()) {
+                case Paper.STATE_DOWNLOADING:
+                case Paper.STATE_DOWNLOADED:
+                    paperMetaData.setProgress(paper.getBookId(),0);
+                    holder.state.setText(R.string.string_library_item_download_state);
+                    break;
+                case Paper.STATE_EXTRACTING:
+                    holder.state.setText(R.string.string_library_item_extract_state);
+                    break;
+            }
         } else {
-            holder.wait.setVisibility(View.GONE);
+            holder.stateLayout.setVisibility(View.GONE);
+        }
+        //holder.wait.setVisibility(!paper.hasNoneState() && !paper.hasReadyState() ? View.VISIBLE : View.GONE);
+    }
+
+    public void setProgress(String bookId, int progress) {
+        if (paperMetaData.setProgress(bookId, progress)) {
+            notifyItemChanged(paperMetaData.getPosition(bookId), PAYLOAD_PROGRESS);
         }
     }
 
-    private void bindSelected(ViewHolder holder, LibraryPaper libraryPaper) {
-        if (libraryPaper.isSelected()) holder.selected.setVisibility(View.VISIBLE);
+    private void bindSelected(ViewHolder holder, Paper libraryPaper) {
+        if (paperMetaData.isSelected(libraryPaper.getBookId())) holder.selected.setVisibility(View.VISIBLE);
         else holder.selected.setVisibility(View.INVISIBLE);
     }
 
+    public void toggleSelection(Paper paper, int position) {
+        if (paperMetaData.setSelected(paper.getBookId(), !paperMetaData.isSelected(paper.getBookId()))) {
+            notifyItemChanged(position, PAYLOAD_SELECTED);
+            if (itemClickListener != null) itemClickListener.onSelectionChanged();
+        }
+    }
 
-    private static class LibraryAdapterCallback extends DiffUtil.ItemCallback<LibraryPaper> {
+    public void selectNone() {
+        if (paperMetaData.clearSelected()) notifyItemRangeChanged(0, getItemCount(), PAYLOAD_SELECTED);
+    }
+
+    public void selectAll() {
+        boolean changed = false;
+        for (Paper paper : getHelper().getCurrentList()) {
+            if (paperMetaData.setSelected(paper.getBookId(), true)) {
+                changed = true;
+            }
+        }
+        if (changed) {
+            notifyItemRangeChanged(0, getItemCount(), PAYLOAD_SELECTED);
+            if (itemClickListener != null) itemClickListener.onSelectionChanged();
+        }
+    }
+
+    public void selectionInverse() {
+        boolean changed = false;
+        for (Paper paper : getHelper().getCurrentList()) {
+            if (paperMetaData.setSelected(paper.getBookId(), !paperMetaData.isSelected(paper.getBookId()))) {
+                changed = true;
+            }
+        }
+        if (changed) {
+            notifyItemRangeChanged(0, getItemCount(), PAYLOAD_SELECTED);
+            if (itemClickListener != null) itemClickListener.onSelectionChanged();
+        }
+
+    }
+
+    public void selectNotDownloadedPapers(){
+        boolean changed = false;
+        for (Paper paper : getHelper().getCurrentList()) {
+            if (paperMetaData.setSelected(paper.getBookId(),paper.hasNoneState())) {
+                changed = true;
+            }
+        }
+        if (changed) {
+            notifyItemRangeChanged(0, getItemCount(), PAYLOAD_SELECTED);
+            if (itemClickListener != null) itemClickListener.onSelectionChanged();
+        }
+    }
+
+
+    private static class LibraryAdapterCallback extends DiffUtil.ItemCallback<Paper> {
 
         @Override
-        public boolean areItemsTheSame(LibraryPaper oldItem, LibraryPaper newItem) {
+        public boolean areItemsTheSame(Paper oldItem, Paper newItem) {
             return oldItem.getBookId()
                           .equals(newItem.getBookId());
         }
 
         @Override
-        public boolean areContentsTheSame(LibraryPaper oldItem, LibraryPaper newItem) {
+        public boolean areContentsTheSame(Paper oldItem, Paper newItem) {
             return oldItem.equals(newItem);
         }
 
+        @Nullable
         @Override
-        public Object getChangePayload(LibraryPaper oldItem, LibraryPaper newItem) {
-            return PAYLOAD_CHANGE;
-//
-//            Timber.i("%s %s", oldItem, newItem);
-//            if (oldItem.getPaper()
-//                       .isDownloading() != newItem.getPaper()
-//                                                  .isDownloading()) return PAYLOAD_STATE;
-//            if (oldItem.isSelected() != newItem.isSelected()) return PAYLOAD_SELECTED;
-//            if (oldItem.getProgress() != newItem.getProgress()) return PAYLOAD_PROGRESS;
-//            return null;
+        public Object getChangePayload(@NonNull Paper oldItem, @NonNull Paper newItem) {
+            List<Object> payloads = new ArrayList<>();
+            if (oldItem.getState() != newItem.getState()) payloads.add(PAYLOAD_STATE);
+            oldItem.setState(newItem.getState());
+            if (!areContentsTheSame(oldItem, newItem)) payloads.add(PAYLOAD_OTHER);
+            return payloads;
         }
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
 
-        CardView        card;
-        TextView        date;
-        TextView        badge;
-        ImageView       image;
-        ProgressBar     wait;
-        ProgressBar     progress;
-        FrameLayout     selected;
-        OnClickListener clickListener;
+        final CardView        card;
+        final TextView        date;
+        final TextView        badge;
+        final ImageView       image;
+        final ProgressBar     progress;
+        final FrameLayout     overlay;
+        final FrameLayout     selected;
+        final View            stateLayout;
+        final TextView        state;
+        final OnClickListener listener;
+
 
         public ViewHolder(View itemView, OnClickListener clickListener) {
             super(itemView);
-            this.clickListener = clickListener;
+            this.listener = clickListener;
             card = itemView.findViewById(R.id.lib_item_card);
             date = itemView.findViewById(R.id.lib_item_date);
             badge = itemView.findViewById(R.id.lib_item_badge);
             image = itemView.findViewById(R.id.lib_item_facsimile);
-            wait = itemView.findViewById(R.id.lib_item_wait);
+            stateLayout = itemView.findViewById(R.id.lib_item_state);
+            state = itemView.findViewById(R.id.lib_item_state_text);
+            ProgressBar wait = itemView.findViewById(R.id.lib_item_state_wait);
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-
                 Drawable wrapDrawable = DrawableCompat.wrap(wait.getIndeterminateDrawable());
                 DrawableCompat.setTint(wrapDrawable, ContextCompat.getColor(itemView.getContext(), R.color.library_item_text));
                 wait.setIndeterminateDrawable(DrawableCompat.unwrap(wrapDrawable));
@@ -208,20 +321,16 @@ public class NewLibraryAdapter extends TazListAdapter<LibraryPaper, NewLibraryAd
                     .setColorFilter(ContextCompat.getColor(itemView.getContext(), R.color.library_item_text),
                                     PorterDuff.Mode.SRC_IN);
             }
+
             progress = itemView.findViewById(R.id.lib_item_progress);
             selected = itemView.findViewById(R.id.lib_item_selected_overlay);
-            card.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (clickListener != null) clickListener.onClick(getAdapterPosition());
-                }
+            overlay = itemView.findViewById(R.id.lib_item_overlay);
+            card.setOnClickListener(v -> {
+                if (listener != null) listener.onClick(getAdapterPosition());
             });
-            card.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-                    if (clickListener != null) clickListener.onLongClick(getAdapterPosition());
-                    return true;
-                }
+            card.setOnLongClickListener(v -> {
+                if (listener != null) listener.onLongClick(getAdapterPosition());
+                return true;
             });
             ViewCompat.setImportantForAccessibility(badge, ViewCompat.IMPORTANT_FOR_ACCESSIBILITY_NO);
             ViewCompat.setImportantForAccessibility(date, ViewCompat.IMPORTANT_FOR_ACCESSIBILITY_NO);
@@ -235,11 +344,10 @@ public class NewLibraryAdapter extends TazListAdapter<LibraryPaper, NewLibraryAd
     }
 
     public interface OnItemClickListener {
-        void onClick(LibraryPaper libraryPaper, int position);
+        void onClick(Paper libraryPaper, int position);
 
-        void onLongClick(LibraryPaper libraryPaper, int position);
+        void onSelectionChanged();
     }
-
 
     private static abstract class MissingCoverCallback extends PreloadImageCallback {
 
@@ -257,4 +365,64 @@ public class NewLibraryAdapter extends TazListAdapter<LibraryPaper, NewLibraryAd
 
         public abstract void onError(ImageView imageView, Paper paper);
     }
+
+    public static class PaperMetaData {
+
+        public final List<String>         selectedList = new ArrayList<>();
+        public final Map<String, Integer> progressMap  = new HashMap<>();
+        public final Map<String, Integer> positionMap  = new HashMap<>();
+
+        public int getSelectedCount() {
+            return selectedList.size();
+        }
+
+        public boolean setSelected(String bookId, boolean selected) {
+            boolean changed = selected != isSelected(bookId);
+            if (selected) {
+                selectedList.add(bookId);
+            } else {
+                selectedList.remove(bookId);
+            }
+            return changed;
+        }
+
+        public boolean isSelected(String bookId) {
+            return selectedList.contains(bookId);
+        }
+
+        public boolean clearSelected() {
+            if (selectedList.size() == 0) {
+                return false;
+            } else {
+                selectedList.clear();
+                return true;
+            }
+        }
+
+        public String[] getSelected() {
+            return selectedList.toArray(new String[0]);
+        }
+
+        public int getProgress(String bookId) {
+            if (progressMap.containsKey(bookId)) return progressMap.get(bookId);
+            else return 0;
+        }
+
+        public boolean setProgress(String bookId, int value) {
+            if (progressMap.containsKey(bookId) && progressMap.get(bookId) == value) return false;
+            progressMap.put(bookId, value);
+            return true;
+        }
+
+        public void setPosition(String bookId, int position) {
+            positionMap.put(bookId, position);
+        }
+
+        public int getPosition(String bookId) {
+            return positionMap.get(bookId);
+        }
+
+
+    }
+
 }

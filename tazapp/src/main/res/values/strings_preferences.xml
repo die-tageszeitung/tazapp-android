@@ -12,7 +12,10 @@
     <string name="category_notification_push_key">catPush</string>
     <string name="category_notification_download">DOWNLOAD BENACHRICHTIGUNG</string>
     <string name="category_notification_download_key">catDownloadNotification</string>
-    <string name="category_other">SONSTIGES</string>
+    <string name="category_debug">FEHLERSUCHE</string>
+    <string name="category_report_error">FEHLER MELDEN</string>
+    <string name="category_crashlogs">APP ABSTÜRZE UND FEHLER</string>
+    <string name="category_storage">SPEICHER</string>
     <!--  -->
     <string name="pref_key_autoload">autoload</string>
     <string name="pref_title_autoload">Nächste Ausgabe automatisch laden</string>
@@ -78,6 +81,7 @@
     <!--  -->
     <string name="pref_key_crashlytics_always_send">crashlytics_always_send</string>
     <string name="pref_title_crashlytics_always_send">Fehlerreports automatisch senden</string>
+    <string name="pref_summary_crashlytics_always_send">Helfen Sie uns die App zu verbessern, indem Sie uns Fehler und App-Abstürze automatisch im Hintergrund übermitteln. Näheres dazu in der Datenschutzerklärung.</string>
     <!--  -->
     <string name="pref_key_notification_download_vibrate">vibrate</string>
     <string name="pref_title_notification_download_vibrate">Vibration</string>
@@ -95,6 +99,19 @@
     <!--  -->
     <string name="pref_key_notification_settings">notification_settings</string>
     <string name="pref_title_notification_settings">Benachrichtigungs-Einstellungen öffnen"</string>
+    <!--  -->
+    <string name="pref_key_log_file">logfile</string>
+    <string name="pref_title_log_file">Log-Datei schreiben</string>
+    <string name="pref_summary_log_file">Kann die Ausführung der App verlangsamen, bitte nur aktivieren wenn Sie einen Fehler melden möchten. Bei deaktivierter Option werden die Logfiles beim nächsten Neustart der App gelöscht.</string>
+    <bool name="pref_default_log_file">false</bool>
+    <!--  -->
+    <string name="pref_key_report_error">reporterror</string>
+    <string name="pref_title_report_error">Fehler melden</string>
+    <string name="pref_summary_report_error">Senden Sie uns ein Fehlerreport per Mail, indem Sie hier klicken</string>
+    <!--  -->
+    <string name="pref_key_storage_folder">storageFolder</string>
+    <string name="pref_title_storage_folder">Datenordner auswählen</string>
+    <string name="pref_summary_storage_folder">Ordner, in dem die Ausgaben und Ressourcen gepeichert werden. Aktuell:\n%1$s [verwendet %2$s]</string>
 
 
 </resources>

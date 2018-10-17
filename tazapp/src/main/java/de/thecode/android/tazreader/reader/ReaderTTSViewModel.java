@@ -1,12 +1,12 @@
 package de.thecode.android.tazreader.reader;
 
 import android.app.Application;
-import android.arch.lifecycle.AndroidViewModel;
+import androidx.lifecycle.AndroidViewModel;
 import android.media.AudioManager;
 import android.os.Build;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import de.thecode.android.tazreader.utils.SingleLiveEvent;
 

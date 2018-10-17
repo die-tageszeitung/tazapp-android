@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+                                      xmlns:app="http://schemas.android.com/apk/res-auto"
+                                      android:key="mainPreferenceScreen">
+    <PreferenceCategory
+            app:singleLineTitle="false"
+            android:title="@string/category_report_error">
+
+        <Preference
+                android:key="@string/pref_key_report_error"
+                android:title="@string/pref_title_report_error"
+                app:singleLineTitle="false"
+                android:summary="@string/pref_summary_report_error"/>
+
+        <SwitchPreferenceCompat
+                android:key="@string/pref_key_log_file"
+                app:singleLineTitle="false"
+                android:title="@string/pref_title_log_file"
+                android:summary="@string/pref_summary_log_file"
+                android:defaultValue="@bool/pref_default_log_file"/>
+
+
+
+    </PreferenceCategory>
+    <PreferenceCategory
+            app:singleLineTitle="false"
+            android:title="@string/category_crashlogs">
+        <SwitchPreferenceCompat
+                android:key="@string/pref_key_crashlytics_always_send"
+                app:singleLineTitle="false"
+                android:title="@string/pref_title_crashlytics_always_send"
+                android:summary="@string/pref_summary_crashlytics_always_send"/>
+    </PreferenceCategory>
+</PreferenceScreen>

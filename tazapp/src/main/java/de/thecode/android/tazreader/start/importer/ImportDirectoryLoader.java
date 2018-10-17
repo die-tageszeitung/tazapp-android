@@ -2,7 +2,7 @@ package de.thecode.android.tazreader.start.importer;
 
 
 import android.content.Context;
-import android.support.v4.content.AsyncTaskLoader;
+import androidx.loader.content.AsyncTaskLoader;
 
 import java.io.File;
 import java.io.FilenameFilter;

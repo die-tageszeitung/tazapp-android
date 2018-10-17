@@ -24,6 +24,10 @@ public abstract class UnzipPaperTask extends AsyncTaskWithException<Object, Unzi
         return unzipPaper.start();
     }
 
+    public void cancel(){
+        unzipPaper.cancel();
+    }
+
     @Override
     protected void onPostError(Exception exception) {
         onPostError(exception, unzipPaper.getUnzipFile().getZipFile());

@@ -3,23 +3,24 @@ package de.thecode.android.tazreader.start;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.preference.Preference;
-import android.support.v7.preference.PreferenceCategory;
-import android.support.v7.preference.PreferenceGroup;
-import android.support.v7.preference.PreferenceScreen;
-import android.support.v7.preference.SwitchPreferenceCompat;
 import android.text.TextUtils;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.TazSettings;
+import de.thecode.android.tazreader.dialognew.DataFolderDialog;
 import de.thecode.android.tazreader.preferences.PreferenceFragmentCompat;
+import de.thecode.android.tazreader.utils.AsyncTaskListener;
+import de.thecode.android.tazreader.utils.ExtensionsKt;
 
-import java.lang.ref.WeakReference;
+import java.io.File;
+
+import androidx.core.content.ContextCompat;
+import androidx.preference.Preference;
+import androidx.preference.PreferenceCategory;
+import androidx.preference.PreferenceScreen;
 
 /**
  * Created by mate on 07.08.2017.
@@ -27,15 +28,16 @@ import java.lang.ref.WeakReference;
 
 public class PreferencesFragment extends PreferenceFragmentCompat {
 
-    PreferenceCategory     pushPreferenceCat;
-    SwitchPreferenceCompat crashlyticsAlwaysSendPreference;
+    private static final String DIALOG_DATA_FOLDER = "DIALOG_DATA_FOLDER";
 
-    TazSettings.OnPreferenceChangeListener<String> firebaseTokenPrefrenceListener = new TazSettings.OnPreferenceChangeListener<String>() {
-        @Override
-        public void onPreferenceChanged(String changedValue) {
-            setPushPrefState(!TextUtils.isEmpty(changedValue));
-        }
-    };
+    private PreferenceCategory     pushPreferenceCat;
+
+    private Preference             dataFolderPreference;
+
+    private TazSettings.OnPreferenceChangeListener<String>  firebaseTokenPrefrenceListener = changedValue -> setPushPrefState(!TextUtils.isEmpty(
+            changedValue));
+//    private TazSettings.OnPreferenceChangeListener<Boolean> logWritingPrefrenceListener    = this::setSendLogPrefenceState;
+    private TazSettings.OnPreferenceChangeListener<String>  dataFolderPrefrenceListener    = this::setDataFolderPrefenceState;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -45,7 +47,6 @@ public class PreferencesFragment extends PreferenceFragmentCompat {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        super.onCreateView(inflater, container, savedInstanceState);
         ((StartActivity) getActivity()).onUpdateDrawer(this);
         View view = super.onCreateView(inflater, container, savedInstanceState);
         if (view != null)
@@ -75,11 +76,16 @@ public class PreferencesFragment extends PreferenceFragmentCompat {
                     Intent intent = new Intent();
                     intent.setAction("android.settings.APP_NOTIFICATION_SETTINGS");
                     if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-                        intent.putExtra("app_package", preference.getContext().getPackageName());
-                        intent.putExtra("app_uid", preference.getContext().getApplicationInfo().uid);
-                    }
-                    else {
-                        intent.putExtra("android.provider.extra.APP_PACKAGE", preference.getContext().getPackageName());
+                        intent.putExtra("app_package",
+                                        preference.getContext()
+                                                  .getPackageName());
+                        intent.putExtra("app_uid",
+                                        preference.getContext()
+                                                  .getApplicationInfo().uid);
+                    } else {
+                        intent.putExtra("android.provider.extra.APP_PACKAGE",
+                                        preference.getContext()
+                                                  .getPackageName());
                     }
                     startActivity(intent);
                     return true;
@@ -88,19 +94,19 @@ public class PreferencesFragment extends PreferenceFragmentCompat {
         } else {
             notificationsCat.removePreference(notificationSettingsPreference);
         }
-        crashlyticsAlwaysSendPreference = (SwitchPreferenceCompat) findPreference(getString(R.string.pref_key_crashlytics_always_send));
-        crashlyticsAlwaysSendPreference.setChecked(TazSettings.getInstance(getContext())
-                                                              .getCrashlyticsAlwaysSend());
-        crashlyticsAlwaysSendPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+        setPushPrefState(!TextUtils.isEmpty(TazSettings.getInstance(getContext())
+                                                       .getFirebaseToken()));
+        dataFolderPreference = findPreference(getString(R.string.pref_key_storage_folder));
+        setDataFolderPrefenceState(TazSettings.getInstance(getContext()).getDataFolderPath());
+        dataFolderPreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
-            public boolean onPreferenceChange(Preference preference, Object newValue) {
-                TazSettings.getInstance(preference.getContext())
-                           .setCrashlyticsAlwaysSend((Boolean) newValue);
+            public boolean onPreferenceClick(Preference preference) {
+                DataFolderDialog.Companion.newInstance()
+                                          .show(getFragmentManager(), DIALOG_DATA_FOLDER);
                 return true;
             }
         });
-        setPushPrefState(!TextUtils.isEmpty(TazSettings.getInstance(getContext())
-                                                       .getFirebaseToken()));
+
     }
 
 
@@ -109,17 +115,45 @@ public class PreferencesFragment extends PreferenceFragmentCompat {
     }
 
 
+    public void setDataFolderPrefenceState(String path) {
+        new AsyncTaskListener<String,String>(new AsyncTaskListener.OnExecute<String, String>() {
+            @Override
+            public String execute(String... strings) throws Exception {
+                File path = new File(strings[1]);
+                return String.format(strings[0], path, ExtensionsKt.folderSizeReadable(path));
+            }
+        }, new AsyncTaskListener.OnSuccess<String>() {
+            @Override
+            public void onSuccess(String s) {
+                dataFolderPreference.setSummary(s);
+            }
+        }).execute(getString(R.string.pref_summary_storage_folder), path);
+
+    }
+
+
     @Override
     public void onStart() {
         super.onStart();
         TazSettings.getInstance(getContext())
                    .addOnPreferenceChangeListener(TazSettings.PREFKEY.FIREBASETOKEN, firebaseTokenPrefrenceListener);
+//        TazSettings.getInstance(getContext())
+//                   .addOnPreferenceChangeListener(TazSettings.PREFKEY.LOGFILE, logWritingPrefrenceListener);
+        TazSettings.getInstance(getContext())
+                   .addOnPreferenceChangeListener(TazSettings.PREFKEY.DATA_FOLDER, dataFolderPrefrenceListener);
+
     }
 
     @Override
     public void onStop() {
         TazSettings.getInstance(getContext())
                    .removeOnPreferenceChangeListener(firebaseTokenPrefrenceListener);
+//        TazSettings.getInstance(getContext())
+//                   .removeOnPreferenceChangeListener(logWritingPrefrenceListener);
+        TazSettings.getInstance(getContext())
+                   .removeOnPreferenceChangeListener(dataFolderPrefrenceListener);
+
+
         super.onStop();
     }
 }

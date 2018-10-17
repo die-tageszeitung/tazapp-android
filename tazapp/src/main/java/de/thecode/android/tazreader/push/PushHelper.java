@@ -4,7 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 
 import de.thecode.android.tazreader.BuildConfig;
-import de.thecode.android.tazreader.job.SyncJob;
+import de.thecode.android.tazreader.worker.SyncWorker;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -49,7 +49,7 @@ public class PushHelper {
             case newIssue:
                 Timber.i("newIssue notification received");
                 //SyncHelper.requestSync(context);
-                SyncJob.scheduleJobImmediately(false);
+                SyncWorker.scheduleJobImmediately(false);
                 break;
             default:
                 Timber.e("Unknown notification received");

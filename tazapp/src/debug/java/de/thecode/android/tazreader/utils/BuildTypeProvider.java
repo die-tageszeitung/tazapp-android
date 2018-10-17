@@ -26,15 +26,4 @@ public class BuildTypeProvider {
         builder.addNetworkInterceptor(new StethoInterceptor());
     }
 
-    public static void addLoggingInterceptor(OkHttpClient.Builder builder) {
-        HttpLoggingInterceptor logging = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
-            @Override
-            public void log(String message) {
-                Timber.d("%s", message);
-            }
-        });
-        logging.setLevel(HttpLoggingInterceptor.Level.BODY);
-        builder.addNetworkInterceptor(logging);
-    }
-
 }

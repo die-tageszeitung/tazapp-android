@@ -1,8 +1,8 @@
 package de.thecode.android.tazreader.room;
 
-import android.arch.persistence.room.Database;
-import android.arch.persistence.room.Room;
-import android.arch.persistence.room.RoomDatabase;
+import androidx.room.Database;
+import androidx.room.Room;
+import androidx.room.RoomDatabase;
 import android.content.Context;
 
 import de.thecode.android.tazreader.data.Paper;
@@ -13,7 +13,7 @@ import de.thecode.android.tazreader.data.Store;
 @Database(entities = {Paper.class, Resource.class, Store.class, Publication.class}, version = AppDatabase.VERSION)
 public abstract class AppDatabase extends RoomDatabase {
 
-    public static final int VERSION = 8;
+    public static final int VERSION = 9;
     private static final String DB_NAME = "db";
 
     private static volatile AppDatabase instance;

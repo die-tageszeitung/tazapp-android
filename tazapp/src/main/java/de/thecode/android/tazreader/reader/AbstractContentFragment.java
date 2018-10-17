@@ -2,7 +2,7 @@ package de.thecode.android.tazreader.reader;
 
 
 import android.os.Bundle;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import de.thecode.android.tazreader.data.TazSettings;
 

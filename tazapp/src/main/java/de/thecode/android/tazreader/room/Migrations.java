@@ -1,14 +1,12 @@
 package de.thecode.android.tazreader.room;
 
-import android.arch.persistence.db.SupportSQLiteDatabase;
-import android.arch.persistence.db.SupportSQLiteQuery;
-import android.arch.persistence.db.SupportSQLiteQueryBuilder;
-import android.arch.persistence.room.migration.Migration;
+import androidx.sqlite.db.SupportSQLiteDatabase;
+import androidx.sqlite.db.SupportSQLiteQuery;
+import androidx.sqlite.db.SupportSQLiteQueryBuilder;
+import androidx.room.migration.Migration;
 import android.database.Cursor;
 import android.provider.BaseColumns;
-import android.support.annotation.NonNull;
-
-import de.thecode.android.tazreader.data.Store;
+import androidx.annotation.NonNull;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -18,6 +16,23 @@ import java.util.List;
 import timber.log.Timber;
 
 public class Migrations {
+
+    static final Migration MIGRATION_8_9 = new Migration(8, 9) {
+
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase db) {
+            Timber.i("Migration 8->9");
+            String CREATE_SQL_PAPER = "CREATE TABLE IF NOT EXISTS `PAPER` (`bookId` TEXT NOT NULL, `date` TEXT, `image` TEXT, `imageHash` TEXT, `link` TEXT, `fileHash` TEXT, `len` INTEGER NOT NULL, `lastModified` INTEGER NOT NULL, `resource` TEXT, `demo` INTEGER NOT NULL, `state` INTEGER NOT NULL, `downloadId` INTEGER NOT NULL, `title` TEXT, `validUntil` INTEGER NOT NULL, `publication` TEXT, PRIMARY KEY(`bookId`))";
+            db.execSQL("ALTER TABLE PAPER RENAME TO PAPER_REN;");
+            db.execSQL("ALTER TABLE PAPER_REN ADD COLUMN `state` INTEGER NOT NULL DEFAULT 0;");
+            db.execSQL("UPDATE PAPER_REN SET state=4 WHERE downloaded = 1;");
+            db.execSQL("UPDATE PAPER_REN SET state=5 WHERE downloaded = 1 AND hasUpdate = 1;");
+            db.execSQL(CREATE_SQL_PAPER);
+            db.execSQL("INSERT INTO PAPER (bookId,date,image,imageHash,link,fileHash,len,lastModified,resource,demo,state,downloadId,title,validUntil,publication) SELECT bookId,date,image,imageHash,link,fileHash,len,lastModified,resource,demo,state,downloadId,title,validUntil,publication FROM PAPER_REN;");
+            db.execSQL("DROP TABLE PAPER_REN;");
+        }
+
+    };
 
     static final Migration MIGRATION_7_8 = new Migration(7, 8) {
 

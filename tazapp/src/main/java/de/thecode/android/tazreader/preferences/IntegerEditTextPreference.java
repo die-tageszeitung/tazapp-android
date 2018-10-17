@@ -2,12 +2,12 @@ package de.thecode.android.tazreader.preferences;
 
 import android.content.Context;
 import android.content.res.TypedArray;
-import android.support.v4.content.res.TypedArrayUtils;
 import android.util.AttributeSet;
 import android.widget.Toast;
 
-import com.takisoft.fix.support.v7.preference.EditTextPreference;
+import com.takisoft.preferencex.EditTextPreference;
 
+import androidx.core.content.res.TypedArrayUtils;
 import timber.log.Timber;
 
 /**
@@ -23,7 +23,7 @@ public class IntegerEditTextPreference extends EditTextPreference {
     }
 
     public IntegerEditTextPreference(Context context, AttributeSet attrs) {
-        this(context, attrs, com.takisoft.fix.support.v7.preference.R.attr.editTextPreferenceStyle);
+        this(context, attrs, com.takisoft.preferencex.R.attr.editTextPreferenceStyle);
     }
 
     public IntegerEditTextPreference(Context context, AttributeSet attrs, int defStyleAttr) {
@@ -36,10 +36,10 @@ public class IntegerEditTextPreference extends EditTextPreference {
          * in the Preference class.
          */
         TypedArray a = context.obtainStyledAttributes(attrs,
-                                                      android.support.v7.preference.R.styleable.Preference, defStyleAttr, defStyleRes);
+                                                      androidx.preference.R.styleable.Preference, defStyleAttr, defStyleRes);
 
-        mSummary = TypedArrayUtils.getString(a, android.support.v7.preference.R.styleable.Preference_summary,
-                                             android.support.v7.preference.R.styleable.Preference_android_summary);
+        mSummary = TypedArrayUtils.getString(a, androidx.preference.R.styleable.Preference_summary,
+                                             androidx.preference.R.styleable.Preference_android_summary);
 
         a.recycle();
     }

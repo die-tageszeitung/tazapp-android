@@ -1,21 +1,17 @@
 package de.thecode.android.tazreader.start;
 
 
-import android.arch.lifecycle.Observer;
-import android.arch.lifecycle.ViewModelProviders;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.view.View;
+import android.widget.Toast;
+
+import com.afollestad.materialdialogs.MaterialDialog;
 
 import de.mateware.dialog.Dialog;
 import de.mateware.dialog.DialogAdapterList;
@@ -40,15 +36,14 @@ import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.dialog.ArchiveDialog;
 import de.thecode.android.tazreader.dialog.ArchiveEntry;
 import de.thecode.android.tazreader.dialog.HelpDialog;
+import de.thecode.android.tazreader.dialognew.AskForHelpDialog;
 import de.thecode.android.tazreader.download.DownloadManager;
 import de.thecode.android.tazreader.download.PaperDownloadFailedEvent;
 import de.thecode.android.tazreader.download.PaperDownloadFinishedEvent;
 import de.thecode.android.tazreader.download.ResourceDownloadEvent;
 import de.thecode.android.tazreader.importer.ImportActivity;
-import de.thecode.android.tazreader.job.SyncJob;
 import de.thecode.android.tazreader.migration.MigrationActivity;
 import de.thecode.android.tazreader.notifications.NotificationUtils;
-import de.thecode.android.tazreader.push.PushHelper;
 import de.thecode.android.tazreader.reader.ReaderActivity;
 import de.thecode.android.tazreader.start.importer.ImportFragment;
 import de.thecode.android.tazreader.start.library.LibraryFragment;
@@ -62,6 +57,8 @@ import de.thecode.android.tazreader.utils.Connection;
 import de.thecode.android.tazreader.utils.StreamUtils;
 import de.thecode.android.tazreader.utils.UserDeviceInfo;
 import de.thecode.android.tazreader.widget.CustomToolbar;
+import de.thecode.android.tazreader.worker.DataFolderMigrationWorker;
+import de.thecode.android.tazreader.worker.SyncWorker;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -74,6 +71,17 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
+import androidx.annotation.Nullable;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProviders;
+import androidx.work.State;
+import androidx.work.WorkManager;
+import androidx.work.WorkStatus;
 import timber.log.Timber;
 
 /**
@@ -106,6 +114,7 @@ public class StartActivity extends BaseActivity
 
     private CustomToolbar            toolbar;
     private NavigationDrawerFragment mDrawerFragment;
+    private View                     logWritingMessageView;
 
 //    RetainDataFragment retainDataFragment;
 
@@ -118,8 +127,11 @@ public class StartActivity extends BaseActivity
     NavigationDrawerFragment.NavigationItem imprintItem;
     NavigationDrawerFragment.ClickItem      privacyTermsItem;
     // NavigationDrawerFragment.NavigationItem importItem;
+    NavigationDrawerFragment.ClickItem      rateAppItem;
+    NavigationDrawerFragment.ClickItem      reportErrorItem;
 
     private StartViewModel startViewModel;
+    private MaterialDialog migrationDialog;
 
     TazSettings.OnPreferenceChangeListener demoModeChanged = new TazSettings.OnPreferenceChangeListener<Boolean>() {
         @Override
@@ -128,17 +140,29 @@ public class StartActivity extends BaseActivity
         }
     };
 
+    TazSettings.OnPreferenceChangeListener logWritingListener = new TazSettings.OnPreferenceChangeListener<Boolean>() {
+
+        @Override
+        public void onPreferenceChanged(Boolean changedValue) {
+            onLogWriting(changedValue);
+        }
+    };
+
     @Override
     public void onStart() {
         super.onStart();
         startViewModel.getSettings()
                       .addOnPreferenceChangeListener(TazSettings.PREFKEY.DEMOMODE, demoModeChanged);
+        startViewModel.getSettings()
+                      .addOnPreferenceChangeListener(TazSettings.PREFKEY.LOGFILE, logWritingListener);
     }
 
     @Override
     public void onStop() {
         startViewModel.getSettings()
                       .removeOnPreferenceChangeListener(demoModeChanged);
+        startViewModel.getSettings()
+                      .removeOnPreferenceChangeListener(logWritingListener);
         super.onStop();
     }
 
@@ -198,6 +222,10 @@ public class StartActivity extends BaseActivity
         if (getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         updateTitle();
 
+        logWritingMessageView = findViewById(R.id.logWritingMessage);
+        onLogWriting(TazSettings.getInstance(this)
+                                .isWriteLogfile());
+
         mDrawerFragment = (NavigationDrawerFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_navigation_drawer);
         mDrawerFragment.setUp(R.id.fragment_navigation_drawer, findViewById(R.id.drawer_layout), toolbar);
 
@@ -208,38 +236,47 @@ public class StartActivity extends BaseActivity
 //                                                                 ImportFragment.class);
 //        importItem.setAccessibilty(false);
         libraryItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_library),
-                                                                  R.drawable.ic_library,
+                                                                  R.drawable.ic_local_library_black_24dp,
                                                                   LibraryFragment.class);
 //        settingsItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_settings), R.drawable.ic_settings,
 //                                                                   SettingsFragment.class);
 //        settingsItem.setAccessibilty(false);
 
         preferencesItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_preferences),
-                                                                      R.drawable.ic_settings,
+                                                                      R.drawable.ic_settings_black_24dp,
                                                                       PreferencesFragment.class);
         preferencesItem.setAccessibilty(false);
 
 
-        helpItem = new NavigationDrawerFragment.ClickItem(getString(R.string.drawer_help), R.drawable.ic_help);
+        helpItem = new NavigationDrawerFragment.ClickItem(getString(R.string.drawer_help), R.drawable.ic_help_black_24dp);
         helpItem.setAccessibilty(false);
         privacyTermsItem = new NavigationDrawerFragment.ClickItem(getString(R.string.drawer_privacy_terms),
                                                                   R.drawable.ic_security_black_24dp);
-        helpItem.setAccessibilty(false);
+        privacyTermsItem.setAccessibilty(false);
         imprintItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_imprint),
-                                                                  R.drawable.ic_imprint,
+                                                                  R.drawable.ic_info_variant_black_24dp,
                                                                   ImprintFragment.class);
 
+        rateAppItem = new NavigationDrawerFragment.ClickItem(getString(R.string.drawer_rate_app), R.drawable.ic_star_black_24dp);
+        rateAppItem.setAccessibilty(false);
+        reportErrorItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_report_error),
+                                                                      R.drawable.ic_bug_report_black_24dp,
+                                                                      ReportErrorFragment.class);
+        reportErrorItem.setAccessibilty(false);
 
         mDrawerFragment.addItem(libraryItem);
         mDrawerFragment.addDividerItem();
         mDrawerFragment.addItem(userItem);
 //        mDrawerFragment.addItem(importItem);
+        mDrawerFragment.addItem(preferencesItem);
         mDrawerFragment.addItem(helpItem);
+        mDrawerFragment.addDividerItem();
+        mDrawerFragment.addItem(rateAppItem);
+        mDrawerFragment.addItem(reportErrorItem);
         mDrawerFragment.addDividerItem();
         mDrawerFragment.addItem(imprintItem);
         mDrawerFragment.addItem(privacyTermsItem);
         // mDrawerFragment.addItem(settingsItem);
-        mDrawerFragment.addItem(preferencesItem);
 
 
         //has to be after adding useritem
@@ -255,7 +292,7 @@ public class StartActivity extends BaseActivity
 
         if (TazSettings.getInstance(this)
                        .getPrefBoolean(TazSettings.PREFKEY.FISRTSTART, true)) {
-            SyncJob.scheduleJobImmediately(false);
+            SyncWorker.scheduleJobImmediately(false);
             TazSettings.getInstance(this)
                        .setPref(TazSettings.PREFKEY.FISRTSTART, false);
             TazSettings.getInstance(this)
@@ -285,6 +322,29 @@ public class StartActivity extends BaseActivity
                                                                                  downloadError.getException());
                           }
                       });
+
+        WorkManager.getInstance()
+                   .getStatusesForUniqueWork(DataFolderMigrationWorker.UNIQUE_TAG)
+                   .observe(this, new Observer<List<WorkStatus>>() {
+                       @Override
+                       public void onChanged(List<WorkStatus> workStatuses) {
+                           boolean isDataMigrationRunning = false;
+                           if (workStatuses != null) {
+                               for (WorkStatus workStatus : workStatuses) {
+                                   Timber.i("%s", workStatus);
+                                   isDataMigrationRunning = workStatus.getState() == State.RUNNING;
+                                   if (isDataMigrationRunning) break;
+                               }
+                           }
+                           if (isDataMigrationRunning) {
+                               migrationDialog = DataFolderMigrationWorker.Companion.createWaitDialog(StartActivity.this);
+                               migrationDialog.show();
+                           } else {
+                               if (migrationDialog != null) migrationDialog.dismiss();
+                           }
+
+                       }
+                   });
     }
 
     public void checkForNewerVersion() {
@@ -353,6 +413,22 @@ public class StartActivity extends BaseActivity
             showHelpDialog(HelpDialog.HELP_LIBRARY);
         } else if (privacyTermsItem.equals(item)) {
             showHelpDialog(HelpDialog.HELP_PRIVACY);
+        } else if (rateAppItem.equals(item)) {
+            Intent rateIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + BuildConfig.APPLICATION_ID));
+            rateIntent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
+
+            if (rateIntent.resolveActivity(getPackageManager()) != null) {
+                startActivity(rateIntent);
+            } else {
+                rateIntent = new Intent(Intent.ACTION_VIEW,
+                                        Uri.parse("http://play.google.com/store/apps/details?id=" + BuildConfig.APPLICATION_ID));
+                if (rateIntent.resolveActivity(getPackageManager()) != null) {
+                    startActivity(rateIntent);
+                } else {
+                    Toast.makeText(this, "No play store or browser app", Toast.LENGTH_LONG)
+                         .show();
+                }
+            }
         }
 
     }
@@ -382,6 +458,10 @@ public class StartActivity extends BaseActivity
         updateTitle();
     }
 
+    public void onLogWriting(boolean writeToLog) {
+        logWritingMessageView.setVisibility(writeToLog ? View.VISIBLE : View.GONE);
+    }
+
 
     public Toolbar getToolbar() {
         return toolbar;
@@ -405,7 +485,7 @@ public class StartActivity extends BaseActivity
 
 
     public void startDownload(Paper downloadPaper) {
-        if (!downloadPaper.isDownloading()) {
+        if (downloadPaper.hasNoneState()) {
             switch (Connection.getConnectionType(this)) {
                 case Connection.CONNECTION_NOT_AVAILABLE:
                     showNoConnectionDialog();
@@ -554,56 +634,70 @@ public class StartActivity extends BaseActivity
     public void openReader(String bookId) {
         new AsyncTaskListener<String, Paper>(bookIdParams -> startViewModel.getPaperRepository()
                                                                            .getPaperWithBookId(bookIdParams[0]), paper -> {
-            if (!paper.isDownloaded()) {
+            if (!paper.hasReadyState()) {
                 showErrorDialog(getString(R.string.message_paper_not_downloaded), DIALOG_ERROR_OPEN_PAPER);
-            }
-            new AsyncTaskListener<Paper, Resource>(papers -> ResourceRepository.getInstance(StartActivity.this)
-                                                                               .getResourceForPaper(papers[0]), resource -> {
-                if (resource.isDownloaded()) {
-                    Timber.i("start reader for paper: %s", paper);
-                    Intent intent = new Intent(StartActivity.this, ReaderActivity.class);
-//                intent.putExtra(ReaderActivity.KEY_EXTRA_PAPER_ID, id);
-                    intent.putExtra(ReaderActivity.KEY_EXTRA_BOOK_ID, paper.getBookId());
-//                    intent.putExtra(ReaderActivity.KEY_EXTRA_RESOURCE_KEY, resource.getKey());
-                    startActivity(intent);
+            } else {
+                if (!startViewModel.getStorageManager()
+                                   .getPaperDirectory(paper)
+                                   .exists()) {
+                    showErrorDialog(getString(R.string.message_paper_files_not_downloaded), DIALOG_ERROR_OPEN_PAPER);
                 } else {
-                    AnalyticsWrapper.getInstance()
-                                    .logData("PAPER", paper.toString());
-                    AnalyticsWrapper.getInstance()
-                                    .logData("RESOURCE", resource.toString());
-                    switch (Connection.getConnectionType(StartActivity.this)) {
-                        case Connection.CONNECTION_NOT_AVAILABLE:
-                            Timber.e(new ConnectException("Keine Verbindung"));
-                            showErrorDialog(getString(R.string.message_resource_not_downloaded_no_connection),
-                                            DIALOG_ERROR_OPEN_PAPER);
-                            break;
-                        default:
-                            new AsyncTaskListener<Resource, Exception>(resources -> {
-                                try {
-                                    DownloadManager.getInstance(StartActivity.this)
-                                                   .enqueResource(resources[0], false);
-                                } catch (DownloadManager.NotEnoughSpaceException e) {
-                                    return e;
-                                }
-                                return null;
-                            }, exception -> {
-                                if (exception instanceof DownloadManager.NotEnoughSpaceException) {
-                                    Timber.e(exception);
-                                    showDownloadErrorDialog(getString(R.string.message_resourcedownload_error),
-                                                            getString(R.string.message_not_enough_space),
-                                                            exception);
-                                } else {
-                                    startViewModel.setPaperWaitingForResource(paper.getBookId());
-                                    Timber.e(new Resource.MissingResourceException());
-                                    showWaitDialog(DIALOG_WAIT + paper.getBookId(),
-                                                   getString(R.string.dialog_meassage_loading_missing_resource));
+                    new AsyncTaskListener<Paper, Resource>(papers -> ResourceRepository.getInstance(StartActivity.this)
+                                                                                       .getResourceForPaper(papers[0]),
+                                                           resource -> {
+                                                               if (resource.isDownloaded() && startViewModel.getStorageManager()
+                                                                                                            .getResourceDirectory(
+                                                                                                                    resource)
+                                                                                                            .exists()) {
+                                                                   Timber.i("start reader for paper: %s", paper);
+                                                                   Intent intent = new Intent(StartActivity.this,
+                                                                                              ReaderActivity.class);
+//                intent.putExtra(ReaderActivity.KEY_EXTRA_PAPER_ID, id);
+                                                                   intent.putExtra(ReaderActivity.KEY_EXTRA_BOOK_ID,
+                                                                                   paper.getBookId());
+//                    intent.putExtra(ReaderActivity.KEY_EXTRA_RESOURCE_KEY, resource.getKey());
+                                                                   startActivity(intent);
+                                                               } else {
+                                                                   AnalyticsWrapper.getInstance()
+                                                                                   .logData("PAPER", paper.toString());
+                                                                   AnalyticsWrapper.getInstance()
+                                                                                   .logData("RESOURCE", resource.toString());
+                                                                   switch (Connection.getConnectionType(StartActivity.this)) {
+                                                                       case Connection.CONNECTION_NOT_AVAILABLE:
+                                                                           Timber.e(new ConnectException("Keine Verbindung"));
+                                                                           showErrorDialog(getString(R.string.message_resource_not_downloaded_no_connection),
+                                                                                           DIALOG_ERROR_OPEN_PAPER);
+                                                                           break;
+                                                                       default:
+                                                                           new AsyncTaskListener<Resource, Exception>(resources -> {
+                                                                               try {
+                                                                                   DownloadManager.getInstance(StartActivity.this)
+                                                                                                  .enqueResource(resources[0],
+                                                                                                                 false);
+                                                                               } catch (DownloadManager.NotEnoughSpaceException e) {
+                                                                                   return e;
+                                                                               }
+                                                                               return null;
+                                                                           }, exception -> {
+                                                                               if (exception instanceof DownloadManager.NotEnoughSpaceException) {
+                                                                                   Timber.e(exception);
+                                                                                   showDownloadErrorDialog(getString(R.string.message_resourcedownload_error),
+                                                                                                           getString(R.string.message_not_enough_space),
+                                                                                                           exception);
+                                                                               } else {
+                                                                                   startViewModel.setPaperWaitingForResource(paper.getBookId());
+                                                                                   Timber.e(new Resource.MissingResourceException());
+                                                                                   showWaitDialog(DIALOG_WAIT + paper.getBookId(),
+                                                                                                  getString(R.string.dialog_meassage_loading_missing_resource));
 
-                                }
-                            }).execute(resource);
+                                                                               }
+                                                                           }).execute(resource);
 
-                    }
+                                                                   }
+                                                               }
+                                                           }).execute(paper);
                 }
-            }).execute(paper);
+            }
         }).execute(bookId);
 
     }
@@ -694,7 +788,7 @@ public class StartActivity extends BaseActivity
             boolean foundDownloaded = false;
             for (Paper paper : allPapers) {
                 if (foundDownloaded) break;
-                foundDownloaded = paper.isDownloaded() || paper.isDownloading();
+                foundDownloaded = !paper.hasNoneState();
             }
             if (!foundDownloaded) {
                 showDialog = startViewModel.getSettings()
@@ -702,7 +796,24 @@ public class StartActivity extends BaseActivity
             }
             return showDialog;
         }, aBoolean -> {
-            if (aBoolean) showHelpDialog(HelpDialog.HELP_INTRO);
+            if (aBoolean) {
+                showHelpDialog(HelpDialog.HELP_INTRO);
+            } else {
+                if (getSupportFragmentManager().findFragmentByTag(AskForHelpDialog.TAG) == null && startViewModel.getSettings().isAskForHelpAllowed()) {
+                    int currentStartCount = startViewModel.getSettings()
+                                                          .getAskForHelpCount();
+                    if (currentStartCount >= 20) {
+                        startViewModel.getSettings()
+                                      .setAskForHelpCounter(0);
+                        AskForHelpDialog.Companion.newInstance()
+                                                  .show(getSupportFragmentManager(), AskForHelpDialog.TAG);
+                    } else {
+                        currentStartCount++;
+                        startViewModel.getSettings()
+                                      .setAskForHelpCounter(currentStartCount);
+                    }
+                }
+            }
         }).execute();
     }
 
@@ -783,21 +894,18 @@ public class StartActivity extends BaseActivity
                             body = body.replaceFirst("\\{appversion\\}", userDeviceInfo.getVersionName());
                             body = body.replaceFirst("\\{installid\\}", userDeviceInfo.getInstallationId());
                             body = body.replaceFirst("\\{aboid\\}", aboId);
-                            body = body.replaceFirst("\\{androidVersion\\}", Build.VERSION.SDK_INT + " (" + Build.VERSION.RELEASE + ")");
-                            body = body.replaceFirst("\\{pushToken\\}", TazSettings.getInstance(this).getFirebaseToken());
+                            body = body.replaceFirst("\\{androidVersion\\}",
+                                                     Build.VERSION.SDK_INT + " (" + Build.VERSION.RELEASE + ")");
+                            body = body.replaceFirst("\\{pushToken\\}",
+                                                     TazSettings.getInstance(this)
+                                                                .getFirebaseToken());
 
-
-                            StringBuilder mailToBuilder = new StringBuilder("mailto:");
-                            mailToBuilder.append(BuildConfig.ERRORMAIL);
-                            mailToBuilder.append("?subject=")
-                                         .append(Uri.encode(getString(R.string.errormail_subject,
-                                                                      getString(R.string.app_name),
-                                                                      aboId)));
-                            mailToBuilder.append("&body=")
-                                         .append(Uri.encode(body));
-
-                            Intent emailIntent = new Intent(Intent.ACTION_SENDTO);
-                            emailIntent.setData(Uri.parse(mailToBuilder.toString()));
+                            Intent emailIntent = new Intent(Intent.ACTION_SEND);
+                            emailIntent.setType("message/rfc822");
+                            emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[]{BuildConfig.ERRORMAIL});
+                            emailIntent.putExtra(Intent.EXTRA_SUBJECT,
+                                                 getString(R.string.errormail_subject, getString(R.string.app_name), aboId));
+                            emailIntent.putExtra(Intent.EXTRA_TEXT, body);
                             startActivity(emailIntent);
                         }
                     } catch (IOException | ActivityNotFoundException e) {
@@ -831,7 +939,7 @@ public class StartActivity extends BaseActivity
                 Calendar endCal = Calendar.getInstance();
                 startCal.set(year, Calendar.JANUARY, 1);
                 endCal.set(year, Calendar.DECEMBER, 31);
-                SyncJob.scheduleJobImmediately(true, startCal, endCal);
+                SyncWorker.scheduleJobImmediately(true, startCal, endCal);
                 //SyncHelper.requestSync(this, startCal, endCal);
             }
         } else if (DIALOG_ARCHIVE_MONTH.equals(tag)) {
@@ -843,7 +951,7 @@ public class StartActivity extends BaseActivity
             int lastDayOfMont = startCal.getActualMaximum(Calendar.DAY_OF_MONTH);
             endCal.set(year, month, lastDayOfMont);
             //SyncHelper.requestSync(this, startCal, endCal);
-            SyncJob.scheduleJobImmediately(true, startCal, endCal);
+            SyncWorker.scheduleJobImmediately(true, startCal, endCal);
         }
     }
 

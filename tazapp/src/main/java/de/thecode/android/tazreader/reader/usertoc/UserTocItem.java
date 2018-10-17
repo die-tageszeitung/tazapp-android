@@ -1,6 +1,6 @@
 package de.thecode.android.tazreader.reader.usertoc;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import de.thecode.android.tazreader.data.ITocItem;
 

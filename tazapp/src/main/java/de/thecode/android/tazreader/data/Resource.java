@@ -1,16 +1,14 @@
 package de.thecode.android.tazreader.data;
 
-import android.arch.persistence.room.Entity;
-import android.arch.persistence.room.PrimaryKey;
-import android.content.Context;
-import android.support.annotation.NonNull;
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
+import androidx.annotation.NonNull;
 
 import com.dd.plist.NSDictionary;
 
 import de.thecode.android.tazreader.sync.model.Plist;
 import de.thecode.android.tazreader.utils.PlistHelper;
 import de.thecode.android.tazreader.utils.ReadableException;
-import de.thecode.android.tazreader.utils.StorageManager;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
