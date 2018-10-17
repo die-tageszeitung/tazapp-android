@@ -101,8 +101,8 @@
     <string name="pref_title_notification_settings">Benachrichtigungs-Einstellungen öffnen"</string>
     <!--  -->
     <string name="pref_key_log_file">logfile</string>
-    <string name="pref_title_log_file">Log-Datei schreiben</string>
-    <string name="pref_summary_log_file">Kann die Ausführung der App verlangsamen, bitte nur aktivieren wenn Sie einen Fehler melden möchten. Bei deaktivierter Option werden die Logfiles beim nächsten Neustart der App gelöscht.</string>
+    <string name="pref_title_log_file">Protokoll schreiben</string>
+    <string name="pref_summary_log_file">Kann die Ausführung der App verlangsamen, bitte nur aktivieren wenn Sie einen Fehler melden möchten. Bei deaktivierter Option werden die Protokoll-Dateien beim nächsten Neustart der App gelöscht.</string>
     <bool name="pref_default_log_file">false</bool>
     <!--  -->
     <string name="pref_key_report_error">reporterror</string>

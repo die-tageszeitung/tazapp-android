@@ -4,7 +4,6 @@ import android.app.Dialog
 import android.os.Bundle
 import androidx.fragment.app.DialogFragment
 import com.afollestad.materialdialogs.MaterialDialog
-import com.afollestad.materialdialogs.checkbox.checkBoxPrompt
 import de.thecode.android.tazreader.R
 import de.thecode.android.tazreader.data.TazSettings
 
@@ -17,12 +16,10 @@ class RequestFileLogDialog : DialogFragment() {
         context?.let { context ->
 
             return MaterialDialog(context).message(R.string.error_report_request_log_dialog_message)
-                    .checkBoxPrompt(res = R.string.pref_title_log_file, isCheckedDefault = settings.isWriteLogfile) { checked ->
-                        settings.isWriteLogfile = checked
-                        dialog.dismiss()
+                    .positiveButton(R.string.error_report_request_log_ok_without) { ErrorReporter.sendErrorMail(context) }
+                    .negativeButton(R.string.error_report_request_log_activate){
+                        settings.isWriteLogfile = true
                     }
-                    .positiveButton { ErrorReporter.sendErrorMail(context) }
-                    .negativeButton()
         }
 
         return super.onCreateDialog(savedInstanceState)

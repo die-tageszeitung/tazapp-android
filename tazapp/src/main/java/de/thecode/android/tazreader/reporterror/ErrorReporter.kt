@@ -42,29 +42,31 @@ class ErrorReporter {
             } catch (e : Exception) {
                 Timber.e(e,"Error parsing body")
             }
-            val logDir = StorageManager.getInstance(context)
-                    .logCache
-            try {
-                val uris = logDir.walk()
-                        .maxDepth(1)
-                        .filter {
-                            !it.isDirectory
-                        }
-                        .map {
-                            Timber.d("Adding %s to mail",it)
-                            StreamProvider.getUriForFile(BuildConfig.APPLICATION_ID + ".streamprovider", it)
+            if (settings.isWriteLogfile) {
+                val logDir = StorageManager.getInstance(context)
+                        .logCache
+                try {
+                    val uris = logDir.walk()
+                            .maxDepth(1)
+                            .filter {
+                                !it.isDirectory
+                            }
+                            .map {
+                                Timber.d("Adding %s to mail", it)
+                                StreamProvider.getUriForFile(BuildConfig.APPLICATION_ID + ".streamprovider", it)
 //                                uris.add(contentUri)
-                        }
-                        .toList()
+                            }
+                            .toList()
 
 
-                if (uris.isNotEmpty()) {
-                    emailIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, ArrayList(uris))
+                    if (uris.isNotEmpty()) {
+                        emailIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, ArrayList(uris))
+                    }
+                } catch (e: Exception) {
+                    Timber.e(e, "Error reading logs")
                 }
-            } catch (e: Exception) {
-                    Timber.e(e,"Error reading logs")
+                settings.isWriteLogfile = false
             }
-            settings.isWriteLogfile = false
             context.startActivity(emailIntent)
         }
     }
