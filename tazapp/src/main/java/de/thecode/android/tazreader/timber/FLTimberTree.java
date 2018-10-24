@@ -2,7 +2,6 @@ package de.thecode.android.tazreader.timber;
 
 import android.content.Context;
 import android.os.Process;
-import androidx.annotation.NonNull;
 import android.util.Log;
 
 import com.bosphere.filelogger.FL;
@@ -19,6 +18,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import androidx.annotation.NonNull;
 import timber.log.Timber;
 
 public class FLTimberTree extends Timber.DebugTree {
@@ -79,7 +79,7 @@ public class FLTimberTree extends Timber.DebugTree {
         private final ThreadLocal<SimpleDateFormat> mFileNameFmt = new ThreadLocal<SimpleDateFormat>() {
             @Override
             protected SimpleDateFormat initialValue() {
-                return new SimpleDateFormat("YYYY-MM-dd", Locale.GERMAN);
+                return new SimpleDateFormat("yyyy-MM-dd", Locale.GERMAN);
             }
         };
 

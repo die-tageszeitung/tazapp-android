@@ -1,11 +1,11 @@
 package de.thecode.android.tazreader.download;
 
 
-
 import de.thecode.android.tazreader.utils.ExtensionsKt;
 
 import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -43,14 +43,15 @@ public class UnzipStream {
     public File start() throws IOException, UnzipCanceledException {
         try {
             ZipInputStream zis = new ZipInputStream(new BufferedInputStream(inputStream));
-            Timber.i("... start working with inputstream");
+            Timber.i("Start working with inputstream");
             try {
                 ZipEntry ze;
 
                 while ((ze = zis.getNextEntry()) != null) {
                     if (canceled) throw new UnzipCanceledException();
-                    Timber.d("... zipentry: %s %d", ze, ze.getSize());
+                    Timber.d("- Zipentry: %s %d", ze, ze.getSize());
                     if (ze.isDirectory()) {
+                        Timber.d("-- zipentry is directory");
                         File zipDir = new File(destinationDir, ze.getName());
                         if (dirHelper(zipDir)) {
                             if (progress != null) {
@@ -60,13 +61,21 @@ public class UnzipStream {
                             }
                         }
                     } else {
+                        Timber.d("-- zipentry is file");
                         File destinationFile = new File(destinationDir, ze.getName());
                         if (dirHelper(destinationFile.getParentFile())) {
+                            if (!destinationFile.exists()) {
+                                if (!destinationFile.createNewFile()) {
+                                    throw new FileNotFoundException("Could not create " + destinationFile.getAbsolutePath());
+                                } else {
+                                    Timber.d("-- created %s",destinationFile);
+                                }
+                            }
                             progress.setCurrentFile(destinationFile);
                             notifyListeners(progress);
 
                             FileOutputStream fout = new FileOutputStream(destinationFile);
-                            Timber.d("open fileoutputstream for %s", destinationFile);
+                            Timber.d("-- open fileoutputstream for %s", destinationFile);
                             try {
                                 byte[] buffer = new byte[32 * 1024]; // play with sizes..
                                 int readCount;
@@ -76,7 +85,7 @@ public class UnzipStream {
                                     publishProgress(destinationFile, readCount);
                                 }
                             } finally {
-                                Timber.d("closing fileoutputstream");
+                                Timber.d("-- closing fileoutputstream");
                                 fout.close();
                             }
                         }
@@ -86,7 +95,7 @@ public class UnzipStream {
                 notifyListeners(progress);
 
             } finally {
-                Timber.d("... all uncompressed bytes: %d", progress.getBytesSoFar());
+                Timber.d("- all uncompressed bytes: %d", progress.getBytesSoFar());
                 try {
                     Timber.d("closing inputstream");
                     zis.close();
@@ -102,6 +111,7 @@ public class UnzipStream {
         return destinationDir;
     }
 
+
     public void cancel() {
         canceled = true;
     }
@@ -111,7 +121,7 @@ public class UnzipStream {
     }
 
     public void onError(Exception e) {
-        Timber.e(e);
+        //Timber.e(e);
         if (deleteDestinationOnFailure) {
             if (destinationDir.exists()) ExtensionsKt.deleteQuietly(destinationDir);
         }
@@ -121,8 +131,8 @@ public class UnzipStream {
         Timber.i("... finished unzipping stream");
     }
 
-    File lastFilePublished;
-    int lastPercentagePublished = -1;
+    private File lastFilePublished;
+    private int  lastPercentagePublished = -1;
 
     private void publishProgress(File currentFile, int readCount) {
         progress.setBytesSoFar(progress.getBytesSoFar() + readCount);
@@ -146,15 +156,19 @@ public class UnzipStream {
     }
 
     private boolean dirHelper(File directory) throws IOException {
-
+        Timber.d("-- Checking directory %s", directory);
         if (directory.exists()) {
-            if (directory.isDirectory()) return true;
-            else {
+            if (directory.isDirectory()) {
+                Timber.d("--- file exists and is directory");
+                return true;
+            } else {
+                Timber.d("--- file exists but is no directory, trying to delete");
                 boolean resultDelete = directory.delete();
                 if (!resultDelete) throw new IOException("Cannot delete file " + directory);
                 else return dirHelper(directory);
             }
         } else {
+            Timber.d("--- creating directories");
             return directory.mkdirs();
         }
     }
@@ -196,9 +210,9 @@ public class UnzipStream {
         private long totalUncompressedSize = 0;
         private long bytesSoFar            = 0;
         private File currentFile;
-        private int progressPercentageMax = 100;
-        private int percentage            = 0;
-        private int offset                = 0;
+        private int  progressPercentageMax = 100;
+        private int  percentage            = 0;
+        private int  offset                = 0;
 
         public Progress() {
 
