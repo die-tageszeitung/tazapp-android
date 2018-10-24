@@ -29,9 +29,9 @@ public class TazReaderApplication extends MultiDexApplication {
 
         super.onCreate();
 
-        TimberHelper.initialize(this);
-
         AnalyticsWrapper.initialize(this);
+
+        TimberHelper.initialize(this);
 
         BuildTypeProvider.installStetho(this);
 
