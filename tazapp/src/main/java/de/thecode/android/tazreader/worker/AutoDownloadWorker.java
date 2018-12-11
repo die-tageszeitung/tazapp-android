@@ -1,7 +1,6 @@
 package de.thecode.android.tazreader.worker;
 
 import android.content.Context;
-import androidx.annotation.NonNull;
 import android.text.TextUtils;
 
 import de.thecode.android.tazreader.BuildConfig;
@@ -16,8 +15,10 @@ import de.thecode.android.tazreader.notifications.NotificationUtils;
 
 import java.util.concurrent.TimeUnit;
 
+import androidx.annotation.NonNull;
 import androidx.work.Data;
 import androidx.work.OneTimeWorkRequest;
+import androidx.work.Result;
 import androidx.work.WorkManager;
 import androidx.work.WorkRequest;
 import androidx.work.WorkerParameters;
@@ -68,7 +69,7 @@ public class AutoDownloadWorker extends LoggingWorker {
                 }
             }
         }
-        return Result.SUCCESS;
+        return Result.success();
     }
 
     public static String getTag(@NonNull String bookId) {

@@ -1,7 +1,6 @@
 package de.thecode.android.tazreader.worker;
 
 import android.content.Context;
-import androidx.annotation.NonNull;
 import android.text.TextUtils;
 
 import com.dd.plist.PropertyListFormatException;
@@ -22,8 +21,10 @@ import java.text.ParseException;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import androidx.annotation.NonNull;
 import androidx.work.Data;
 import androidx.work.OneTimeWorkRequest;
+import androidx.work.Result;
 import androidx.work.WorkManager;
 import androidx.work.WorkRequest;
 import androidx.work.WorkerParameters;
@@ -65,7 +66,7 @@ public class DownloadFinishedResourceWorker extends LoggingWorker {
             }
         }
 
-        return Result.SUCCESS;
+        return Result.success();
 
     }
 
@@ -83,7 +84,7 @@ public class DownloadFinishedResourceWorker extends LoggingWorker {
     }
 
 
-    public static String getTag(@NonNull String resourceKey) {
+    private static String getTag(@NonNull String resourceKey) {
         return TAG_PREFIX + resourceKey;
     }
 

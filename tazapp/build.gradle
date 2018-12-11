@@ -336,8 +336,8 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.0.0-alpha2'
 
     implementation 'androidx.lifecycle:lifecycle-extensions:2.0.0'
-    implementation "androidx.room:room-runtime:2.1.0-alpha01"
-    annotationProcessor "androidx.room:room-compiler:2.1.0-alpha01"
+    implementation "androidx.room:room-runtime:2.1.0-alpha03"
+    annotationProcessor "androidx.room:room-compiler:2.1.0-alpha03"
 //    implementation "android.arch.lifecycle:common-java8:1.1.1"
 
     implementation "org.apache.commons:commons-lang3:3.7"
@@ -346,7 +346,7 @@ dependencies {
 
 //    implementation "com.google.guava:guava:24.1-android"
 
-    implementation "android.arch.work:work-runtime:1.0.0-alpha09"
+    implementation "android.arch.work:work-runtime:1.0.0-alpha12"
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 

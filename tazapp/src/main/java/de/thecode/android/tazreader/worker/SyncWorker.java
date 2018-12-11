@@ -1,7 +1,6 @@
 package de.thecode.android.tazreader.worker;
 
 import android.content.Context;
-import androidx.annotation.NonNull;
 import android.text.TextUtils;
 
 import com.dd.plist.NSArray;
@@ -39,10 +38,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
+import androidx.annotation.NonNull;
 import androidx.work.Constraints;
 import androidx.work.Data;
 import androidx.work.NetworkType;
 import androidx.work.OneTimeWorkRequest;
+import androidx.work.Result;
 import androidx.work.WorkManager;
 import androidx.work.WorkRequest;
 import androidx.work.WorkerParameters;
@@ -92,9 +93,9 @@ public class SyncWorker extends LoggingWorker {
             if (initByUser) {
                 EventBus.getDefault()
                         .post(new SyncErrorEvent(getApplicationContext().getString(R.string.sync_job_plist_empty)));
-                return Result.SUCCESS;
+                return Result.success();
             } else {
-                return Result.RETRY;
+                return Result.retry();
             }
         } else {
             if (!initByUser) autoDeleteTask();
@@ -110,7 +111,7 @@ public class SyncWorker extends LoggingWorker {
         if (latestPaper != null) AutoDownloadWorker.scheduleNow(latestPaper);
 
 
-        return Result.SUCCESS;
+        return Result.success();
     }
 
 //    private Result endJob(Result result) {

@@ -37,9 +37,8 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-import androidx.work.State;
+import androidx.work.WorkInfo;
 import androidx.work.WorkManager;
-import androidx.work.WorkStatus;
 import timber.log.Timber;
 
 /**
@@ -226,16 +225,15 @@ public class LibraryFragment extends StartBaseFragment {
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        WorkManager.getInstance()
-                   .getStatusesByTag(SyncWorker.TAG)
-                   .observe(this, new Observer<List<WorkStatus>>() {
+        WorkManager.getInstance().getWorkInfosByTagLiveData(SyncWorker.TAG)
+                   .observe(this, new Observer<List<WorkInfo>>() {
                        @Override
-                       public void onChanged(@Nullable List<WorkStatus> workStatuses) {
+                       public void onChanged(@Nullable List<WorkInfo> workStatuses) {
                            boolean isSyncRunning = false;
                            if (workStatuses != null) {
-                               for (WorkStatus workStatus : workStatuses) {
+                               for (WorkInfo workStatus : workStatuses) {
                                    Timber.i("%s",workStatus);
-                                   isSyncRunning = workStatus.getState() == State.RUNNING;
+                                   isSyncRunning = workStatus.getState() == WorkInfo.State.RUNNING;
                                    if (isSyncRunning) break;
                                }
                                if (isSyncRunning != swipeRefresh.isRefreshing()) swipeRefresh.setRefreshing(isSyncRunning);

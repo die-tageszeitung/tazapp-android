@@ -28,6 +28,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import androidx.annotation.NonNull;
 import androidx.work.Data;
 import androidx.work.OneTimeWorkRequest;
+import androidx.work.Result;
 import androidx.work.WorkManager;
 import androidx.work.WorkRequest;
 import androidx.work.WorkerParameters;
@@ -105,16 +106,15 @@ public class DownloadFinishedPaperWorker extends LoggingWorker {
                 }
             }
         }
-        return Result.SUCCESS;
+        return Result.success();
     }
 
-    public static String getTag(@NonNull String bookId) {
+    private static String getTag(@NonNull String bookId) {
         return TAG_PREFIX + bookId;
     }
 
     @Override
-    public void onStopped(boolean cancelled) {
-        super.onStopped(cancelled);
+    public void onStopped() {
         if (currentUnzipPaper != null) currentUnzipPaper.cancel();
     }
 

@@ -59,7 +59,7 @@ class DataFolderMigrationWorker(context: Context, workerParams: WorkerParameters
                 }
             }
         }
-        return Result.SUCCESS
+        return Result.success()
     }
 
     companion object {

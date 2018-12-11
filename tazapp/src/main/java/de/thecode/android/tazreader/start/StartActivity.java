@@ -79,9 +79,8 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
-import androidx.work.State;
+import androidx.work.WorkInfo;
 import androidx.work.WorkManager;
-import androidx.work.WorkStatus;
 import timber.log.Timber;
 
 /**
@@ -324,15 +323,15 @@ public class StartActivity extends BaseActivity
                       });
 
         WorkManager.getInstance()
-                   .getStatusesForUniqueWork(DataFolderMigrationWorker.UNIQUE_TAG)
-                   .observe(this, new Observer<List<WorkStatus>>() {
+                   .getWorkInfosByTagLiveData(DataFolderMigrationWorker.UNIQUE_TAG)
+                   .observe(this, new Observer<List<WorkInfo>>() {
                        @Override
-                       public void onChanged(List<WorkStatus> workStatuses) {
+                       public void onChanged(List<WorkInfo> workStatuses) {
                            boolean isDataMigrationRunning = false;
                            if (workStatuses != null) {
-                               for (WorkStatus workStatus : workStatuses) {
+                               for (WorkInfo workStatus : workStatuses) {
                                    Timber.i("%s", workStatus);
-                                   isDataMigrationRunning = workStatus.getState() == State.RUNNING;
+                                   isDataMigrationRunning = workStatus.getState() == WorkInfo.State.RUNNING;
                                    if (isDataMigrationRunning) break;
                                }
                            }

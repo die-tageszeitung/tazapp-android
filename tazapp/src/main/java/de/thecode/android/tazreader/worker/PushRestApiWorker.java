@@ -1,16 +1,17 @@
 package de.thecode.android.tazreader.worker;
 
 import android.content.Context;
-import androidx.annotation.NonNull;
 
 import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.okhttp3.OkHttp3Helper;
 import de.thecode.android.tazreader.okhttp3.RequestHelper;
 
+import androidx.annotation.NonNull;
 import androidx.work.Constraints;
 import androidx.work.NetworkType;
 import androidx.work.OneTimeWorkRequest;
+import androidx.work.Result;
 import androidx.work.WorkManager;
 import androidx.work.WorkRequest;
 import androidx.work.WorkerParameters;
@@ -40,14 +41,14 @@ public class PushRestApiWorker extends LoggingWorker {
             if (response.isSuccessful()) {
                 TazSettings.getInstance(getApplicationContext())
                            .removeOldToken();
-                return Result.SUCCESS;
+                return Result.success();
             }
             Timber.e(response.body()
                              .string());
         } catch (Exception e) {
             Timber.e(e);
         }
-        return Result.RETRY;
+        return Result.retry();
     }
 
 

@@ -1,7 +1,6 @@
 package de.thecode.android.tazreader.worker;
 
 import android.content.Context;
-import androidx.annotation.NonNull;
 import android.text.TextUtils;
 
 import de.thecode.android.tazreader.BuildConfig;
@@ -25,8 +24,10 @@ import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Locale;
 
+import androidx.annotation.NonNull;
 import androidx.work.Data;
 import androidx.work.OneTimeWorkRequest;
+import androidx.work.Result;
 import androidx.work.WorkManager;
 import androidx.work.WorkRequest;
 import androidx.work.WorkerParameters;
@@ -55,13 +56,15 @@ public class DownloadFinishedWorker extends LoggingWorker {
     public Result doBackgroundWork() {
 
         long downloadId = getInputData().getLong(ARG_DOWNLOAD_ID, -1);
+        Timber.d("starting background work for downloadId: %d", downloadId);
         if (downloadId != -1) {
 
             DownloadManager.DownloadState state = downloadHelper.getDownloadState(downloadId);
+            Timber.d("state: %s", state);
             boolean firstOccurrenceOfState = downloadHelper.isFirstOccurrenceOfState(state);
             if (!firstOccurrenceOfState) {
-                Timber.e("DownloadState already received: %s", state);
-                return Result.SUCCESS;
+                Timber.e("DownloadState already received");
+                return Result.success();
             }
 
             Paper paper = paperRepository.getPaperWithDownloadId(downloadId);
@@ -134,6 +137,8 @@ public class DownloadFinishedWorker extends LoggingWorker {
 
                 }
 
+            } else {
+                Timber.w("No paper found for downloadId %d", downloadId);
             }
 
             Resource resource = resourceRepository.getWithDownloadId(downloadId);
@@ -181,11 +186,13 @@ public class DownloadFinishedWorker extends LoggingWorker {
                             .post(new ResourceDownloadEvent(resource.getKey(), e));
                 }
 
+            } else {
+                Timber.w("No resource found for downloadId %d", downloadId);
             }
 
         }
 
-        return Result.SUCCESS;
+        return Result.success();
     }
 
     public static String getTag(long downloadId) {
