@@ -6,7 +6,7 @@ import android.text.TextUtils;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.PaperRepository;
 import de.thecode.android.tazreader.data.TazSettings;
-import de.thecode.android.tazreader.download.DownloadManager;
+import de.thecode.android.tazreader.download.OldDownloadManager;
 import de.thecode.android.tazreader.start.library.NewLibraryAdapter;
 import de.thecode.android.tazreader.utils.AsyncTaskListener;
 import de.thecode.android.tazreader.utils.SingleLiveEvent;
@@ -33,7 +33,7 @@ public class StartViewModel extends AndroidViewModel {
     private final TazSettings                                   settings;
     private final StorageManager                                storageManager;
     private final PaperRepository                               paperRepository;
-    private final DownloadManager                               downloadManager;
+    private final OldDownloadManager                            downloadManager;
     private final List<String>                                  downloadQueue               = new ArrayList<>();
     private final SingleLiveEvent<DownloadError>                downloadErrorLiveSingleData = new SingleLiveEvent<>();
     private final List<NavigationDrawerFragment.NavigationItem> navBackstack                = new ArrayList<>();
@@ -54,7 +54,7 @@ public class StartViewModel extends AndroidViewModel {
 
     public StartViewModel(@NonNull Application application) {
         super(application);
-        downloadManager = DownloadManager.getInstance(application);
+        downloadManager = OldDownloadManager.getInstance(application);
         paperRepository = PaperRepository.getInstance(application);
         storageManager = StorageManager.getInstance(application);
         settings = TazSettings.getInstance(application);
@@ -122,8 +122,8 @@ public class StartViewModel extends AndroidViewModel {
             public Void execute(Void... aVoid) {
                 while (downloadQueue.size() > 0) {
                     String bookId = downloadQueue.get(0);
-                    DownloadManager.DownloadManagerResult result = downloadManager.downloadPaper(bookId, false);
-                    if (result.getState() != DownloadManager.DownloadManagerResult.STATE.SUCCESS) {
+                    OldDownloadManager.DownloadManagerResult result = downloadManager.downloadPaper(bookId, false);
+                    if (result.getState() != OldDownloadManager.DownloadManagerResult.STATE.SUCCESS) {
                         String title = "";
                         Paper paper = paperRepository.getPaperWithBookId(bookId);
                         if (paper != null) title = paper.getTitelWithDate(getApplication().getResources());

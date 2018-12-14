@@ -9,7 +9,7 @@ import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.PaperRepository;
 import de.thecode.android.tazreader.data.Resource;
 import de.thecode.android.tazreader.data.ResourceRepository;
-import de.thecode.android.tazreader.download.DownloadManager;
+import de.thecode.android.tazreader.download.OldDownloadManager;
 import de.thecode.android.tazreader.download.PaperDownloadFailedEvent;
 import de.thecode.android.tazreader.download.ResourceDownloadEvent;
 import de.thecode.android.tazreader.notifications.NotificationUtils;
@@ -38,15 +38,15 @@ public class DownloadFinishedWorker extends LoggingWorker {
     private static final String TAG_PREFIX      = BuildConfig.FLAVOR + "_" + "download_finished_job_";
     private static final String ARG_DOWNLOAD_ID = "downloadId";
 
-    private final StorageManager externalStorage;
-    private final DownloadManager downloadHelper;
-    private final PaperRepository paperRepository;
+    private final StorageManager     externalStorage;
+    private final OldDownloadManager downloadHelper;
+    private final PaperRepository    paperRepository;
     private final ResourceRepository resourceRepository;
 
     public DownloadFinishedWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
         externalStorage = StorageManager.getInstance(context);
-        downloadHelper = DownloadManager.getInstance(context);
+        downloadHelper = OldDownloadManager.getInstance(context);
         paperRepository = PaperRepository.getInstance(context);
         resourceRepository = ResourceRepository.getInstance(context);
     }
@@ -59,7 +59,7 @@ public class DownloadFinishedWorker extends LoggingWorker {
         Timber.d("starting background work for downloadId: %d", downloadId);
         if (downloadId != -1) {
 
-            DownloadManager.DownloadState state = downloadHelper.getDownloadState(downloadId);
+            OldDownloadManager.DownloadState state = downloadHelper.getDownloadState(downloadId);
             Timber.d("state: %s", state);
             boolean firstOccurrenceOfState = downloadHelper.isFirstOccurrenceOfState(state);
             if (!firstOccurrenceOfState) {
@@ -73,7 +73,7 @@ public class DownloadFinishedWorker extends LoggingWorker {
                 paper.setDownloadId(0);
 
                 try {
-                    if (state.getStatus() == DownloadManager.DownloadState.STATUS_SUCCESSFUL) {
+                    if (state.getStatus() == OldDownloadManager.DownloadState.STATUS_SUCCESSFUL) {
                         File downloadFile = externalStorage.getDownloadFile(paper);
                         if (!downloadFile.exists())
                             throw new DownloadException("Downloaded paper file missing");
@@ -125,7 +125,7 @@ public class DownloadFinishedWorker extends LoggingWorker {
                                        .exists()) //noinspection ResultOfMethodCallIgnored
                         externalStorage.getDownloadFile(paper)
                                        .delete();
-                    if (state.getStatus() != DownloadManager.DownloadState.STATUS_NOTFOUND) {
+                    if (state.getStatus() != OldDownloadManager.DownloadState.STATUS_NOTFOUND) {
                         NotificationUtils.getInstance(getApplicationContext())
                                          .showDownloadErrorNotification(paper,
                                                                         getApplicationContext().getString(R.string.download_error_hints));
@@ -147,7 +147,7 @@ public class DownloadFinishedWorker extends LoggingWorker {
                 //DownloadHelper.DownloadState downloadDownloadState = downloadHelper.getDownloadState(downloadId);
                 Timber.i("Download complete for resource: %s, %s", resource, state);
                 try {
-                    if (state.getStatus() == DownloadManager.DownloadState.STATUS_SUCCESSFUL) {
+                    if (state.getStatus() == OldDownloadManager.DownloadState.STATUS_SUCCESSFUL) {
                         File downloadFile = externalStorage.getDownloadFile(resource);
                         if (!downloadFile.exists())
                             throw new DownloadException("Downloaded resource file missing");

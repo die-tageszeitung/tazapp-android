@@ -37,7 +37,7 @@ import de.thecode.android.tazreader.dialog.ArchiveDialog;
 import de.thecode.android.tazreader.dialog.ArchiveEntry;
 import de.thecode.android.tazreader.dialog.HelpDialog;
 import de.thecode.android.tazreader.dialognew.AskForHelpDialog;
-import de.thecode.android.tazreader.download.DownloadManager;
+import de.thecode.android.tazreader.download.OldDownloadManager;
 import de.thecode.android.tazreader.download.PaperDownloadFailedEvent;
 import de.thecode.android.tazreader.download.PaperDownloadFinishedEvent;
 import de.thecode.android.tazreader.download.ResourceDownloadEvent;
@@ -670,15 +670,15 @@ public class StartActivity extends BaseActivity
                                                                        default:
                                                                            new AsyncTaskListener<Resource, Exception>(resources -> {
                                                                                try {
-                                                                                   DownloadManager.getInstance(StartActivity.this)
-                                                                                                  .enqueResource(resources[0],
+                                                                                   OldDownloadManager.getInstance(StartActivity.this)
+                                                                                                     .enqueResource(resources[0],
                                                                                                                  false);
-                                                                               } catch (DownloadManager.NotEnoughSpaceException e) {
+                                                                               } catch (OldDownloadManager.NotEnoughSpaceException e) {
                                                                                    return e;
                                                                                }
                                                                                return null;
                                                                            }, exception -> {
-                                                                               if (exception instanceof DownloadManager.NotEnoughSpaceException) {
+                                                                               if (exception instanceof OldDownloadManager.NotEnoughSpaceException) {
                                                                                    Timber.e(exception);
                                                                                    showDownloadErrorDialog(getString(R.string.message_resourcedownload_error),
                                                                                                            getString(R.string.message_not_enough_space),

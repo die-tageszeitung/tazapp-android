@@ -7,6 +7,9 @@ import de.thecode.android.tazreader.analytics.AnalyticsWrapper;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.secure.Installation;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import timber.log.Timber;
 
 public class AccountHelper {
@@ -22,8 +25,9 @@ public class AccountHelper {
     }
 
 
-    private TazSettings preferences;
-    private String      cipherPassword;
+    private TazSettings                      preferences;
+    private String                           cipherPassword;
+    private List<CredentialsChangedListener> credentialsChangedListenerList = new ArrayList<>();
 
     private AccountHelper(Context context) {
         preferences = TazSettings.getInstance(context);
@@ -59,19 +63,24 @@ public class AccountHelper {
         preferences.setEncrytedPrefString(cipherPassword, TazSettings.PREFKEY.USER, user);
         preferences.setEncrytedPrefString(cipherPassword, TazSettings.PREFKEY.PASS, password);
 //        setAuthenticated(true);
+
+        for (CredentialsChangedListener listener : credentialsChangedListenerList) {
+            listener.onCredentialsChanged(this);
+        }
     }
 
-    public void removeUser() {
-        preferences.removePref(TazSettings.PREFKEY.USER);
-        preferences.removePref(TazSettings.PREFKEY.PASS);
-//        setAuthenticated(false);
+
+
+    public void addCredentialsChangedListener(CredentialsChangedListener listener) {
+        if (!credentialsChangedListenerList.contains(listener)) credentialsChangedListenerList.add(listener);
     }
 
-//    public void setAuthenticated(boolean isAuthenticated) {
-//        preferences.setPref(TazSettings.PREFKEY.AUTHENTICATED,isAuthenticated);
-//    }
-//
-//    public boolean isAuthenticated(){
-//       return preferences.getPrefBoolean(TazSettings.PREFKEY.AUTHENTICATED,false);
-//    }
+    public void removeCredentialsChangedListener(CredentialsChangedListener listener) {
+        credentialsChangedListenerList.remove(listener);
+    }
+
+
+    public interface CredentialsChangedListener {
+        void onCredentialsChanged(AccountHelper accountHelper);
+    }
 }

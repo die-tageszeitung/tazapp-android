@@ -353,6 +353,8 @@ dependencies {
     implementation 'com.afollestad.material-dialogs:core:2.0.0-beta3'
 
     implementation 'androidx.multidex:multidex:2.0.0' //Remove after Migration of Dialogs maybe
+
+    implementation 'com.novoda:download-manager:2.2.0'
 }
 
 class Download extends DefaultTask {

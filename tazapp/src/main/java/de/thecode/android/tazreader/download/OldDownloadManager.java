@@ -37,7 +37,7 @@ import java.util.Map;
 import androidx.annotation.WorkerThread;
 import timber.log.Timber;
 
-public class DownloadManager {
+public class OldDownloadManager {
 
     private final android.app.DownloadManager mDownloadManager;
     //    private final Context                     mContext;
@@ -52,20 +52,20 @@ public class DownloadManager {
     private final Resources                   appResources;
     private final UserDeviceInfo              userDeviceInfo;
 
-    private static volatile DownloadManager instance;
+    private static volatile OldDownloadManager instance;
 
-    public static DownloadManager getInstance(Context context) {
+    public static OldDownloadManager getInstance(Context context) {
         if (instance == null) {
-            synchronized (DownloadManager.class) {
+            synchronized (OldDownloadManager.class) {
                 if (instance == null) {
-                    instance = new DownloadManager(context.getApplicationContext());
+                    instance = new OldDownloadManager(context.getApplicationContext());
                 }
             }
         }
         return instance;
     }
 
-    private DownloadManager(Context context) {
+    private OldDownloadManager(Context context) {
         mDownloadManager = ((android.app.DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE));
 //        mContext = context;
         mStorage = StorageManager.getInstance(context);

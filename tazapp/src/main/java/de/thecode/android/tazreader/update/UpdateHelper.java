@@ -7,7 +7,7 @@ import androidx.annotation.NonNull;
 
 import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.data.TazSettings;
-import de.thecode.android.tazreader.download.DownloadManager;
+import de.thecode.android.tazreader.download.OldDownloadManager;
 import de.thecode.android.tazreader.utils.UserDeviceInfo;
 
 import java.util.ArrayList;
@@ -84,12 +84,12 @@ public class UpdateHelper {
                 context.startActivity(new Intent(Intent.ACTION_VIEW,
                                                  Uri.parse("market://details?id=" + userDeviceInfo.getPackageName())));
             } catch (android.content.ActivityNotFoundException anfe) {
-                DownloadManager.getInstance(context)
-                               .downloadUpdate();
+                OldDownloadManager.getInstance(context)
+                                  .downloadUpdate();
             }
         } else {
-            DownloadManager.getInstance(context)
-                           .downloadUpdate();
+            OldDownloadManager.getInstance(context)
+                              .downloadUpdate();
         }
     }
 

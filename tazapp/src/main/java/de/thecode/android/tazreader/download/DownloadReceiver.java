@@ -23,8 +23,8 @@ public class DownloadReceiver extends BroadcastReceiver {
 
         Timber.i("DownloadReceiver received intent: %s", intent);
         long downloadId = intent.getLongExtra(android.app.DownloadManager.EXTRA_DOWNLOAD_ID, 0);
-        DownloadManager.DownloadState downloadState = DownloadManager.getInstance(context)
-                                                                     .getDownloadState(downloadId);
+        OldDownloadManager.DownloadState downloadState = OldDownloadManager.getInstance(context)
+                                                                           .getDownloadState(downloadId);
         String downloadStateUri = downloadState.getUri() == null ? null : downloadState.getUri()
                                                                                        .toString();
         boolean isAppUpdate = false;
