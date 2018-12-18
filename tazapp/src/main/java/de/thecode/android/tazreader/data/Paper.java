@@ -71,12 +71,12 @@ public class Paper {
 //    public final static int IS_DOWNLOADING        = 4;
 //    public final static int NOT_DOWNLOADED_IMPORT = 5;
 
-    public final static int STATE_NONE = 0;
-    public final static int STATE_DOWNLOADING = 1;
-    public final static int STATE_DOWNLOADED = 2;
-    public final static int STATE_EXTRACTING = 3;
-    public final static int STATE_READY = 4;
-    public final static int STATE_UPDATE = 5;
+//    public final static int STATE_NONE = 0;
+//    public final static int STATE_DOWNLOADING = 1;
+//    public final static int STATE_DOWNLOADED = 2;
+//    public final static int STATE_EXTRACTING = 3;
+//    public final static int STATE_READY = 4;
+//    public final static int STATE_UPDATE = 5;
 
     //    private Long    id;
     @NonNull
