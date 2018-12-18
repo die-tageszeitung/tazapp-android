@@ -71,7 +71,7 @@ apply plugin: 'kotlin-android-extensions'
 apply plugin: 'io.fabric'
 apply plugin: 'com.akaita.android.easylauncher'
 apply plugin: 'com.github.triplet.play'
-
+apply plugin: 'kotlin-kapt'
 
 def overheadPath
 
@@ -338,6 +338,7 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-extensions:2.0.0'
     implementation "androidx.room:room-runtime:2.1.0-alpha03"
     annotationProcessor "androidx.room:room-compiler:2.1.0-alpha03"
+    kapt "androidx.room:room-compiler:2.1.0-alpha03"
 //    implementation "android.arch.lifecycle:common-java8:1.1.1"
 
     implementation "org.apache.commons:commons-lang3:3.7"
@@ -346,7 +347,7 @@ dependencies {
 
 //    implementation "com.google.guava:guava:24.1-android"
 
-    implementation "android.arch.work:work-runtime:1.0.0-alpha12"
+    implementation "android.arch.work:work-runtime:1.0.0-alpha13"
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 
