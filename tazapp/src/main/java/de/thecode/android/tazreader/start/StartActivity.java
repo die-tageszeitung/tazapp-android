@@ -29,15 +29,18 @@ import de.mateware.snacky.Snacky;
 import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.analytics.AnalyticsWrapper;
+import de.thecode.android.tazreader.data.DownloadState;
 import de.thecode.android.tazreader.data.Paper;
+import de.thecode.android.tazreader.data.PaperWithDownloadState;
 import de.thecode.android.tazreader.data.Resource;
 import de.thecode.android.tazreader.data.ResourceRepository;
+import de.thecode.android.tazreader.data.ResourceWithDownloadState;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.dialog.ArchiveDialog;
 import de.thecode.android.tazreader.dialog.ArchiveEntry;
 import de.thecode.android.tazreader.dialog.HelpDialog;
 import de.thecode.android.tazreader.dialognew.AskForHelpDialog;
-import de.thecode.android.tazreader.download.DownloadManager;
+import de.thecode.android.tazreader.download.OldDownloadManager;
 import de.thecode.android.tazreader.download.PaperDownloadFailedEvent;
 import de.thecode.android.tazreader.download.PaperDownloadFinishedEvent;
 import de.thecode.android.tazreader.download.ResourceDownloadEvent;
@@ -484,7 +487,6 @@ public class StartActivity extends BaseActivity
 
 
     public void startDownload(Paper downloadPaper) {
-        if (downloadPaper.hasNoneState()) {
             switch (Connection.getConnectionType(this)) {
                 case Connection.CONNECTION_NOT_AVAILABLE:
                     showNoConnectionDialog();
@@ -499,7 +501,6 @@ public class StartActivity extends BaseActivity
                     addToDownloadQueue(downloadPaper.getBookId());
                     startViewModel.startDownloadQueue();
             }
-        }
     }
 
     private void addToDownloadQueue(String bookId) {
@@ -631,9 +632,9 @@ public class StartActivity extends BaseActivity
     }
 
     public void openReader(String bookId) {
-        new AsyncTaskListener<String, Paper>(bookIdParams -> startViewModel.getPaperRepository()
-                                                                           .getPaperWithBookId(bookIdParams[0]), paper -> {
-            if (!paper.hasReadyState()) {
+        new AsyncTaskListener<String, PaperWithDownloadState>(bookIdParams -> startViewModel.getPaperRepository()
+                                                                                            .getWithBookId(bookIdParams[0]), paper -> {
+            if (paper.getDownloadState()!=DownloadState.READY) {
                 showErrorDialog(getString(R.string.message_paper_not_downloaded), DIALOG_ERROR_OPEN_PAPER);
             } else {
                 if (!startViewModel.getStorageManager()
@@ -641,10 +642,10 @@ public class StartActivity extends BaseActivity
                                    .exists()) {
                     showErrorDialog(getString(R.string.message_paper_files_not_downloaded), DIALOG_ERROR_OPEN_PAPER);
                 } else {
-                    new AsyncTaskListener<Paper, Resource>(papers -> ResourceRepository.getInstance(StartActivity.this)
-                                                                                       .getResourceForPaper(papers[0]),
+                    new AsyncTaskListener<Paper, ResourceWithDownloadState>(papers -> ResourceRepository.getInstance(StartActivity.this)
+                                                                                                        .getResourceForPaper(papers[0]),
                                                            resource -> {
-                                                               if (resource.isDownloaded() && startViewModel.getStorageManager()
+                                                               if (resource.getDownloadState() == DownloadState.READY && startViewModel.getStorageManager()
                                                                                                             .getResourceDirectory(
                                                                                                                     resource)
                                                                                                             .exists()) {
@@ -670,15 +671,15 @@ public class StartActivity extends BaseActivity
                                                                        default:
                                                                            new AsyncTaskListener<Resource, Exception>(resources -> {
                                                                                try {
-                                                                                   DownloadManager.getInstance(StartActivity.this)
-                                                                                                  .enqueResource(resources[0],
+                                                                                   OldDownloadManager.getInstance(StartActivity.this)
+                                                                                                     .enqueResource(resources[0],
                                                                                                                  false);
-                                                                               } catch (DownloadManager.NotEnoughSpaceException e) {
+                                                                               } catch (OldDownloadManager.NotEnoughSpaceException e) {
                                                                                    return e;
                                                                                }
                                                                                return null;
                                                                            }, exception -> {
-                                                                               if (exception instanceof DownloadManager.NotEnoughSpaceException) {
+                                                                               if (exception instanceof OldDownloadManager.NotEnoughSpaceException) {
                                                                                    Timber.e(exception);
                                                                                    showDownloadErrorDialog(getString(R.string.message_resourcedownload_error),
                                                                                                            getString(R.string.message_not_enough_space),
@@ -787,7 +788,7 @@ public class StartActivity extends BaseActivity
             boolean foundDownloaded = false;
             for (Paper paper : allPapers) {
                 if (foundDownloaded) break;
-                foundDownloaded = !paper.hasNoneState();
+                foundDownloaded = startViewModel.getPaperRepository().getDownloadStateForPaper(paper.getBookId()) != DownloadState.NONE;
             }
             if (!foundDownloaded) {
                 showDialog = startViewModel.getSettings()

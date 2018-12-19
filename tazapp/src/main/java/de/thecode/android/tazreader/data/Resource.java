@@ -1,9 +1,5 @@
 package de.thecode.android.tazreader.data;
 
-import androidx.room.Entity;
-import androidx.room.PrimaryKey;
-import androidx.annotation.NonNull;
-
 import com.dd.plist.NSDictionary;
 
 import de.thecode.android.tazreader.sync.model.Plist;
@@ -13,6 +9,10 @@ import de.thecode.android.tazreader.utils.ReadableException;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+
+import androidx.annotation.NonNull;
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
 
 @Entity(tableName = "RESOURCE")
 public class Resource {
@@ -26,12 +26,10 @@ public class Resource {
 
     @PrimaryKey
     @NonNull
-    private String  key;
-    private long    downloadId;
-    private boolean downloaded;
-    private String  url;
-    private String  fileHash;
-    private long    len;
+    private String key;
+    private String url;
+    private String fileHash;
+    private long   len;
 
     public Resource() {
     }
@@ -45,14 +43,6 @@ public class Resource {
 
     public void setKey(String key) {
         this.key = key;
-    }
-
-    public void setDownloadId(long downloadId) {
-        this.downloadId = downloadId;
-    }
-
-    public void setDownloaded(boolean downloaded) {
-        this.downloaded = downloaded;
     }
 
     public void setFileHash(String fileHash) {
@@ -69,18 +59,6 @@ public class Resource {
 
     public String getKey() {
         return key;
-    }
-
-    public boolean isDownloaded() {
-        return downloaded;
-    }
-
-    public boolean isDownloading() {
-        return downloadId != 0;
-    }
-
-    public long getDownloadId() {
-        return downloadId;
     }
 
     public String getUrl() {
@@ -109,9 +87,7 @@ public class Resource {
 
         Resource resource = (Resource) o;
 
-        return new EqualsBuilder().append(downloadId, resource.downloadId)
-                                  .append(downloaded, resource.downloaded)
-                                  .append(len, resource.len)
+        return new EqualsBuilder().append(len, resource.len)
                                   .append(key, resource.key)
                                   .append(url, resource.url)
                                   .append(fileHash, resource.fileHash)
@@ -121,8 +97,6 @@ public class Resource {
     @Override
     public int hashCode() {
         return new HashCodeBuilder(17, 37).append(key)
-                                          .append(downloadId)
-                                          .append(downloaded)
                                           .append(url)
                                           .append(fileHash)
                                           .append(len)

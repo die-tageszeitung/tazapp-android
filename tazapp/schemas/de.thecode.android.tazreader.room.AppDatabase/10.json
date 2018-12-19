@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 10,
-    "identityHash": "a1cfd8f0873430bf59190af9b5d68962",
+    "identityHash": "290e20bee46b7bc2ef1153091ed855a3",
     "entities": [
       {
         "tableName": "PAPER",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`bookId` TEXT NOT NULL, `date` TEXT, `image` TEXT, `imageHash` TEXT, `link` TEXT, `fileHash` TEXT, `len` INTEGER NOT NULL, `lastModified` INTEGER NOT NULL, `resource` TEXT, `demo` INTEGER NOT NULL, `state` INTEGER NOT NULL, `downloadId` INTEGER NOT NULL, `title` TEXT, `validUntil` INTEGER NOT NULL, `publication` TEXT, PRIMARY KEY(`bookId`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`bookId` TEXT NOT NULL, `date` TEXT, `image` TEXT, `imageHash` TEXT, `link` TEXT, `fileHash` TEXT, `len` INTEGER NOT NULL, `lastModified` INTEGER NOT NULL, `resource` TEXT, `demo` INTEGER NOT NULL, `title` TEXT, `validUntil` INTEGER NOT NULL, `publication` TEXT, PRIMARY KEY(`bookId`))",
         "fields": [
           {
             "fieldPath": "bookId",
@@ -69,18 +69,6 @@
             "notNull": true
           },
           {
-            "fieldPath": "state",
-            "columnName": "state",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "downloadId",
-            "columnName": "downloadId",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
             "fieldPath": "title",
             "columnName": "title",
             "affinity": "TEXT",
@@ -110,24 +98,12 @@
       },
       {
         "tableName": "RESOURCE",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`key` TEXT NOT NULL, `downloadId` INTEGER NOT NULL, `downloaded` INTEGER NOT NULL, `url` TEXT, `fileHash` TEXT, `len` INTEGER NOT NULL, PRIMARY KEY(`key`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`key` TEXT NOT NULL, `url` TEXT, `fileHash` TEXT, `len` INTEGER NOT NULL, PRIMARY KEY(`key`))",
         "fields": [
           {
             "fieldPath": "key",
             "columnName": "key",
             "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "downloadId",
-            "columnName": "downloadId",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "downloaded",
-            "columnName": "downloaded",
-            "affinity": "INTEGER",
             "notNull": true
           },
           {
@@ -248,7 +224,7 @@
       },
       {
         "tableName": "DOWNLOADS",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`key` TEXT NOT NULL, `downloadMangerId` INTEGER NOT NULL, `type` TEXT NOT NULL, `state` TEXT NOT NULL, PRIMARY KEY(`key`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`key` TEXT NOT NULL, `type` TEXT NOT NULL, `downloadManagerId` INTEGER NOT NULL, `state` TEXT NOT NULL, PRIMARY KEY(`key`))",
         "fields": [
           {
             "fieldPath": "key",
@@ -257,15 +233,15 @@
             "notNull": true
           },
           {
-            "fieldPath": "downloadMangerId",
-            "columnName": "downloadMangerId",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
             "fieldPath": "type",
             "columnName": "type",
             "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "downloadManagerId",
+            "columnName": "downloadManagerId",
+            "affinity": "INTEGER",
             "notNull": true
           },
           {
@@ -288,7 +264,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"a1cfd8f0873430bf59190af9b5d68962\")"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"290e20bee46b7bc2ef1153091ed855a3\")"
     ]
   }
 }

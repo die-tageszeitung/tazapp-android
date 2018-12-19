@@ -6,6 +6,9 @@ import android.text.TextUtils;
 import com.dd.plist.PropertyListFormatException;
 
 import de.thecode.android.tazreader.BuildConfig;
+import de.thecode.android.tazreader.data.Download;
+import de.thecode.android.tazreader.data.DownloadState;
+import de.thecode.android.tazreader.data.DownloadsRepository;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.PaperRepository;
 import de.thecode.android.tazreader.download.PaperDownloadFailedEvent;
@@ -28,7 +31,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import androidx.annotation.NonNull;
 import androidx.work.Data;
 import androidx.work.OneTimeWorkRequest;
-import androidx.work.Result;
 import androidx.work.WorkManager;
 import androidx.work.WorkRequest;
 import androidx.work.WorkerParameters;
@@ -40,6 +42,7 @@ public class DownloadFinishedPaperWorker extends LoggingWorker {
     private static final String ARG_PAPER_BOOKID = "paper_bookid";
 
     private final PaperRepository paperRepository;
+    private final DownloadsRepository downloadsRepository;
     private final StorageManager  storageManager;
     private       UnzipPaper      currentUnzipPaper;
 
@@ -47,6 +50,7 @@ public class DownloadFinishedPaperWorker extends LoggingWorker {
         super(context, workerParams);
         paperRepository = PaperRepository.getInstance(context);
         storageManager = StorageManager.getInstance(context);
+        downloadsRepository = DownloadsRepository.Companion.getInstance(context);
     }
 
     @NonNull
@@ -55,11 +59,12 @@ public class DownloadFinishedPaperWorker extends LoggingWorker {
         String bookId = getInputData().getString(ARG_PAPER_BOOKID);
         if (!TextUtils.isEmpty(bookId)) {
             Paper paper = paperRepository.getPaperWithBookId(bookId);
+            Download download = paperRepository.getDownloadForPaper(bookId);
             if (paper != null) {
                 try {
                     Timber.i("%s", paper);
-                    paper.setState(Paper.STATE_EXTRACTING);
-                    paperRepository.savePaper(paper);
+                    download.setState(DownloadState.EXTRACTING);
+                    downloadsRepository.save(download);
                     currentUnzipPaper = new UnzipPaper(paper,
                                                        storageManager.getDownloadFile(paper),
                                                        storageManager.getPaperDirectory(paper),
@@ -83,15 +88,18 @@ public class DownloadFinishedPaperWorker extends LoggingWorker {
                                      }.configure(bookId));
                     currentUnzipPaper.start();
                     paper.parseMissingAttributes(false);
-                    paper.setState(Paper.STATE_READY);
                     paperRepository.savePaper(paper);
+                    download.setState(DownloadState.READY);
+                    downloadsRepository.save(download);
+
                     NotificationUtils.getInstance(getApplicationContext())
                                      .showDownloadFinishedNotification(paper);
                     EventBus.getDefault()
                             .post(new PaperDownloadFinishedEvent(paper.getBookId()));
                 } catch (ParserConfigurationException | IOException | SAXException | ParseException | PropertyListFormatException | UnzipCanceledException e) {
-                    paper.setState(Paper.STATE_NONE);
                     paperRepository.savePaper(paper);
+                    download.setState(DownloadState.NONE);
+                    downloadsRepository.save(download);
                     if (e instanceof UnzipCanceledException) {
                         Timber.w(e);
                     } else {

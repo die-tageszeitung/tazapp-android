@@ -5,11 +5,13 @@ import androidx.room.PrimaryKey
 import androidx.room.TypeConverter
 
 @Entity(tableName = "DOWNLOADS")
+
+
 data class Download(@PrimaryKey()
                     val key: String,
-                    val downloadMangerId: Int,
-                    val type: DownloadType,
-                    val state: DownloadState)
+                    var type: DownloadType = DownloadType.UNKNOWN,
+                    var downloadManagerId: Long = 0,
+                    var state: DownloadState = DownloadState.NONE)
 
 class DownloadStateTypeConverter {
     @TypeConverter
@@ -40,7 +42,7 @@ class DownloadTypeTypeConverter {
 }
 
 enum class DownloadType {
-    PAPER, RESOURCE;
+    UNKNOWN, PAPER, RESOURCE;
 
     companion object {
         fun getByName(name: String) = DownloadType.valueOf(name.toUpperCase())

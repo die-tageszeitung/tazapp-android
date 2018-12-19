@@ -3,7 +3,6 @@ package de.thecode.android.tazreader.worker;
 import android.content.Context;
 
 import androidx.annotation.NonNull;
-import androidx.work.Result;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 import timber.log.Timber;

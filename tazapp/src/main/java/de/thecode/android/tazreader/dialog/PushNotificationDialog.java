@@ -9,10 +9,11 @@ import android.view.ViewGroup;
 import android.webkit.WebView;
 
 import de.mateware.dialog.DialogCustomView;
+import de.thecode.android.tazreader.data.DownloadState;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.PaperRepository;
-import de.thecode.android.tazreader.data.Resource;
 import de.thecode.android.tazreader.data.ResourceRepository;
+import de.thecode.android.tazreader.data.ResourceWithDownloadState;
 import de.thecode.android.tazreader.push.PushNotification;
 import de.thecode.android.tazreader.utils.AsyncTaskListener;
 import de.thecode.android.tazreader.utils.Charsets;
@@ -102,8 +103,8 @@ public class PushNotificationDialog extends DialogCustomView {
             String cssfilepath = "file:///android_asset/push/simple.css";
             Paper latestPaper = paperRepository.getLatestPaper();
             if (latestPaper != null) {
-                Resource latestResource = resourceRepository.getWithKey(latestPaper.getResource());
-                if (latestResource != null && latestResource.isDownloaded()) {
+                ResourceWithDownloadState latestResource = resourceRepository.getWithKey(latestPaper.getResource());
+                if (latestResource != null && latestResource.getDownloadState() == DownloadState.READY) {
                     File resourceDir = storageManager.getResourceDirectory(latestResource.getKey());
                     File cssfile = new File(resourceDir, "res/css/notification.css");
                     if (cssfile.exists()) {

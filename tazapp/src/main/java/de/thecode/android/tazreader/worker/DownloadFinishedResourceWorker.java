@@ -6,6 +6,9 @@ import android.text.TextUtils;
 import com.dd.plist.PropertyListFormatException;
 
 import de.thecode.android.tazreader.BuildConfig;
+import de.thecode.android.tazreader.data.Download;
+import de.thecode.android.tazreader.data.DownloadState;
+import de.thecode.android.tazreader.data.DownloadsRepository;
 import de.thecode.android.tazreader.data.Resource;
 import de.thecode.android.tazreader.data.ResourceRepository;
 import de.thecode.android.tazreader.download.ResourceDownloadEvent;
@@ -24,7 +27,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import androidx.annotation.NonNull;
 import androidx.work.Data;
 import androidx.work.OneTimeWorkRequest;
-import androidx.work.Result;
 import androidx.work.WorkManager;
 import androidx.work.WorkRequest;
 import androidx.work.WorkerParameters;
@@ -36,11 +38,13 @@ public class DownloadFinishedResourceWorker extends LoggingWorker {
     private static final String ARG_RESOURCE_KEY = "resource_key";
 
     private final ResourceRepository resourceRepository;
+    private final DownloadsRepository downloadsRepository;
     private final StorageManager storageManager;
 
     public DownloadFinishedResourceWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
         resourceRepository = ResourceRepository.getInstance(context);
+        downloadsRepository = DownloadsRepository.Companion.getInstance(context);
         storageManager = StorageManager.getInstance(context);
     }
 
@@ -49,19 +53,22 @@ public class DownloadFinishedResourceWorker extends LoggingWorker {
     public Result doBackgroundWork() {
         String resourceKey = getInputData().getString(ARG_RESOURCE_KEY);
         if (!TextUtils.isEmpty(resourceKey)) {
+            //Resource resource = resourceRepository.getWithKey(resourceKey);
             Resource resource = resourceRepository.getWithKey(resourceKey);
-            Timber.i("%s", resource);
-            if (resource != null && resource.isDownloading()) {
-
+            Download download = resourceRepository.getDownload(resourceKey);
+            Timber.i("%s", download);
+            if (download.getState() == DownloadState.DOWNLOADING) {
+                download.setState(DownloadState.EXTRACTING);
+                downloadsRepository.save(download);
                 try {
 
                     UnzipResource unzipResource = new UnzipResource(storageManager.getDownloadFile(resource),
-                                                                    storageManager.getResourceDirectory(resource.getKey()),
+                                                                    storageManager.getResourceDirectory(resourceKey),
                                                                     true);
                     unzipResource.start();
-                    saveResource(resource, null);
+                    saveResource(download, null);
                 } catch (UnzipCanceledException | IOException | PropertyListFormatException | ParseException | SAXException | ParserConfigurationException e) {
-                    saveResource(resource, e);
+                    saveResource(download, e);
                 }
             }
         }
@@ -70,17 +77,16 @@ public class DownloadFinishedResourceWorker extends LoggingWorker {
 
     }
 
-    private void saveResource(Resource resource, Exception e) {
-        resource.setDownloadId(0);
-
+    private void saveResource(Download download, Exception e) {
         if (e == null) {
-            resource.setDownloaded(true);
+            download.setState(DownloadState.READY);
         } else {
+            download.setState(DownloadState.NONE);
             Timber.e(e);
         }
-        resourceRepository.saveResource(resource);
+        downloadsRepository.save(download);
         EventBus.getDefault()
-                .post(new ResourceDownloadEvent(resource.getKey(), e));
+                .post(new ResourceDownloadEvent(download.getKey(), e));
     }
 
 

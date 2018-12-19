@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
+import de.thecode.android.tazreader.data.PaperWithDownloadState;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.download.UnzipProgressEvent;
 import de.thecode.android.tazreader.start.DrawerStateChangedEvent;
@@ -77,7 +78,7 @@ public class LibraryFragment extends StartBaseFragment {
 
         adapter = new NewLibraryAdapter(startViewModel.getPaperMetaDataMap(), new NewLibraryAdapter.OnItemClickListener() {
             @Override
-            public void onClick(Paper paper, int position) {
+            public void onClick(PaperWithDownloadState paper, int position) {
 
                 Timber.d("position: %s, paper: %s", position, paper);
                 if (actionMode != null) {
@@ -86,13 +87,11 @@ public class LibraryFragment extends StartBaseFragment {
                 } else {
 
                     //TODO CHECK STATES
-                    switch (paper.getState()) {
-                        case Paper.STATE_READY:
-                        case Paper.STATE_UPDATE:
-                            //openPlayer(paper.getId());
+                    switch (paper.getDownloadState()) {
+                        case READY:
                             getStartActivity().openReader(paper.getBookId());
                             break;
-                        case Paper.STATE_NONE:
+                        case NONE:
                             getStartActivity().startDownload(paper);
                             break;
 
@@ -132,9 +131,9 @@ public class LibraryFragment extends StartBaseFragment {
         });
 
         startViewModel.getLivePapers()
-                      .observe(this, new Observer<List<Paper>>() {
+                      .observe(this, new Observer<List<PaperWithDownloadState>>() {
                           @Override
-                          public void onChanged(@Nullable List<Paper> libraryPapers) {
+                          public void onChanged(@Nullable List<PaperWithDownloadState> libraryPapers) {
 //                              if (actionMode != null) {
 //                                  if (startViewModel.getLibraryPaperLiveData()
 //                                                    .getSelectionSize() == 0) actionMode.finish();

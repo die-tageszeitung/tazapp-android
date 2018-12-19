@@ -1,12 +1,13 @@
 package de.thecode.android.tazreader.data;
 
 import android.content.Context;
-import androidx.annotation.WorkerThread;
 
 import de.thecode.android.tazreader.room.AppDatabase;
 import de.thecode.android.tazreader.utils.StorageManager;
 
 import java.util.List;
+
+import androidx.annotation.WorkerThread;
 
 /**
  * Created by mate on 01.03.18.
@@ -30,7 +31,7 @@ public class ResourceRepository {
     }
 
     private final StoreRepository storeRepository;
-//    private final ContentResolver contentResolver;
+    private final DownloadsRepository downloadsRepository;
     private final AppDatabase appDatabase;
     private final StorageManager storageManager;
 
@@ -39,10 +40,11 @@ public class ResourceRepository {
         storageManager = StorageManager.getInstance(context);
 //        contentResolver = context.getContentResolver();
         appDatabase = AppDatabase.getInstance(context);
+        downloadsRepository = DownloadsRepository.Companion.getInstance(context);
     }
 
     @WorkerThread
-    public Resource getResourceForPaper(Paper paper) {
+    public ResourceWithDownloadState getResourceForPaper(Paper paper) {
         String resource = storeRepository.getStore(paper.getBookId(), Paper.STORE_KEY_RESOURCE_PARTNER)
                                          .getValue(paper.getResource()); //default value as Fallback
         return getWithKey(resource);
@@ -50,16 +52,9 @@ public class ResourceRepository {
 //        return Resource.getWithKey(context, resource);
     }
 
-
-
     @WorkerThread
-    public Resource getWithKey(String key) {
+    public ResourceWithDownloadState getWithKey(String key) {
         return appDatabase.resourceDao().resourceWithKey(key);
-    }
-
-    @WorkerThread
-    public Resource getWithDownloadId(long downloadId) {
-        return appDatabase.resourceDao().resourceWithDownloadId(downloadId);
     }
 
     @WorkerThread
@@ -74,9 +69,18 @@ public class ResourceRepository {
 
     @WorkerThread
     public void deleteResource(Resource resource){
+        downloadsRepository.delete(resource.getKey());
         storageManager.deleteResourceDir(resource.getKey());
-        resource.setDownloadId(0);
-        resource.setDownloaded(false);
-        saveResource(resource);
+    }
+
+
+    public DownloadState getDownloadState(String key) {
+        return getDownload(key).getState();
+    }
+
+    public Download getDownload(String key) {
+        Download download = downloadsRepository.get(key);
+        if (download.getType() == DownloadType.UNKNOWN) download.setType(DownloadType.RESOURCE);
+        return download;
     }
 }

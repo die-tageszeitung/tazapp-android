@@ -11,6 +11,7 @@ import com.squareup.picasso.Picasso;
 
 import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.R;
+import de.thecode.android.tazreader.data.DownloadState;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.PaperRepository;
 import de.thecode.android.tazreader.data.Publication;
@@ -19,7 +20,7 @@ import de.thecode.android.tazreader.data.Resource;
 import de.thecode.android.tazreader.data.ResourceRepository;
 import de.thecode.android.tazreader.data.StoreRepository;
 import de.thecode.android.tazreader.data.TazSettings;
-import de.thecode.android.tazreader.download.DownloadManager;
+import de.thecode.android.tazreader.download.OldDownloadManager;
 import de.thecode.android.tazreader.okhttp3.OkHttp3Helper;
 import de.thecode.android.tazreader.okhttp3.RequestHelper;
 import de.thecode.android.tazreader.sync.SyncErrorEvent;
@@ -43,7 +44,6 @@ import androidx.work.Constraints;
 import androidx.work.Data;
 import androidx.work.NetworkType;
 import androidx.work.OneTimeWorkRequest;
-import androidx.work.Result;
 import androidx.work.WorkManager;
 import androidx.work.WorkRequest;
 import androidx.work.WorkerParameters;
@@ -121,26 +121,27 @@ public class SyncWorker extends LoggingWorker {
 //    }
 
     private void cleanUpResources() {
-
-        List<Paper> allPapers = paperRepository.getAllPapers();
-        List<Resource> keepResources = new ArrayList<>();
-        if (allPapers != null) {
-            for (Paper paper : allPapers) {
-                if (!paper.hasNoneState()) {
-                    Resource resource = resourceRepository.getResourceForPaper(paper);
-                    if (resource != null && !keepResources.contains(resource)) keepResources.add(resource);
-                }
-            }
-        }
-        List<Resource> deleteResources = resourceRepository.getAllResources();
-        Paper latestPaper = paperRepository.getLatestPaper();
-        if (latestPaper != null) deleteResources.remove(resourceRepository.getWithKey(latestPaper.getResource()));
-        for (Resource keepResource : keepResources) {
-            deleteResources.remove(keepResource);
-        }
-        for (Resource deleteResource : deleteResources) {
-            resourceRepository.deleteResource(deleteResource);
-        }
+        // TODO
+//        List<Paper> allPapers = paperRepository.getAllPapers();
+//        List<Resource> keepResources = new ArrayList<>();
+//        if (allPapers != null) {
+//            for (Paper paper : allPapers) {
+//                if (paperRepository.getDownloadStateForPaper(paper.getBookId()) != DownloadState.NONE) {
+//                    Resource resource = resourceRepository.getResourceForPaper(paper);
+//                    if (resource != null && !keepResources.contains(resource)) keepResources.add(resource);
+//                }
+//            }
+//        }
+//        List<Resource> deleteResources = resourceRepository.getAllResources();
+//        Paper latestPaper = paperRepository.getLatestPaper();
+//
+//        if (latestPaper != null) deleteResources.remove(resourceRepository.getWithKey(latestPaper.getResource()));
+//        for (Resource keepResource : keepResources) {
+//            deleteResources.remove(keepResource);
+//        }
+//        for (Resource deleteResource : deleteResources) {
+//            resourceRepository.deleteResource(deleteResource);
+//        }
     }
 
     public void handlePlist(NSDictionary root) {
@@ -167,8 +168,6 @@ public class SyncWorker extends LoggingWorker {
 
             Paper oldPaper = paperRepository.getPaperWithBookId(newPaper.getBookId());
             if (oldPaper != null) {
-                newPaper.setState(oldPaper.getState());
-                newPaper.setDownloadId(oldPaper.getDownloadId());
                 loadImage = !new EqualsBuilder().append(oldPaper.getImageHash(), newPaper.getImageHash())
                                                 .isEquals();
             }
@@ -217,11 +216,12 @@ public class SyncWorker extends LoggingWorker {
         Paper latestPaper = paperRepository.getLatestPaper();
         if (latestPaper != null) {
             Resource latestResource = resourceRepository.getWithKey(latestPaper.getResource());
-            if (latestResource != null && !latestResource.isDownloaded() && !latestResource.isDownloading()) {
+            DownloadState downloadState = resourceRepository.getDownloadState(latestResource.getKey());
+            if (latestResource != null && downloadState == DownloadState.NONE) {
                 try {
-                    DownloadManager.getInstance(getApplicationContext())
-                                   .enqueResource(latestResource, false);
-                } catch (DownloadManager.NotEnoughSpaceException e) {
+                    OldDownloadManager.getInstance(getApplicationContext())
+                                      .enqueResource(latestResource, false);
+                } catch (OldDownloadManager.NotEnoughSpaceException e) {
                     Timber.e(e);
                 }
             }
@@ -243,7 +243,7 @@ public class SyncWorker extends LoggingWorker {
                 List<Paper> allPapers = paperRepository.getAllPapers();
                 int counter = 0;
                 for (Paper paper : allPapers) {
-                    if (paper.hasReadyState()/* && !paper.isImported() && !paper.isKiosk()*/) {
+                    if (paperRepository.getDownloadStateForPaper(paper.getBookId()) == DownloadState.READY/* && !paper.isImported() && !paper.isKiosk()*/) {
                         if (counter >= papersToKeep) {
                             Timber.d("PaperId: %s (currentOpen:%s)", paper.getBookId(), currentOpenPaperBookId);
                             if (!paper.getBookId()

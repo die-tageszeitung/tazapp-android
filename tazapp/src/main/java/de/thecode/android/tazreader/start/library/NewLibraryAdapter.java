@@ -16,6 +16,7 @@ import com.squareup.picasso.Picasso;
 
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
+import de.thecode.android.tazreader.data.PaperWithDownloadState;
 import de.thecode.android.tazreader.sync.PreloadImageCallback;
 import de.thecode.android.tazreader.utils.TazListAdapter;
 import de.thecode.android.tazreader.utils.extendedasyncdiffer.ExtendedAdapterListUpdateCallback;
@@ -37,7 +38,9 @@ import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 import timber.log.Timber;
 
-public class NewLibraryAdapter extends TazListAdapter<Paper, NewLibraryAdapter.ViewHolder> {
+import static de.thecode.android.tazreader.data.DownloadState.*;
+
+public class NewLibraryAdapter extends TazListAdapter<PaperWithDownloadState, NewLibraryAdapter.ViewHolder> {
 
 
     private static final String PAYLOAD_PROGRESS = "plProgress";
@@ -92,7 +95,7 @@ public class NewLibraryAdapter extends TazListAdapter<Paper, NewLibraryAdapter.V
         if (payloads.isEmpty() || payloads.contains(PAYLOAD_OTHER)) {
             super.onBindViewHolder(holder, position, payloads);
         } else {
-            Paper libraryPaper = getItem(position);
+            PaperWithDownloadState libraryPaper = getItem(position);
             if (payloads.contains(PAYLOAD_SELECTED)) bindSelected(holder, libraryPaper);
             if (payloads.contains(PAYLOAD_STATE)) bindState(holder, libraryPaper);
             if (payloads.contains(PAYLOAD_PROGRESS)) bindProgress(holder, libraryPaper);
@@ -102,7 +105,7 @@ public class NewLibraryAdapter extends TazListAdapter<Paper, NewLibraryAdapter.V
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        Paper libraryPaper = getItem(position);
+        PaperWithDownloadState libraryPaper = getItem(position);
         paperMetaData.setPosition(libraryPaper.getBookId(), position);
         bindImage(holder, libraryPaper);
         bindBadge(holder, libraryPaper);
@@ -170,28 +173,28 @@ public class NewLibraryAdapter extends TazListAdapter<Paper, NewLibraryAdapter.V
 
     }
 
-    private void bindProgress(ViewHolder holder, Paper libraryPaper) {
+    private void bindProgress(ViewHolder holder, PaperWithDownloadState libraryPaper) {
         holder.progress.setProgress(100 - paperMetaData.getProgress(libraryPaper.getBookId()));
     }
 
-    private void bindState(ViewHolder holder, Paper paper) {
+    private void bindState(ViewHolder holder, PaperWithDownloadState paper) {
 //        if (paper.hasNoneState()) holder.progress.post(new ParametrizedRunnable<String>() {
 //            @Override
 //            public void run(String parameter) {
 //                setProgress(parameter, 0);
 //            }
 //        }.set(paper.getBookId()));
-        holder.overlay.setVisibility(paper.hasExtractingState() || paper.hasReadyState() ? View.GONE : View.VISIBLE);
-        holder.progress.setVisibility(paper.hasExtractingState() ? View.VISIBLE : View.GONE);
-        if (paper.hasDownloadingState() || paper.hasDownloadedState() || paper.hasExtractingState()) {
+        holder.overlay.setVisibility(paper.getDownloadState() == EXTRACTING  || paper.getDownloadState() == READY ? View.GONE : View.VISIBLE);
+        holder.progress.setVisibility(paper.getDownloadState() == EXTRACTING ? View.VISIBLE : View.GONE);
+        if (paper.getDownloadState() == DOWNLOADING || paper.getDownloadState() == DOWNLOADED || paper.getDownloadState() == EXTRACTING) {
             holder.stateLayout.setVisibility(View.VISIBLE);
-            switch (paper.getState()) {
-                case Paper.STATE_DOWNLOADING:
-                case Paper.STATE_DOWNLOADED:
+            switch (paper.getDownloadState()) {
+                case DOWNLOADING:
+                case DOWNLOADED:
                     paperMetaData.setProgress(paper.getBookId(),0);
                     holder.state.setText(R.string.string_library_item_download_state);
                     break;
-                case Paper.STATE_EXTRACTING:
+                case EXTRACTING:
                     holder.state.setText(R.string.string_library_item_extract_state);
                     break;
             }
@@ -252,8 +255,8 @@ public class NewLibraryAdapter extends TazListAdapter<Paper, NewLibraryAdapter.V
 
     public void selectNotDownloadedPapers(){
         boolean changed = false;
-        for (Paper paper : getHelper().getCurrentList()) {
-            if (paperMetaData.setSelected(paper.getBookId(),paper.hasNoneState())) {
+        for (PaperWithDownloadState paper : getHelper().getCurrentList()) {
+            if (paperMetaData.setSelected(paper.getBookId(),paper.getDownloadState() == NONE)) {
                 changed = true;
             }
         }
@@ -264,25 +267,25 @@ public class NewLibraryAdapter extends TazListAdapter<Paper, NewLibraryAdapter.V
     }
 
 
-    private static class LibraryAdapterCallback extends DiffUtil.ItemCallback<Paper> {
+    private static class LibraryAdapterCallback extends DiffUtil.ItemCallback<PaperWithDownloadState> {
 
         @Override
-        public boolean areItemsTheSame(Paper oldItem, Paper newItem) {
+        public boolean areItemsTheSame(PaperWithDownloadState oldItem, PaperWithDownloadState newItem) {
             return oldItem.getBookId()
                           .equals(newItem.getBookId());
         }
 
         @Override
-        public boolean areContentsTheSame(Paper oldItem, Paper newItem) {
+        public boolean areContentsTheSame(PaperWithDownloadState oldItem, PaperWithDownloadState newItem) {
             return oldItem.equals(newItem);
         }
 
         @Nullable
         @Override
-        public Object getChangePayload(@NonNull Paper oldItem, @NonNull Paper newItem) {
+        public Object getChangePayload(@NonNull PaperWithDownloadState oldItem, @NonNull PaperWithDownloadState newItem) {
             List<Object> payloads = new ArrayList<>();
-            if (oldItem.getState() != newItem.getState()) payloads.add(PAYLOAD_STATE);
-            oldItem.setState(newItem.getState());
+            if (oldItem.getDownloadState() != newItem.getDownloadState()) payloads.add(PAYLOAD_STATE);
+            oldItem.setDownloadState(newItem.getDownloadState());
             if (!areContentsTheSame(oldItem, newItem)) payloads.add(PAYLOAD_OTHER);
             return payloads;
         }
@@ -344,7 +347,7 @@ public class NewLibraryAdapter extends TazListAdapter<Paper, NewLibraryAdapter.V
     }
 
     public interface OnItemClickListener {
-        void onClick(Paper libraryPaper, int position);
+        void onClick(PaperWithDownloadState libraryPaper, int position);
 
         void onSelectionChanged();
     }
