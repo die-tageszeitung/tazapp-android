@@ -40,10 +40,10 @@ import de.thecode.android.tazreader.dialog.ArchiveDialog;
 import de.thecode.android.tazreader.dialog.ArchiveEntry;
 import de.thecode.android.tazreader.dialog.HelpDialog;
 import de.thecode.android.tazreader.dialognew.AskForHelpDialog;
-import de.thecode.android.tazreader.download.OldDownloadManager;
 import de.thecode.android.tazreader.download.PaperDownloadFailedEvent;
 import de.thecode.android.tazreader.download.PaperDownloadFinishedEvent;
 import de.thecode.android.tazreader.download.ResourceDownloadEvent;
+import de.thecode.android.tazreader.download.TazDownloadManager;
 import de.thecode.android.tazreader.importer.ImportActivity;
 import de.thecode.android.tazreader.migration.MigrationActivity;
 import de.thecode.android.tazreader.notifications.NotificationUtils;
@@ -669,21 +669,21 @@ public class StartActivity extends BaseActivity
                                                                                            DIALOG_ERROR_OPEN_PAPER);
                                                                            break;
                                                                        default:
-                                                                           new AsyncTaskListener<Resource, Exception>(resources -> {
-                                                                               try {
-                                                                                   OldDownloadManager.getInstance(StartActivity.this)
-                                                                                                     .enqueResource(resources[0],
-                                                                                                                 false);
-                                                                               } catch (OldDownloadManager.NotEnoughSpaceException e) {
-                                                                                   return e;
-                                                                               }
-                                                                               return null;
-                                                                           }, exception -> {
-                                                                               if (exception instanceof OldDownloadManager.NotEnoughSpaceException) {
-                                                                                   Timber.e(exception);
+                                                                           new AsyncTaskListener<Resource, TazDownloadManager.Result>(resources -> {
+                                                                               return TazDownloadManager.Companion.getInstance().downloadResource(resources[0].getKey(),false);
+//                                                                               try {
+//                                                                                   OldDownloadManager.getInstance(StartActivity.this)
+//                                                                                                     .enqueResource(resources[0],
+//                                                                                                                 false);
+//                                                                               } catch (OldDownloadManager.NotEnoughSpaceException e) {
+//                                                                                   return e;
+//                                                                               }
+//                                                                               return null;
+                                                                           }, result -> {
+                                                                               if (result.getState()!=TazDownloadManager.Result.STATE.SUCCESS) {
                                                                                    showDownloadErrorDialog(getString(R.string.message_resourcedownload_error),
-                                                                                                           getString(R.string.message_not_enough_space),
-                                                                                                           exception);
+                                                                                                           result.getState().getText(),
+                                                                                                           null);
                                                                                } else {
                                                                                    startViewModel.setPaperWaitingForResource(paper.getBookId());
                                                                                    Timber.e(new Resource.MissingResourceException());

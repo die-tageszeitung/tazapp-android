@@ -40,7 +40,7 @@ public class ResourceRepository {
         storageManager = StorageManager.getInstance(context);
 //        contentResolver = context.getContentResolver();
         appDatabase = AppDatabase.getInstance(context);
-        downloadsRepository = DownloadsRepository.Companion.getInstance(context);
+        downloadsRepository = DownloadsRepository.Companion.getInstance();
     }
 
     @WorkerThread

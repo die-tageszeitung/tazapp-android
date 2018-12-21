@@ -11,7 +11,7 @@ import de.thecode.android.tazreader.data.PaperRepository;
 import de.thecode.android.tazreader.data.Store;
 import de.thecode.android.tazreader.data.StoreRepository;
 import de.thecode.android.tazreader.data.TazSettings;
-import de.thecode.android.tazreader.download.OldDownloadManager;
+import de.thecode.android.tazreader.download.TazDownloadManager;
 import de.thecode.android.tazreader.notifications.NotificationUtils;
 
 import java.util.concurrent.TimeUnit;
@@ -31,16 +31,16 @@ public class AutoDownloadWorker extends LoggingWorker {
     private final TazSettings        settings;
     private final PaperRepository    paperRepository;
     private final StoreRepository    storeRepository;
-    private final OldDownloadManager oldDownloadManager;
     private final NotificationUtils  notificationUtils;
+    private final TazDownloadManager tazDownloadManager;
 
     public AutoDownloadWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
         settings = TazSettings.getInstance(context);
         paperRepository = PaperRepository.getInstance(context);
         storeRepository = StoreRepository.getInstance(context);
-        oldDownloadManager = OldDownloadManager.getInstance(context);
         notificationUtils = NotificationUtils.getInstance(context);
+        tazDownloadManager = TazDownloadManager.Companion.getInstance();
     }
 
     @NonNull
@@ -56,11 +56,12 @@ public class AutoDownloadWorker extends LoggingWorker {
                     if (!isAutoDownloaded && (System.currentTimeMillis() - TimeUnit.DAYS.toMillis(1)) < paper.getDateInMillis()) {
                         boolean wifiOnly = settings.getPrefBoolean(TazSettings.PREFKEY.AUTOLOAD_WIFI, false);
                         if (paperRepository.getDownloadStateForPaper(paper.getBookId()) == DownloadState.NONE) {
-                            OldDownloadManager.DownloadManagerResult result = oldDownloadManager.downloadPaper(bookId, wifiOnly);
-                            if (result.getState() == OldDownloadManager.DownloadManagerResult.STATE.SUCCESS) {
+                            TazDownloadManager.Result result = tazDownloadManager.downloadPaper(bookId,wifiOnly);
+//                            OldDownloadManager.DownloadManagerResult result = oldDownloadManager.downloadPaper(bookId, wifiOnly);
+                            if (result.getState() == TazDownloadManager.Result.STATE.SUCCESS) {
                                 autoDownloadedStore.setValue("true");
                                 storeRepository.saveStore(autoDownloadedStore);
-                            } else if (result.getState() == OldDownloadManager.DownloadManagerResult.STATE.NOSPACE) {
+                            } else if (result.getState() == TazDownloadManager.Result.STATE.NOSPACE) {
                                 notificationUtils.showDownloadErrorNotification(paper,
                                                                                 getApplicationContext().getString(R.string.message_not_enough_space));
                             }

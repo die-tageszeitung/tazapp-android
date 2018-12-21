@@ -151,7 +151,7 @@ public class StorageManager {
     public void deletePaperDir(Paper paper) {
         if (getPaperDirectory(paper).exists()) ExtensionsKt.deleteQuietly(getPaperDirectory(paper));
 //        Utils.deleteDir(getPaperDirectory(paper));
-        new FileCachePDFThumbHelper(this, paper.getFileHash()).deleteDir();
+        new FileCachePDFThumbHelper(this, paper.fileHash).deleteDir();
     }
 
     public void deleteResourceDir(String key) {

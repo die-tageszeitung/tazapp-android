@@ -49,7 +49,7 @@ public class PaperRepository {
         storageManager = StorageManager.getInstance(context);
         picasso = Picasso.with(context);
         storeRepository = StoreRepository.getInstance(context);
-        downloadsRepository = DownloadsRepository.Companion.getInstance(context);
+        downloadsRepository = DownloadsRepository.Companion.getInstance();
     }
 
     @WorkerThread

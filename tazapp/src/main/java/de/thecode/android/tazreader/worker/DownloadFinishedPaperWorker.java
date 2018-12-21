@@ -50,7 +50,7 @@ public class DownloadFinishedPaperWorker extends LoggingWorker {
         super(context, workerParams);
         paperRepository = PaperRepository.getInstance(context);
         storageManager = StorageManager.getInstance(context);
-        downloadsRepository = DownloadsRepository.Companion.getInstance(context);
+        downloadsRepository = DownloadsRepository.Companion.getInstance();
     }
 
     @NonNull

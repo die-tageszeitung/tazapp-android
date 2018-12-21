@@ -15,7 +15,7 @@ import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
 @Entity(tableName = "RESOURCE")
-public class Resource {
+public class Resource extends Downloadable {
 
     public static final class PLISTFIELDS {
         public static final String RESOURCEFILEHASH = "resourceFileHash";
@@ -24,12 +24,11 @@ public class Resource {
     }
 
 
+
     @PrimaryKey
     @NonNull
     private String key;
     private String url;
-    private String fileHash;
-    private long   len;
 
     public Resource() {
     }
@@ -45,17 +44,11 @@ public class Resource {
         this.key = key;
     }
 
-    public void setFileHash(String fileHash) {
-        this.fileHash = fileHash;
-    }
 
     public void setUrl(String url) {
         this.url = url;
     }
 
-    public void setLen(long len) {
-        this.len = len;
-    }
 
     public String getKey() {
         return key;
@@ -65,13 +58,6 @@ public class Resource {
         return url;
     }
 
-    public String getFileHash() {
-        return fileHash;
-    }
-
-    public long getLen() {
-        return len;
-    }
 
     @Override
     public String toString() {
@@ -87,19 +73,17 @@ public class Resource {
 
         Resource resource = (Resource) o;
 
-        return new EqualsBuilder().append(len, resource.len)
+        return new EqualsBuilder().appendSuper(super.equals(o))
                                   .append(key, resource.key)
                                   .append(url, resource.url)
-                                  .append(fileHash, resource.fileHash)
                                   .isEquals();
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder(17, 37).append(key)
+        return new HashCodeBuilder(17, 37).appendSuper(super.hashCode())
+                                          .append(key)
                                           .append(url)
-                                          .append(fileHash)
-                                          .append(len)
                                           .toHashCode();
     }
 

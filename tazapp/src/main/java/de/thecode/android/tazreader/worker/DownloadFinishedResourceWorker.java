@@ -44,7 +44,7 @@ public class DownloadFinishedResourceWorker extends LoggingWorker {
     public DownloadFinishedResourceWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
         resourceRepository = ResourceRepository.getInstance(context);
-        downloadsRepository = DownloadsRepository.Companion.getInstance(context);
+        downloadsRepository = DownloadsRepository.Companion.getInstance();
         storageManager = StorageManager.getInstance(context);
     }
 

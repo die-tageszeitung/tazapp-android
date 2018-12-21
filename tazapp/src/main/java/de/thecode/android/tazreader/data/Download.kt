@@ -42,7 +42,7 @@ class DownloadTypeTypeConverter {
 }
 
 enum class DownloadType {
-    UNKNOWN, PAPER, RESOURCE;
+    UNKNOWN, PAPER, RESOURCE, UPDATE;
 
     companion object {
         fun getByName(name: String) = DownloadType.valueOf(name.toUpperCase())
@@ -55,4 +55,31 @@ enum class DownloadState {
     companion object {
         fun getByName(name: String) = valueOf(name.toUpperCase())
     }
+}
+
+
+//TODO rework to data class if no JAVA class extend
+abstract class Downloadable {
+    @JvmField
+    var fileHash: String? = null
+    @JvmField
+    var len: Long = 0L
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Downloadable) return false
+
+        if (fileHash != other.fileHash) return false
+        if (len != other.len) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = fileHash?.hashCode() ?: 0
+        result = 31 * result + len.hashCode()
+        return result
+    }
+
+
 }

@@ -5,12 +5,11 @@ import android.text.TextUtils;
 
 import de.thecode.android.tazreader.data.Download;
 import de.thecode.android.tazreader.data.DownloadState;
-import de.thecode.android.tazreader.data.DownloadsRepository;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.PaperRepository;
 import de.thecode.android.tazreader.data.PaperWithDownloadState;
 import de.thecode.android.tazreader.data.TazSettings;
-import de.thecode.android.tazreader.download.OldDownloadManager;
+import de.thecode.android.tazreader.download.TazDownloadManager;
 import de.thecode.android.tazreader.start.library.NewLibraryAdapter;
 import de.thecode.android.tazreader.utils.AsyncTaskListener;
 import de.thecode.android.tazreader.utils.SingleLiveEvent;
@@ -37,8 +36,6 @@ public class StartViewModel extends AndroidViewModel {
     private final TazSettings                                   settings;
     private final StorageManager                                storageManager;
     private final PaperRepository                               paperRepository;
-    private final DownloadsRepository                           downloadRepository;
-    private final OldDownloadManager                            oldDownloadManager;
     private final List<String>                                  downloadQueue               = new ArrayList<>();
     private final SingleLiveEvent<DownloadError>                downloadErrorLiveSingleData = new SingleLiveEvent<>();
     private final List<NavigationDrawerFragment.NavigationItem> navBackstack                = new ArrayList<>();
@@ -59,10 +56,8 @@ public class StartViewModel extends AndroidViewModel {
 
     public StartViewModel(@NonNull Application application) {
         super(application);
-        oldDownloadManager = OldDownloadManager.getInstance(application);
         paperRepository = PaperRepository.getInstance(application);
         storageManager = StorageManager.getInstance(application);
-        downloadRepository = DownloadsRepository.Companion.getInstance(application);
         settings = TazSettings.getInstance(application);
         settings.addDemoModeListener(demoModeListener);
         demoModeLiveData.setValue(settings.isDemoMode());
@@ -128,12 +123,13 @@ public class StartViewModel extends AndroidViewModel {
             public Void execute(Void... aVoid) {
                 while (downloadQueue.size() > 0) {
                     String bookId = downloadQueue.get(0);
-                    OldDownloadManager.DownloadManagerResult result = oldDownloadManager.downloadPaper(bookId, false);
-                    if (result.getState() != OldDownloadManager.DownloadManagerResult.STATE.SUCCESS) {
+                    TazDownloadManager.Result result = TazDownloadManager.Companion.getInstance().downloadPaper(bookId, false);
+                    //OldDownloadManager.DownloadManagerResult result = oldDownloadManager.downloadPaper(bookId, false);
+                    if (result.getState() != TazDownloadManager.Result.STATE.SUCCESS) {
                         String title = "";
                         Paper paper = paperRepository.getPaperWithBookId(bookId);
                         if (paper != null) title = paper.getTitelWithDate(getApplication().getResources());
-                        downloadErrorLiveSingleData.postValue(new DownloadError(title, result.getDetails()));
+                        downloadErrorLiveSingleData.postValue(new DownloadError(title, result.getState().getText()));
                     }
                     downloadQueue.remove(bookId);
                 }
@@ -202,7 +198,7 @@ public class StartViewModel extends AndroidViewModel {
             for (Paper paperToDelete : papersToDelete) {
                 Download download = paperRepository.getDownloadForPaper(paperToDelete.getBookId());
                 if (download.getState() == DownloadState.DOWNLOADING) {
-                    oldDownloadManager.cancelDownload(download.getDownloadManagerId());
+                    TazDownloadManager.Companion.getInstance().cancelDownload(download.getDownloadManagerId());
                 }
                 paperRepository.deletePaper(paperToDelete);
             }

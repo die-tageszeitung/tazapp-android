@@ -1,6 +1,8 @@
 package de.thecode.android.tazreader.utils
 
 
+import android.content.Context
+import com.github.ajalt.timberkt.d
 import timber.log.Timber
 import java.io.File
 import java.text.DecimalFormat
@@ -58,4 +60,15 @@ fun File.deleteQuietly() {
     } catch (e: Exception) {
         Timber.w(e)
     }
+}
+
+
+
+fun Context.getResourceIdByName(name: String, defType: String): Int {
+    d { "$defType resource by name: $name" }
+    return this.resources.getIdentifier(name, defType, this.packageName)
+}
+
+fun Context.getStringIdByName(name: String): Int {
+    return this.getResourceIdByName(name,"string")
 }

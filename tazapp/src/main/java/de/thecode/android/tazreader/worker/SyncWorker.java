@@ -20,7 +20,7 @@ import de.thecode.android.tazreader.data.Resource;
 import de.thecode.android.tazreader.data.ResourceRepository;
 import de.thecode.android.tazreader.data.StoreRepository;
 import de.thecode.android.tazreader.data.TazSettings;
-import de.thecode.android.tazreader.download.OldDownloadManager;
+import de.thecode.android.tazreader.download.TazDownloadManager;
 import de.thecode.android.tazreader.okhttp3.OkHttp3Helper;
 import de.thecode.android.tazreader.okhttp3.RequestHelper;
 import de.thecode.android.tazreader.sync.SyncErrorEvent;
@@ -218,12 +218,13 @@ public class SyncWorker extends LoggingWorker {
             Resource latestResource = resourceRepository.getWithKey(latestPaper.getResource());
             DownloadState downloadState = resourceRepository.getDownloadState(latestResource.getKey());
             if (latestResource != null && downloadState == DownloadState.NONE) {
-                try {
-                    OldDownloadManager.getInstance(getApplicationContext())
-                                      .enqueResource(latestResource, false);
-                } catch (OldDownloadManager.NotEnoughSpaceException e) {
-                    Timber.e(e);
-                }
+                TazDownloadManager.Companion.getInstance().downloadResource(latestResource.getKey(),false);
+//                try {
+//                    OldDownloadManager.getInstance(getApplicationContext())
+//                                      .enqueResource(latestResource, false);
+//                } catch (OldDownloadManager.NotEnoughSpaceException e) {
+//                    Timber.e(e);
+//                }
             }
         }
     }

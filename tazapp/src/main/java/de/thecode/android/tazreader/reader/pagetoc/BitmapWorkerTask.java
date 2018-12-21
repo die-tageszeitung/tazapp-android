@@ -74,7 +74,7 @@ public class BitmapWorkerTask extends AsyncTask<Void, Void, Bitmap> {
         this.paperDirectory = storageManager.getPaperDirectory(page.getPaper());
         this.pdfThumbHelper = new FileCachePDFThumbHelper(storageManager,
                                                           page.getPaper()
-                                                              .getFileHash());
+                                                              .fileHash);
         if (placeHolderBitmap == null) {
             placeHolderBitmap = Bitmap.createBitmap(mThumbnailImageWidth, mThumbnailImageHeight, Bitmap.Config.ARGB_8888);
             placeHolderBitmap.eraseColor(imageView.getResources()

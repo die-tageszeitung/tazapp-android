@@ -6,8 +6,20 @@
     "entities": [
       {
         "tableName": "PAPER",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`bookId` TEXT NOT NULL, `date` TEXT, `image` TEXT, `imageHash` TEXT, `link` TEXT, `fileHash` TEXT, `len` INTEGER NOT NULL, `lastModified` INTEGER NOT NULL, `resource` TEXT, `demo` INTEGER NOT NULL, `title` TEXT, `validUntil` INTEGER NOT NULL, `publication` TEXT, PRIMARY KEY(`bookId`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`fileHash` TEXT, `len` INTEGER NOT NULL, `bookId` TEXT NOT NULL, `date` TEXT, `image` TEXT, `imageHash` TEXT, `link` TEXT, `lastModified` INTEGER NOT NULL, `resource` TEXT, `demo` INTEGER NOT NULL, `title` TEXT, `validUntil` INTEGER NOT NULL, `publication` TEXT, PRIMARY KEY(`bookId`))",
         "fields": [
+          {
+            "fieldPath": "fileHash",
+            "columnName": "fileHash",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "len",
+            "columnName": "len",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
           {
             "fieldPath": "bookId",
             "columnName": "bookId",
@@ -37,18 +49,6 @@
             "columnName": "link",
             "affinity": "TEXT",
             "notNull": false
-          },
-          {
-            "fieldPath": "fileHash",
-            "columnName": "fileHash",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "len",
-            "columnName": "len",
-            "affinity": "INTEGER",
-            "notNull": true
           },
           {
             "fieldPath": "lastModified",
@@ -98,20 +98,8 @@
       },
       {
         "tableName": "RESOURCE",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`key` TEXT NOT NULL, `url` TEXT, `fileHash` TEXT, `len` INTEGER NOT NULL, PRIMARY KEY(`key`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`fileHash` TEXT, `len` INTEGER NOT NULL, `key` TEXT NOT NULL, `url` TEXT, PRIMARY KEY(`key`))",
         "fields": [
-          {
-            "fieldPath": "key",
-            "columnName": "key",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "url",
-            "columnName": "url",
-            "affinity": "TEXT",
-            "notNull": false
-          },
           {
             "fieldPath": "fileHash",
             "columnName": "fileHash",
@@ -123,6 +111,18 @@
             "columnName": "len",
             "affinity": "INTEGER",
             "notNull": true
+          },
+          {
+            "fieldPath": "key",
+            "columnName": "key",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "url",
+            "columnName": "url",
+            "affinity": "TEXT",
+            "notNull": false
           }
         ],
         "primaryKey": {

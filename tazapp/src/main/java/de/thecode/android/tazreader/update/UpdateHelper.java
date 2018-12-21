@@ -3,11 +3,10 @@ package de.thecode.android.tazreader.update;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import androidx.annotation.NonNull;
 
 import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.data.TazSettings;
-import de.thecode.android.tazreader.download.OldDownloadManager;
+import de.thecode.android.tazreader.download.TazDownloadManager;
 import de.thecode.android.tazreader.utils.UserDeviceInfo;
 
 import java.util.ArrayList;
@@ -15,6 +14,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import androidx.annotation.NonNull;
 import timber.log.Timber;
 
 public class UpdateHelper {
@@ -84,12 +84,11 @@ public class UpdateHelper {
                 context.startActivity(new Intent(Intent.ACTION_VIEW,
                                                  Uri.parse("market://details?id=" + userDeviceInfo.getPackageName())));
             } catch (android.content.ActivityNotFoundException anfe) {
-                OldDownloadManager.getInstance(context)
-                                  .downloadUpdate();
+
+                TazDownloadManager.Companion.getInstance().downloadUpdate();
             }
         } else {
-            OldDownloadManager.getInstance(context)
-                              .downloadUpdate();
+            TazDownloadManager.Companion.getInstance().downloadUpdate();
         }
     }
 

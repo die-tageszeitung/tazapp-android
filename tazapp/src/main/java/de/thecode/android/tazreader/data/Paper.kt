@@ -1,5 +1,7 @@
 package de.thecode.android.tazreader.data
 
+import androidx.annotation.WorkerThread
+
 class PaperWithDownloadState:Paper() {
     var downloadState: DownloadState = DownloadState.NONE
 
@@ -10,4 +12,15 @@ class PaperWithDownloadState:Paper() {
         }
         return equals
     }
+
+    override fun hashCode(): Int {
+        var result = super.hashCode()
+        result = 31 * result + downloadState.hashCode()
+        return result
+    }
+}
+
+@WorkerThread
+fun Paper.extract(){
+
 }

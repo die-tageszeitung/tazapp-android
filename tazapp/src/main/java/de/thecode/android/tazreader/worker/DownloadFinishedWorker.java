@@ -12,9 +12,9 @@ import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.PaperRepository;
 import de.thecode.android.tazreader.data.Resource;
 import de.thecode.android.tazreader.data.ResourceRepository;
-import de.thecode.android.tazreader.download.OldDownloadManager;
 import de.thecode.android.tazreader.download.PaperDownloadFailedEvent;
 import de.thecode.android.tazreader.download.ResourceDownloadEvent;
+import de.thecode.android.tazreader.download.TazDownloadManager;
 import de.thecode.android.tazreader.notifications.NotificationUtils;
 import de.thecode.android.tazreader.secure.HashHelper;
 import de.thecode.android.tazreader.utils.ReadableException;
@@ -41,7 +41,7 @@ public class DownloadFinishedWorker extends LoggingWorker {
     private static final String ARG_DOWNLOAD_ID = "downloadId";
 
     private final StorageManager     externalStorage;
-    private final OldDownloadManager downloadHelper;
+    private final TazDownloadManager downloadHelper;
     private final PaperRepository    paperRepository;
     private final ResourceRepository resourceRepository;
     private final DownloadsRepository downloadsRepository;
@@ -49,10 +49,10 @@ public class DownloadFinishedWorker extends LoggingWorker {
     public DownloadFinishedWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
         externalStorage = StorageManager.getInstance(context);
-        downloadHelper = OldDownloadManager.getInstance(context);
+        downloadHelper = TazDownloadManager.Companion.getInstance();
         paperRepository = PaperRepository.getInstance(context);
         resourceRepository = ResourceRepository.getInstance(context);
-        downloadsRepository = DownloadsRepository.Companion.getInstance(context);
+        downloadsRepository = DownloadsRepository.Companion.getInstance();
     }
 
     @NonNull
@@ -64,37 +64,37 @@ public class DownloadFinishedWorker extends LoggingWorker {
         Download download = downloadsRepository.get(downloadId);
         if (download != null) {
 
-            OldDownloadManager.DownloadManagerInfo state = downloadHelper.getDownloadManagerInfo(downloadId);
+            TazDownloadManager.SystemDownloadManagerInfo state = downloadHelper.getSystemDownloadManagerInfo(downloadId);
             Timber.d("state: %s", state);
-            boolean firstOccurrenceOfState = downloadHelper.isFirstOccurrenceOfState(state);
-            if (!firstOccurrenceOfState) {
-                Timber.e("DownloadState already received");
-                return Result.success();
-            }
+//            boolean firstOccurrenceOfState = downloadHelper.isFirstOccurrenceOfState(state);
+//            if (!firstOccurrenceOfState) {
+//                Timber.e("DownloadState already received");
+//                return Result.success();
+//            }
 
             Paper paper = paperRepository.getPaperWithBookId(download.getKey());
             if (paper != null) {
                 Timber.i("Download complete for paper: %s, %s", paper, state);
                 try {
-                    if (state.getStatus() == OldDownloadManager.DownloadManagerInfo.STATUS_SUCCESSFUL) {
+                    if (state.getStatus() == TazDownloadManager.SystemDownloadManagerInfo.STATE.SUCCESSFUL) {
                         File downloadFile = externalStorage.getDownloadFile(paper);
                         if (!downloadFile.exists())
                             throw new DownloadException("Downloaded paper file missing");
                         Timber.i("... checked file existence");
-                        if (paper.getLen() != 0 && downloadFile.length() != paper.getLen())
+                        if (paper.len != 0 && downloadFile.length() != paper.len)
                             throw new DownloadException(String.format(Locale.GERMANY,
                                                                                           "Wrong size of paper download. expected: %d, file: %d, downloaded: %d",
-                                                                                          paper.getLen(),
+                                                                                          paper.len,
                                                                                           downloadFile.length(),
-                                                                                          state.getBytesDownloaded()));
+                                                                                          state.getBytesDownloadedSoFar()));
                         Timber.i("... checked correct size of paper download");
                         try {
                             String fileHash = HashHelper.getHash(downloadFile, HashHelper.SHA_1);
-                            if (!TextUtils.isEmpty(paper.getFileHash()) && !paper.getFileHash()
+                            if (!TextUtils.isEmpty(paper.fileHash) && !paper.fileHash
                                                                                  .equals(fileHash)) {
                                 throw new DownloadException(String.format(Locale.GERMANY,
                                                                                               "Wrong paper file hash. Expected: %s, calculated: %s",
-                                                                                              paper.getFileHash(),
+                                                                                              paper.fileHash,
                                                                                               fileHash));
                             }
                             Timber.i("... checked correct hash of paper download");
@@ -130,7 +130,7 @@ public class DownloadFinishedWorker extends LoggingWorker {
                                        .exists()) //noinspection ResultOfMethodCallIgnored
                         externalStorage.getDownloadFile(paper)
                                        .delete();
-                    if (state.getStatus() != OldDownloadManager.DownloadManagerInfo.STATUS_NOTFOUND) {
+                    if (state.getStatus() != TazDownloadManager.SystemDownloadManagerInfo.STATE.NOTFOUND) {
                         NotificationUtils.getInstance(getApplicationContext())
                                          .showDownloadErrorNotification(paper,
                                                                         getApplicationContext().getString(R.string.download_error_hints));
@@ -152,25 +152,25 @@ public class DownloadFinishedWorker extends LoggingWorker {
                 //DownloadHelper.DownloadState downloadDownloadState = downloadHelper.getDownloadManagerInfo(downloadId);
                 Timber.i("Download complete for resource: %s, %s", resource, state);
                 try {
-                    if (state.getStatus() == OldDownloadManager.DownloadManagerInfo.STATUS_SUCCESSFUL) {
+                    if (state.getStatus() == TazDownloadManager.SystemDownloadManagerInfo.STATE.SUCCESSFUL) {
                         File downloadFile = externalStorage.getDownloadFile(resource);
                         if (!downloadFile.exists())
                             throw new DownloadException("Downloaded resource file missing");
                         Timber.i("... checked file existence");
-                        if (resource.getLen() != 0 && downloadFile.length() != resource.getLen())
+                        if (resource.len != 0 && downloadFile.length() != resource.len)
                             throw new DownloadException(String.format(Locale.GERMANY,
                                                                                           "Wrong size of resource download. expected: %d, file: %d, downloaded: %d",
-                                                                                          resource.getLen(),
+                                                                                          resource.len,
                                                                                           downloadFile.length(),
-                                                                                          state.getBytesDownloaded()));
+                                                                                          state.getBytesDownloadedSoFar()));
                         Timber.i("... checked correct size of resource download");
                         try {
                             String fileHash = HashHelper.getHash(downloadFile, HashHelper.SHA_1);
-                            if (!TextUtils.isEmpty(resource.getFileHash()) && !resource.getFileHash()
+                            if (!TextUtils.isEmpty(resource.fileHash) && !resource.fileHash
                                                                                        .equals(fileHash))
                                 throw new DownloadException(String.format(Locale.GERMANY,
                                                                                               "Wrong resource file hash. Expected: %s, calculated: %s",
-                                                                                              resource.getFileHash(),
+                                                                                              resource.fileHash,
                                                                                               fileHash));
                             Timber.i("... checked correct hash of resource download");
                         } catch (NoSuchAlgorithmException e) {

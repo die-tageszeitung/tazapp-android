@@ -26,6 +26,7 @@ import de.thecode.android.tazreader.utils.ReadableException;
 import de.thecode.android.tazreader.utils.StorageManager;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.json.JSONArray;
 import org.xml.sax.SAXException;
@@ -55,7 +56,7 @@ import androidx.room.PrimaryKey;
 import timber.log.Timber;
 
 @Entity(tableName = "PAPER")
-public class Paper {
+public class Paper extends Downloadable {
 
     public static final String STORE_KEY_BOOKMARKS           = "bookmarks";
     public static final String STORE_KEY_CURRENTPOSITION     = "currentPosition";
@@ -72,8 +73,6 @@ public class Paper {
     private String               image;
     private String               imageHash;
     private String               link;
-    private String               fileHash;
-    private long                 len;
     private long                 lastModified;
     private String               resource;
     private boolean              demo;
@@ -168,14 +167,6 @@ public class Paper {
         this.imageHash = imageHash;
     }
 
-    public String getFileHash() {
-        return fileHash;
-    }
-
-    public void setFileHash(String fileHash) {
-        this.fileHash = fileHash;
-    }
-
     public void setImage(String image) {
         this.image = image;
     }
@@ -194,14 +185,6 @@ public class Paper {
 
     public String getLink() {
         return link;
-    }
-
-    public void setLen(long len) {
-        this.len = len;
-    }
-
-    public long getLen() {
-        return len;
     }
 
     public long getLastModified() {
@@ -1231,36 +1214,49 @@ public class Paper {
     }
 
     @Override
-    public String toString() {
-        //return Log.toString(this, ":", "; ");
-        return ToStringBuilder.reflectionToString(this);
+    public boolean equals(Object o) {
+        if (this == o) return true;
+
+        if (!(o instanceof Paper)) return false;
+
+        Paper paper = (Paper) o;
+
+        return new EqualsBuilder().appendSuper(super.equals(o))
+                                  .append(lastModified, paper.lastModified)
+                                  .append(demo, paper.demo)
+                                  .append(validUntil, paper.validUntil)
+                                  .append(bookId, paper.bookId)
+                                  .append(date, paper.date)
+                                  .append(image, paper.image)
+                                  .append(imageHash, paper.imageHash)
+                                  .append(link, paper.link)
+                                  .append(resource, paper.resource)
+                                  .append(title, paper.title)
+                                  .append(publication, paper.publication)
+                                  .isEquals();
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (obj == this) {
-            return true;
-        }
-        if (obj.getClass() != getClass()) {
-            return false;
-        }
-        Paper rhs = (Paper) obj;
-        return new EqualsBuilder().append(date, rhs.date)
-                                  .append(image, rhs.image)
-                                  .append(imageHash, rhs.imageHash)
-                                  .append(link, rhs.link)
-                                  .append(fileHash, rhs.fileHash)
-                                  .append(len, rhs.len)
-                                  .append(resource, rhs.resource)
-                                  .append(lastModified, rhs.lastModified)
-                                  .append(bookId, rhs.bookId)
-                                  .append(demo, rhs.demo)
-                                  .append(publication, rhs.publication)
-                                  .append(validUntil, rhs.validUntil)
-                                  .isEquals();
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37).appendSuper(super.hashCode())
+                                          .append(bookId)
+                                          .append(date)
+                                          .append(image)
+                                          .append(imageHash)
+                                          .append(link)
+                                          .append(lastModified)
+                                          .append(resource)
+                                          .append(demo)
+                                          .append(title)
+                                          .append(validUntil)
+                                          .append(publication)
+                                          .toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        //return Log.toString(this, ":", "; ");
+        return ToStringBuilder.reflectionToString(this);
     }
 
     public static class PaperNotFoundException extends ReadableException {

@@ -355,6 +355,10 @@ dependencies {
     implementation 'com.afollestad.material-dialogs:core:2.0.0-beta3'
 
     implementation 'androidx.multidex:multidex:2.0.0' //Remove after Migration of Dialogs maybe
+
+    implementation "org.jetbrains.anko:anko-commons:0.10.8"
+
+    implementation 'com.github.ajalt:timberkt:1.5.1'
 }
 
 class Download extends DefaultTask {

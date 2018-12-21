@@ -1,13 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
-    <string name="download_status_successful">successful</string>
-    <string name="download_status_running">running</string>
-    <string name="download_status_pending">pending</string>
-    <string name="download_status_paused">paused</string>
-    <string name="download_status_failed">failed</string>
-    <string name="download_status_unknown">unknown</string>
-    <string name="download_status_canceled">canceled</string>
 
+    <string name="start_download_result_UNKNOWN">Unbekannt</string>
+    <string name="start_download_result_SUCCESS">Erfolgreich</string>
+    <string name="start_download_result_NOMANAGER">Download Manager deaktiviert</string>
+    <string name="start_download_result_NOSPACE">Nicht genügend Speicherplatz</string>
+    <string name="start_download_result_ALLREADYDOWNLOADED">Download bereits vorhanden</string>
+
+
+
+    <string name="download_status_NOTFOUND">Nicht gefunden</string>
+    <string name="download_status_PENDING">Ausstehend</string>
+    <string name="download_status_RUNNING">Laufend</string>
+    <string name="download_status_PAUSED">Pausiert</string>
+    <string name="download_status_SUCCESSFUL">Erfolgreich</string>
+    <string name="download_status_FAILED">Gescheitert</string>
 
     <string name="download_reason_0">no reason</string>
     <string name="download_reason_100">Continue</string>

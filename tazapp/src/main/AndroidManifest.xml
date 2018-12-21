@@ -12,7 +12,7 @@
     <supports-screens android:anyDensity="true"/>
 
     <application
-            android:name=".TazReaderApplication"
+            android:name=".TazApplication"
             android:allowBackup="true"
             android:backupAgent=".backup.TazBackupHelper"
             android:icon="@mipmap/ic_launcher"
@@ -103,7 +103,7 @@
         <!--</activity>-->
         <!--<activity android:name=".migration.MigrationActivity"/>-->
 
-        <receiver android:name="de.thecode.android.tazreader.download.DownloadReceiver">
+        <receiver android:name="de.thecode.android.tazreader.download.SystemDownloadManagerReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.DOWNLOAD_COMPLETE"/>
                 <action android:name="android.intent.action.DOWNLOAD_NOTIFICATION_CLICKED"/>
