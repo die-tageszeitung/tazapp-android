@@ -6,6 +6,7 @@ import de.thecode.android.tazreader.data.PaperRepository
 import de.thecode.android.tazreader.data.ResourceRepository
 import de.thecode.android.tazreader.data.TazSettings
 import de.thecode.android.tazreader.download.TazDownloadManager
+import de.thecode.android.tazreader.utils.StorageManager
 
 val app: TazApplication by lazy {
     TazApplication.applicationContext()
@@ -29,6 +30,10 @@ val paperRepository by lazy {
 
 val resourceRepository by lazy {
     ResourceRepository.getInstance(app)
+}
+
+val storageManager by lazy {
+    StorageManager.getInstance(app)
 }
 
 

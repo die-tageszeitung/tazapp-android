@@ -138,6 +138,11 @@ public class StorageManager {
         return new File(get(PAPER), paper.getBookId());
     }
 
+    public File getPaperDirectory(String bookId) {
+        return new File(get(PAPER), bookId);
+    }
+
+
     public File getResourceDirectory(String key) {
         return new File(get(RESOURCE), key);
     }

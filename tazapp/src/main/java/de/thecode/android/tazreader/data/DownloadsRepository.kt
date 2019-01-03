@@ -23,7 +23,7 @@ class DownloadsRepository private constructor() {
     fun get(key: String): Download {
         var download = appDatabase.downloadsDao()
                 .getDownloadByKey(key)
-        if (download == null) download = Download(key)
+        if (download == null) download = Download(key = key)
         return download
     }
 

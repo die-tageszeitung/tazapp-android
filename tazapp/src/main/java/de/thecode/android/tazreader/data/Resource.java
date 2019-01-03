@@ -17,6 +17,8 @@ import androidx.room.PrimaryKey;
 @Entity(tableName = "RESOURCE")
 public class Resource extends Downloadable {
 
+    public static final String SHA1_PLIST = "sha1.plist";
+
     public static final class PLISTFIELDS {
         public static final String RESOURCEFILEHASH = "resourceFileHash";
         public static final String RESOURCEURL      = "resourceUrl";

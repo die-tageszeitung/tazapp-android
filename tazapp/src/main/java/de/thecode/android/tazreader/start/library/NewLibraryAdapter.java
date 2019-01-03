@@ -186,7 +186,7 @@ public class NewLibraryAdapter extends TazListAdapter<PaperWithDownloadState, Ne
 //        }.set(paper.getBookId()));
         holder.overlay.setVisibility(paper.getDownloadState() == EXTRACTING  || paper.getDownloadState() == READY ? View.GONE : View.VISIBLE);
         holder.progress.setVisibility(paper.getDownloadState() == EXTRACTING ? View.VISIBLE : View.GONE);
-        if (paper.getDownloadState() == DOWNLOADING || paper.getDownloadState() == DOWNLOADED || paper.getDownloadState() == EXTRACTING) {
+        if (paper.getDownloadState() != NONE && paper.getDownloadState() != READY) {
             holder.stateLayout.setVisibility(View.VISIBLE);
             switch (paper.getDownloadState()) {
                 case DOWNLOADING:
@@ -197,6 +197,10 @@ public class NewLibraryAdapter extends TazListAdapter<PaperWithDownloadState, Ne
                 case EXTRACTING:
                     holder.state.setText(R.string.string_library_item_extract_state);
                     break;
+                case CHECKING:
+                    holder.state.setText(R.string.string_library_item_checking_state);
+                    break;
+
             }
         } else {
             holder.stateLayout.setVisibility(View.GONE);

@@ -11,6 +11,7 @@ data class Download(@PrimaryKey()
                     val key: String,
                     var type: DownloadType = DownloadType.UNKNOWN,
                     var downloadManagerId: Long = 0,
+                    var progress: Int = 0,
                     var state: DownloadState = DownloadState.NONE)
 
 class DownloadStateTypeConverter {
@@ -50,7 +51,7 @@ enum class DownloadType {
 }
 
 enum class DownloadState {
-    NONE, DOWNLOADING, DOWNLOADED, EXTRACTING, READY;
+    NONE, DOWNLOADING, DOWNLOADED, EXTRACTING, CHECKING, READY;
 
     companion object {
         fun getByName(name: String) = valueOf(name.toUpperCase())

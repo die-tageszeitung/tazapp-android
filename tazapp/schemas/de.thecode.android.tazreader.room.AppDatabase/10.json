@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 10,
-    "identityHash": "290e20bee46b7bc2ef1153091ed855a3",
+    "identityHash": "d61a0b75569dc2dd6632042edd57d3fd",
     "entities": [
       {
         "tableName": "PAPER",
@@ -224,7 +224,7 @@
       },
       {
         "tableName": "DOWNLOADS",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`key` TEXT NOT NULL, `type` TEXT NOT NULL, `downloadManagerId` INTEGER NOT NULL, `state` TEXT NOT NULL, PRIMARY KEY(`key`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`key` TEXT NOT NULL, `type` TEXT NOT NULL, `downloadManagerId` INTEGER NOT NULL, `progress` INTEGER NOT NULL, `state` TEXT NOT NULL, PRIMARY KEY(`key`))",
         "fields": [
           {
             "fieldPath": "key",
@@ -241,6 +241,12 @@
           {
             "fieldPath": "downloadManagerId",
             "columnName": "downloadManagerId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "progress",
+            "columnName": "progress",
             "affinity": "INTEGER",
             "notNull": true
           },
@@ -264,7 +270,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"290e20bee46b7bc2ef1153091ed855a3\")"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"d61a0b75569dc2dd6632042edd57d3fd\")"
     ]
   }
 }

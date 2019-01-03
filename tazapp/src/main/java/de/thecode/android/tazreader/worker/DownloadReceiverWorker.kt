@@ -9,17 +9,26 @@ import androidx.work.Data
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
+import com.dd.plist.NSDictionary
+import com.dd.plist.NSString
+import com.dd.plist.PropertyListParser
 import com.github.ajalt.timberkt.Timber.d
 import com.github.ajalt.timberkt.Timber.e
 import com.github.ajalt.timberkt.Timber.w
 import de.thecode.android.tazreader.*
 import de.thecode.android.tazreader.data.DownloadState
 import de.thecode.android.tazreader.data.DownloadType
-import de.thecode.android.tazreader.data.Downloadable
+import de.thecode.android.tazreader.data.Paper
+import de.thecode.android.tazreader.data.Resource
 import de.thecode.android.tazreader.secure.HashHelper
 import de.thecode.android.tazreader.start.StartActivity
 import de.thecode.android.tazreader.utils.deleteQuietly
+import org.apache.commons.compress.archivers.zip.ZipFile
+import org.apache.commons.compress.utils.IOUtils
+import org.apache.commons.compress.utils.InputStreamStatistics
 import java.io.File
+import java.io.FileNotFoundException
+import java.io.FileOutputStream
 import java.io.IOException
 import java.security.NoSuchAlgorithmException
 
@@ -81,7 +90,7 @@ class DownloadReceiverWorker(context: Context, workerParams: WorkerParameters) :
                                         else -> null
                                     }
                                     if (downloadable != null) {
-                                        val checkDownload = fun(downloadable:Downloadable): Boolean {
+                                        val checkDownload = fun(): Boolean {
                                             d { "checking file size… " }
                                             if (downloadable.len != 0L && downloadable.len != downloadedFile.length()) {
                                                 e { "Wrong size of download. expected: ${downloadable.len}, file: ${downloadedFile.length()}" }
@@ -102,13 +111,104 @@ class DownloadReceiverWorker(context: Context, workerParams: WorkerParameters) :
                                             }
                                             return true
                                         }
-                                        if (checkDownload(downloadable)) {
-                                            download.state =DownloadState.EXTRACTING
+                                        if (checkDownload()) {
+                                            download.progress = 0
+                                            download.state = DownloadState.EXTRACTING
                                             downloadsRepository.save(download)
-                                            //TODO UNzip
+                                            val outputDir = when (download.type) {
+                                                DownloadType.PAPER -> storageManager.getPaperDirectory(download.key)
+                                                DownloadType.RESOURCE -> storageManager.getResourceDirectory(download.key)
+                                                else -> null
+                                            }
+                                            if (outputDir != null) {
+                                                try {
+                                                    outputDir.mkdirs()
+                                                    val zipFile = ZipFile(downloadedFile)
+                                                    zipFile.use { file ->
+                                                        var compressedCount = 0L
+                                                        var compressedSizeofAll = 0L
+                                                        val countEntries = file.entries
+                                                        while (countEntries.hasMoreElements()) {
+                                                            val entry = countEntries.nextElement()
+                                                            compressedSizeofAll += entry.compressedSize
+                                                        }
+                                                        val entries = file.entriesInPhysicalOrder
+                                                        while (entries.hasMoreElements()) {
+                                                            val entry = entries.nextElement()
+                                                            val entryDestination = File(outputDir, entry.name)
+                                                            if (entry.isDirectory) {
+                                                                entryDestination.mkdirs()
+                                                            } else {
+                                                                entryDestination.parentFile.mkdirs()
+                                                                val inputStream = zipFile.getInputStream(entry)
+                                                                d { "extracting ${entry.name}…" }
+                                                                val outputStream = FileOutputStream(entryDestination)
+                                                                outputStream.use {
+                                                                    IOUtils.copy(inputStream, outputStream)
+                                                                    IOUtils.closeQuietly(inputStream)
+                                                                    d { "… done" }
+                                                                    if (inputStream is InputStreamStatistics) {
+                                                                        compressedCount += inputStream.compressedCount
+                                                                        // TODO publish progress
+                                                                        val progress = (compressedCount * 100 / compressedSizeofAll).toInt()
+                                                                        if (progress != download.progress) {
+                                                                            download.progress = progress
+                                                                            downloadsRepository.save(download)
+                                                                        }
 
-                                            return Result.success()
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
 
+                                                    downloadedFile.deleteQuietly() // not needed anymore
+                                                    download.state = DownloadState.CHECKING
+                                                    download.progress = 0
+                                                    downloadsRepository.save(download)
+                                                    val plistFile = when (download.type) {
+                                                        DownloadType.PAPER -> File(outputDir, Paper.CONTENT_PLIST_FILENAME)
+                                                        DownloadType.RESOURCE -> File(outputDir, Resource.SHA1_PLIST)
+                                                        else -> null
+                                                    }
+                                                    if (plistFile != null && plistFile.exists()) {
+
+                                                        d { "parsing plist for HashVals…" }
+                                                        val root = PropertyListParser.parse(plistFile) as NSDictionary
+                                                        val hashValsDict = root.objectForKey("HashVals") as NSDictionary
+                                                        hashValsDict.entries.forEach {
+                                                            if (!it.key.isNullOrBlank()) {
+                                                                val checkFile = File(outputDir, it.key)
+                                                                d { "checking file ${checkFile.absolutePath}" }
+                                                                if (!checkFile.exists()) throw FileNotFoundException("${checkFile.absolutePath} not found")
+                                                                else {
+                                                                    try {
+                                                                        if (!HashHelper.verifyHash(checkFile, (it.value as NSString).content, HashHelper.SHA_1))
+                                                                            throw FileNotFoundException("Wrong hash for file " + checkFile.name)
+                                                                    } catch (e: NoSuchAlgorithmException) {
+                                                                        w(e)
+                                                                    }
+
+                                                                }
+                                                            }
+                                                        }
+                                                        download.state = DownloadState.READY
+                                                        downloadsRepository.save(download)
+                                                        return Result.success()
+                                                    } else {
+                                                        throw IOException("no plist file")
+                                                    }
+                                                    //TODO check Unzip
+
+
+                                                } catch (exception: Exception) {
+                                                    e(exception)
+                                                    outputDir.deleteQuietly()
+                                                    deleteDownload()
+                                                }
+                                            } else {
+                                                deleteDownload()
+                                            }
                                         } else {
                                             deleteDownload()
                                         }
@@ -161,9 +261,6 @@ class DownloadReceiverWorker(context: Context, workerParams: WorkerParameters) :
         }
         return null
     }
-
-
-
 
 
 }
