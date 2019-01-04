@@ -37,12 +37,13 @@ public class StartViewModel extends AndroidViewModel {
     private final StorageManager                                storageManager;
     private final PaperRepository                               paperRepository;
     private final List<String>                                  downloadQueue               = new ArrayList<>();
-    private final SingleLiveEvent<DownloadError>                downloadErrorLiveSingleData = new SingleLiveEvent<>();
+    private final SingleLiveEvent<TazDownloadManager.Result>    downloadErrorLiveSingleData = new SingleLiveEvent<>();
     private final List<NavigationDrawerFragment.NavigationItem> navBackstack                = new ArrayList<>();
     private       boolean                                       mobileDownloadAllowed       = false;
     private       String                                        openPaperIdAfterDownload;
     private       boolean                                       openReaderAfterDownload     = false;
-    private       String                                        paperWaitingForResource;
+    //    private       String                                        paperWaitingForResource;
+    public        String                                        resourceKeyWaitingForDownload;
     private       boolean                                       actionMode                  = false;
     private       NewLibraryAdapter.PaperMetaData               paperMetaDataMap            = new NewLibraryAdapter.PaperMetaData();
 
@@ -62,14 +63,15 @@ public class StartViewModel extends AndroidViewModel {
         settings.addDemoModeListener(demoModeListener);
         demoModeLiveData.setValue(settings.isDemoMode());
         LiveData<List<PaperWithDownloadState>> sourceLivePapers = Transformations.switchMap(demoModeLiveData,
-                                                                           demoMode -> demoMode ? paperRepository.getLivePapersForDemoLibrary() : paperRepository.getLivePapersForLibrary());
+                                                                                            demoMode -> demoMode ? paperRepository.getLivePapersForDemoLibrary() : paperRepository.getLivePapersForLibrary());
         livePapers = Transformations.map(sourceLivePapers, this::filterLibraryList);
     }
 
     private List<PaperWithDownloadState> filterLibraryList(List<PaperWithDownloadState> input) {
         List<PaperWithDownloadState> result = new ArrayList<>();
         for (PaperWithDownloadState paper : input) {
-            if ((paper.getValidUntil() >= System.currentTimeMillis() / 1000) || paper.getDownloadState() != DownloadState.NONE) result.add(paper);
+            if ((paper.getValidUntil() >= System.currentTimeMillis() / 1000) || paper.getDownloadState() != DownloadState.NONE)
+                result.add(paper);
         }
         return result;
     }
@@ -113,7 +115,7 @@ public class StartViewModel extends AndroidViewModel {
         return downloadQueue;
     }
 
-    public SingleLiveEvent<DownloadError> getDownloadErrorLiveSingleData() {
+    public SingleLiveEvent<TazDownloadManager.Result> getDownloadErrorLiveSingleData() {
         return downloadErrorLiveSingleData;
     }
 
@@ -123,13 +125,11 @@ public class StartViewModel extends AndroidViewModel {
             public Void execute(Void... aVoid) {
                 while (downloadQueue.size() > 0) {
                     String bookId = downloadQueue.get(0);
-                    TazDownloadManager.Result result = TazDownloadManager.Companion.getInstance().downloadPaper(bookId, false);
+                    TazDownloadManager.Result result = TazDownloadManager.Companion.getInstance()
+                                                                                   .downloadPaper(bookId, false);
                     //OldDownloadManager.DownloadManagerResult result = oldDownloadManager.downloadPaper(bookId, false);
                     if (result.getState() != TazDownloadManager.Result.STATE.SUCCESS) {
-                        String title = "";
-                        Paper paper = paperRepository.getPaperWithBookId(bookId);
-                        if (paper != null) title = paper.getTitelWithDate(getApplication().getResources());
-                        downloadErrorLiveSingleData.postValue(new DownloadError(title, result.getState().getText()));
+                        downloadErrorLiveSingleData.postValue(result);
                     }
                     downloadQueue.remove(bookId);
                 }
@@ -175,14 +175,16 @@ public class StartViewModel extends AndroidViewModel {
         openPaperIdAfterDownload = null;
         openReaderAfterDownload = true;
     }
+//
+//    public void setPaperWaitingForResource(String bookId) {
+//        this.paperWaitingForResource = bookId;
+//    }
+//
+//    public String getPaperWaitingForResource() {
+//        return paperWaitingForResource;
+//    }
+//
 
-    public void setPaperWaitingForResource(String bookId) {
-        this.paperWaitingForResource = bookId;
-    }
-
-    public String getPaperWaitingForResource() {
-        return paperWaitingForResource;
-    }
 
     public boolean isOpenReaderAfterDownload() {
         return openReaderAfterDownload;
@@ -198,7 +200,8 @@ public class StartViewModel extends AndroidViewModel {
             for (Paper paperToDelete : papersToDelete) {
                 Download download = paperRepository.getDownloadForPaper(paperToDelete.getBookId());
                 if (download.getState() == DownloadState.DOWNLOADING) {
-                    TazDownloadManager.Companion.getInstance().cancelDownload(download.getDownloadManagerId());
+                    TazDownloadManager.Companion.getInstance()
+                                                .cancelDownload(download.getDownloadManagerId());
                 }
                 paperRepository.deletePaper(paperToDelete);
             }
@@ -214,33 +217,33 @@ public class StartViewModel extends AndroidViewModel {
         this.actionMode = actionMode;
     }
 
-    public static class DownloadError {
-        final String    title;
-        final String    details;
-        final Exception exception;
-
-        public DownloadError(String title, String details, Exception exception) {
-            this.title = title;
-            this.details = details;
-            this.exception = exception;
-        }
-
-        public DownloadError(String title, String details) {
-            this(title, details, null);
-        }
-
-
-        public Exception getException() {
-            return exception;
-        }
-
-        public String getTitle() {
-            return title;
-        }
-
-        public String getDetails() {
-            return details;
-        }
-
-    }
+//    public static class DownloadError {
+//        final String    title;
+//        final String    details;
+//        final Exception exception;
+//
+//        public DownloadError(String title, String details, Exception exception) {
+//            this.title = title;
+//            this.details = details;
+//            this.exception = exception;
+//        }
+//
+//        public DownloadError(String title, String details) {
+//            this(title, details, null);
+//        }
+//
+//
+//        public Exception getException() {
+//            return exception;
+//        }
+//
+//        public String getTitle() {
+//            return title;
+//        }
+//
+//        public String getDetails() {
+//            return details;
+//        }
+//
+//    }
 }

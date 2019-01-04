@@ -3,6 +3,7 @@ package de.thecode.android.tazreader.data
 import androidx.annotation.WorkerThread
 import de.thecode.android.tazreader.app
 import de.thecode.android.tazreader.room.AppDatabase
+import java.util.*
 
 class DownloadsRepository private constructor() {
 
@@ -20,17 +21,20 @@ class DownloadsRepository private constructor() {
     private val appDatabase: AppDatabase = AppDatabase.getInstance(app)
 
     @WorkerThread
-    fun get(key: String): Download {
-        var download = appDatabase.downloadsDao()
+    fun get(key: String): Download? {
+        return appDatabase.downloadsDao()
                 .getDownloadByKey(key)
-        if (download == null) download = Download(key = key)
-        return download
     }
 
     @WorkerThread
     fun get(id: Long): Download? {
         return appDatabase.downloadsDao()
                 .getDownloadById(id)
+    }
+
+    @WorkerThread
+    fun getByWorkerUuid(uuid: UUID): Download? {
+        return appDatabase.downloadsDao().getByWorkerUuid(uuid)
     }
 
     @WorkerThread

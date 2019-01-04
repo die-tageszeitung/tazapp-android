@@ -360,7 +360,7 @@ dependencies {
 
     implementation 'com.github.ajalt:timberkt:1.5.1'
 
-    implementation 'org.apache.commons:commons-compress:1.18'
+    implementation 'org.apache.commons:commons-compress:1.12' // JAVA 6 kompatible,  nihct updaten
 }
 
 class Download extends DefaultTask {

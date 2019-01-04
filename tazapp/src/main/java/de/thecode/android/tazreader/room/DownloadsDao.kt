@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Query
 import de.thecode.android.tazreader.data.Download
 import de.thecode.android.tazreader.data.DownloadType
+import java.util.*
 
 @Dao
 interface DownloadsDao : BaseDao<Download> {
@@ -18,4 +19,7 @@ interface DownloadsDao : BaseDao<Download> {
 
     @Query("DELETE FROM DOWNLOADS WHERE `key` = :key")
     fun deleteByKey(key: String)
+
+    @Query("SELECT * FROM DOWNLOADS WHERE workerUuid = :uuid")
+    fun getByWorkerUuid(uuid: UUID): Download?
 }

@@ -11,6 +11,7 @@ import com.squareup.picasso.Picasso;
 
 import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.R;
+import de.thecode.android.tazreader.TazApplicationKt;
 import de.thecode.android.tazreader.data.DownloadState;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.PaperRepository;
@@ -18,13 +19,13 @@ import de.thecode.android.tazreader.data.Publication;
 import de.thecode.android.tazreader.data.PublicationRepository;
 import de.thecode.android.tazreader.data.Resource;
 import de.thecode.android.tazreader.data.ResourceRepository;
+import de.thecode.android.tazreader.data.Store;
 import de.thecode.android.tazreader.data.StoreRepository;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.download.TazDownloadManager;
 import de.thecode.android.tazreader.okhttp3.OkHttp3Helper;
 import de.thecode.android.tazreader.okhttp3.RequestHelper;
 import de.thecode.android.tazreader.sync.SyncErrorEvent;
-import de.thecode.android.tazreader.update.UpdateHelper;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.greenrobot.eventbus.EventBus;
@@ -42,6 +43,7 @@ import java.util.concurrent.TimeUnit;
 import androidx.annotation.NonNull;
 import androidx.work.Constraints;
 import androidx.work.Data;
+import androidx.work.ExistingWorkPolicy;
 import androidx.work.NetworkType;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
@@ -108,17 +110,30 @@ public class SyncWorker extends LoggingWorker {
         cleanUpResources();
 
         Paper latestPaper = paperRepository.getLatestPaper();
-        if (latestPaper != null) AutoDownloadWorker.scheduleNow(latestPaper);
+        if (latestPaper != null) {
+            if (settings.getPrefBoolean(TazSettings.PREFKEY.AUTOLOAD, false) && !TazApplicationKt.getAccountHelper().isDemo()) {
+                Store autoDownloadedStore = storeRepository.getStore(latestPaper.getBookId(), Paper.STORE_KEY_AUTO_DOWNLOADED);
+                boolean isAutoDownloaded = Boolean.parseBoolean(autoDownloadedStore.getValue("false"));
+                if (!isAutoDownloaded /*&& (System.currentTimeMillis() - TimeUnit.DAYS.toMillis(1)) < latestPaper.getDateInMillis()*/) {
+                    boolean wifiOnly = settings.getPrefBoolean(TazSettings.PREFKEY.AUTOLOAD_WIFI, false);
+                    if (paperRepository.getDownloadStateForPaper(latestPaper.getBookId()) == DownloadState.NONE) {
+                        TazDownloadManager.Result result = TazApplicationKt.getDownloadManager()
+                                                                           .downloadPaper(latestPaper.getBookId(), wifiOnly);
+                        if (result.getState() == TazDownloadManager.Result.STATE.SUCCESS) {
+                            autoDownloadedStore.setValue("true");
+                            storeRepository.saveStore(autoDownloadedStore);
+                        } else if (result.getState() == TazDownloadManager.Result.STATE.NOSPACE) {
+                            TazApplicationKt.getNotificationUtils()
+                                            .showDownloadErrorNotification(latestPaper,
+                                                                           getApplicationContext().getString(R.string.message_not_enough_space));
+                        }
+                    }
+                }
 
-
+            }
+        }
         return Result.success();
     }
-
-//    private Result endJob(Result result) {
-//        EventBus.getDefault()
-//                .postSticky(new SyncStateChangedEvent(false));
-//        return result;
-//    }
 
     private void cleanUpResources() {
         // TODO
@@ -144,7 +159,7 @@ public class SyncWorker extends LoggingWorker {
 //        }
     }
 
-    public void handlePlist(NSDictionary root) {
+    private void handlePlist(NSDictionary root) {
         Publication publication = new Publication(root);
         String publicationTitle = publication.getName();
         long validUntil = publication.getValidUntil();
@@ -152,8 +167,8 @@ public class SyncWorker extends LoggingWorker {
 
         publicationRepository.savePublication(publication);
 
-        UpdateHelper.getInstance(getApplicationContext())
-                    .setLatestVersion(publication.getAppAndroidVersion());
+        TazApplicationKt.getUpdate()
+                        .setLatestVersion(publication.getAppAndroidVersion());
 
 
         NSObject[] issues = ((NSArray) root.objectForKey(PLIST_KEY_ISSUES)).getArray();
@@ -218,7 +233,8 @@ public class SyncWorker extends LoggingWorker {
             Resource latestResource = resourceRepository.getWithKey(latestPaper.getResource());
             DownloadState downloadState = resourceRepository.getDownloadState(latestResource.getKey());
             if (latestResource != null && downloadState == DownloadState.NONE) {
-                TazDownloadManager.Companion.getInstance().downloadResource(latestResource.getKey(),false);
+                TazDownloadManager.Companion.getInstance()
+                                            .downloadResource(latestResource.getKey(), false);
 //                try {
 //                    OldDownloadManager.getInstance(getApplicationContext())
 //                                      .enqueResource(latestResource, false);
@@ -281,7 +297,8 @@ public class SyncWorker extends LoggingWorker {
 
     public static void scheduleJobImmediately(boolean byUser, Calendar start, Calendar end) {
 
-        WorkManager.getInstance().cancelAllWorkByTag(TAG);
+        WorkManager.getInstance()
+                   .cancelAllWorkByTag(TAG);
 
         Data.Builder dataBuilder = new Data.Builder().putBoolean(ARG_INITIATED_BY_USER, byUser);
 
@@ -300,17 +317,14 @@ public class SyncWorker extends LoggingWorker {
 
     private static void scheduleJobIn(long latestMillis) {
 
-        WorkManager.getInstance().cancelAllWorkByTag(TAG);
-
         Constraints.Builder constraintsBuilder = new Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED);
 
-        WorkRequest request = new OneTimeWorkRequest.Builder(SyncWorker.class).addTag(TAG)
-                                                                              .setInitialDelay(latestMillis,
-                                                                                               TimeUnit.MILLISECONDS)
-                                                                              .setConstraints(constraintsBuilder.build())
-                                                                              .build();
-
+        OneTimeWorkRequest request = new OneTimeWorkRequest.Builder(SyncWorker.class).setInitialDelay(latestMillis,
+                                                                                                      TimeUnit.MILLISECONDS)
+                                                                                     .setConstraints(constraintsBuilder.build())
+                                                                                     .build();
         WorkManager.getInstance()
-                   .enqueue(request);
+                   .beginUniqueWork(TAG, ExistingWorkPolicy.REPLACE, request)
+                   .enqueue();
     }
 }

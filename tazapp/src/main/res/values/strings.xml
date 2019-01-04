@@ -145,4 +145,7 @@
     <string name="dialog_neutral_button_later">Später</string>
     <string name="dialog_button_no">Nein</string>
 
+    <string name="download_title_paper">%1$s vom %2$s</string>
+    <string name="download_title_resource">zusätzlich benötigte Dateien</string>
+
 </resources>

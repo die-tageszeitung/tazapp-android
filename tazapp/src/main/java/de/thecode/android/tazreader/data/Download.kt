@@ -3,16 +3,53 @@ package de.thecode.android.tazreader.data
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverter
+import java.io.File
+import java.util.*
 
 @Entity(tableName = "DOWNLOADS")
-
-
 data class Download(@PrimaryKey()
                     val key: String,
-                    var type: DownloadType = DownloadType.UNKNOWN,
+                    val title: String,
+                    val file: File,
+                    val type: DownloadType,
                     var downloadManagerId: Long = 0,
                     var progress: Int = 0,
-                    var state: DownloadState = DownloadState.NONE)
+                    var workerUuid: UUID? = null,
+                    var state: DownloadState = DownloadState.NONE) {
+    companion object {
+        fun create(type: DownloadType, key: String, title: String, file: File): Download {
+            return Download(type = type, key = key, title = title, file = file)
+        }
+    }
+}
+
+class FileTypeConverter {
+    @TypeConverter
+    fun toFile(value: String?): File? {
+        if (value.isNullOrBlank()) return null
+        return File(value)
+    }
+
+    @TypeConverter
+    fun toString(value: File?): String? {
+        if (value != null) return value.absolutePath
+        return null
+    }
+}
+
+class UuidTypeConverter {
+    @TypeConverter
+    fun toUuid(value: String?): UUID? {
+        if (value.isNullOrBlank()) return null
+        return UUID.fromString(value)
+    }
+
+    @TypeConverter
+    fun toString(value: UUID?): String? {
+        if (value != null) return value.toString()
+        return null
+    }
+}
 
 class DownloadStateTypeConverter {
     @TypeConverter
@@ -43,7 +80,7 @@ class DownloadTypeTypeConverter {
 }
 
 enum class DownloadType {
-    UNKNOWN, PAPER, RESOURCE, UPDATE;
+    PAPER, RESOURCE, UPDATE;
 
     companion object {
         fun getByName(name: String) = DownloadType.valueOf(name.toUpperCase())
@@ -56,6 +93,11 @@ enum class DownloadState {
     companion object {
         fun getByName(name: String) = valueOf(name.toUpperCase())
     }
+}
+
+data class DownloadEvent(val download: Download,
+                         var message: String? = null) {
+    public val success: Boolean = download.state == DownloadState.READY
 }
 
 

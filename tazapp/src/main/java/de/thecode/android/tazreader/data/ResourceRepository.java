@@ -2,6 +2,8 @@ package de.thecode.android.tazreader.data;
 
 import android.content.Context;
 
+import de.thecode.android.tazreader.R;
+import de.thecode.android.tazreader.TazApplicationKt;
 import de.thecode.android.tazreader.room.AppDatabase;
 import de.thecode.android.tazreader.utils.StorageManager;
 
@@ -30,10 +32,10 @@ public class ResourceRepository {
         return mInstance;
     }
 
-    private final StoreRepository storeRepository;
+    private final StoreRepository     storeRepository;
     private final DownloadsRepository downloadsRepository;
-    private final AppDatabase appDatabase;
-    private final StorageManager storageManager;
+    private final AppDatabase         appDatabase;
+    private final StorageManager      storageManager;
 
     private ResourceRepository(Context context) {
         storeRepository = StoreRepository.getInstance(context);
@@ -54,21 +56,24 @@ public class ResourceRepository {
 
     @WorkerThread
     public ResourceWithDownloadState getWithKey(String key) {
-        return appDatabase.resourceDao().resourceWithKey(key);
+        return appDatabase.resourceDao()
+                          .resourceWithKey(key);
     }
 
     @WorkerThread
-    public List<Resource> getAllResources(){
-        return appDatabase.resourceDao().resources();
+    public List<Resource> getAllResources() {
+        return appDatabase.resourceDao()
+                          .resources();
     }
 
     @WorkerThread
     public void saveResource(Resource resource) {
-        appDatabase.resourceDao().insert(resource);
+        appDatabase.resourceDao()
+                   .insert(resource);
     }
 
     @WorkerThread
-    public void deleteResource(Resource resource){
+    public void deleteResource(Resource resource) {
         downloadsRepository.delete(resource.getKey());
         storageManager.deleteResourceDir(resource.getKey());
     }
@@ -80,7 +85,14 @@ public class ResourceRepository {
 
     public Download getDownload(String key) {
         Download download = downloadsRepository.get(key);
-        if (download.getType() == DownloadType.UNKNOWN) download.setType(DownloadType.RESOURCE);
+        if (download == null) {
+            download = Download.Companion.create(DownloadType.RESOURCE,
+                                                 key,
+                                                 TazApplicationKt.getRes()
+                                                                 .getString(R.string.download_title_resource),
+                                                 TazApplicationKt.getStorageManager()
+                                                                 .getDownloadFile(key + ".res.zip"));
+        }
         return download;
     }
 }

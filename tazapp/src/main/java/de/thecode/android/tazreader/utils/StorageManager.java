@@ -128,7 +128,7 @@ public class StorageManager {
         return getDownloadFile(resource.getKey() + ".res.zip");
     }
 
-    private File getDownloadFile(String key) {
+    public File getDownloadFile(String key) {
         File downloadCache = getDownloadCache();
         if (downloadCache != null) return new File(getDownloadCache(), key);
         return null;

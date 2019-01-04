@@ -24,9 +24,7 @@ import de.thecode.android.tazreader.utils.extendedasyncdiffer.ExtendedAdapterLis
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -38,7 +36,7 @@ import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 import timber.log.Timber;
 
-import static de.thecode.android.tazreader.data.DownloadState.*;
+import static de.thecode.android.tazreader.data.DownloadState.NONE;
 
 public class NewLibraryAdapter extends TazListAdapter<PaperWithDownloadState, NewLibraryAdapter.ViewHolder> {
 
@@ -106,7 +104,7 @@ public class NewLibraryAdapter extends TazListAdapter<PaperWithDownloadState, Ne
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         PaperWithDownloadState libraryPaper = getItem(position);
-        paperMetaData.setPosition(libraryPaper.getBookId(), position);
+//        paperMetaData.setPosition(libraryPaper.getBookId(), position);
         bindImage(holder, libraryPaper);
         bindBadge(holder, libraryPaper);
         bindDate(holder, libraryPaper);
@@ -174,43 +172,35 @@ public class NewLibraryAdapter extends TazListAdapter<PaperWithDownloadState, Ne
     }
 
     private void bindProgress(ViewHolder holder, PaperWithDownloadState libraryPaper) {
-        holder.progress.setProgress(100 - paperMetaData.getProgress(libraryPaper.getBookId()));
+        holder.progress.setProgress(100 - libraryPaper.getProgress());
     }
 
     private void bindState(ViewHolder holder, PaperWithDownloadState paper) {
-//        if (paper.hasNoneState()) holder.progress.post(new ParametrizedRunnable<String>() {
-//            @Override
-//            public void run(String parameter) {
-//                setProgress(parameter, 0);
-//            }
-//        }.set(paper.getBookId()));
-        holder.overlay.setVisibility(paper.getDownloadState() == EXTRACTING  || paper.getDownloadState() == READY ? View.GONE : View.VISIBLE);
-        holder.progress.setVisibility(paper.getDownloadState() == EXTRACTING ? View.VISIBLE : View.GONE);
-        if (paper.getDownloadState() != NONE && paper.getDownloadState() != READY) {
-            holder.stateLayout.setVisibility(View.VISIBLE);
-            switch (paper.getDownloadState()) {
-                case DOWNLOADING:
-                case DOWNLOADED:
-                    paperMetaData.setProgress(paper.getBookId(),0);
-                    holder.state.setText(R.string.string_library_item_download_state);
-                    break;
-                case EXTRACTING:
-                    holder.state.setText(R.string.string_library_item_extract_state);
-                    break;
-                case CHECKING:
-                    holder.state.setText(R.string.string_library_item_checking_state);
-                    break;
-
-            }
-        } else {
-            holder.stateLayout.setVisibility(View.GONE);
-        }
-        //holder.wait.setVisibility(!paper.hasNoneState() && !paper.hasReadyState() ? View.VISIBLE : View.GONE);
-    }
-
-    public void setProgress(String bookId, int progress) {
-        if (paperMetaData.setProgress(bookId, progress)) {
-            notifyItemChanged(paperMetaData.getPosition(bookId), PAYLOAD_PROGRESS);
+        switch (paper.getDownloadState()) {
+            case DOWNLOADING:
+            case DOWNLOADED:
+                holder.progress.setVisibility(View.VISIBLE);
+                holder.stateLayout.setVisibility(View.VISIBLE);
+                holder.state.setText(R.string.string_library_item_download_state);
+                break;
+            case EXTRACTING:
+                holder.progress.setVisibility(View.VISIBLE);
+                holder.stateLayout.setVisibility(View.VISIBLE);
+                holder.state.setText(R.string.string_library_item_extract_state);
+                break;
+            case CHECKING:
+                holder.progress.setVisibility(View.VISIBLE);
+                holder.stateLayout.setVisibility(View.VISIBLE);
+                holder.state.setText(R.string.string_library_item_checking_state);
+                break;
+            case READY:
+                holder.progress.setVisibility(View.GONE);
+                holder.stateLayout.setVisibility(View.GONE);
+                break;
+            default:
+                holder.progress.setVisibility(View.VISIBLE);
+                holder.stateLayout.setVisibility(View.GONE);
+                break;
         }
     }
 
@@ -257,10 +247,10 @@ public class NewLibraryAdapter extends TazListAdapter<PaperWithDownloadState, Ne
 
     }
 
-    public void selectNotDownloadedPapers(){
+    public void selectNotDownloadedPapers() {
         boolean changed = false;
         for (PaperWithDownloadState paper : getHelper().getCurrentList()) {
-            if (paperMetaData.setSelected(paper.getBookId(),paper.getDownloadState() == NONE)) {
+            if (paperMetaData.setSelected(paper.getBookId(), paper.getDownloadState() == NONE)) {
                 changed = true;
             }
         }
@@ -290,6 +280,8 @@ public class NewLibraryAdapter extends TazListAdapter<PaperWithDownloadState, Ne
             List<Object> payloads = new ArrayList<>();
             if (oldItem.getDownloadState() != newItem.getDownloadState()) payloads.add(PAYLOAD_STATE);
             oldItem.setDownloadState(newItem.getDownloadState());
+            if (oldItem.getProgress() != newItem.getProgress()) payloads.add(PAYLOAD_PROGRESS);
+            oldItem.setProgress(newItem.getProgress());
             if (!areContentsTheSame(oldItem, newItem)) payloads.add(PAYLOAD_OTHER);
             return payloads;
         }
@@ -302,7 +294,7 @@ public class NewLibraryAdapter extends TazListAdapter<PaperWithDownloadState, Ne
         final TextView        badge;
         final ImageView       image;
         final ProgressBar     progress;
-        final FrameLayout     overlay;
+        //        final FrameLayout     overlay;
         final FrameLayout     selected;
         final View            stateLayout;
         final TextView        state;
@@ -331,7 +323,7 @@ public class NewLibraryAdapter extends TazListAdapter<PaperWithDownloadState, Ne
 
             progress = itemView.findViewById(R.id.lib_item_progress);
             selected = itemView.findViewById(R.id.lib_item_selected_overlay);
-            overlay = itemView.findViewById(R.id.lib_item_overlay);
+//            overlay = itemView.findViewById(R.id.lib_item_overlay);
             card.setOnClickListener(v -> {
                 if (listener != null) listener.onClick(getAdapterPosition());
             });
@@ -376,8 +368,8 @@ public class NewLibraryAdapter extends TazListAdapter<PaperWithDownloadState, Ne
     public static class PaperMetaData {
 
         public final List<String>         selectedList = new ArrayList<>();
-        public final Map<String, Integer> progressMap  = new HashMap<>();
-        public final Map<String, Integer> positionMap  = new HashMap<>();
+        //        public final Map<String, Integer> progressMap  = new HashMap<>();
+//        public final Map<String, Integer> positionMap  = new HashMap<>();
 
         public int getSelectedCount() {
             return selectedList.size();
@@ -410,24 +402,24 @@ public class NewLibraryAdapter extends TazListAdapter<PaperWithDownloadState, Ne
             return selectedList.toArray(new String[0]);
         }
 
-        public int getProgress(String bookId) {
-            if (progressMap.containsKey(bookId)) return progressMap.get(bookId);
-            else return 0;
-        }
+//        public int getProgress(String bookId) {
+//            if (progressMap.containsKey(bookId)) return progressMap.get(bookId);
+//            else return 0;
+//        }
+//
+//        public boolean setProgress(String bookId, int value) {
+//            if (progressMap.containsKey(bookId) && progressMap.get(bookId) == value) return false;
+//            progressMap.put(bookId, value);
+//            return true;
+//        }
 
-        public boolean setProgress(String bookId, int value) {
-            if (progressMap.containsKey(bookId) && progressMap.get(bookId) == value) return false;
-            progressMap.put(bookId, value);
-            return true;
-        }
-
-        public void setPosition(String bookId, int position) {
-            positionMap.put(bookId, position);
-        }
-
-        public int getPosition(String bookId) {
-            return positionMap.get(bookId);
-        }
+//        public void setPosition(String bookId, int position) {
+//            positionMap.put(bookId, position);
+//        }
+//
+//        public int getPosition(String bookId) {
+//            return positionMap.get(bookId);
+//        }
 
 
     }

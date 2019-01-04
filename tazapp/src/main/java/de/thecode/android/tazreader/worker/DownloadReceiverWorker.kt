@@ -3,8 +3,7 @@ package de.thecode.android.tazreader.worker
 import android.app.DownloadManager
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
-import android.provider.MediaStore.MediaColumns
+import androidx.annotation.WorkerThread
 import androidx.work.Data
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
@@ -16,16 +15,13 @@ import com.github.ajalt.timberkt.Timber.d
 import com.github.ajalt.timberkt.Timber.e
 import com.github.ajalt.timberkt.Timber.w
 import de.thecode.android.tazreader.*
-import de.thecode.android.tazreader.data.DownloadState
-import de.thecode.android.tazreader.data.DownloadType
-import de.thecode.android.tazreader.data.Paper
-import de.thecode.android.tazreader.data.Resource
+import de.thecode.android.tazreader.data.*
 import de.thecode.android.tazreader.secure.HashHelper
 import de.thecode.android.tazreader.start.StartActivity
 import de.thecode.android.tazreader.utils.deleteQuietly
 import org.apache.commons.compress.archivers.zip.ZipFile
 import org.apache.commons.compress.utils.IOUtils
-import org.apache.commons.compress.utils.InputStreamStatistics
+import org.greenrobot.eventbus.EventBus
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
@@ -37,47 +33,55 @@ class DownloadReceiverWorker(context: Context, workerParams: WorkerParameters) :
 
     companion object {
 
-        private const val ARG_DOWNLOAD_ID = "downloadId"
         private const val ARG_ACTION = "action"
 
+        @WorkerThread
         fun scheduleNow(downloadId: Long, action: String?) {
-            val data = Data.Builder()
-                    .putLong(ARG_DOWNLOAD_ID, downloadId)
-                    .putString(ARG_ACTION, action)
-                    .build()
+            val download = downloadsRepository.get(downloadId)
+            if (download != null) {
+                val data = Data.Builder()
+                        //.putLong(ARG_DOWNLOAD_ID, downloadId)
+                        .putString(ARG_ACTION, action)
+                        .build()
+                val request = OneTimeWorkRequest.Builder(DownloadReceiverWorker::class.java)
+                        .setInputData(data)
+                        .build()
 
-            val request = OneTimeWorkRequest.Builder(DownloadReceiverWorker::class.java)
-                    .setInputData(data)
-                    .build()
-
-            WorkManager.getInstance()
-                    .enqueue(request)
+                download.workerUuid = request.id
+                downloadsRepository.save(download)
+                WorkManager.getInstance()
+                        .enqueue(request)
+            }
         }
 
     }
 
     override fun doBackgroundWork(): Result {
-        val downloadId = inputData.getLong(ARG_DOWNLOAD_ID, -1)
-        d { "downloadId $downloadId" }
-        if (downloadId != -1L) {
-            val systemDownloadManagerInfo = downloadManager.getSystemDownloadManagerInfo(downloadId)
-            val download = downloadsRepository.get(downloadId)
+        // val downloadId = inputData.getLong(ARG_DOWNLOAD_ID, -1)
+        // d { "downloadId $downloadId" }
+        // if (downloadId != -1L) {
+
+
+            val download = downloadsRepository.getByWorkerUuid(id)
             if (download != null) {
                 d { "download $download" }
+                val systemDownloadManagerInfo = downloadManager.getSystemDownloadManagerInfo(download.downloadManagerId)
+                d { "systemDownloadState $systemDownloadManagerInfo" }
                 val action = inputData.getString(ARG_ACTION)
                 d { "action $action" }
                 if (!action.isNullOrBlank()) {
                     if (action == DownloadManager.ACTION_DOWNLOAD_COMPLETE) {
                         download.state = DownloadState.DOWNLOADED
-                        download.downloadManagerId = 0
                         downloadsRepository.save(download)
-                        val downloadedFile = getFileFromUri(systemDownloadManagerInfo.localUri)
-                        d { "File downloaded: $downloadedFile" }
-                        if (downloadedFile != null && downloadedFile.exists()) {
-                            val deleteDownload = fun() {
-                                downloadedFile.deleteQuietly()
-                                downloadsRepository.delete(download)
-                            }
+                        //val downloadedFile = getFileFromUri(systemDownloadManagerInfo.localUri)
+                        //d { "File downloaded: $downloadedFile" }
+                        val cancelDownload = fun(message:String?) {
+                            e { "$message" }
+                            download.file.deleteQuietly()
+                            downloadsRepository.delete(download)
+                            EventBus.getDefault().post(DownloadEvent(download,message))
+                        }
+                        if (download.file.exists()) {
                             when (download.type) {
                                 DownloadType.UPDATE -> {
                                     downloadsRepository.delete(download)
@@ -92,13 +96,13 @@ class DownloadReceiverWorker(context: Context, workerParams: WorkerParameters) :
                                     if (downloadable != null) {
                                         val checkDownload = fun(): Boolean {
                                             d { "checking file size… " }
-                                            if (downloadable.len != 0L && downloadable.len != downloadedFile.length()) {
-                                                e { "Wrong size of download. expected: ${downloadable.len}, file: ${downloadedFile.length()}" }
+                                            if (downloadable.len != 0L && downloadable.len != download.file.length()) {
+                                                e { "Wrong size of download. expected: ${downloadable.len}, file: ${download.file.length()}" }
                                                 return false
                                             }
                                             d { "checking file hash… " }
                                             try {
-                                                val fileHash = HashHelper.getHash(downloadedFile, HashHelper.SHA_1)
+                                                val fileHash = HashHelper.getHash(download.file, HashHelper.SHA_1)
                                                 if (!fileHash.isNullOrBlank() && fileHash != downloadable.fileHash) {
                                                     e { "Wrong hash of download. expected: ${downloadable.fileHash}, fileHash: $fileHash" }
                                                     return false
@@ -123,7 +127,7 @@ class DownloadReceiverWorker(context: Context, workerParams: WorkerParameters) :
                                             if (outputDir != null) {
                                                 try {
                                                     outputDir.mkdirs()
-                                                    val zipFile = ZipFile(downloadedFile)
+                                                    val zipFile = ZipFile(download.file)
                                                     zipFile.use { file ->
                                                         var compressedCount = 0L
                                                         var compressedSizeofAll = 0L
@@ -146,25 +150,21 @@ class DownloadReceiverWorker(context: Context, workerParams: WorkerParameters) :
                                                                 outputStream.use {
                                                                     IOUtils.copy(inputStream, outputStream)
                                                                     IOUtils.closeQuietly(inputStream)
-                                                                    d { "… done" }
-                                                                    if (inputStream is InputStreamStatistics) {
-                                                                        compressedCount += inputStream.compressedCount
-                                                                        // TODO publish progress
-                                                                        val progress = (compressedCount * 100 / compressedSizeofAll).toInt()
-                                                                        if (progress != download.progress) {
-                                                                            download.progress = progress
-                                                                            downloadsRepository.save(download)
-                                                                        }
-
+                                                                    compressedCount += entry.compressedSize
+                                                                    val progress = (compressedCount * 100 / compressedSizeofAll).toInt()
+                                                                    if (progress != download.progress) {
+                                                                        download.progress = progress
+                                                                        downloadsRepository.save(download)
                                                                     }
+                                                                    d { "… done" }
                                                                 }
                                                             }
                                                         }
                                                     }
 
-                                                    downloadedFile.deleteQuietly() // not needed anymore
+                                                    download.file.deleteQuietly() // not needed anymore
                                                     download.state = DownloadState.CHECKING
-                                                    download.progress = 0
+                                                    download.progress = 100
                                                     downloadsRepository.save(download)
                                                     val plistFile = when (download.type) {
                                                         DownloadType.PAPER -> File(outputDir, Paper.CONTENT_PLIST_FILENAME)
@@ -172,7 +172,6 @@ class DownloadReceiverWorker(context: Context, workerParams: WorkerParameters) :
                                                         else -> null
                                                     }
                                                     if (plistFile != null && plistFile.exists()) {
-
                                                         d { "parsing plist for HashVals…" }
                                                         val root = PropertyListParser.parse(plistFile) as NSDictionary
                                                         val hashValsDict = root.objectForKey("HashVals") as NSDictionary
@@ -193,10 +192,18 @@ class DownloadReceiverWorker(context: Context, workerParams: WorkerParameters) :
                                                             }
                                                         }
                                                         download.state = DownloadState.READY
+                                                        download.progress = 100
+                                                        download.downloadManagerId = 0
                                                         downloadsRepository.save(download)
+                                                        when (download.type) {
+                                                            DownloadType.PAPER -> {
+                                                                notificationUtils.showDownloadFinishedNotification(downloadable as Paper)
+                                                            }
+                                                        }
+                                                        EventBus.getDefault().post(DownloadEvent(download))
                                                         return Result.success()
                                                     } else {
-                                                        throw IOException("no plist file")
+                                                        throw IOException("Keine PList gefunden")
                                                     }
                                                     //TODO check Unzip
 
@@ -204,24 +211,22 @@ class DownloadReceiverWorker(context: Context, workerParams: WorkerParameters) :
                                                 } catch (exception: Exception) {
                                                     e(exception)
                                                     outputDir.deleteQuietly()
-                                                    deleteDownload()
+                                                    cancelDownload(exception.localizedMessage)
                                                 }
                                             } else {
-                                                deleteDownload()
+                                                cancelDownload("Zielverzeichnis nicht vorhanden")
                                             }
                                         } else {
-                                            deleteDownload()
+                                            cancelDownload("Größe oder Prüfsumme falsch")
                                         }
                                     }
                                 }
                                 else -> {
-                                    w { "download type unknown" }
-                                    deleteDownload()
+                                    cancelDownload("Unbekannter Download-Typ: ${download.type}")
                                 }
                             }
                         } else {
-                            e { "downloaded File cannot be found" }
-                            downloadsRepository.delete(download)
+                            cancelDownload("Heruntergeladene Datei nicht gefunden")
                         }
                     } else if (action == DownloadManager.ACTION_NOTIFICATION_CLICKED) {
                         if (download.type == DownloadType.PAPER) {
@@ -237,30 +242,9 @@ class DownloadReceiverWorker(context: Context, workerParams: WorkerParameters) :
                 w { "no internal download found" }
             }
 
-        } else {
-            w { "no downloadId found" }
-        }
+//        } else {
+//            w { "no downloadId found" }
+//        }
         return Result.failure()
     }
-
-    private fun getFileFromUri(uri: Uri?): File? {
-        uri?.let {
-            var filePath: String? = uri.path
-            if ("content" == uri.scheme) {
-                val filePathColumn = arrayOf(MediaColumns.DATA)
-                val contentResolver = app.contentResolver
-                val cursor = contentResolver.query(uri, filePathColumn, null, null, null)
-                // For Kotlin Beginners: cursor? nullsafe + use: auto close after use
-                cursor?.use {
-                    it.moveToFirst()
-                    val columnIndex = it.getColumnIndex(filePathColumn[0])
-                    filePath = it.getString(columnIndex)
-                }
-            }
-            return File(filePath)
-        }
-        return null
-    }
-
-
 }

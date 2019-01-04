@@ -3,12 +3,8 @@ package de.thecode.android.tazreader.start.importer;
 
 import android.os.Bundle;
 import android.os.Environment;
-import androidx.fragment.app.FragmentManager;
-import androidx.loader.app.LoaderManager;
-import androidx.loader.content.Loader;
 
 import de.thecode.android.tazreader.download.PaperDeletedEvent;
-import de.thecode.android.tazreader.download.PaperDownloadFinishedEvent;
 import de.thecode.android.tazreader.utils.BaseFragment;
 
 import org.greenrobot.eventbus.EventBus;
@@ -20,6 +16,9 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
+import androidx.fragment.app.FragmentManager;
+import androidx.loader.app.LoaderManager;
+import androidx.loader.content.Loader;
 import timber.log.Timber;
 
 /**
@@ -135,11 +134,11 @@ public class ImportDataRetainFragment extends BaseFragment implements LoaderMana
     public void onDestroy() {
         super.onDestroy();
     }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onPaperDownloadFinished(PaperDownloadFinishedEvent event) {
-        restart();
-    }
+//
+//    @Subscribe(threadMode = ThreadMode.MAIN)
+//    public void onPaperDownloadFinished(PaperDownloadFinishedEvent event) {
+//        restart();
+//    }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onPaperDeleted(PaperDeletedEvent event) {

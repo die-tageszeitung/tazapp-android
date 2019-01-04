@@ -8,11 +8,16 @@ import android.util.Base64
 import androidx.annotation.WorkerThread
 import com.github.ajalt.timberkt.d
 import de.thecode.android.tazreader.*
-import de.thecode.android.tazreader.data.*
+import de.thecode.android.tazreader.data.Download
+import de.thecode.android.tazreader.data.DownloadState
+import de.thecode.android.tazreader.data.DownloadType
+import de.thecode.android.tazreader.data.Paper
 import de.thecode.android.tazreader.okhttp3.RequestHelper
 import de.thecode.android.tazreader.sync.AccountHelper
-import de.thecode.android.tazreader.utils.*
-import org.jetbrains.anko.doAsync
+import de.thecode.android.tazreader.utils.UserAgentHelper
+import de.thecode.android.tazreader.utils.UserDeviceInfo
+import de.thecode.android.tazreader.utils.deleteQuietly
+import de.thecode.android.tazreader.utils.getStringIdByName
 import java.io.File
 
 
@@ -30,29 +35,23 @@ class TazDownloadManager private constructor() {
     }
 
     private val systemDownloadManager = app.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-    private val accountHelper = AccountHelper.getInstance(app)
-    private val paperRepository = PaperRepository.getInstance(app)
-    private val storeRepository = StoreRepository.getInstance(app)
-    private val resourceRepository = ResourceRepository.getInstance(app)
-    private val storageManager = StorageManager.getInstance(app)
     private val requestHelper = RequestHelper.getInstance(app)
     private val userAgentHelper = UserAgentHelper.getInstance(app)
-    private val userDeviceInfo = UserDeviceInfo.getInstance(app)
 
     @WorkerThread
     fun downloadPaper(bookId: String, wifiOnly: Boolean = false): Result {
-        val result = Result()
         val paper = paperRepository.getPaperWithBookId(bookId)
         d { "requesting paper download for paper $paper" }
         val download = paperRepository.getDownloadForPaper(bookId)
         d { "download $download" }
-        val destinationFile = storageManager.getDownloadFile(paper)
-        if (!checkFreeSpace(destinationFile, calculateBytesNeeded(paper.len))) {
+        val result = Result(download = download)
+        //val destinationFile = storageManager.getDownloadFile(paper)
+        if (!checkFreeSpace(download.file, calculateBytesNeeded(paper.len))) {
             result.state = Result.STATE.NOSPACE
             return result
         }
         val requestUri = requestHelper.addToUri(Uri.parse(paper.link))
-        val request = createRequest(downloadUri = requestUri, destinationFile = destinationFile, title = paper.title)
+        val request = createRequest(downloadUri = requestUri, destinationFile = download.file, title = download.title)
         if (wifiOnly) request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI)
         if (!paper.publication.isNullOrBlank()) {
             val credentials = accountHelper.getUser(AccountHelper.ACCOUNT_DEMO_USER) + ":" + accountHelper.getPassword(
@@ -79,11 +78,11 @@ class TazDownloadManager private constructor() {
 
     @WorkerThread
     fun downloadResource(key: String, wifiOnly: Boolean = false): Result {
-        val result = Result()
         val resource = resourceRepository.getWithKey(key)
         d { "requesting resource download for resource $resource" }
         val download = resourceRepository.getDownload(key)
         d { "download $download" }
+        val result = Result(download = download)
         if (download.state != DownloadState.NONE) {
             if (download.state == DownloadState.DOWNLOADING) {
                 systemDownloadManager.remove(download.downloadManagerId)
@@ -96,14 +95,13 @@ class TazDownloadManager private constructor() {
             }
         }
 
-        val destinationFile = storageManager.getDownloadFile(resource)
-        if (!checkFreeSpace(destinationFile, calculateBytesNeeded(resource.len))) {
+        if (!checkFreeSpace(download.file, calculateBytesNeeded(resource.len))) {
             result.state = Result.STATE.NOSPACE
             return result
         }
 
         val requestUri = requestHelper.addToUri(Uri.parse(resource.url))
-        val request = createRequest(downloadUri = requestUri, destinationFile = destinationFile, title = "Zusatzdateien")
+        val request = createRequest(downloadUri = requestUri, destinationFile = download.file, title = download.title)
         if (wifiOnly) request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI)
         try {
             download.downloadManagerId = systemDownloadManager.enqueue(request)
@@ -117,54 +115,54 @@ class TazDownloadManager private constructor() {
         return result
     }
 
+    @WorkerThread
     fun downloadUpdate() {
-        doAsync {
-            val downloads = downloadsRepository.get(DownloadType.UPDATE)
-            downloads.forEach {
-                systemDownloadManager.remove(it.downloadManagerId)
-                downloadsRepository.delete(it)
-            }
-
-            val supportedArchs = userDeviceInfo.supportedArchList
-            var arch: String? = null
-            if (supportedArchs != null && supportedArchs.size > 0) {
-                var bestArch = 0
-                for (supportedArch in supportedArchs) {
-                    val newArch = UserDeviceInfo.getWeightForArch(supportedArch)
-                    if (newArch > bestArch) bestArch = newArch
-                }
-                if (bestArch == 2 || bestArch == 3 || bestArch == 6 || bestArch == 7) {
-                    //Filter for build archTypes
-                    arch = UserDeviceInfo.getArchForWeight(bestArch)
-                }
-                if (arch.isNullOrBlank()) arch = "universal"
-            }
-
-
-            val fileName = StringBuilder("tazapp-").append(BuildConfig.FLAVOR)
-                    .append("-")
-                    .append(arch)
-                    .append("-")
-                    .append(BuildConfig.BUILD_TYPE)
-                    .append(".apk")
-
-            val uri = Uri.parse(BuildConfig.APKURL)
-                    .buildUpon()
-                    .appendEncodedPath(fileName.toString())
-                    .build()
-
-            val updateFile = File(storageManager.updateAppCache, fileName.toString())
-
-            val request = createRequest(
-                    downloadUri = uri,
-                    destinationFile = updateFile,
-                    title = res.getString(R.string.update_app_download_notification, res.getString(R.string.app_name)),
-                    notificationVisility = DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED,
-                    visibleInDownloadUi = true,
-                    mimeType = "application/vnd.android.package-archive"
-            )
-            systemDownloadManager.enqueue(request)
+        val downloads = downloadsRepository.get(DownloadType.UPDATE)
+        downloads.forEach {
+            systemDownloadManager.remove(it.downloadManagerId)
+            downloadsRepository.delete(it)
         }
+
+        val supportedArchs = userDeviceInfo.supportedArchList
+        var arch: String? = null
+        if (supportedArchs != null && supportedArchs.size > 0) {
+            var bestArch = 0
+            for (supportedArch in supportedArchs) {
+                val newArch = UserDeviceInfo.getWeightForArch(supportedArch)
+                if (newArch > bestArch) bestArch = newArch
+            }
+            if (bestArch == 2 || bestArch == 3 || bestArch == 6 || bestArch == 7) {
+                //Filter for build archTypes
+                arch = UserDeviceInfo.getArchForWeight(bestArch)
+            }
+            if (arch.isNullOrBlank()) arch = "universal"
+        }
+
+
+        val fileName = StringBuilder("tazapp-").append(BuildConfig.FLAVOR)
+                .append("-")
+                .append(arch)
+                .append("-")
+                .append(BuildConfig.BUILD_TYPE)
+                .append(".apk")
+
+        val uri = Uri.parse(BuildConfig.APKURL)
+                .buildUpon()
+                .appendEncodedPath(fileName.toString())
+                .build()
+
+        val updateFile = File(storageManager.updateAppCache, fileName.toString())
+
+        val request = createRequest(
+                downloadUri = uri,
+                destinationFile = updateFile,
+                title = res.getString(R.string.update_app_download_notification, res.getString(R.string.app_name)),
+                notificationVisility = DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED,
+                visibleInDownloadUi = true,
+                mimeType = "application/vnd.android.package-archive"
+        )
+        systemDownloadManager.enqueue(request)
+
     }
 
     fun cancelDownload(downloadId: Long) {
@@ -184,6 +182,7 @@ class TazDownloadManager private constructor() {
             mimeType: String = "application/zip",
             visibleInDownloadUi: Boolean = false
     ): DownloadManager.Request {
+        d { "create request for $downloadUri" }
         val request = try {
             DownloadManager.Request(downloadUri)
         } catch (e: Exception) {
@@ -214,7 +213,7 @@ class TazDownloadManager private constructor() {
         return SystemDownloadManagerInfo(downloadId)
     }
 
-    data class Result(var state: STATE = STATE.UNKNOWN) {
+    data class Result(var state: STATE = STATE.UNKNOWN, val download: Download) {
         enum class STATE { UNKNOWN, SUCCESS, NOMANAGER, NOSPACE, ALLREADYDOWNLOADED;
 
             fun getText(): String {
@@ -302,8 +301,8 @@ private fun calculateBytesNeeded(bytesOfDownload: Long): Long {
         Math.min(oneHundred, fiveDownloads)
 }
 
-private fun checkFreeSpace(dir: File, requestedBytes: Long): Boolean {
+private fun checkFreeSpace(downloadFile: File, requestedBytes: Long): Boolean {
     if (requestedBytes <= 0) return true
-    return dir.freeSpace < requestedBytes
+    return downloadFile.parentFile.freeSpace >= requestedBytes
 }
 

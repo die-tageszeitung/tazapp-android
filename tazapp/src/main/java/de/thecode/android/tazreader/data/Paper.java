@@ -134,6 +134,8 @@ public class Paper extends Downloadable {
         return getTitelWithDate(resources.getString(R.string.string_titel_seperator));
     }
 
+
+
     public String getImage() {
         return image;
     }

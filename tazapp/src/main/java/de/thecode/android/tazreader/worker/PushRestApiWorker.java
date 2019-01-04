@@ -9,10 +9,10 @@ import de.thecode.android.tazreader.okhttp3.RequestHelper;
 
 import androidx.annotation.NonNull;
 import androidx.work.Constraints;
+import androidx.work.ExistingWorkPolicy;
 import androidx.work.NetworkType;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
-import androidx.work.WorkRequest;
 import androidx.work.WorkerParameters;
 import okhttp3.Call;
 import okhttp3.HttpUrl;
@@ -53,18 +53,13 @@ public class PushRestApiWorker extends LoggingWorker {
 
     public static void scheduleNow() {
 
-
-
-        WorkManager.getInstance().cancelAllWorkByTag(TAG);
-
         Constraints.Builder constraintsBuilder = new Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED);
 
-        WorkRequest request = new OneTimeWorkRequest.Builder(PushRestApiWorker.class).addTag(TAG)
+        OneTimeWorkRequest request = new OneTimeWorkRequest.Builder(PushRestApiWorker.class)
                                                                               .setConstraints(constraintsBuilder.build())
                                                                               .build();
 
-        WorkManager.getInstance()
-                   .enqueue(request);
+        WorkManager.getInstance().beginUniqueWork(TAG, ExistingWorkPolicy.REPLACE,request).enqueue();
 
     }
 }

@@ -24,14 +24,14 @@ public abstract class PaperDao implements BaseDao<Paper>{
     @Query("SELECT * FROM PAPER WHERE bookId IN (:bookIds)")
     public abstract List<Paper> getPapers(String... bookIds);
 
-    @Query("SELECT PAPER.*,DOWNLOADS.state as downloadState FROM PAPER LEFT OUTER JOIN DOWNLOADS ON DOWNLOADS.`key` = :bookId WHERE bookId = :bookId")
+    @Query("SELECT PAPER.*,DOWNLOADS.state as downloadState, DOWNLOADS.progress as progress FROM PAPER LEFT OUTER JOIN DOWNLOADS ON DOWNLOADS.`key` = :bookId WHERE bookId = :bookId")
     public abstract PaperWithDownloadState get(String bookId);
 
 
-    @Query("SELECT PAPER.*,DOWNLOADS.state as downloadState FROM PAPER LEFT OUTER JOIN DOWNLOADS ON DOWNLOADS.`key` = PAPER.bookId ORDER BY date DESC")
+    @Query("SELECT PAPER.*,DOWNLOADS.state as downloadState, DOWNLOADS.progress as progress FROM PAPER LEFT OUTER JOIN DOWNLOADS ON DOWNLOADS.`key` = PAPER.bookId ORDER BY date DESC")
     public abstract LiveData<List<PaperWithDownloadState>> getLiveForLibrary();
 
-    @Query("SELECT PAPER.*,DOWNLOADS.state as downloadState FROM PAPER LEFT OUTER JOIN DOWNLOADS ON DOWNLOADS.`key` = PAPER.bookId WHERE demo = 1 ORDER BY date DESC")
+    @Query("SELECT PAPER.*,DOWNLOADS.state as downloadState, DOWNLOADS.progress as progress FROM PAPER LEFT OUTER JOIN DOWNLOADS ON DOWNLOADS.`key` = PAPER.bookId WHERE demo = 1 ORDER BY date DESC")
     public abstract LiveData<List<PaperWithDownloadState>> getLiveForDemoLibrary();
 
 

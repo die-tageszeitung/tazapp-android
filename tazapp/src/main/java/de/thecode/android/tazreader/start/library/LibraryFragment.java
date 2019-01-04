@@ -16,7 +16,6 @@ import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.PaperWithDownloadState;
 import de.thecode.android.tazreader.data.TazSettings;
-import de.thecode.android.tazreader.download.UnzipProgressEvent;
 import de.thecode.android.tazreader.start.DrawerStateChangedEvent;
 import de.thecode.android.tazreader.start.StartBaseFragment;
 import de.thecode.android.tazreader.start.StartViewModel;
@@ -231,7 +230,7 @@ public class LibraryFragment extends StartBaseFragment {
                            boolean isSyncRunning = false;
                            if (workStatuses != null) {
                                for (WorkInfo workStatus : workStatuses) {
-                                   Timber.i("%s",workStatus);
+                                   //Timber.i("%s",workStatus);
                                    isSyncRunning = workStatus.getState() == WorkInfo.State.RUNNING;
                                    if (isSyncRunning) break;
                                }
@@ -360,20 +359,6 @@ public class LibraryFragment extends StartBaseFragment {
         if (event.getNewState() == DrawerLayout.STATE_IDLE) swipeRefresh.setEnabled(true);
         else swipeRefresh.setEnabled(false);
     }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onUnzipProgress(UnzipProgressEvent event) {
-        adapter.setProgress(event.getBookId(), event.getProgress());
-    }
-
-//        if (adapter.getSelected() != null && adapter.getSelected()
-//                                                    .size() > 0) {
-//            Long[] ids = adapter.getSelected()
-//                                .toArray(new Long[adapter.getSelected()
-//                                                         .size()]);
-//            if (hasCallback()) getCallback().getRetainData()
-//                                            .deletePaper(ids);
-//        }
 
     private void downloadSelected() {
 

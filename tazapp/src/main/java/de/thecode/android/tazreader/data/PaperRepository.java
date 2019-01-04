@@ -5,12 +5,16 @@ import android.content.Context;
 import com.squareup.picasso.Picasso;
 
 import de.thecode.android.tazreader.BuildConfig;
+import de.thecode.android.tazreader.R;
+import de.thecode.android.tazreader.TazApplicationKt;
 import de.thecode.android.tazreader.download.PaperDeletedEvent;
 import de.thecode.android.tazreader.room.AppDatabase;
 import de.thecode.android.tazreader.utils.StorageManager;
 
 import org.greenrobot.eventbus.EventBus;
 
+import java.text.DateFormat;
+import java.text.ParseException;
 import java.util.Collections;
 import java.util.List;
 
@@ -38,10 +42,10 @@ public class PaperRepository {
         return mInstance;
     }
 
-    private final AppDatabase     appDatabase;
-    private final StorageManager  storageManager;
-    private final Picasso         picasso;
-    private final StoreRepository storeRepository;
+    private final AppDatabase         appDatabase;
+    private final StorageManager      storageManager;
+    private final Picasso             picasso;
+    private final StoreRepository     storeRepository;
     private final DownloadsRepository downloadsRepository;
 
     private PaperRepository(Context context) {
@@ -84,7 +88,8 @@ public class PaperRepository {
 
     @WorkerThread
     public void deletePaper(Paper paper) {
-        WorkManager.getInstance().cancelAllWorkByTag(paper.getBookId());
+        WorkManager.getInstance()
+                   .cancelAllWorkByTag(paper.getBookId());
         storageManager.deletePaperDir(paper);
         picasso.invalidate(paper.getImage());
         storeRepository.deletePath(Store.getPath(paper.getBookId(), Paper.STORE_KEY_RESOURCE_PARTNER));
@@ -127,13 +132,34 @@ public class PaperRepository {
                           .getLiveForLibrary();
     }
 
+    @WorkerThread
     public DownloadState getDownloadStateForPaper(String bookId) {
         return getDownloadForPaper(bookId).getState();
     }
 
+    @WorkerThread
     public Download getDownloadForPaper(String bookId) {
         Download download = downloadsRepository.get(bookId);
-        if (download.getType() == DownloadType.UNKNOWN) download.setType(DownloadType.PAPER);
+        if (download == null) {
+            String title = bookId;
+            Paper paper = getPaperWithBookId(bookId);
+            if (paper != null) {
+                try {
+                    title = (TazApplicationKt.getRes()
+                                             .getString(R.string.download_title_paper,
+                                                        paper.getTitle(),
+                                                        paper.getDate(DateFormat.MEDIUM)));
+                } catch (ParseException e) {
+                    title = paper.getTitle();
+                }
+            }
+            download = Download.Companion.create(DownloadType.PAPER,
+                                                 bookId,
+                                                 title,
+                                                 TazApplicationKt.getStorageManager()
+                                                                 .getDownloadFile(bookId + ".paper.zip"));
+
+        }
         return download;
     }
 }

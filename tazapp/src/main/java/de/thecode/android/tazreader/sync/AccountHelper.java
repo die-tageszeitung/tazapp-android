@@ -61,6 +61,10 @@ public class AccountHelper {
 //        setAuthenticated(true);
     }
 
+    public boolean isDemo() {
+        return getUser(ACCOUNT_DEMO_USER).equals(ACCOUNT_DEMO_USER);
+    }
+
     public void removeUser() {
         preferences.removePref(TazSettings.PREFKEY.USER);
         preferences.removePref(TazSettings.PREFKEY.PASS);

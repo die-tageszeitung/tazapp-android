@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 10,
-    "identityHash": "d61a0b75569dc2dd6632042edd57d3fd",
+    "identityHash": "7c83d28beac68dbbf5aa3497b451339e",
     "entities": [
       {
         "tableName": "PAPER",
@@ -224,11 +224,23 @@
       },
       {
         "tableName": "DOWNLOADS",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`key` TEXT NOT NULL, `type` TEXT NOT NULL, `downloadManagerId` INTEGER NOT NULL, `progress` INTEGER NOT NULL, `state` TEXT NOT NULL, PRIMARY KEY(`key`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`key` TEXT NOT NULL, `title` TEXT NOT NULL, `file` TEXT NOT NULL, `type` TEXT NOT NULL, `downloadManagerId` INTEGER NOT NULL, `progress` INTEGER NOT NULL, `workerUuid` TEXT, `state` TEXT NOT NULL, PRIMARY KEY(`key`))",
         "fields": [
           {
             "fieldPath": "key",
             "columnName": "key",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "file",
+            "columnName": "file",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -251,6 +263,12 @@
             "notNull": true
           },
           {
+            "fieldPath": "workerUuid",
+            "columnName": "workerUuid",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
             "fieldPath": "state",
             "columnName": "state",
             "affinity": "TEXT",
@@ -270,7 +288,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"d61a0b75569dc2dd6632042edd57d3fd\")"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"7c83d28beac68dbbf5aa3497b451339e\")"
     ]
   }
 }
