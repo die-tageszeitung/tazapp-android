@@ -57,194 +57,228 @@ class DownloadReceiverWorker(context: Context, workerParams: WorkerParameters) :
     }
 
     override fun doBackgroundWork(): Result {
-        // val downloadId = inputData.getLong(ARG_DOWNLOAD_ID, -1)
-        // d { "downloadId $downloadId" }
-        // if (downloadId != -1L) {
+        var download: Download? = null
+        var targetDir: File? = null
+        try {
+            download = getDownload()
+            d { "download $download" }
+            val systemDownloadManagerInfo = downloadManager.getSystemDownloadManagerInfo(download.downloadManagerId)
+            d { "systemDownloadState $systemDownloadManagerInfo" }
+            val action = getAction()
+            when (action) {
+                DownloadManager.ACTION_NOTIFICATION_CLICKED -> {
+                    if (download.type == DownloadType.PAPER) {
+                        val libIntent = Intent(applicationContext, StartActivity::class.java)
+                        libIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                        applicationContext.startActivity(libIntent)
+                    }
+                    return Result.success()
+                }
+                DownloadManager.ACTION_DOWNLOAD_COMPLETE -> {
 
+                    //Download abgeschloßen
+                    download.state = DownloadState.DOWNLOADED
+                    downloadsRepository.save(download)
 
-            val download = downloadsRepository.getByWorkerUuid(id)
-            if (download != null) {
-                d { "download $download" }
-                val systemDownloadManagerInfo = downloadManager.getSystemDownloadManagerInfo(download.downloadManagerId)
-                d { "systemDownloadState $systemDownloadManagerInfo" }
-                val action = inputData.getString(ARG_ACTION)
-                d { "action $action" }
-                if (!action.isNullOrBlank()) {
-                    if (action == DownloadManager.ACTION_DOWNLOAD_COMPLETE) {
-                        download.state = DownloadState.DOWNLOADED
-                        downloadsRepository.save(download)
-                        //val downloadedFile = getFileFromUri(systemDownloadManagerInfo.localUri)
-                        //d { "File downloaded: $downloadedFile" }
-                        val cancelDownload = fun(message:String?) {
-                            e { "$message" }
-                            download.file.deleteQuietly()
+                    if (!download.file.exists()) throw DownloadException("Heruntergeladene Datei nicht gefunden")
+                    when (download.type) {
+                        DownloadType.UPDATE -> {
                             downloadsRepository.delete(download)
-                            EventBus.getDefault().post(DownloadEvent(download,message))
+                            return Result.success()
                         }
-                        if (download.file.exists()) {
-                            when (download.type) {
-                                DownloadType.UPDATE -> {
-                                    downloadsRepository.delete(download)
-                                    return Result.success()
-                                }
-                                DownloadType.PAPER, DownloadType.RESOURCE -> {
-                                    val downloadable = when (download.type) {
-                                        DownloadType.PAPER -> paperRepository.getPaperWithBookId(download.key)
-                                        DownloadType.RESOURCE -> resourceRepository.getWithKey(download.key)
-                                        else -> null
-                                    }
-                                    if (downloadable != null) {
-                                        val checkDownload = fun(): Boolean {
-                                            d { "checking file size… " }
-                                            if (downloadable.len != 0L && downloadable.len != download.file.length()) {
-                                                e { "Wrong size of download. expected: ${downloadable.len}, file: ${download.file.length()}" }
-                                                return false
-                                            }
-                                            d { "checking file hash… " }
-                                            try {
-                                                val fileHash = HashHelper.getHash(download.file, HashHelper.SHA_1)
-                                                if (!fileHash.isNullOrBlank() && fileHash != downloadable.fileHash) {
-                                                    e { "Wrong hash of download. expected: ${downloadable.fileHash}, fileHash: $fileHash" }
-                                                    return false
-                                                }
-                                            } catch (e: NoSuchAlgorithmException) {
-                                                w(e)
-                                            } catch (e: IOException) {
-                                                e(e)
-                                                return false
-                                            }
-                                            return true
-                                        }
-                                        if (checkDownload()) {
-                                            download.progress = 0
-                                            download.state = DownloadState.EXTRACTING
-                                            downloadsRepository.save(download)
-                                            val outputDir = when (download.type) {
-                                                DownloadType.PAPER -> storageManager.getPaperDirectory(download.key)
-                                                DownloadType.RESOURCE -> storageManager.getResourceDirectory(download.key)
-                                                else -> null
-                                            }
-                                            if (outputDir != null) {
-                                                try {
-                                                    outputDir.mkdirs()
-                                                    val zipFile = ZipFile(download.file)
-                                                    zipFile.use { file ->
-                                                        var compressedCount = 0L
-                                                        var compressedSizeofAll = 0L
-                                                        val countEntries = file.entries
-                                                        while (countEntries.hasMoreElements()) {
-                                                            val entry = countEntries.nextElement()
-                                                            compressedSizeofAll += entry.compressedSize
-                                                        }
-                                                        val entries = file.entriesInPhysicalOrder
-                                                        while (entries.hasMoreElements()) {
-                                                            val entry = entries.nextElement()
-                                                            val entryDestination = File(outputDir, entry.name)
-                                                            if (entry.isDirectory) {
-                                                                entryDestination.mkdirs()
-                                                            } else {
-                                                                entryDestination.parentFile.mkdirs()
-                                                                val inputStream = zipFile.getInputStream(entry)
-                                                                d { "extracting ${entry.name}…" }
-                                                                val outputStream = FileOutputStream(entryDestination)
-                                                                outputStream.use {
-                                                                    IOUtils.copy(inputStream, outputStream)
-                                                                    IOUtils.closeQuietly(inputStream)
-                                                                    compressedCount += entry.compressedSize
-                                                                    val progress = (compressedCount * 100 / compressedSizeofAll).toInt()
-                                                                    if (progress != download.progress) {
-                                                                        download.progress = progress
-                                                                        downloadsRepository.save(download)
-                                                                    }
-                                                                    d { "… done" }
-                                                                }
-                                                            }
-                                                        }
-                                                    }
+                        else -> {
+                            val downloadable = getDownloadable(download)
 
-                                                    download.file.deleteQuietly() // not needed anymore
-                                                    download.state = DownloadState.CHECKING
-                                                    download.progress = 100
-                                                    downloadsRepository.save(download)
-                                                    val plistFile = when (download.type) {
-                                                        DownloadType.PAPER -> File(outputDir, Paper.CONTENT_PLIST_FILENAME)
-                                                        DownloadType.RESOURCE -> File(outputDir, Resource.SHA1_PLIST)
-                                                        else -> null
-                                                    }
-                                                    if (plistFile != null && plistFile.exists()) {
-                                                        d { "parsing plist for HashVals…" }
-                                                        val root = PropertyListParser.parse(plistFile) as NSDictionary
-                                                        val hashValsDict = root.objectForKey("HashVals") as NSDictionary
-                                                        hashValsDict.entries.forEach {
-                                                            if (!it.key.isNullOrBlank()) {
-                                                                val checkFile = File(outputDir, it.key)
-                                                                d { "checking file ${checkFile.absolutePath}" }
-                                                                if (!checkFile.exists()) throw FileNotFoundException("${checkFile.absolutePath} not found")
-                                                                else {
-                                                                    try {
-                                                                        if (!HashHelper.verifyHash(checkFile, (it.value as NSString).content, HashHelper.SHA_1))
-                                                                            throw FileNotFoundException("Wrong hash for file " + checkFile.name)
-                                                                    } catch (e: NoSuchAlgorithmException) {
-                                                                        w(e)
-                                                                    }
+                            //Dateigröße und Hash überprüfen
+                            checkDownloadedFile(download.file, downloadable)
 
-                                                                }
-                                                            }
-                                                        }
-                                                        download.state = DownloadState.READY
-                                                        download.progress = 100
-                                                        download.downloadManagerId = 0
-                                                        downloadsRepository.save(download)
-                                                        when (download.type) {
-                                                            DownloadType.PAPER -> {
-                                                                notificationUtils.showDownloadFinishedNotification(downloadable as Paper)
-                                                            }
-                                                        }
-                                                        EventBus.getDefault().post(DownloadEvent(download))
-                                                        return Result.success()
-                                                    } else {
-                                                        throw IOException("Keine PList gefunden")
-                                                    }
-                                                    //TODO check Unzip
+                            //Zielverzeichnis anlegen
+                            targetDir = getTargetDir(download)
 
+                            //Entpacken
+                            download.progress = 0
+                            download.state = DownloadState.EXTRACTING
+                            downloadsRepository.save(download)
+                            extractDownload(download, targetDir)
 
-                                                } catch (exception: Exception) {
-                                                    e(exception)
-                                                    outputDir.deleteQuietly()
-                                                    cancelDownload(exception.localizedMessage)
-                                                }
-                                            } else {
-                                                cancelDownload("Zielverzeichnis nicht vorhanden")
-                                            }
-                                        } else {
-                                            cancelDownload("Größe oder Prüfsumme falsch")
-                                        }
-                                    }
-                                }
-                                else -> {
-                                    cancelDownload("Unbekannter Download-Typ: ${download.type}")
-                                }
+                            //Extraktion überprüfen
+                            download.state = DownloadState.CHECKING
+                            download.progress = 100
+                            downloadsRepository.save(download)
+                            checkFilesInTargetDir(download, targetDir)
+
+                            //Ist der Worker noch aktuell?
+                            if (isStopped) {
+                                throw DownloadException("Download-Verarbeitung abgebrochen",true)
                             }
-                        } else {
-                            cancelDownload("Heruntergeladene Datei nicht gefunden")
-                        }
-                    } else if (action == DownloadManager.ACTION_NOTIFICATION_CLICKED) {
-                        if (download.type == DownloadType.PAPER) {
-                            val libIntent = Intent(applicationContext, StartActivity::class.java)
-                            libIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                            applicationContext.startActivity(libIntent)
+
+                            //Überprüfung erfolgreich
+                            download.state = DownloadState.READY
+                            download.progress = 100
+                            download.downloadManagerId = 0
+                            downloadsRepository.save(download)
+                            if (download.type == DownloadType.PAPER) {
+                                notificationUtils.showDownloadFinishedNotification(downloadable as Paper)
+                            }
+                            EventBus.getDefault()
+                                    .post(DownloadEvent(download))
+                            return Result.success()
                         }
                     }
-                } else {
-                    w { "no action found" }
                 }
-            } else {
-                w { "no internal download found" }
+                else -> {
+                    throw DownloadException("Unbekannte Aktion: $action")
+                }
             }
-
-//        } else {
-//            w { "no downloadId found" }
-//        }
+        } catch (e: DownloadException) {
+            e(e)
+            download?.let {
+                download.file.deleteQuietly()
+                downloadsRepository.delete(download)
+                if (!e.quiet) {
+                    EventBus.getDefault()
+                            .post(DownloadEvent(download, e.localizedMessage))
+                }
+            }
+            targetDir?.deleteQuietly()
+        }
         return Result.failure()
     }
+
+
+    private fun getDownload(): Download {
+        return downloadsRepository.getByWorkerUuid(id) ?: throw DownloadException("no internal download found")
+    }
+
+    private fun getAction(): String {
+        val result = inputData.getString(ARG_ACTION)
+        if (result.isNullOrBlank()) throw DownloadException("no action found")
+        return result
+    }
+
+    private fun getDownloadable(download: Download): Downloadable {
+        return when (download.type) {
+            DownloadType.PAPER -> paperRepository.getPaperWithBookId(download.key)
+            DownloadType.RESOURCE -> resourceRepository.getWithKey(download.key)
+            else -> throw DownloadException("Unbekannter Download Typ: ${download.type}")
+        } ?: throw DownloadException("Keine Daten zu Download-Key gefunden")
+    }
+
+    private fun checkDownloadedFile(file: File, downloadable: Downloadable) {
+        if (isStopped) return
+        d { "checking file size… " }
+        if (downloadable.len != 0L && downloadable.len != file.length()) {
+            throw DownloadException("Wrong size of download. expected: ${downloadable.len}, file: ${file.length()}")
+        }
+        d { "checking file hash… " }
+        try {
+            val fileHash = HashHelper.getHash(file, HashHelper.SHA_1)
+            if (!fileHash.isNullOrBlank() && fileHash != downloadable.fileHash) {
+                throw DownloadException("Wrong hash of download. expected: ${downloadable.fileHash}, fileHash: $fileHash")
+            }
+        } catch (e: NoSuchAlgorithmException) {
+            w(e)
+        } catch (e: IOException) {
+            throw DownloadException(e.localizedMessage)
+        }
+    }
+
+    private fun getTargetDir(download: Download): File {
+        val targetDir = when (download.type) {
+            DownloadType.PAPER -> storageManager.getPaperDirectory(download.key)
+            DownloadType.RESOURCE -> storageManager.getResourceDirectory(download.key)
+            else -> null
+        } ?: throw DownloadException("Kann kein Verzeichnis für Download-Typ anlegen")
+        targetDir.mkdirs()
+        if (!targetDir.exists()) throw DownloadException("Konnte Zielverzeichnis nicht anlegen")
+        return targetDir
+    }
+
+    private fun extractDownload(download: Download, targetDir:File) {
+        if (isStopped) return
+        try {
+            val zipFile = ZipFile(download.file)
+            zipFile.use { file ->
+                var compressedCount = 0L
+                var compressedSizeofAll = 0L
+                var uncompressedSizeofAll = 0L
+                val countEntries = file.entries
+                while (countEntries.hasMoreElements()) {
+                    val entry = countEntries.nextElement()
+                    compressedSizeofAll += entry.compressedSize
+                    uncompressedSizeofAll += entry.size
+                }
+                d { "size of all zp entries: compressed = $compressedSizeofAll uncompressed = $uncompressedSizeofAll" }
+                if (targetDir.freeSpace < uncompressedSizeofAll) throw IOException("Nicht genügend Platz zum Entpacken in ${targetDir.absolutePath}")
+                val entries = file.entriesInPhysicalOrder
+                while (entries.hasMoreElements()) {
+                    if (isStopped) return
+                    val entry = entries.nextElement()
+                    val entryDestination = File(targetDir, entry.name)
+                    if (entry.isDirectory) {
+                        entryDestination.mkdirs()
+                    } else {
+                        entryDestination.parentFile.mkdirs()
+                        val inputStream = zipFile.getInputStream(entry)
+                        d { "extracting ${entry.name}…" }
+                        val outputStream = FileOutputStream(entryDestination)
+                        outputStream.use {
+                            IOUtils.copy(inputStream, outputStream)
+                            IOUtils.closeQuietly(inputStream)
+                            compressedCount += entry.compressedSize
+                            val progress = (compressedCount * 100 / compressedSizeofAll).toInt()
+                            if (progress != download.progress) {
+                                download.progress = progress
+                                downloadsRepository.save(download)
+                            }
+                            d { "… done" }
+                        }
+                    }
+                }
+            }
+        } catch (e: IOException) {
+            throw DownloadException(e.localizedMessage)
+        } finally {
+            download.file.deleteQuietly()
+        }
+    }
+
+    private fun checkFilesInTargetDir(download: Download, targetDir: File){
+        if (isStopped) return
+        val plistFile = when (download.type) {
+            DownloadType.PAPER -> File(targetDir, Paper.CONTENT_PLIST_FILENAME)
+            DownloadType.RESOURCE -> File(targetDir, Resource.SHA1_PLIST)
+            else -> throw DownloadException("Kein PList-File zur Überprüfung für Download-Typ")
+        }
+        if (!plistFile.exists()) throw DownloadException("Plist-Datei nicht vorhanden: ${plistFile.absolutePath}")
+        d { "parsing plist for HashVals…" }
+        try {
+            val root = PropertyListParser.parse(plistFile) as NSDictionary
+            val hashValsDict = root.objectForKey("HashVals") as NSDictionary
+            hashValsDict.entries.forEach {
+                if (isStopped) return
+                if (!it.key.isNullOrBlank()) {
+                    val checkFile = File(targetDir, it.key)
+                    d { "checking file ${checkFile.absolutePath}" }
+                    if (!checkFile.exists()) throw FileNotFoundException("${checkFile.absolutePath} not found")
+                    else {
+                        try {
+                            if (!HashHelper.verifyHash(checkFile, (it.value as NSString).content, HashHelper.SHA_1))
+                                throw IOException("Falscher Hash-Wert für Datei " + checkFile.name)
+                        } catch (e: NoSuchAlgorithmException) {
+                            w(e)
+                        }
+
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            throw DownloadException(e.localizedMessage)
+        }
+    }
+
+
+
+    class DownloadException(message: String, val quiet:Boolean=false) : Exception(message)
+
 }

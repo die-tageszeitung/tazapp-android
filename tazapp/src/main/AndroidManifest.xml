@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest
         xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
         package="de.thecode.android.tazreader">
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
@@ -12,9 +13,9 @@
     <supports-screens android:anyDensity="true"/>
 
     <application
+            tools:replace="android:allowBackup"
             android:name=".TazApplication"
-            android:allowBackup="true"
-            android:backupAgent=".backup.TazBackupHelper"
+            android:allowBackup="false"
             android:icon="@mipmap/ic_launcher"
             android:roundIcon="@mipmap/ic_launcher_round"
             android:largeHeap="true"

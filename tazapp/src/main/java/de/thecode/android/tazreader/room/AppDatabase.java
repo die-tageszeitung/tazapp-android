@@ -35,7 +35,7 @@ public abstract class AppDatabase extends RoomDatabase {
 
     private static AppDatabase create(final Context context) {
         return Room.databaseBuilder(context, AppDatabase.class, DB_NAME)
-                   .addMigrations(Migrations.getAllmigrations())
+                   .addMigrations(Migrations.INSTANCE.getAllMigrations())
                    .build();
     }
 

@@ -10,6 +10,7 @@ import de.thecode.android.tazreader.utils.StorageManager;
 import java.util.List;
 
 import androidx.annotation.WorkerThread;
+import androidx.work.WorkManager;
 
 /**
  * Created by mate on 01.03.18.
@@ -74,7 +75,11 @@ public class ResourceRepository {
 
     @WorkerThread
     public void deleteResource(Resource resource) {
-        downloadsRepository.delete(resource.getKey());
+        Download download = downloadsRepository.get(resource.getKey());
+        if (download != null) {
+            if (download.getWorkerUuid() != null) WorkManager.getInstance().cancelWorkById(download.getWorkerUuid());
+            downloadsRepository.delete(download);
+        }
         storageManager.deleteResourceDir(resource.getKey());
     }
 

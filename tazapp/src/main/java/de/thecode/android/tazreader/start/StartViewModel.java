@@ -202,6 +202,8 @@ public class StartViewModel extends AndroidViewModel {
                 if (download.getState() == DownloadState.DOWNLOADING) {
                     TazDownloadManager.Companion.getInstance()
                                                 .cancelDownload(download.getDownloadManagerId());
+                } else {
+
                 }
                 paperRepository.deletePaper(paperToDelete);
             }

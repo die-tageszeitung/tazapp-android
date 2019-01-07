@@ -88,12 +88,14 @@ public class PaperRepository {
 
     @WorkerThread
     public void deletePaper(Paper paper) {
-        WorkManager.getInstance()
-                   .cancelAllWorkByTag(paper.getBookId());
+        Download download = downloadsRepository.get(paper.getBookId());
+        if (download != null) {
+            if (download.getWorkerUuid() != null) WorkManager.getInstance().cancelWorkById(download.getWorkerUuid());
+            downloadsRepository.delete(download);
+        }
         storageManager.deletePaperDir(paper);
         picasso.invalidate(paper.getImage());
         storeRepository.deletePath(Store.getPath(paper.getBookId(), Paper.STORE_KEY_RESOURCE_PARTNER));
-        downloadsRepository.delete(paper.getBookId());
         if (BuildConfig.BUILD_TYPE.equals("staging")) {
             paper.setValidUntil(0); //Wunsch von Ralf, damit besser im Staging getestet werden kann
             savePaper(paper);

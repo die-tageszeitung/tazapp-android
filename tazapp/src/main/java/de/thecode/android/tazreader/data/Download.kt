@@ -10,7 +10,7 @@ import java.util.*
 data class Download(@PrimaryKey()
                     val key: String,
                     val title: String,
-                    val file: File,
+                    var file: File,
                     val type: DownloadType,
                     var downloadManagerId: Long = 0,
                     var progress: Int = 0,
