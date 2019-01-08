@@ -84,3 +84,22 @@
 -keep class org.apache.commons.lang3.** { <init>(...); *; }
 -keep enum org.apache.commons.lang3.** { <init>(...); *; }
 # --- /Commons Lang ---
+
+# --- Kotlin
+-keep class kotlin.** { *; }
+-keep class kotlin.Metadata { *; }
+-dontwarn kotlin.**
+-keepclassmembers class **$WhenMappings {
+    <fields>;
+}
+-keepclassmembers class kotlin.Metadata {
+    public <methods>;
+}
+-assumenosideeffects class kotlin.jvm.internal.Intrinsics {
+    static void checkParameterIsNotNull(java.lang.Object, java.lang.String);
+}
+
+##---------------Begin: proguard configuration for Apache Compress ------
+-dontwarn org.apache.commons.compress.compressors.**
+-dontwarn org.apache.commons.compress.archivers.**
+##---------------End: proguard configuration for Apache Compress -------
