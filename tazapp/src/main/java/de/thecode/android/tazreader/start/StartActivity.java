@@ -327,7 +327,7 @@ public class StartActivity extends BaseActivity
                       });
 
         WorkManager.getInstance()
-                   .getWorkInfosByTagLiveData(DataFolderMigrationWorker.UNIQUE_TAG)
+                   .getWorkInfosForUniqueWorkLiveData(DataFolderMigrationWorker.UNIQUE_TAG)
                    .observe(this, new Observer<List<WorkInfo>>() {
                        @Override
                        public void onChanged(List<WorkInfo> workStatuses) {

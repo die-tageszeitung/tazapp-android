@@ -896,6 +896,11 @@ public class Paper extends Downloadable {
                     return link;
                 }
 
+                public String getCleanLink() {
+                    if (link!=null) return link.replaceAll("./","");
+                    return null;
+                }
+
                 public Page getPage() {
                     return Page.this;
                 }

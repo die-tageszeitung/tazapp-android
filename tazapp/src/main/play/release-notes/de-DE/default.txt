@@ -1,5 +1,2 @@
+* BugFix PDF-Links
 * Konsolidierung des Download- und Extrahierung-Vorgangs
-* BugFixes
-* Endlich: Ausgaben auf der SD-Karte speichern
-* Fehler melden vereinfacht, Möglichkeit ein Protokoll der App zu speichern
-* UI Anpassungen in der Ausgabenübersicht

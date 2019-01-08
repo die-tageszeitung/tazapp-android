@@ -182,7 +182,8 @@ public class TAZPageView extends PageView {
 
         for (Page.Geometry geometry : _page.getGeometries()) {
             if (geometry.checkCoordinates(relativeX, relativeY)) {
-                String link = geometry.getLink();
+                String link = geometry.getCleanLink();
+                Timber.d("Found link: %s", link);
                 if (link != null) {
                     ITocItem indexItem = _page.getPaper()
                                               .getPlist()
@@ -191,6 +192,7 @@ public class TAZPageView extends PageView {
                         readerActivity.loadContentFragment(link);
                         return;
                     } else {
+                        Timber.i("found no item for link in index");
                         if (link.toLowerCase(Locale.getDefault())
                                 .startsWith("http")) {
                             Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(link));
