@@ -1,8 +1,5 @@
 package de.thecode.android.tazreader.data;
 
-import androidx.room.Entity;
-import androidx.room.Ignore;
-import androidx.room.PrimaryKey;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -11,7 +8,6 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.Resources;
 import android.net.Uri;
-import androidx.annotation.NonNull;
 import android.text.TextUtils;
 
 import com.commonsware.cwac.provider.StreamProvider;
@@ -30,6 +26,7 @@ import de.thecode.android.tazreader.utils.ReadableException;
 import de.thecode.android.tazreader.utils.StorageManager;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.json.JSONArray;
 import org.xml.sax.SAXException;
@@ -52,10 +49,14 @@ import java.util.Set;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import androidx.annotation.NonNull;
+import androidx.room.Entity;
+import androidx.room.Ignore;
+import androidx.room.PrimaryKey;
 import timber.log.Timber;
 
 @Entity(tableName = "PAPER")
-public class Paper {
+public class Paper extends Downloadable {
 
     public static final String STORE_KEY_BOOKMARKS           = "bookmarks";
     public static final String STORE_KEY_CURRENTPOSITION     = "currentPosition";
@@ -65,20 +66,6 @@ public class Paper {
 
     public static final String CONTENT_PLIST_FILENAME = "content.plist";
 
-//    public final static int NOT_DOWNLOADED        = 1;
-//    public final static int DOWNLOADED_READABLE   = 2;
-//    public final static int DOWNLOADED_BUT_UPDATE = 3;
-//    public final static int IS_DOWNLOADING        = 4;
-//    public final static int NOT_DOWNLOADED_IMPORT = 5;
-
-    public final static int STATE_NONE = 0;
-    public final static int STATE_DOWNLOADING = 1;
-    public final static int STATE_DOWNLOADED = 2;
-    public final static int STATE_EXTRACTING = 3;
-    public final static int STATE_READY = 4;
-    public final static int STATE_UPDATE = 5;
-
-    //    private Long    id;
     @NonNull
     @PrimaryKey
     private String               bookId;
@@ -86,22 +73,12 @@ public class Paper {
     private String               image;
     private String               imageHash;
     private String               link;
-    private String               fileHash;
-    private long                 len;
     private long                 lastModified;
     private String               resource;
     private boolean              demo;
-    //    private boolean hasUpdate;
-    private int                  state ;
-    private long                 downloadId;
-//    private boolean              downloaded;
-//    private boolean              kiosk;
-//    private boolean              imported;
     private String               title;
     private long                 validUntil;
     private String               publication;
-//    @Ignore
-//    private int                  progress = 0;
     @Ignore
     private Map<String, Integer> articleCollectionOrder;
     @Ignore
@@ -156,15 +133,8 @@ public class Paper {
     public String getTitelWithDate(Resources resources) {
         return getTitelWithDate(resources.getString(R.string.string_titel_seperator));
     }
-//
-//
-//    public int getProgress() {
-//        return progress;
-//    }
-//
-//    public void setProgress(int progress) {
-//        this.progress = progress;
-//    }
+
+
 
     public String getImage() {
         return image;
@@ -172,60 +142,6 @@ public class Paper {
 
     public boolean isDemo() {
         return demo;
-    }
-
-    public boolean hasNoneState() { return state == STATE_NONE; }
-
-    public boolean hasDownloadingState() {
-        return state == STATE_DOWNLOADING;
-    }
-
-    public boolean hasDownloadedState() {
-        return state == STATE_DOWNLOADED;
-    }
-
-    public boolean hasExtractingState() {
-        return state == STATE_EXTRACTING;
-    }
-
-    public boolean hasReadyState() {
-        return state == STATE_READY || hasUpdateState();
-    }
-    public boolean hasUpdateState() {
-        return state == STATE_UPDATE;
-    }
-
-
-//    public boolean hasUpdate() {
-//        return hasUpdate;
-//    }
-
-//    public boolean isImported() {
-//        return imported;
-//    }
-//
-//    public boolean isKiosk() {
-//        return kiosk;
-//    }
-
-    public int getState() {
-
-//        if (this.isDownloaded() && !this.isDownloading() && !this.hasUpdate()) {
-//            return DOWNLOADED_READABLE;
-//        } else if (this.isDownloading()) {
-//            return IS_DOWNLOADING;
-//        } else if (this.isDownloaded() && this.hasUpdate() && !this.isDownloading()) {
-//            return DOWNLOADED_BUT_UPDATE;
-//        } else if (!this.isDownloaded() && (this.isKiosk() || this.isImported())) {
-//            return NOT_DOWNLOADED_IMPORT;
-//        }
-//
-//        return NOT_DOWNLOADED;
-        return state;
-    }
-
-    public void setState(int state) {
-        this.state = state;
     }
 
     public String getDate() {
@@ -253,14 +169,6 @@ public class Paper {
         this.imageHash = imageHash;
     }
 
-    public String getFileHash() {
-        return fileHash;
-    }
-
-    public void setFileHash(String fileHash) {
-        this.fileHash = fileHash;
-    }
-
     public void setImage(String image) {
         this.image = image;
     }
@@ -281,52 +189,18 @@ public class Paper {
         return link;
     }
 
-    public void setLen(long len) {
-        this.len = len;
-    }
-
-    public long getLen() {
-        return len;
-    }
-
     public long getLastModified() {
         return lastModified;
     }
-
-
-//    public void setHasUpdate(boolean hasupdate) {
-//        this.hasUpdate = hasupdate;
-//    }
-
-//    public void setDownloaded(boolean downloaded) {
-//        this.downloaded = downloaded;
-//    }
 
     public void setBookId(String bookId) {
         this.bookId = bookId;
     }
 
-//    public void setImported(boolean imported) {
-//        this.imported = imported;
-//    }
-//
-//    public void setKiosk(boolean kiosk) {
-//        this.kiosk = kiosk;
-//    }
-
     public String getTitle() {
         if (title == null) return "";
         return title;
     }
-
-//    public Long getPublicationId() {
-//        return publicationId;
-//    }
-//
-//    public void setPublicationId(Long publicationId) {
-//        this.publicationId = publicationId;
-//    }
-
 
     public void setPublication(String publication) {
         this.publication = publication;
@@ -348,45 +222,13 @@ public class Paper {
         this.validUntil = validUntil;
     }
 
-    public void setDownloadId(long downloadId) {
-        this.downloadId = downloadId;
-    }
-
-    public long getDownloadId() {
-        return downloadId;
-    }
-
     public void setResource(String resource) {
         this.resource = resource;
     }
 
-//    public void setResourceFileHash(String resourceFileHash) {
-//        this.resourceFileHash = resourceFileHash;
-//    }
-//
-//    public void setResourceUrl(String resourceUrl) {
-//        this.resourceUrl = resourceUrl;
-//    }
-//
-//    public void setResourceLen(long resourceLen) {
-//        this.resourceLen = resourceLen;
-//    }
-
     public String getResource() {
         return resource;
     }
-
-//    public String getResourceFileHash() {
-//        return resourceFileHash;
-//    }
-//
-//    public String getResourceUrl() {
-//        return resourceUrl;
-//    }
-//
-//    public long getResourceLen() {
-//        return resourceLen;
-//    }
 
     public int getArticleCollectionOrderPosition(String key) {
         return articleCollectionOrder.get(key);
@@ -900,13 +742,6 @@ public class Paper {
                         NSDictionary sourceBookCategoryPageArticleDict = (NSDictionary) sourceBookCategoryPageArticle;
                         String key = sourceBookCategoryPageArticleDict.allKeys()[0];
                         Article article = new Article(key, (NSDictionary) sourceBookCategoryPageArticleDict.get(key));
-//                        for (Geometry geometry : getGeometries()) {
-//                            if (article.getPath()
-//                                       .equals(geometry.getLink())) {
-//                                //geometry.article = article;
-//                                article.geometries.add(geometry);
-//                            }
-//                        }
                         articles.add(article);
                     }
                 }
@@ -977,12 +812,6 @@ public class Paper {
                 try {
                     String pagePath = pdfFile.getCanonicalPath()
                                              .replace(papersDir.getCanonicalPath(), "papers");
-
-//                    Uri contentUri = Uri.parse("content://" + BuildConfig.APPLICATION_ID + ".streamprovider")
-//                                        .buildUpon()
-//
-//                                        .appendEncodedPath(pagePath)
-//                                        .build();
 
                     Uri contentUri = StreamProvider.getUriForFile(BuildConfig.APPLICATION_ID + ".streamprovider", pdfFile);
 
@@ -1065,6 +894,11 @@ public class Paper {
 
                 public String getLink() {
                     return link;
+                }
+
+                public String getCleanLink() {
+                    if (link!=null) return link.replaceAll("./","");
+                    return null;
                 }
 
                 public Page getPage() {
@@ -1252,34 +1086,12 @@ public class Paper {
 
         public abstract class TocItemTemplate implements ITocItem {
 
-//            boolean childsVisible = true;
-
             Type type;
 
             private boolean  bookmarked;
             private ITocItem link;
 
             public abstract String getTitle();
-
-//            public void setIndexChildsVisible(boolean childsVisible) {
-//
-//                this.childsVisible = childsVisible;
-//
-//                if (!childsVisible && hasIndexChilds()) {
-//                    for (IIndexItem childItem : getIndexChilds()) {
-//                        childItem.setIndexChildsVisible(false);
-//                    }
-//                }
-//            }
-//
-//            public boolean areIndexChildsVisible() {
-//                return childsVisible;
-//            }
-//
-//            public boolean isVisible() {
-//                IIndexItem indexParent = getIndexParent();
-//                return indexParent == null || indexParent.areIndexChildsVisible();
-//            }
 
             public boolean hasBookmarkedChilds() {
                 if (getIndexChilds() != null) {
@@ -1409,38 +1221,49 @@ public class Paper {
     }
 
     @Override
-    public String toString() {
-        //return Log.toString(this, ":", "; ");
-        return ToStringBuilder.reflectionToString(this);
+    public boolean equals(Object o) {
+        if (this == o) return true;
+
+        if (!(o instanceof Paper)) return false;
+
+        Paper paper = (Paper) o;
+
+        return new EqualsBuilder().appendSuper(super.equals(o))
+                                  .append(lastModified, paper.lastModified)
+                                  .append(demo, paper.demo)
+                                  .append(validUntil, paper.validUntil)
+                                  .append(bookId, paper.bookId)
+                                  .append(date, paper.date)
+                                  .append(image, paper.image)
+                                  .append(imageHash, paper.imageHash)
+                                  .append(link, paper.link)
+                                  .append(resource, paper.resource)
+                                  .append(title, paper.title)
+                                  .append(publication, paper.publication)
+                                  .isEquals();
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (obj == this) {
-            return true;
-        }
-        if (obj.getClass() != getClass()) {
-            return false;
-        }
-        Paper rhs = (Paper) obj;
-        return new EqualsBuilder().append(date, rhs.date)
-                                  .append(image, rhs.image)
-                                  .append(imageHash, rhs.imageHash)
-                                  .append(link, rhs.link)
-                                  .append(fileHash, rhs.fileHash)
-                                  .append(len, rhs.len)
-                                  .append(resource, rhs.resource)
-                                  .append(lastModified, rhs.lastModified)
-                                  .append(bookId, rhs.bookId)
-                                  .append(demo, rhs.demo)
-                                  .append(publication, rhs.publication)
-                                  .append(validUntil, rhs.validUntil)
-                                  .append(downloadId, rhs.downloadId)
-                                  .append(state, rhs.state)
-                                  .isEquals();
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37).appendSuper(super.hashCode())
+                                          .append(bookId)
+                                          .append(date)
+                                          .append(image)
+                                          .append(imageHash)
+                                          .append(link)
+                                          .append(lastModified)
+                                          .append(resource)
+                                          .append(demo)
+                                          .append(title)
+                                          .append(validUntil)
+                                          .append(publication)
+                                          .toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        //return Log.toString(this, ":", "; ");
+        return ToStringBuilder.reflectionToString(this);
     }
 
     public static class PaperNotFoundException extends ReadableException {

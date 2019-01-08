@@ -28,19 +28,22 @@ import de.mateware.dialog.listener.DialogDismissListener;
 import de.mateware.snacky.Snacky;
 import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.R;
+import de.thecode.android.tazreader.TazApplicationKt;
 import de.thecode.android.tazreader.analytics.AnalyticsWrapper;
+import de.thecode.android.tazreader.data.Download;
+import de.thecode.android.tazreader.data.DownloadEvent;
+import de.thecode.android.tazreader.data.DownloadState;
 import de.thecode.android.tazreader.data.Paper;
+import de.thecode.android.tazreader.data.PaperWithDownloadState;
 import de.thecode.android.tazreader.data.Resource;
 import de.thecode.android.tazreader.data.ResourceRepository;
+import de.thecode.android.tazreader.data.ResourceWithDownloadState;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.dialog.ArchiveDialog;
 import de.thecode.android.tazreader.dialog.ArchiveEntry;
 import de.thecode.android.tazreader.dialog.HelpDialog;
 import de.thecode.android.tazreader.dialognew.AskForHelpDialog;
-import de.thecode.android.tazreader.download.DownloadManager;
-import de.thecode.android.tazreader.download.PaperDownloadFailedEvent;
-import de.thecode.android.tazreader.download.PaperDownloadFinishedEvent;
-import de.thecode.android.tazreader.download.ResourceDownloadEvent;
+import de.thecode.android.tazreader.download.TazDownloadManager;
 import de.thecode.android.tazreader.importer.ImportActivity;
 import de.thecode.android.tazreader.migration.MigrationActivity;
 import de.thecode.android.tazreader.notifications.NotificationUtils;
@@ -49,7 +52,7 @@ import de.thecode.android.tazreader.start.importer.ImportFragment;
 import de.thecode.android.tazreader.start.library.LibraryFragment;
 import de.thecode.android.tazreader.sync.AccountHelper;
 import de.thecode.android.tazreader.sync.SyncErrorEvent;
-import de.thecode.android.tazreader.update.UpdateHelper;
+import de.thecode.android.tazreader.update.Update;
 import de.thecode.android.tazreader.utils.AsyncTaskListener;
 import de.thecode.android.tazreader.utils.BaseActivity;
 import de.thecode.android.tazreader.utils.Charsets;
@@ -79,9 +82,8 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
-import androidx.work.State;
+import androidx.work.WorkInfo;
 import androidx.work.WorkManager;
-import androidx.work.WorkStatus;
 import timber.log.Timber;
 
 /**
@@ -314,25 +316,26 @@ public class StartActivity extends BaseActivity
         openReaderFromDownloadNotificationIntent(getIntent());
         checkForNewerVersion();
         startViewModel.getDownloadErrorLiveSingleData()
-                      .observe(this, new Observer<StartViewModel.DownloadError>() {
+                      .observe(this, new Observer<TazDownloadManager.Result>() {
                           @Override
-                          public void onChanged(@Nullable StartViewModel.DownloadError downloadError) {
-                              if (downloadError != null) showDownloadErrorDialog(downloadError.getTitle(),
-                                                                                 downloadError.getDetails(),
-                                                                                 downloadError.getException());
+                          public void onChanged(@Nullable TazDownloadManager.Result downloadError) {
+                              if (downloadError != null) showDownloadErrorDialog(downloadError.getDownload()
+                                                                                              .getTitle(),
+                                                                                 downloadError.getState()
+                                                                                              .getText());
                           }
                       });
 
         WorkManager.getInstance()
-                   .getStatusesForUniqueWork(DataFolderMigrationWorker.UNIQUE_TAG)
-                   .observe(this, new Observer<List<WorkStatus>>() {
+                   .getWorkInfosForUniqueWorkLiveData(DataFolderMigrationWorker.UNIQUE_TAG)
+                   .observe(this, new Observer<List<WorkInfo>>() {
                        @Override
-                       public void onChanged(List<WorkStatus> workStatuses) {
+                       public void onChanged(List<WorkInfo> workStatuses) {
                            boolean isDataMigrationRunning = false;
                            if (workStatuses != null) {
-                               for (WorkStatus workStatus : workStatuses) {
+                               for (WorkInfo workStatus : workStatuses) {
                                    Timber.i("%s", workStatus);
-                                   isDataMigrationRunning = workStatus.getState() == State.RUNNING;
+                                   isDataMigrationRunning = workStatus.getState() == WorkInfo.State.RUNNING;
                                    if (isDataMigrationRunning) break;
                                }
                            }
@@ -345,11 +348,13 @@ public class StartActivity extends BaseActivity
 
                        }
                    });
+
+
     }
 
     public void checkForNewerVersion() {
-        UpdateHelper updateHelper = UpdateHelper.getInstance(this);
-        if (updateHelper.hasUpdate() && !updateHelper.isUpdateMessageShown()) {
+        Update updateHelper = TazApplicationKt.getUpdate();
+        if (updateHelper.updateAvailable() && !updateHelper.getUpdateMessageShown()) {
             updateHelper.setUpdateMessageShown(true);
             if (getSupportFragmentManager().findFragmentByTag(DIALOG_UPDATE_AVAILABLE) == null) {
                 new Dialog.Builder().setCancelable(true)
@@ -485,21 +490,19 @@ public class StartActivity extends BaseActivity
 
 
     public void startDownload(Paper downloadPaper) {
-        if (downloadPaper.hasNoneState()) {
-            switch (Connection.getConnectionType(this)) {
-                case Connection.CONNECTION_NOT_AVAILABLE:
-                    showNoConnectionDialog();
-                    break;
-                case Connection.CONNECTION_MOBILE:
-                case Connection.CONNECTION_MOBILE_ROAMING:
-                    addToDownloadQueue(downloadPaper.getBookId());
-                    if (startViewModel.isMobileDownloadAllowed()) startViewModel.startDownloadQueue();
-                    else showMobileConnectionDialog();
-                    break;
-                default:
-                    addToDownloadQueue(downloadPaper.getBookId());
-                    startViewModel.startDownloadQueue();
-            }
+        switch (Connection.getConnectionType(this)) {
+            case Connection.CONNECTION_NOT_AVAILABLE:
+                showNoConnectionDialog();
+                break;
+            case Connection.CONNECTION_MOBILE:
+            case Connection.CONNECTION_MOBILE_ROAMING:
+                addToDownloadQueue(downloadPaper.getBookId());
+                if (startViewModel.isMobileDownloadAllowed()) startViewModel.startDownloadQueue();
+                else showMobileConnectionDialog();
+                break;
+            default:
+                addToDownloadQueue(downloadPaper.getBookId());
+                startViewModel.startDownloadQueue();
         }
     }
 
@@ -601,12 +604,12 @@ public class StartActivity extends BaseActivity
                                    .show(getSupportFragmentManager(), DIALOG_ARCHIVE_MONTH);
     }
 
-    private void showDownloadErrorDialog(String downloadTitle, String extraMessage, Exception exception) {
+    private void showDownloadErrorDialog(String downloadTitle, String extraMessage) {
         StringBuilder message = new StringBuilder(String.format(getString(R.string.dialog_error_download), downloadTitle));
         if (!TextUtils.isEmpty(extraMessage)) message.append("\n\n")
                                                      .append(extraMessage);
-        if (exception != null && BuildConfig.DEBUG) message.append("\n\n")
-                                                           .append(exception);
+//        if (exception != null && BuildConfig.DEBUG) message.append("\n\n")
+//                                                           .append(exception);
 
         new Dialog.Builder().setMessage(message.toString())
                             .setPositiveButton()
@@ -632,73 +635,87 @@ public class StartActivity extends BaseActivity
     }
 
     public void openReader(String bookId) {
-        new AsyncTaskListener<String, Paper>(bookIdParams -> startViewModel.getPaperRepository()
-                                                                           .getPaperWithBookId(bookIdParams[0]), paper -> {
-            if (!paper.hasReadyState()) {
-                showErrorDialog(getString(R.string.message_paper_not_downloaded), DIALOG_ERROR_OPEN_PAPER);
-            } else {
-                if (!startViewModel.getStorageManager()
-                                   .getPaperDirectory(paper)
-                                   .exists()) {
-                    showErrorDialog(getString(R.string.message_paper_files_not_downloaded), DIALOG_ERROR_OPEN_PAPER);
-                } else {
-                    new AsyncTaskListener<Paper, Resource>(papers -> ResourceRepository.getInstance(StartActivity.this)
-                                                                                       .getResourceForPaper(papers[0]),
-                                                           resource -> {
-                                                               if (resource.isDownloaded() && startViewModel.getStorageManager()
-                                                                                                            .getResourceDirectory(
-                                                                                                                    resource)
-                                                                                                            .exists()) {
-                                                                   Timber.i("start reader for paper: %s", paper);
-                                                                   Intent intent = new Intent(StartActivity.this,
-                                                                                              ReaderActivity.class);
+        new AsyncTaskListener<String, PaperWithDownloadState>(bookIdParams -> startViewModel.getPaperRepository()
+                                                                                            .getWithBookId(bookIdParams[0]),
+                                                              paper -> {
+                                                                  if (paper.getDownloadState() != DownloadState.READY) {
+                                                                      showErrorDialog(getString(R.string.message_paper_not_downloaded),
+                                                                                      DIALOG_ERROR_OPEN_PAPER);
+                                                                  } else {
+                                                                      if (!startViewModel.getStorageManager()
+                                                                                         .getPaperDirectory(paper)
+                                                                                         .exists()) {
+                                                                          showErrorDialog(getString(R.string.message_paper_files_not_downloaded),
+                                                                                          DIALOG_ERROR_OPEN_PAPER);
+                                                                      } else {
+                                                                          new AsyncTaskListener<Paper, ResourceWithDownloadState>(
+                                                                                  papers -> ResourceRepository.getInstance(
+                                                                                          StartActivity.this)
+                                                                                                              .getResourceForPaper(
+                                                                                                                      papers[0]),
+                                                                                  resource -> {
+                                                                                      if (resource.getDownloadState() == DownloadState.READY && startViewModel.getStorageManager()
+                                                                                                                                                              .getResourceDirectory(
+                                                                                                                                                                      resource)
+                                                                                                                                                              .exists()) {
+                                                                                          Timber.i("start reader for paper: %s",
+                                                                                                   paper);
+                                                                                          Intent intent = new Intent(StartActivity.this,
+                                                                                                                     ReaderActivity.class);
 //                intent.putExtra(ReaderActivity.KEY_EXTRA_PAPER_ID, id);
-                                                                   intent.putExtra(ReaderActivity.KEY_EXTRA_BOOK_ID,
-                                                                                   paper.getBookId());
+                                                                                          intent.putExtra(ReaderActivity.KEY_EXTRA_BOOK_ID,
+                                                                                                          paper.getBookId());
 //                    intent.putExtra(ReaderActivity.KEY_EXTRA_RESOURCE_KEY, resource.getKey());
-                                                                   startActivity(intent);
-                                                               } else {
-                                                                   AnalyticsWrapper.getInstance()
-                                                                                   .logData("PAPER", paper.toString());
-                                                                   AnalyticsWrapper.getInstance()
-                                                                                   .logData("RESOURCE", resource.toString());
-                                                                   switch (Connection.getConnectionType(StartActivity.this)) {
-                                                                       case Connection.CONNECTION_NOT_AVAILABLE:
-                                                                           Timber.e(new ConnectException("Keine Verbindung"));
-                                                                           showErrorDialog(getString(R.string.message_resource_not_downloaded_no_connection),
-                                                                                           DIALOG_ERROR_OPEN_PAPER);
-                                                                           break;
-                                                                       default:
-                                                                           new AsyncTaskListener<Resource, Exception>(resources -> {
-                                                                               try {
-                                                                                   DownloadManager.getInstance(StartActivity.this)
-                                                                                                  .enqueResource(resources[0],
-                                                                                                                 false);
-                                                                               } catch (DownloadManager.NotEnoughSpaceException e) {
-                                                                                   return e;
-                                                                               }
-                                                                               return null;
-                                                                           }, exception -> {
-                                                                               if (exception instanceof DownloadManager.NotEnoughSpaceException) {
-                                                                                   Timber.e(exception);
-                                                                                   showDownloadErrorDialog(getString(R.string.message_resourcedownload_error),
-                                                                                                           getString(R.string.message_not_enough_space),
-                                                                                                           exception);
-                                                                               } else {
-                                                                                   startViewModel.setPaperWaitingForResource(paper.getBookId());
-                                                                                   Timber.e(new Resource.MissingResourceException());
-                                                                                   showWaitDialog(DIALOG_WAIT + paper.getBookId(),
-                                                                                                  getString(R.string.dialog_meassage_loading_missing_resource));
+                                                                                          startActivity(intent);
+                                                                                      } else {
+                                                                                          AnalyticsWrapper.getInstance()
+                                                                                                          .logData("PAPER",
+                                                                                                                   paper.toString());
+                                                                                          AnalyticsWrapper.getInstance()
+                                                                                                          .logData("RESOURCE",
+                                                                                                                   resource.toString());
+                                                                                          switch (Connection.getConnectionType(
+                                                                                                  StartActivity.this)) {
+                                                                                              case Connection.CONNECTION_NOT_AVAILABLE:
+                                                                                                  Timber.e(new ConnectException(
+                                                                                                          "Keine Verbindung"));
+                                                                                                  showErrorDialog(getString(R.string.message_resource_not_downloaded_no_connection),
+                                                                                                                  DIALOG_ERROR_OPEN_PAPER);
+                                                                                                  break;
+                                                                                              default:
+                                                                                                  new AsyncTaskListener<Resource, TazDownloadManager.Result>(
+                                                                                                          resources -> {
+                                                                                                              return TazDownloadManager.Companion.getInstance()
+                                                                                                                                                 .downloadResource(
+                                                                                                                                                         resources[0].getKey(),
+                                                                                                                                                         false);
+                                                                                                          },
+                                                                                                          result -> {
+                                                                                                              if (result.getState() != TazDownloadManager.Result.STATE.SUCCESS) {
+                                                                                                                  showDownloadErrorDialog(
+                                                                                                                          getString(
+                                                                                                                                  R.string.message_resourcedownload_error),
+                                                                                                                          result.getState()
+                                                                                                                                .getText());
+                                                                                                              } else {
+                                                                                                                  startViewModel.setOpenPaperIdAfterDownload(paper.getBookId());
+                                                                                                                  startViewModel.resourceKeyWaitingForDownload = result.getDownload()
+                                                                                                                                                                       .getKey();
+                                                                                                                  Timber.e(new Resource.MissingResourceException());
+                                                                                                                  showWaitDialog(
+                                                                                                                          DIALOG_WAIT + paper.getBookId(),
+                                                                                                                          getString(
+                                                                                                                                  R.string.dialog_meassage_loading_missing_resource));
 
-                                                                               }
-                                                                           }).execute(resource);
+                                                                                                              }
+                                                                                                          }).execute(resource);
 
-                                                                   }
-                                                               }
-                                                           }).execute(paper);
-                }
-            }
-        }).execute(bookId);
+                                                                                          }
+                                                                                      }
+                                                                                  }).execute(paper);
+                                                                      }
+                                                                  }
+                                                              }).execute(bookId);
 
     }
 
@@ -724,57 +741,97 @@ public class StartActivity extends BaseActivity
               .show();
     }
 
+
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onPaperDownloadFinished(PaperDownloadFinishedEvent event) {
+    public void onDownloadEvent(DownloadEvent event) {
         Timber.d("event: %s", event);
-        if (startViewModel.isOpenReaderAfterDownload()) {
-            if (event.getBookId()
-                     .equals(startViewModel.getOpenPaperIdAfterDownload())) {
-                startViewModel.removeOpenPaperIdAfterDownload();
-                openReader(event.getBookId());
-            }
-        }
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onPaperDownloadFailed(PaperDownloadFailedEvent event) {
-        showDownloadErrorDialog(event.getPaper()
-                                     .getTitelWithDate(this), null, event.getException());
-        NotificationUtils.getInstance(this)
-                         .removeDownloadNotification(event.getPaper()
-                                                          .getBookId());
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onResourceDownload(ResourceDownloadEvent event) {
-        String waitingBookId = startViewModel.getPaperWaitingForResource();
-        if (!TextUtils.isEmpty(waitingBookId)) {
-            new AsyncTaskListener<ResourceDownloadEvent, Void>(new AsyncTaskListener.OnExecute<ResourceDownloadEvent, Void>() {
-                @Override
-                public Void execute(ResourceDownloadEvent... resourceDownloadEvents) {
-                    Paper waitingPaper = startViewModel.getPaperRepository()
-                                                       .getPaperWithBookId(waitingBookId);
-                    if (resourceDownloadEvents[0].getKey()
-                                                 .equals(ResourceRepository.getInstance(StartActivity.this)
-                                                                           .getResourceForPaper(waitingPaper)
-                                                                           .getKey())) {
-                        hideWaitDialog(DIALOG_WAIT + waitingBookId);
-                        startViewModel.setPaperWaitingForResource(null);
-                        if (resourceDownloadEvents[0].isSuccessful()) {
-                            openReader(waitingBookId);
+        Download download = event.getDownload();
+        switch (download.getType()) {
+            case PAPER:
+                if (event.getSuccess()) {
+                    if (startViewModel.isOpenReaderAfterDownload()) {
+                        if (download.getKey()
+                                    .equals(startViewModel.getOpenPaperIdAfterDownload())) {
+                            startViewModel.removeOpenPaperIdAfterDownload();
+                            openReader(download.getKey());
+                        }
+                    }
+                } else {
+                    showDownloadErrorDialog(download.getTitle(), event.getMessage());
+                    NotificationUtils.getInstance(this)
+                                     .removeDownloadNotification(download.getKey());
+                }
+                break;
+            case RESOURCE:
+                if (event.getDownload().getKey().equals(startViewModel.resourceKeyWaitingForDownload)){
+                    startViewModel.resourceKeyWaitingForDownload = null;
+                    String bookId = startViewModel.getOpenPaperIdAfterDownload();
+                    if (bookId != null) {
+                        startViewModel.removeOpenPaperIdAfterDownload();
+                        hideWaitDialog(DIALOG_WAIT + bookId);
+                        if (event.getSuccess()) {
+                            openReader(bookId);
                         } else {
                             showDownloadErrorDialog(getString(R.string.message_resourcedownload_error),
                                                     String.format(getString(R.string.message_resourcedownload_late_error),
-                                                                  resourceDownloadEvents[0].getException()
-                                                                                           .toString()),
-                                                    null);
+                                                                  event.getMessage()));
                         }
                     }
-                    return null;
                 }
-            }).execute(event);
+
+                break;
         }
     }
+
+//    @Subscribe(threadMode = ThreadMode.MAIN)
+//    public void onPaperDownloadFinished(PaperDownloadFinishedEvent event) {
+//        Timber.d("event: %s", event);
+//        if (startViewModel.isOpenReaderAfterDownload()) {
+//            if (event.getBookId()
+//                     .equals(startViewModel.getOpenPaperIdAfterDownload())) {
+//                startViewModel.removeOpenPaperIdAfterDownload();
+//                openReader(event.getBookId());
+//            }
+//        }
+//    }
+
+//    @Subscribe(threadMode = ThreadMode.MAIN)
+//    public void onPaperDownloadFailed(PaperDownloadFailedEvent event) {
+//        showDownloadErrorDialog(event.getPaper()
+//                                     .getTitelWithDate(this), null, event.getException());
+//        NotificationUtils.getInstance(this)
+//                         .removeDownloadNotification(event.getPaper()
+//                                                          .getBookId());
+//    }
+
+//    @Subscribe(threadMode = ThreadMode.MAIN)
+//    public void onResourceDownload(ResourceDownloadEvent event) {
+//        String waitingBookId = startViewModel.getPaperWaitingForResource();
+//        if (!TextUtils.isEmpty(waitingBookId)) {
+//            new AsyncTaskListener<ResourceDownloadEvent, Void>(new AsyncTaskListener.OnExecute<ResourceDownloadEvent, Void>() {
+//                @Override
+//                public Void execute(ResourceDownloadEvent... resourceDownloadEvents) {
+//                    Paper waitingPaper = startViewModel.getPaperRepository()
+//                                                       .getPaperWithBookId(waitingBookId);
+//                    if (resourceDownloadEvents[0].getKey()
+//                                                 .equals(ResourceRepository.getInstance(StartActivity.this)
+//                                                                           .getResourceForPaper(waitingPaper)
+//                                                                           .getKey())) {
+//                        hideWaitDialog(DIALOG_WAIT + waitingBookId);
+//                        startViewModel.setPaperWaitingForResource(null);
+//                        if (resourceDownloadEvents[0].isSuccessful()) {
+//                            openReader(waitingBookId);
+//                        } else {
+//                            showDownloadErrorDialog(getString(R.string.message_resourcedownload_error),
+//                                                    String.format(getString(R.string.message_resourcedownload_late_error),
+//                                                                  resourceDownloadEvents[0].getException()));
+//                        }
+//                    }
+//                    return null;
+//                }
+//            }).execute(event);
+//        }
+//    }
 
     AsyncTask<Void, Void, Boolean> firstStartTask;
 
@@ -788,7 +845,8 @@ public class StartActivity extends BaseActivity
             boolean foundDownloaded = false;
             for (Paper paper : allPapers) {
                 if (foundDownloaded) break;
-                foundDownloaded = !paper.hasNoneState();
+                foundDownloaded = startViewModel.getPaperRepository()
+                                                .getDownloadStateForPaper(paper.getBookId()) != DownloadState.NONE;
             }
             if (!foundDownloaded) {
                 showDialog = startViewModel.getSettings()
@@ -799,7 +857,8 @@ public class StartActivity extends BaseActivity
             if (aBoolean) {
                 showHelpDialog(HelpDialog.HELP_INTRO);
             } else {
-                if (getSupportFragmentManager().findFragmentByTag(AskForHelpDialog.TAG) == null && startViewModel.getSettings().isAskForHelpAllowed()) {
+                if (getSupportFragmentManager().findFragmentByTag(AskForHelpDialog.TAG) == null && startViewModel.getSettings()
+                                                                                                                 .isAskForHelpAllowed()) {
                     int currentStartCount = startViewModel.getSettings()
                                                           .getAskForHelpCount();
                     if (currentStartCount >= 20) {
@@ -919,8 +978,7 @@ public class StartActivity extends BaseActivity
         } else if (DIALOG_UPDATE_AVAILABLE.equals(tag)) {
             switch (which) {
                 case Dialog.BUTTON_POSITIVE:
-                    UpdateHelper.getInstance(this)
-                                .update(this);
+                    TazApplicationKt.getUpdate().update();
                     break;
             }
         }

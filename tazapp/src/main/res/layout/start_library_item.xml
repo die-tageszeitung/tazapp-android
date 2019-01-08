@@ -69,18 +69,18 @@
 
             </FrameLayout>
 
-            <FrameLayout
-                    android:id="@+id/lib_item_overlay"
-                    android:layout_width="0dp"
-                    android:layout_height="0dp"
-                    android:background="@color/library_item_progress_overlay"
-                    android:alpha="@dimen/library_overlay_alpha"
-                    app:layout_constraintTop_toTopOf="@+id/lib_item_facsimile"
-                    app:layout_constraintStart_toStartOf="@+id/lib_item_facsimile"
-                    app:layout_constraintEnd_toEndOf="@+id/lib_item_facsimile"
-                    app:layout_constraintBottom_toBottomOf="@+id/lib_item_facsimile">
+            <!--<FrameLayout-->
+                    <!--android:id="@+id/lib_item_overlay"-->
+                    <!--android:layout_width="0dp"-->
+                    <!--android:layout_height="0dp"-->
+                    <!--android:background="@color/library_item_progress_overlay"-->
+                    <!--android:alpha="@dimen/library_overlay_alpha"-->
+                    <!--app:layout_constraintTop_toTopOf="@+id/lib_item_facsimile"-->
+                    <!--app:layout_constraintStart_toStartOf="@+id/lib_item_facsimile"-->
+                    <!--app:layout_constraintEnd_toEndOf="@+id/lib_item_facsimile"-->
+                    <!--app:layout_constraintBottom_toBottomOf="@+id/lib_item_facsimile">-->
 
-            </FrameLayout>
+            <!--</FrameLayout>-->
 
             <TextView
                     android:id="@+id/lib_item_badge"

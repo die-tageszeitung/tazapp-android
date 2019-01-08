@@ -1,6 +1,11 @@
 package de.thecode.android.tazreader.utils
 
 
+import android.content.Context
+import android.net.Uri
+import android.provider.MediaStore
+import com.github.ajalt.timberkt.d
+import de.thecode.android.tazreader.app
 import timber.log.Timber
 import java.io.File
 import java.text.DecimalFormat
@@ -58,4 +63,31 @@ fun File.deleteQuietly() {
     } catch (e: Exception) {
         Timber.w(e)
     }
+}
+
+
+
+fun Context.getResourceIdByName(name: String, defType: String): Int {
+    d { "$defType resource by name: $name" }
+    return this.resources.getIdentifier(name, defType, this.packageName)
+}
+
+fun Context.getStringIdByName(name: String): Int {
+    return this.getResourceIdByName(name,"string")
+}
+
+fun Uri.getFileFromUri(): File? {
+        var filePath: String? = this.path
+        if ("content" == this.scheme) {
+            val filePathColumn = arrayOf(MediaStore.MediaColumns.DATA)
+            val contentResolver = app.contentResolver
+            val cursor = contentResolver.query(this, filePathColumn, null, null, null)
+            // For Kotlin Beginners: cursor? nullsafe + use: auto close after use
+            cursor?.use { it ->
+                it.moveToFirst()
+                val columnIndex = it.getColumnIndex(filePathColumn[0])
+                filePath = it.getString(columnIndex)
+            }
+        }
+        return File(filePath)
 }

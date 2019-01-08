@@ -3,8 +3,6 @@ package de.thecode.android.tazreader.dialog;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import androidx.annotation.Nullable;
-import androidx.annotation.StringDef;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,6 +12,7 @@ import android.webkit.WebViewClient;
 
 import de.mateware.dialog.DialogCustomView;
 import de.thecode.android.tazreader.R;
+import de.thecode.android.tazreader.data.DownloadState;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.PaperRepository;
 import de.thecode.android.tazreader.data.Resource;
@@ -26,6 +25,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.List;
 
+import androidx.annotation.Nullable;
+import androidx.annotation.StringDef;
 import timber.log.Timber;
 
 /**
@@ -102,7 +103,7 @@ public class HelpDialog extends DialogCustomView {
                 String result = "file:///android_asset/help/";
                 for (Paper paper : papers) {
                     Resource latestResource = resourceRepository.getWithKey(paper.getResource());
-                    if (latestResource != null && latestResource.isDownloaded()) {
+                    if (latestResource != null && resourceRepository.getDownloadState(latestResource.getKey()) == DownloadState.READY) {
                         File latestResourceDir = storageManager.getResourceDirectory(latestResource.getKey());
                         File helpFileDir = null;
                         for (String helpFileSubdirPath : HELP_RESOURCE_SUBDIRS) {

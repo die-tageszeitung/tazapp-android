@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest
         xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
         package="de.thecode.android.tazreader">
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
@@ -12,9 +13,9 @@
     <supports-screens android:anyDensity="true"/>
 
     <application
-            android:name=".TazReaderApplication"
-            android:allowBackup="true"
-            android:backupAgent=".backup.TazBackupHelper"
+            tools:replace="android:allowBackup"
+            android:name=".TazApplication"
+            android:allowBackup="false"
             android:icon="@mipmap/ic_launcher"
             android:roundIcon="@mipmap/ic_launcher_round"
             android:largeHeap="true"
@@ -103,7 +104,7 @@
         <!--</activity>-->
         <!--<activity android:name=".migration.MigrationActivity"/>-->
 
-        <receiver android:name="de.thecode.android.tazreader.download.DownloadReceiver">
+        <receiver android:name="de.thecode.android.tazreader.download.SystemDownloadManagerReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.DOWNLOAD_COMPLETE"/>
                 <action android:name="android.intent.action.DOWNLOAD_NOTIFICATION_CLICKED"/>

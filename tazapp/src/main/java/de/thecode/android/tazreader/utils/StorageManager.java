@@ -128,7 +128,7 @@ public class StorageManager {
         return getDownloadFile(resource.getKey() + ".res.zip");
     }
 
-    private File getDownloadFile(String key) {
+    public File getDownloadFile(String key) {
         File downloadCache = getDownloadCache();
         if (downloadCache != null) return new File(getDownloadCache(), key);
         return null;
@@ -137,6 +137,11 @@ public class StorageManager {
     public File getPaperDirectory(Paper paper) {
         return new File(get(PAPER), paper.getBookId());
     }
+
+    public File getPaperDirectory(String bookId) {
+        return new File(get(PAPER), bookId);
+    }
+
 
     public File getResourceDirectory(String key) {
         return new File(get(RESOURCE), key);
@@ -151,7 +156,7 @@ public class StorageManager {
     public void deletePaperDir(Paper paper) {
         if (getPaperDirectory(paper).exists()) ExtensionsKt.deleteQuietly(getPaperDirectory(paper));
 //        Utils.deleteDir(getPaperDirectory(paper));
-        new FileCachePDFThumbHelper(this, paper.getFileHash()).deleteDir();
+        new FileCachePDFThumbHelper(this, paper.fileHash).deleteDir();
     }
 
     public void deleteResourceDir(String key) {
