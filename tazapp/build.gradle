@@ -3,7 +3,7 @@ def versionMinor = 8
 def versionPatch = 1
 def versionBuild = 0
 
-def androidXVer = "1.0.0"
+def androidXVer = "1.0.+"
 def buildToolsVer = "28.0.3"
 def compileSdkVer = 28
 def targetSdkVer = 28
@@ -351,7 +351,7 @@ dependencies {
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 
-    implementation 'com.afollestad.material-dialogs:core:2.0.0-beta3'
+    implementation 'com.afollestad.material-dialogs:core:2.0.0-rc7'
 
     implementation 'androidx.multidex:multidex:2.0.1' //Remove after Migration of Dialogs maybe
 
@@ -360,6 +360,9 @@ dependencies {
     implementation 'com.github.ajalt:timberkt:1.5.1'
 
     implementation 'org.apache.commons:commons-compress:1.12' // JAVA 6 kompatible,  nihct updaten
+
+    implementation 'androidx.core:core-ktx:1.0.1'
+    implementation 'androidx.fragment:fragment-ktx:1.0.0'
 }
 
 class Download extends DefaultTask {
