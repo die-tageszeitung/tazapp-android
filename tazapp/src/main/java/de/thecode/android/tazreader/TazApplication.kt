@@ -96,6 +96,7 @@ class TazApplication : MultiDexApplication() {
             WebView.setWebContentsDebuggingEnabled(true)
         }
         migrations()
+        settingDefaults()
     }
 
     private fun migrations() {
