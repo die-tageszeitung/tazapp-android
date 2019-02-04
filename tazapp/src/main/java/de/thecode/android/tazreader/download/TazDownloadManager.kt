@@ -78,14 +78,14 @@ class TazDownloadManager private constructor() {
     }
 
     @WorkerThread
-    fun downloadResource(key: String, wifiOnly: Boolean = false): Result {
+    fun downloadResource(key: String, wifiOnly: Boolean = false, override: Boolean = false): Result {
         val resource = resourceRepository.getWithKey(key)
         d { "requesting resource download for resource $resource" }
         val download = resourceRepository.getDownload(key)
         d { "download $download" }
         val result = Result(download = download)
         if (download.state != DownloadState.NONE) {
-            if (download.state == DownloadState.DOWNLOADING) {
+            if (download.state == DownloadState.DOWNLOADING || override) {
                 systemDownloadManager.remove(download.downloadManagerId)
                 download.downloadManagerId = 0
                 download.state = DownloadState.NONE

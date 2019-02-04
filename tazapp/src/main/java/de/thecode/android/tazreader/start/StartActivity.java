@@ -688,7 +688,7 @@ public class StartActivity extends BaseActivity
                                                                                                               return TazDownloadManager.Companion.getInstance()
                                                                                                                                                  .downloadResource(
                                                                                                                                                          resources[0].getKey(),
-                                                                                                                                                         false);
+                                                                                                                                                         false,true);
                                                                                                           },
                                                                                                           result -> {
                                                                                                               if (result.getState() != TazDownloadManager.Result.STATE.SUCCESS) {
