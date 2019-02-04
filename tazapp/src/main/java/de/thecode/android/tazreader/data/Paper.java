@@ -897,7 +897,7 @@ public class Paper extends Downloadable {
                 }
 
                 public String getCleanLink() {
-                    if (link!=null) return link.replaceAll("./","");
+                    if (link!=null) return link.replaceFirst("^(\\./)+","");
                     return null;
                 }
 
