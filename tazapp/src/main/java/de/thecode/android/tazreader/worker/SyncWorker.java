@@ -234,7 +234,7 @@ public class SyncWorker extends LoggingWorker {
             DownloadState downloadState = resourceRepository.getDownloadState(latestResource.getKey());
             if (latestResource != null && downloadState == DownloadState.NONE) {
                 TazDownloadManager.Companion.getInstance()
-                                            .downloadResource(latestResource.getKey(), false);
+                                            .downloadResource(latestResource.getKey(), false, false);
 //                try {
 //                    OldDownloadManager.getInstance(getApplicationContext())
 //                                      .enqueResource(latestResource, false);
