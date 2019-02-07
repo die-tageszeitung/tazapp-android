@@ -12,11 +12,8 @@ import android.graphics.BitmapShader;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.net.Uri;
-import androidx.core.app.NotificationCompat;
-import androidx.core.content.ContextCompat;
 import android.text.TextUtils;
 
-import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Transformation;
 
 import de.thecode.android.tazreader.BuildConfig;
@@ -25,9 +22,11 @@ import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.start.StartActivity;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import androidx.core.app.NotificationCompat;
+import androidx.core.content.ContextCompat;
 
 /**
  * Created by mate on 12.10.2017.
@@ -180,15 +179,15 @@ public class NotificationUtils extends ContextWrapper {
         if (withVibration) defaults |= Notification.DEFAULT_VIBRATE;
         builder.setDefaults(defaults);
 
-        try {
-            builder.setLargeIcon(Picasso.with(this)
-                                        .load(paper.getImage())
-                                        .transform(new LargeIconTransformation())
-                                        .transform(new CircleTransform())
-                                        .get());
-        } catch (IOException | IllegalStateException ignored) {
-
-        }
+//        try {
+//            builder.setLargeIcon(Picasso.with(this)
+//                                        .load(paper.getImage())
+//                                        .transform(new LargeIconTransformation())
+//                                        .transform(new CircleTransform())
+//                                        .get());
+//        } catch (IOException | IllegalStateException ignored) {
+//
+//        }
 
         getManager().notify(paper.getBookId(), DOWNLOAD_NOTIFICATION_ID, builder.build());
     }
