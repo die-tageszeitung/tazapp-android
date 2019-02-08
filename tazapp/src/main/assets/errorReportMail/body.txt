@@ -13,4 +13,8 @@ Version: {appversion}
 Abo-ID: {aboid}
 Installations-ID: {installid}
 Android Version: {androidVersion}
+Gerät: {manufacturer} {model} / {product} / {device} / {brand}
+Architektur: {archs}
+RAM: {ram}
+Speicher: {space}
 Push Token: {pushToken}
