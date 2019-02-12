@@ -61,6 +61,7 @@
     <string name="download_reason_4">The download is paused for some other reason.</string>
     <string name="download_reason_2">The download is waiting for network connectivity to proceed.</string>
     <string name="download_reason_1">The download is paused because some network error occurred and the download manager is waiting before retrying the request.</string>
+    <string name="download_reason_1000">The download has completed with an error that doesn\'t fit under any other error code.</string>
     <string name="download_reason_1002">An HTTP code was received that download manager can\'t handle</string>
     <string name="download_reason_1005">There were too many redirects.</string>
     <string name="download_reason_1006">There was insufficient storage space. Typically, this is because the SD card is full.</string>
