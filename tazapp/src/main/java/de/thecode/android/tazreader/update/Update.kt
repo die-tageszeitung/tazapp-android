@@ -46,7 +46,9 @@ class Update private constructor() {
         var selfDownload = false
         if (isGooglePlayVersion) {
             try {
-                app.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + userDeviceInfo.packageName)))
+                val updateIntent = Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + userDeviceInfo.packageName))
+                updateIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                app.startActivity(updateIntent)
             } catch (anfe: android.content.ActivityNotFoundException) {
                 selfDownload = true
             }
