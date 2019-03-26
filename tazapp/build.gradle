@@ -1,3 +1,20 @@
+buildscript {
+    repositories {
+        maven {
+            url 'https://maven.fabric.io/public'
+        }
+    }
+
+    dependencies {
+        classpath 'io.fabric.tools:gradle:1.+'
+    }
+}
+
+
+plugins {
+    id 'com.github.triplet.play' version '2.1.1'
+}
+
 def versionMajor = 3
 def versionMinor = 8
 def versionPatch = 6
@@ -53,24 +70,11 @@ idea {
     }
 }
 
-buildscript {
-    repositories {
-        maven {
-            url 'https://maven.fabric.io/public'
-        }
-    }
-
-    dependencies {
-        classpath 'io.fabric.tools:gradle:1.+'
-    }
-}
-
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'io.fabric'
 apply plugin: 'com.akaita.android.easylauncher'
-apply plugin: 'com.github.triplet.play'
 apply plugin: 'kotlin-kapt'
 
 def overheadPath
@@ -108,10 +112,10 @@ easylauncher {
     foregroundIconNames "@mipmap/ic_launcher_foreground" // Foreground of adaptive launcher icon
     buildTypes {
         debug {
-            filters = redRibbonFilter()
+            filters = customColorRibbonFilter("DEBUG", "#FF9900", "#FFFFFF", "topLeft", 0.1)
         }
         staging {
-            filters = blueRibbonFilter()
+            filters = customColorRibbonFilter("TEST", "#0000FF", "#FFFFFF", "topLeft", 0.1)
         }
         release {
             enable false
