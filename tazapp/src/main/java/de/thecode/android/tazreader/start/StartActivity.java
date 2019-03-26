@@ -43,6 +43,7 @@ import de.thecode.android.tazreader.dialog.ArchiveDialog;
 import de.thecode.android.tazreader.dialog.ArchiveEntry;
 import de.thecode.android.tazreader.dialog.HelpDialog;
 import de.thecode.android.tazreader.dialognew.AskForHelpDialog;
+import de.thecode.android.tazreader.dialognew.CancelDownloadDialog;
 import de.thecode.android.tazreader.download.TazDownloadManager;
 import de.thecode.android.tazreader.importer.ImportActivity;
 import de.thecode.android.tazreader.migration.MigrationActivity;
@@ -65,6 +66,7 @@ import de.thecode.android.tazreader.worker.SyncWorker;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -90,7 +92,7 @@ import timber.log.Timber;
  * Created by mate on 27.01.2015.
  */
 public class StartActivity extends BaseActivity
-        implements DialogButtonListener, DialogDismissListener, DialogCancelListener, DialogAdapterListListener {
+        implements CancelDownloadDialog.CancelDownloadDialogListener, DialogButtonListener, DialogDismissListener, DialogCancelListener, DialogAdapterListListener {
 
     //private static final String DIALOG_FIRST                 = "dialogFirst";
     private static final String DIALOG_USER_REENTER          = "dialogUserReenter";
@@ -1032,5 +1034,10 @@ public class StartActivity extends BaseActivity
                           .clear();
 //            retainDataFragment.downloadQueue.clear();
         }
+    }
+
+    @Override
+    public void onCancelDownload(@NotNull String bookId) {
+        startViewModel.deletePaper(bookId);
     }
 }

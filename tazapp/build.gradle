@@ -1,6 +1,6 @@
 def versionMajor = 3
 def versionMinor = 8
-def versionPatch = 5
+def versionPatch = 6
 def versionBuild = 0
 
 def androidXVer = "1.0.+"
@@ -351,7 +351,7 @@ dependencies {
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 
-    implementation 'com.afollestad.material-dialogs:core:2.0.0-rc7'
+    implementation 'com.afollestad.material-dialogs:core:2.0.3'
 
     implementation 'androidx.multidex:multidex:2.0.1' //Remove after Migration of Dialogs maybe
 
