@@ -148,6 +148,6 @@
     <string name="download_title_paper">%1$s vom %2$s</string>
     <string name="download_title_resource">zusätzlich benötigte Dateien</string>
     <string name="dialog_cancel_download_title">Download abbrechen?</string>
-    <string name="dialog_cancel_download_message">Möchten Sie den Download von "%1$s" wirklich abbrechen?</string>
+    <string name="dialog_cancel_download_message">Möchten Sie den Download von \"%1$s\" wirklich abbrechen?</string>
 
 </resources>

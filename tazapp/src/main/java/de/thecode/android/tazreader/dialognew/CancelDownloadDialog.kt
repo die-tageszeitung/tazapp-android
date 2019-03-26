@@ -38,7 +38,7 @@ class CancelDownloadDialog : DialogFragment() {
             val bookId = arguments!!.getString(BOOK_ID)
             val title = arguments!!.getString(TITLE)
             return MaterialDialog(it).title(R.string.dialog_cancel_download_title)
-                    .message(text = app.getString(R.string.dialog_cancel_download_message,title))
+                    .message(text = app.getString(R.string.dialog_cancel_download_message,title!!))
                     .positiveButton {
                         (context as CancelDownloadDialogListener).onCancelDownload(bookId!!)
                     }

@@ -3,7 +3,11 @@ package de.thecode.android.tazreader.utils
 
 import android.content.Context
 import android.net.Uri
+import android.os.Build
 import android.provider.MediaStore
+import android.text.Html
+import android.text.Spanned
+import androidx.annotation.StringRes
 import com.github.ajalt.timberkt.d
 import de.thecode.android.tazreader.app
 import timber.log.Timber
@@ -90,4 +94,47 @@ fun Uri.getFileFromUri(): File? {
             }
         }
         return File(filePath)
+}
+
+@Suppress("DEPRECATION")
+fun Context.getText(@StringRes resId: Int, vararg formatArgs: Any): CharSequence {
+    // First, convert any styled Spanned back to HTML strings before applying String.format. This
+    // converts the styling to HTML and also does HTML escaping.
+    // For other CharSequences, just do HTML escaping.
+    // (Leave any other args alone.)
+    val htmlFormatArgs = formatArgs.map {
+        if (it is Spanned) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                Html.toHtml(it, Html.TO_HTML_PARAGRAPH_LINES_CONSECUTIVE)
+            } else {
+                Html.toHtml(it)
+            }
+        } else if (it is CharSequence) {
+            Html.escapeHtml(it)
+        } else {
+            it
+        }
+    }.toTypedArray()
+
+    // Next, get the format string, and do the same to that.
+    val formatString = getText(resId);
+    val htmlFormatString = if (formatString is Spanned) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            Html.toHtml(formatString, Html.TO_HTML_PARAGRAPH_LINES_CONSECUTIVE)
+        } else {
+            Html.toHtml(formatString)
+        }
+    } else {
+        Html.escapeHtml(formatString)
+    }
+
+    // Now apply the String.format
+    val htmlResultString = String.format(htmlFormatString, *htmlFormatArgs)
+
+    // Convert back to a CharSequence, recovering any of the HTML styling.
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        Html.fromHtml(htmlResultString, Html.FROM_HTML_MODE_LEGACY)
+    } else {
+        Html.fromHtml(htmlResultString)
+    }
 }
