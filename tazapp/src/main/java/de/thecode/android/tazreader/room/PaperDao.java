@@ -34,5 +34,7 @@ public abstract class PaperDao implements BaseDao<Paper>{
     @Query("SELECT PAPER.*,DOWNLOADS.state as downloadState, DOWNLOADS.progress as progress FROM PAPER LEFT OUTER JOIN DOWNLOADS ON DOWNLOADS.`key` = PAPER.bookId WHERE demo = 1 ORDER BY date DESC")
     public abstract LiveData<List<PaperWithDownloadState>> getLiveForDemoLibrary();
 
+    @Query("SELECT PAPER.*,DOWNLOADS.state as downloadState, DOWNLOADS.progress as progress FROM PAPER LEFT OUTER JOIN DOWNLOADS ON DOWNLOADS.`key` = PAPER.bookId WHERE bookId LIKE :bookId")
+    public abstract LiveData<PaperWithDownloadState> getPaperLiveData(String bookId);
 
 }

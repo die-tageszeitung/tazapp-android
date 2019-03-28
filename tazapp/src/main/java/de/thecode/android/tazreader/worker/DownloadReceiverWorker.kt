@@ -38,6 +38,9 @@ class DownloadReceiverWorker(context: Context, workerParams: WorkerParameters) :
 
         @WorkerThread
         fun scheduleNow(downloadId: Long, action: String?) {
+            d {
+                "scheduling DownloadReceiverWorker for $downloadId with action $action"
+            }
             val download = downloadsRepository.get(downloadId)
             if (download != null) {
                 val data = Data.Builder()

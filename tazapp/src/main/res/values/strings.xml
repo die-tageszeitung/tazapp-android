@@ -149,5 +149,11 @@
     <string name="download_title_resource">zusätzlich benötigte Dateien</string>
     <string name="dialog_cancel_download_title">Download abbrechen?</string>
     <string name="dialog_cancel_download_message">Möchten Sie den Download von \"%1$s\" wirklich abbrechen?</string>
+    <string name="downloadInfoConnection">Verbindung</string>
+    <string name="downloadInfofileNameTitle">Dateiname</string>
+    <string name="connection_not_available">Keine Verbindung</string>
+    <string name="connection_roaming">Roaming</string>
+    <string name="connection_mobile">mobile Datenverbindung</string>
+    <string name="connection_fast">Netzwerk</string>
 
 </resources>

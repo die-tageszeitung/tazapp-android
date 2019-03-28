@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                                                   xmlns:app="http://schemas.android.com/apk/res-auto"
+                                                   xmlns:tools="http://schemas.android.com/tools"
+                                                   android:orientation="vertical"
+                                                   android:layout_width="match_parent"
+                                                   android:layout_height="wrap_content"
+                                                   android:id="@+id/layout"
+                                                   android:paddingLeft="16dp"
+                                                   android:paddingRight="16dp">
+
+    <TextView
+            android:text="@string/downloadInfoConnection"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/connectionTitle"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            />
+
+    <TextView
+            android:text="@string/downloadInfofileNameTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/fileNameTitle"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginTop="8dp"
+            app:layout_constraintTop_toBottomOf="@+id/connection"/>
+
+    <androidx.constraintlayout.widget.Barrier
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/barrier"
+            app:barrierDirection="end"
+            app:constraint_referenced_ids="fileNameTitle, connectionTitle"
+            tools:layout_editor_absoluteX="80dp"/>
+
+    <TextView
+            android:text="@string/dummy"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/connection"
+            app:layout_constraintTop_toTopOf="@+id/connectionTitle"
+            app:layout_constraintStart_toEndOf="@+id/barrier"
+            android:layout_marginLeft="8dp"
+            android:layout_marginStart="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            />
+
+    <TextView
+            android:text="@string/dummy"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/fileName"
+            app:layout_constraintTop_toTopOf="@+id/fileNameTitle"
+            app:layout_constraintStart_toEndOf="@+id/barrier"
+            android:layout_marginLeft="8dp"
+            android:layout_marginStart="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            />
+</androidx.constraintlayout.widget.ConstraintLayout>

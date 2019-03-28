@@ -134,6 +134,10 @@ public class PaperRepository {
                           .getLiveForLibrary();
     }
 
+    public LiveData<PaperWithDownloadState> getLivePaper(String bookId) {
+        return appDatabase.paperDao().getPaperLiveData(bookId);
+    }
+
     @WorkerThread
     public DownloadState getDownloadStateForPaper(String bookId) {
         return getDownloadForPaper(bookId).getState();

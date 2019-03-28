@@ -57,6 +57,7 @@ import de.thecode.android.tazreader.update.Update;
 import de.thecode.android.tazreader.utils.AsyncTaskListener;
 import de.thecode.android.tazreader.utils.BaseActivity;
 import de.thecode.android.tazreader.utils.Charsets;
+import de.thecode.android.tazreader.utils.ConnectionInfo;
 import de.thecode.android.tazreader.utils.Connection;
 import de.thecode.android.tazreader.utils.StreamUtils;
 import de.thecode.android.tazreader.utils.UserDeviceInfo;
@@ -492,12 +493,13 @@ public class StartActivity extends BaseActivity
 
 
     public void startDownload(Paper downloadPaper) {
-        switch (Connection.getConnectionType(this)) {
-            case Connection.CONNECTION_NOT_AVAILABLE:
+        ConnectionInfo info = Connection.Companion.getConnectionInfo();
+        switch (info.getType()) {
+            case NOT_AVAILABLE:
                 showNoConnectionDialog();
                 break;
-            case Connection.CONNECTION_MOBILE:
-            case Connection.CONNECTION_MOBILE_ROAMING:
+            case MOBILE:
+            case ROAMING:
                 addToDownloadQueue(downloadPaper.getBookId());
                 if (startViewModel.isMobileDownloadAllowed()) startViewModel.startDownloadQueue();
                 else showMobileConnectionDialog();
@@ -676,9 +678,9 @@ public class StartActivity extends BaseActivity
                                                                                           AnalyticsWrapper.getInstance()
                                                                                                           .logData("RESOURCE",
                                                                                                                    resource.toString());
-                                                                                          switch (Connection.getConnectionType(
-                                                                                                  StartActivity.this)) {
-                                                                                              case Connection.CONNECTION_NOT_AVAILABLE:
+                                                                                          ConnectionInfo info = Connection.Companion.getConnectionInfo();
+                                                                                          switch (info.getType()) {
+                                                                                              case NOT_AVAILABLE:
                                                                                                   Timber.e(new ConnectException(
                                                                                                           "Keine Verbindung"));
                                                                                                   showErrorDialog(getString(R.string.message_resource_not_downloaded_no_connection),

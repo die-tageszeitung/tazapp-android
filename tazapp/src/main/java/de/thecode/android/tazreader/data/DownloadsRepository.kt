@@ -1,6 +1,7 @@
 package de.thecode.android.tazreader.data
 
 import androidx.annotation.WorkerThread
+import com.github.ajalt.timberkt.d
 import de.thecode.android.tazreader.app
 import de.thecode.android.tazreader.room.AppDatabase
 import java.util.*
@@ -45,12 +46,18 @@ class DownloadsRepository private constructor() {
 
     @WorkerThread
     fun save(download: Download) {
+        d {
+            "saving $download"
+        }
         appDatabase.downloadsDao()
                 .insert(download)
     }
 
     @WorkerThread
     fun delete(key: String) {
+        d {
+            "deleting $key"
+        }
         appDatabase.downloadsDao()
                 .deleteByKey(key)
     }
