@@ -22,6 +22,7 @@
     <string name="string_library_item_download_state">wird geladen…</string>
     <string name="string_library_item_extract_state">wird entpackt…</string>
     <string name="string_library_item_checking_state">wird überprüft…</string>
+    <string name="string_library_item_info_note">Tippen für mehr Infos</string>
     <string name="dialog_error_title">Fehler</string>
     <string name="dialog_error_unknown">Es ist ein Fehler aufgetreten.</string>
     <string name="dialog_check_credentials">Kontaktiere Server und überprüfe Daten</string>
@@ -147,10 +148,10 @@
 
     <string name="download_title_paper">%1$s vom %2$s</string>
     <string name="download_title_resource">zusätzlich benötigte Dateien</string>
-    <string name="dialog_cancel_download_title">Download abbrechen?</string>
-    <string name="dialog_cancel_download_message">Möchten Sie den Download von \"%1$s\" wirklich abbrechen?</string>
-    <string name="downloadInfoConnection">Verbindung</string>
-    <string name="downloadInfofileNameTitle">Dateiname</string>
+    <string name="downloadinfo_dialog_title">Download</string>
+    <string name="downloadinfo_connection">Verbindung</string>
+    <string name="downloadinfo_filename_title">Dateiname</string>
+    <string name="downloadinfo_cancel_download">Download abbrechen</string>
     <string name="connection_not_available">Keine Verbindung</string>
     <string name="connection_roaming">Roaming</string>
     <string name="connection_mobile">mobile Datenverbindung</string>

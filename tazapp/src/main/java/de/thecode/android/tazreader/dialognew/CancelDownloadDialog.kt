@@ -45,16 +45,15 @@ class CancelDownloadDialog : DialogFragment() {
         arguments!!.getString(BOOK_ID)
     }
 
-    val dialog: MaterialDialog by lazy {
-        MaterialDialog(context!!).title(R.string.dialog_cancel_download_title)
-                .customView(viewRes = R.layout.dialog_download_info,scrollable = true)
-                .positiveButton()
-    }
+    var dialog: MaterialDialog? = null
+
     private val fileName: TextView by lazy {
-        dialog.getCustomView().findViewById<TextView>(R.id.fileName)
+        dialog!!.getCustomView()
+                .findViewById<TextView>(R.id.fileName)
     }
     private val connection: TextView by lazy {
-        dialog.getCustomView().findViewById<TextView>(R.id.connection)
+        dialog!!.getCustomView()
+                .findViewById<TextView>(R.id.connection)
     }
 
 
@@ -65,20 +64,14 @@ class CancelDownloadDialog : DialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         context?.let {
+            dialog = MaterialDialog(context!!).title(R.string.downloadinfo_dialog_title)
+                    .customView(viewRes = R.layout.dialog_download_info, scrollable = true)
+                    .negativeButton(R.string.downloadinfo_cancel_download)
+                    .positiveButton()
             viewModel.paperLiveData.observe(this, Observer {
-                d { "XXXX $it"}
-                dialog.clearNegativeListeners()
-
-                if (it.downloadState == DownloadState.DOWNLOADING || it.downloadState == DownloadState.DOWNLOADED) {
-                    dialog.negativeButton(text = "Download abbrechen")
-                }
-                else if (it.downloadState == DownloadState.READY) {
+                if (it.downloadState == DownloadState.READY) {
                     dismiss()
                 }
-                else {
-                    dialog.negativeButton(text = "")
-                }
-
             })
             viewModel.downloadLiveData.observe(this, Observer {
                 fileName.text = it.file.absolutePath
@@ -88,7 +81,7 @@ class CancelDownloadDialog : DialogFragment() {
                 connection.text = it.type.readable
             })
 
-            return dialog
+            return dialog!!
         }
         return super.onCreateDialog(savedInstanceState)
     }
@@ -103,7 +96,7 @@ class DownloadInfoDialogViewModel(val bookId: String) : ViewModel(), Connection.
 
     init {
 
-        d { "inti XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX ${paperLiveData.value}"}
+        d { "inti XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX ${paperLiveData.value}" }
         poll()
         networkLiveData.value = Connection.getConnectionInfo()
         Connection.addListener(this)
