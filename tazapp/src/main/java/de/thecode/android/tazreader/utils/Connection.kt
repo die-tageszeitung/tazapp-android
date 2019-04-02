@@ -6,14 +6,22 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.net.ConnectivityManager
 import android.telephony.TelephonyManager
+import androidx.annotation.StringRes
 import com.github.ajalt.timberkt.i
 import de.thecode.android.tazreader.R
 import de.thecode.android.tazreader.app
 
 class Connection {
 
-    enum class Type(val readable: String) {
-        NOT_AVAILABLE(app.getString(R.string.connection_not_available)), ROAMING(app.getString(R.string.connection_roaming)), MOBILE(app.getString(R.string.connection_mobile)), FAST(app.getString(R.string.connection_fast))
+    enum class Type(@StringRes val resId: Int) {
+        NOT_AVAILABLE(R.string.connection_not_available),
+        ROAMING(R.string.connection_roaming),
+        MOBILE(R.string.connection_mobile),
+        FAST(R.string.connection_fast);
+
+        fun readable(): String {
+            return app.getString(resId)
+        }
     }
 
     companion object {

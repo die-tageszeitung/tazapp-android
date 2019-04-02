@@ -16,7 +16,7 @@ import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.PaperWithDownloadState;
 import de.thecode.android.tazreader.data.TazSettings;
-import de.thecode.android.tazreader.dialognew.CancelDownloadDialog;
+import de.thecode.android.tazreader.dialognew.DownloadInfoDialog;
 import de.thecode.android.tazreader.start.DrawerStateChangedEvent;
 import de.thecode.android.tazreader.start.StartBaseFragment;
 import de.thecode.android.tazreader.start.StartViewModel;
@@ -98,7 +98,7 @@ public class LibraryFragment extends StartBaseFragment {
 
 
                             if (getFragmentManager() != null) {
-                                CancelDownloadDialog.Companion.newInstance(paper).show(getFragmentManager(), CancelDownloadDialog.DIALOG_TAG);
+                                DownloadInfoDialog.Companion.newInstance(paper).show(getFragmentManager(), DownloadInfoDialog.DIALOG_TAG);
                             }
                             break;
                     }

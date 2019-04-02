@@ -1,8 +1,11 @@
 package de.thecode.android.tazreader.data
 
+import androidx.annotation.StringRes
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverter
+import de.thecode.android.tazreader.R
+import de.thecode.android.tazreader.app
 import java.io.File
 import java.util.*
 
@@ -15,11 +18,23 @@ data class Download(@PrimaryKey()
                     var downloadManagerId: Long = 0,
                     var progress: Int = 0,
                     var workerUuid: UUID? = null,
-                    var state: DownloadState = DownloadState.NONE) {
+                    var state: DownloadState = DownloadState.NONE,
+                    var unmeteredOnly: UnmeteredDownloadOnly?) {
     companion object {
         fun create(type: DownloadType, key: String, title: String, file: File): Download {
-            return Download(type = type, key = key, title = title, file = file)
+            return Download(type = type, key = key, title = title, file = file, unmeteredOnly = UnmeteredDownloadOnly.NO)
         }
+    }
+}
+
+class UnmeteredDownloadOnlyConverter {
+    @TypeConverter
+    fun toBoolean(value: UnmeteredDownloadOnly): Boolean? {
+        return value.booleanValue
+    }
+    @TypeConverter
+    fun toWifiOnlyEnum(value: Boolean?): UnmeteredDownloadOnly {
+        return UnmeteredDownloadOnly.fromBoolean(value)
     }
 }
 
@@ -79,6 +94,25 @@ class DownloadTypeTypeConverter {
 
 }
 
+enum class UnmeteredDownloadOnly(val booleanValue: Boolean?, @StringRes val resiId: Int) {
+    UNKNOWN(null, R.string.unmetered_only_unknown),
+    YES(true, R.string.unmetered_only_yes),
+    NO(false, R.string.unmetered_only_no);
+
+    companion object {
+        fun fromBoolean(bool:Boolean?): UnmeteredDownloadOnly {
+            UnmeteredDownloadOnly.values().forEach {
+                if (it.booleanValue == bool) return it
+            }
+            return UNKNOWN
+        }
+    }
+
+    fun readable(): String {
+        return app.getString(resiId)
+    }
+}
+
 enum class DownloadType {
     PAPER, RESOURCE, UPDATE;
 
@@ -87,11 +121,20 @@ enum class DownloadType {
     }
 }
 
-enum class DownloadState {
-    NONE, DOWNLOADING, DOWNLOADED, EXTRACTING, CHECKING, READY;
+enum class DownloadState(@StringRes val readableId: Int) {
+    NONE(R.string.download_state_none),
+    DOWNLOADING(R.string.download_state_downloading),
+    DOWNLOADED(R.string.download_state_downloaded),
+    EXTRACTING(R.string.download_state_extracting),
+    CHECKING(R.string.download_state_checking),
+    READY(R.string.download_state_ready);
 
     companion object {
         fun getByName(name: String) = valueOf(name.toUpperCase())
+    }
+
+    fun readable(): String {
+        return app.getString(readableId);
     }
 }
 

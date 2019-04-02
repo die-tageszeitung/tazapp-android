@@ -4,10 +4,10 @@
                                                    xmlns:tools="http://schemas.android.com/tools"
                                                    android:orientation="vertical"
                                                    android:layout_width="match_parent"
-                                                   android:layout_height="wrap_content"
+                                                   android:layout_height="match_parent"
                                                    android:id="@+id/layout"
-                                                   android:paddingLeft="16dp"
-                                                   android:paddingRight="16dp">
+                                                   android:paddingLeft="24dp"
+                                                   android:paddingRight="24dp">
 
     <TextView
             android:text="@string/downloadinfo_connection"
@@ -15,24 +15,15 @@
             android:layout_height="wrap_content"
             android:id="@+id/connectionTitle"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            />
-
-    <TextView
-            android:text="@string/downloadinfo_filename_title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/fileNameTitle"
-            app:layout_constraintStart_toStartOf="parent"
-            android:layout_marginTop="8dp"
-            app:layout_constraintTop_toBottomOf="@+id/connection"/>
+            app:layout_constraintTop_toBottomOf="@+id/title"
+            android:layout_marginTop="24dp"/>
 
     <androidx.constraintlayout.widget.Barrier
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/barrier"
             app:barrierDirection="end"
-            app:constraint_referenced_ids="fileNameTitle, connectionTitle"
+            app:constraint_referenced_ids="unmeteredOnlyTitle, connectionTitle, stateTitle, progressTitle, dmTitle"
             tools:layout_editor_absoluteX="80dp"/>
 
     <TextView
@@ -48,14 +39,104 @@
             />
 
     <TextView
+            android:text="@string/downloadinfo_state_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/stateTitle"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginTop="8dp"
+            app:layout_constraintTop_toBottomOf="@+id/unmeteredOnly"/>
+
+    <TextView
             android:text="@string/dummy"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:id="@+id/fileName"
-            app:layout_constraintTop_toTopOf="@+id/fileNameTitle"
+            android:id="@+id/state"
+            app:layout_constraintStart_toEndOf="@+id/barrier"
+            android:layout_marginLeft="8dp"
+            android:layout_marginStart="8dp"
+            app:layout_constraintTop_toTopOf="@+id/stateTitle"
+            app:layout_constraintEnd_toEndOf="parent"
+            />
+
+    <TextView
+            android:text="@string/downloadinfo_progress_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/progressTitle"
+            android:layout_marginTop="8dp"
+            app:layout_constraintTop_toBottomOf="@+id/state"
+            app:layout_constraintStart_toStartOf="parent"
+            />
+
+    <ProgressBar
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/progress"
+            app:layout_constraintStart_toEndOf="@+id/barrier"
+            android:minWidth="100dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginStart="8dp"
+            app:layout_constraintTop_toTopOf="@+id/progressTitle"
+            app:layout_constraintBottom_toBottomOf="@+id/progressTitle"
+            app:layout_constraintEnd_toEndOf="parent"
+            />
+
+    <TextView
+            android:text="@string/downloadinfo_dmlog_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/dmTitle"
+            android:textSize="12sp"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginTop="8dp"
+            app:layout_constraintTop_toBottomOf="@+id/progressTitle"/>
+
+    <TextView
+            android:text="@string/dummy"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/dmLog"
+            android:textSize="12sp"
+            app:layout_constraintTop_toTopOf="@+id/dmTitle"
             app:layout_constraintStart_toEndOf="@+id/barrier"
             android:layout_marginLeft="8dp"
             android:layout_marginStart="8dp"
             app:layout_constraintEnd_toEndOf="parent"
             />
+
+    <TextView
+            android:text="@string/downloadinfo_unmeteredonly_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/unmeteredOnlyTitle"
+            android:layout_marginTop="8dp"
+            app:layout_constraintTop_toBottomOf="@+id/connection"
+            app:layout_constraintStart_toStartOf="parent"
+            />
+
+    <TextView
+            android:text="@string/dummy"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/unmeteredOnly"
+            app:layout_constraintTop_toTopOf="@+id/unmeteredOnlyTitle"
+            app:layout_constraintStart_toEndOf="@+id/barrier"
+            android:layout_marginLeft="8dp"
+            android:layout_marginStart="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            />
+
+    <TextView
+            android:text="TextView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/title"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"
+            app:layout_constraintTop_toTopOf="parent"
+            />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

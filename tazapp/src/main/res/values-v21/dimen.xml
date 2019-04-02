@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="lib_cardview_corner_radius">3dp</dimen>
+    <dimen name="lib_cardview_corner_radius">4dp</dimen>
     <dimen name="fab_margin">16dp</dimen>
 </resources>

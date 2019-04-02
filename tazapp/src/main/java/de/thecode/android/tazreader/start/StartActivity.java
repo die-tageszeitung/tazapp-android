@@ -43,7 +43,7 @@ import de.thecode.android.tazreader.dialog.ArchiveDialog;
 import de.thecode.android.tazreader.dialog.ArchiveEntry;
 import de.thecode.android.tazreader.dialog.HelpDialog;
 import de.thecode.android.tazreader.dialognew.AskForHelpDialog;
-import de.thecode.android.tazreader.dialognew.CancelDownloadDialog;
+import de.thecode.android.tazreader.dialognew.DownloadInfoDialog;
 import de.thecode.android.tazreader.download.TazDownloadManager;
 import de.thecode.android.tazreader.importer.ImportActivity;
 import de.thecode.android.tazreader.migration.MigrationActivity;
@@ -93,7 +93,7 @@ import timber.log.Timber;
  * Created by mate on 27.01.2015.
  */
 public class StartActivity extends BaseActivity
-        implements CancelDownloadDialog.CancelDownloadDialogListener, DialogButtonListener, DialogDismissListener, DialogCancelListener, DialogAdapterListListener {
+        implements DownloadInfoDialog.CancelDownloadDialogListener, DialogButtonListener, DialogDismissListener, DialogCancelListener, DialogAdapterListListener {
 
     //private static final String DIALOG_FIRST                 = "dialogFirst";
     private static final String DIALOG_USER_REENTER          = "dialogUserReenter";

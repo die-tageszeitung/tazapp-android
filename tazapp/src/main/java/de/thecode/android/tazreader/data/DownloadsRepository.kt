@@ -1,6 +1,7 @@
 package de.thecode.android.tazreader.data
 
 import androidx.annotation.WorkerThread
+import androidx.lifecycle.LiveData
 import com.github.ajalt.timberkt.d
 import de.thecode.android.tazreader.app
 import de.thecode.android.tazreader.room.AppDatabase
@@ -35,7 +36,8 @@ class DownloadsRepository private constructor() {
 
     @WorkerThread
     fun getByWorkerUuid(uuid: UUID): Download? {
-        return appDatabase.downloadsDao().getByWorkerUuid(uuid)
+        return appDatabase.downloadsDao()
+                .getByWorkerUuid(uuid)
     }
 
     @WorkerThread
@@ -68,6 +70,9 @@ class DownloadsRepository private constructor() {
                 .delete(download)
     }
 
-
+    fun getLiveData(key: String): LiveData<Download> {
+        return appDatabase.downloadsDao()
+                .getDownloadByKeyLive(key)
+    }
 
 }

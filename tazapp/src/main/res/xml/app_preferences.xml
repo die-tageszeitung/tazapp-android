@@ -16,7 +16,8 @@
                 android:dependency="@string/pref_key_autoload"
                 android:key="@string/pref_key_autoload_wifi"
                 app:singleLineTitle="false"
-                android:summary="@string/pref_title_autoload_wifi"
+                android:title="@string/pref_title_autoload_wifi"
+                android:summary="@string/pref_summary_autoload_wifi"
                 android:defaultValue="@bool/pref_default_autoload_wifi"/>
 
         <SwitchPreferenceCompat

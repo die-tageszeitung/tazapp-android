@@ -22,7 +22,7 @@
     <string name="string_library_item_download_state">wird geladen…</string>
     <string name="string_library_item_extract_state">wird entpackt…</string>
     <string name="string_library_item_checking_state">wird überprüft…</string>
-    <string name="string_library_item_info_note">Tippen für mehr Infos</string>
+    <string name="string_library_item_info_note">Tippen für\nmehr Infos</string>
     <string name="dialog_error_title">Fehler</string>
     <string name="dialog_error_unknown">Es ist ein Fehler aufgetreten.</string>
     <string name="dialog_check_credentials">Kontaktiere Server und überprüfe Daten</string>
@@ -50,6 +50,14 @@
     <string name="notification_message_install_finished">Download fertig!</string>
     <string name="notification_content_text_summary">%1$d Ausgaben heruntergeladen</string>
     <string name="notification_error_download_title">Fehler</string>
+
+
+    <string name="download_state_none">keiner</string>
+    <string name="download_state_downloading">herunterladen</string>
+    <string name="download_state_downloaded">heruntergeladen</string>
+    <string name="download_state_extracting">entpacken</string>
+    <string name="download_state_checking">überprüfe</string>
+    <string name="download_state_ready">bereit</string>
 
     <string name="demo_titel_appendix">- DEMOMODUS</string>
 
@@ -148,13 +156,22 @@
 
     <string name="download_title_paper">%1$s vom %2$s</string>
     <string name="download_title_resource">zusätzlich benötigte Dateien</string>
-    <string name="downloadinfo_dialog_title">Download</string>
+    <string name="downloadinfo_dialog_title">Download von \"%1$s\"</string>
     <string name="downloadinfo_connection">Verbindung</string>
     <string name="downloadinfo_filename_title">Dateiname</string>
+    <string name="downloadinfo_state_title">Status</string>
+    <string name="downloadinfo_progress_title">Fortschritt</string>
+    <string name="downloadinfo_dmlog_title">DL Manager</string>
     <string name="downloadinfo_cancel_download">Download abbrechen</string>
     <string name="connection_not_available">Keine Verbindung</string>
     <string name="connection_roaming">Roaming</string>
     <string name="connection_mobile">mobile Datenverbindung</string>
     <string name="connection_fast">Netzwerk</string>
+    <string name="downloadinfo_unmeteredonly_title">nur ungetaktet</string>
+
+    <string name="unmetered_only_unknown">unbekannt</string>
+    <string name="unmetered_only_yes">Ja</string>
+    <string name="unmetered_only_no">Nein</string>
+
 
 </resources>

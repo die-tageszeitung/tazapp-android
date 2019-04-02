@@ -126,7 +126,7 @@ public class StartViewModel extends AndroidViewModel {
                 while (downloadQueue.size() > 0) {
                     String bookId = downloadQueue.get(0);
                     TazDownloadManager.Result result = TazDownloadManager.Companion.getInstance()
-                                                                                   .downloadPaper(bookId, false);
+                                                                                   .downloadPaper(bookId, true);
                     //OldDownloadManager.DownloadManagerResult result = oldDownloadManager.downloadPaper(bookId, false);
                     if (result.getState() != TazDownloadManager.Result.STATE.SUCCESS) {
                         downloadErrorLiveSingleData.postValue(result);
