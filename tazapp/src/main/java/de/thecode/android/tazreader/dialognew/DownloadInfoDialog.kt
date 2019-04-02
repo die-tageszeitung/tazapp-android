@@ -5,6 +5,7 @@ import android.app.Dialog
 import android.os.Bundle
 import android.widget.ProgressBar
 import android.widget.TextView
+import androidx.appcompat.widget.AppCompatCheckBox
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.*
 import com.afollestad.materialdialogs.MaterialDialog
@@ -55,9 +56,24 @@ class DownloadInfoDialog : DialogFragment() {
         dialog!!.getCustomView()
                 .findViewById<TextView>(R.id.state)
     }
-    private val connection: TextView by lazy {
+//    private val connection: TextView by lazy {
+//        dialog!!.getCustomView()
+//                .findViewById<TextView>(R.id.connection)
+//    }
+
+    private val connected: AppCompatCheckBox by lazy {
         dialog!!.getCustomView()
-                .findViewById<TextView>(R.id.connection)
+                .findViewById<AppCompatCheckBox>(R.id.checkBoxConnected)
+    }
+
+    private val metered: AppCompatCheckBox by lazy {
+        dialog!!.getCustomView()
+                .findViewById<AppCompatCheckBox>(R.id.checkBoxMetered)
+    }
+
+    private val roaming: AppCompatCheckBox by lazy {
+        dialog!!.getCustomView()
+                .findViewById<AppCompatCheckBox>(R.id.checkBoxRoaming)
     }
 
     private val progress: ProgressBar by lazy {
@@ -97,7 +113,10 @@ class DownloadInfoDialog : DialogFragment() {
                 if (it.state == DownloadState.READY) {
                     dismiss()
                 }
-                connection.text = it.connectionType.readable()
+                connected.isChecked = it.connectionInfo.connected
+                metered.isChecked = it.connectionInfo.metered
+                roaming.isChecked = it.connectionInfo.roaming
+//                connection.text = it.connectionInfo
                 @SuppressLint("SetTextI18n")
                 state.text = it.state.readable()
                 dmlog.text = it.dmLog
@@ -169,7 +188,8 @@ class DownloadInfoDialogViewModel(val bookId: String) : ViewModel(), Connection.
 
     override fun onNetworkConnectionChanged(info: ConnectionInfo) {
         val downloadInfoValue = downloadInfo.value
-        downloadInfoValue!!.connectionType = info.type
+
+        downloadInfoValue!!.connectionInfo = info
         downloadInfo.value = downloadInfoValue
     }
 }
@@ -182,7 +202,7 @@ class DownloadInfoDialogViewModelFactory(val bookId: String) : ViewModelProvider
 
 }
 
-data class DownloadInfo(var connectionType: Connection.Type = Connection.Type.NOT_AVAILABLE,
+data class DownloadInfo(var connectionInfo: ConnectionInfo = ConnectionInfo(),
                         var unmeteredOnly: UnmeteredDownloadOnly = UnmeteredDownloadOnly.UNKNOWN,
                         var state: DownloadState = DownloadState.NONE,
                         var progress: Int = 0,

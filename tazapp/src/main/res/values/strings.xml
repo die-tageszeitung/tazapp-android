@@ -157,21 +157,21 @@
     <string name="download_title_paper">%1$s vom %2$s</string>
     <string name="download_title_resource">zusätzlich benötigte Dateien</string>
     <string name="downloadinfo_dialog_title">Download von \"%1$s\"</string>
-    <string name="downloadinfo_connection">Verbindung</string>
+    <string name="downloadinfo_connection">Aktuelle\nVerbindung</string>
     <string name="downloadinfo_filename_title">Dateiname</string>
     <string name="downloadinfo_state_title">Status</string>
     <string name="downloadinfo_progress_title">Fortschritt</string>
     <string name="downloadinfo_dmlog_title">DL Manager</string>
     <string name="downloadinfo_cancel_download">Download abbrechen</string>
-    <string name="connection_not_available">Keine Verbindung</string>
-    <string name="connection_roaming">Roaming</string>
-    <string name="connection_mobile">mobile Datenverbindung</string>
-    <string name="connection_fast">Netzwerk</string>
     <string name="downloadinfo_unmeteredonly_title">nur ungetaktet</string>
 
     <string name="unmetered_only_unknown">unbekannt</string>
     <string name="unmetered_only_yes">Ja</string>
     <string name="unmetered_only_no">Nein</string>
+
+    <string name="connection_connected">Verbunden</string>
+    <string name="connection_metered">Getaktet</string>
+    <string name="connection_roaming">Roaming</string>
 
 
 </resources>
