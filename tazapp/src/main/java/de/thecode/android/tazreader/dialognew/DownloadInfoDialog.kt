@@ -3,9 +3,9 @@ package de.thecode.android.tazreader.dialognew
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.os.Bundle
+import android.widget.CheckBox
 import android.widget.ProgressBar
 import android.widget.TextView
-import androidx.appcompat.widget.AppCompatCheckBox
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.*
 import com.afollestad.materialdialogs.MaterialDialog
@@ -61,19 +61,19 @@ class DownloadInfoDialog : DialogFragment() {
 //                .findViewById<TextView>(R.id.connection)
 //    }
 
-    private val connected: AppCompatCheckBox by lazy {
+    private val connected: CheckBox by lazy {
         dialog!!.getCustomView()
-                .findViewById<AppCompatCheckBox>(R.id.checkBoxConnected)
+                .findViewById<CheckBox>(R.id.checkBoxConnected)
     }
 
-    private val metered: AppCompatCheckBox by lazy {
+    private val metered: CheckBox by lazy {
         dialog!!.getCustomView()
-                .findViewById<AppCompatCheckBox>(R.id.checkBoxMetered)
+                .findViewById<CheckBox>(R.id.checkBoxMetered)
     }
 
-    private val roaming: AppCompatCheckBox by lazy {
+    private val roaming: CheckBox by lazy {
         dialog!!.getCustomView()
-                .findViewById<AppCompatCheckBox>(R.id.checkBoxRoaming)
+                .findViewById<CheckBox>(R.id.checkBoxRoaming)
     }
 
     private val progress: ProgressBar by lazy {
@@ -106,7 +106,9 @@ class DownloadInfoDialog : DialogFragment() {
         context?.let {
             dialog = MaterialDialog(context!!)
                     .customView(viewRes = R.layout.dialog_download_info, scrollable = true)
-                    .negativeButton(R.string.downloadinfo_cancel_download)
+                    .negativeButton(res = R.string.downloadinfo_cancel_download,click = {
+                        (activity as CancelDownloadDialogListener).onCancelDownload(arguments!!.getString(BOOK_ID)!!)
+                    })
                     .positiveButton()
             title.text = app.getString(R.string.downloadinfo_dialog_title,arguments!!.getString(TITLE))
             viewModel.downloadInfo.observe(this, Observer {

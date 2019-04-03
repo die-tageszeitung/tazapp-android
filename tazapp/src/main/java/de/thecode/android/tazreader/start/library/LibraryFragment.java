@@ -94,7 +94,7 @@ public class LibraryFragment extends StartBaseFragment {
                         case NONE:
                             getStartActivity().startDownload(paper);
                             break;
-                        case DOWNLOADING:
+                        default:
 
 
                             if (getFragmentManager() != null) {
