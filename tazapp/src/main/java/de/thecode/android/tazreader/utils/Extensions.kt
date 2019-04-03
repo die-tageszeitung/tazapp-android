@@ -8,7 +8,6 @@ import android.provider.MediaStore
 import android.text.Html
 import android.text.Spanned
 import androidx.annotation.StringRes
-import com.github.ajalt.timberkt.d
 import de.thecode.android.tazreader.app
 import timber.log.Timber
 import java.io.File
@@ -72,7 +71,6 @@ fun File.deleteQuietly() {
 
 
 fun Context.getResourceIdByName(name: String, defType: String): Int {
-    d { "$defType resource by name: $name" }
     return this.resources.getIdentifier(name, defType, this.packageName)
 }
 
