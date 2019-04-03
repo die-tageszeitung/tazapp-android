@@ -29,8 +29,6 @@
     <color name="dark_white">#f6f6f6</color>
     <color name="white">#FFF</color>
 
-    <color name="textColorTertiary">?android:textColorTertiary</color>
-
     <item name="color_primary" type="color">@color/taz_red</item>
     <item name="color_primary_dark" type="color">@color/taz_red_dark</item>
     <item name="color_accent" type="color">@color/taz_red</item>
