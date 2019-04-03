@@ -16,8 +16,8 @@ plugins {
 }
 
 def versionMajor = 3
-def versionMinor = 8
-def versionPatch = 6
+def versionMinor = 9
+def versionPatch = 0
 def versionBuild = 0
 
 def androidXVer = "1.0.+"
@@ -112,10 +112,10 @@ easylauncher {
     foregroundIconNames "@mipmap/ic_launcher_foreground" // Foreground of adaptive launcher icon
     buildTypes {
         debug {
-            filters = customColorRibbonFilter("DEBUG", "#FF9900", "#FFFFFF", "topLeft", 0.1)
+            filters = customColorRibbonFilter("Debug", "#FFCA1B", "#003645", "topLeft", 0.13)
         }
         staging {
-            filters = customColorRibbonFilter("TEST", "#0000FF", "#FFFFFF", "topLeft", 0.1)
+            filters = customColorRibbonFilter("Testing", "#b3d7ff", "#003645", "topLeft", 0.13)
         }
         release {
             enable false
