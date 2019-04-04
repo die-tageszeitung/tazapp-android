@@ -304,21 +304,28 @@ repositories {
 }
 
 dependencies {
-    def lifecycle_version = "2.1.0-alpha03"
-    def coroutines_version = "1.2.0-alpha"
+    def okhttp_version = "3.12.0" // from 3.14 only Android 5 (Api21) is supported
+    def lifecycle_version = "2.0.0"
+    def coroutines_version = "1.1.1"
     def material_dialogs_version = "2.6.0"
+    def picasso_version = "2.5.2"
+
+    implementation "androidx.lifecycle:lifecycle-extensions:$lifecycle_version"
 
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutines_version"
+
     implementation "androidx.appcompat:appcompat:$androidXVer"
     implementation "androidx.recyclerview:recyclerview:$androidXVer"
     implementation "com.google.android.material:material:$androidXVer"
 //    implementation "androidx.legacy:legacy-support-v4:$androidXVer"
     implementation "androidx.cardview:cardview:$androidXVer"
     implementation "com.takisoft.preferencex:preferencex:$androidXVer"
-    implementation 'com.squareup.okhttp3:okhttp:3.11.0'
-    implementation 'com.squareup.okhttp3:logging-interceptor:3.11.0'
-    implementation 'com.squareup.picasso:picasso:2.5.2'
+
+    implementation "com.squareup.okhttp3:okhttp:$okhttp_version"
+    implementation "com.squareup.okhttp3:logging-interceptor:$okhttp_version"
+
+    implementation "com.squareup.picasso:picasso:$picasso_version"
     implementation 'com.jakewharton.picasso:picasso2-okhttp3-downloader:1.1.0'
     implementation 'com.googlecode.plist:dd-plist:1.8'
     implementation 'com.commonsware.cwac:provider:0.5.3'
@@ -344,9 +351,6 @@ dependencies {
     implementation "com.google.firebase:firebase-messaging:17.5.0"
     implementation 'com.google.code.gson:gson:2.8.5'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.0-alpha3'
-
-    implementation "androidx.lifecycle:lifecycle-extensions:$lifecycle_version"
-    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
 
     implementation "androidx.room:room-runtime:2.1.0-alpha06"
     annotationProcessor "androidx.room:room-compiler:2.1.0-alpha06"

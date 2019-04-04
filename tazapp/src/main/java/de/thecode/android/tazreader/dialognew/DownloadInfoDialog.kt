@@ -19,10 +19,7 @@ import de.thecode.android.tazreader.data.UnmeteredDownloadOnly
 import de.thecode.android.tazreader.download.TazDownloadManager
 import de.thecode.android.tazreader.utils.Connection
 import de.thecode.android.tazreader.utils.ConnectionInfo
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 
 class DownloadInfoDialog : DialogFragment() {
 
@@ -134,12 +131,15 @@ class DownloadInfoDialog : DialogFragment() {
 
 class DownloadInfoDialogViewModel(val bookId: String) : ViewModel(), Connection.ConnectionChangeListener {
 
+    private val viewModelJob = SupervisorJob()
+    private val uiScope = CoroutineScope(Dispatchers.Main + viewModelJob)
+
     //    val paperLiveData = paperRepository.getLivePaper(bookId);
-    val downloadInfo = MutableLiveData<DownloadInfo>(DownloadInfo())
+    val downloadInfo = MutableLiveData<DownloadInfo>()
     val downloadLiveData = downloadsRepository.getLiveData(bookId)
 
     init {
-
+        downloadInfo.value = DownloadInfo()
         onNetworkConnectionChanged(Connection.getConnectionInfo())
         Connection.addListener(this)
         downloadLiveData.observeForever {
@@ -161,8 +161,13 @@ class DownloadInfoDialogViewModel(val bookId: String) : ViewModel(), Connection.
 
     }
 
+    override fun onCleared() {
+        super.onCleared()
+        viewModelJob.cancel()
+    }
+
     fun poll() {
-        viewModelScope.launch {
+        uiScope.launch {
             withContext(Dispatchers.Default) {
                 val download = paperRepository.getDownloadForPaper(bookId)
                 when (download.state) {
