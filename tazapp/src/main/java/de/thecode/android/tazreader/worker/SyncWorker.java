@@ -89,20 +89,20 @@ public class SyncWorker extends LoggingWorker {
         String endDate = getInputData().getString(ARG_END_DATE);
         boolean initByUser = getInputData().getBoolean(ARG_INITIATED_BY_USER, false);
 
-        NSDictionary plist = callPlist(startDate, endDate);
-
-        if (plist == null) {
+        try {
+            NSDictionary plist = callPlist(startDate, endDate);
+            if (!initByUser) autoDeleteTask();
+            handlePlist(plist);
+        } catch (Exception e) {
             if (initByUser) {
                 EventBus.getDefault()
-                        .post(new SyncErrorEvent(getApplicationContext().getString(R.string.sync_job_plist_empty)));
+                        .post(new SyncErrorEvent(e.getLocalizedMessage()));
                 return Result.success();
             } else {
                 return Result.retry();
             }
-        } else {
-            if (!initByUser) autoDeleteTask();
-            handlePlist(plist);
         }
+
         if (startDate == null && endDate == null) {
             downloadLatestResource();
         }
@@ -111,7 +111,8 @@ public class SyncWorker extends LoggingWorker {
 
         Paper latestPaper = paperRepository.getLatestPaper();
         if (latestPaper != null) {
-            if (settings.getPrefBoolean(TazSettings.PREFKEY.AUTOLOAD, false) && !TazApplicationKt.getAccountHelper().isDemo()) {
+            if (settings.getPrefBoolean(TazSettings.PREFKEY.AUTOLOAD, false) && !TazApplicationKt.getAccountHelper()
+                                                                                                 .isDemo()) {
                 Store autoDownloadedStore = storeRepository.getStore(latestPaper.getBookId(), Paper.STORE_KEY_AUTO_DOWNLOADED);
                 boolean isAutoDownloaded = Boolean.parseBoolean(autoDownloadedStore.getValue("false"));
                 if (!isAutoDownloaded /*&& (System.currentTimeMillis() - TimeUnit.DAYS.toMillis(1)) < latestPaper.getDateInMillis()*/) {
@@ -196,7 +197,7 @@ public class SyncWorker extends LoggingWorker {
         paperRepository.savePapers(newPapers);
     }
 
-    private NSDictionary callPlist(String startDate, String endDate) {
+    private NSDictionary callPlist(String startDate, String endDate) throws Exception {
         HttpUrl url;
         if (!TextUtils.isEmpty(startDate) && !TextUtils.isEmpty(endDate)) {
             url = HttpUrl.parse(String.format(BuildConfig.PLISTARCHIVURL, startDate, endDate));
@@ -207,18 +208,13 @@ public class SyncWorker extends LoggingWorker {
                                          .getCall(url,
                                                   RequestHelper.getInstance(getApplicationContext())
                                                                .getOkhttp3RequestBody());
-        try {
-            okhttp3.Response response = call.execute();
-            if (response.isSuccessful()) {
-                return (NSDictionary) PropertyListParser.parse(response.body()
-                                                                       .bytes());
-            }
-            throw new IOException(response.body()
-                                          .string());
-        } catch (Exception e) {
-            Timber.e(e);
+        okhttp3.Response response = call.execute();
+        if (response.isSuccessful()) {
+            return (NSDictionary) PropertyListParser.parse(response.body()
+                                                                   .bytes());
         }
-        return null;
+        throw new IOException(response.body()
+                                      .string());
     }
 
     private void preLoadImage(Paper paper) {

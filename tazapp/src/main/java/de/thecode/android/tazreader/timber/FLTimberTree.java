@@ -113,7 +113,7 @@ public class FLTimberTree extends Timber.DebugTree {
             mDate.get()
                  .setTime(timeInMillis);
             return installationsId + "_" + mFileNameFmt.get()
-                               .format(mDate.get()) + ".log";
+                               .format(mDate.get()) + ".dmLog";
         }
     }
 }

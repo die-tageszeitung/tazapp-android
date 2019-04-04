@@ -16,6 +16,7 @@ import com.github.ajalt.timberkt.Timber.e
 import com.github.ajalt.timberkt.Timber.w
 import de.thecode.android.tazreader.*
 import de.thecode.android.tazreader.data.*
+import de.thecode.android.tazreader.download.TazDownloadManager
 import de.thecode.android.tazreader.secure.HashHelper
 import de.thecode.android.tazreader.start.StartActivity
 import de.thecode.android.tazreader.utils.deleteQuietly
@@ -37,6 +38,9 @@ class DownloadReceiverWorker(context: Context, workerParams: WorkerParameters) :
 
         @WorkerThread
         fun scheduleNow(downloadId: Long, action: String?) {
+            d {
+                "scheduling DownloadReceiverWorker for $downloadId with action $action"
+            }
             val download = downloadsRepository.get(downloadId)
             if (download != null) {
                 val data = Data.Builder()
@@ -76,52 +80,65 @@ class DownloadReceiverWorker(context: Context, workerParams: WorkerParameters) :
                 }
                 DownloadManager.ACTION_DOWNLOAD_COMPLETE -> {
 
-                    //Download abgeschloßen
-                    download.state = DownloadState.DOWNLOADED
-                    downloadsRepository.save(download)
+                    //Check systemDownloadManagerInfo
+                    when(systemDownloadManagerInfo.status) {
+                        TazDownloadManager.SystemDownloadManagerInfo.STATE.FAILED -> {
+                            throw DownloadException("${systemDownloadManagerInfo.statusText}: ${systemDownloadManagerInfo.reasonText} (${systemDownloadManagerInfo.status},${systemDownloadManagerInfo.reason})");
+                        }
+                        TazDownloadManager.SystemDownloadManagerInfo.STATE.SUCCESSFUL -> {
+                            //Download abgeschloßen
+                            download.state = DownloadState.DOWNLOADED
+                            downloadsRepository.save(download)
 
-                    if (!download.file.exists()) throw DownloadException("Heruntergeladene Datei nicht gefunden")
-                    when (download.type) {
-                        DownloadType.UPDATE -> {
-                            downloadsRepository.delete(download)
-                            return Result.success()
+                            if (!download.file.exists()) throw DownloadException("Heruntergeladene Datei nicht gefunden")
+                            when (download.type) {
+                                DownloadType.UPDATE -> {
+                                    downloadsRepository.delete(download)
+                                    return Result.success()
+                                }
+                                else -> {
+                                    val downloadable = getDownloadable(download)
+
+                                    //Dateigröße und Hash überprüfen
+                                    checkDownloadedFile(download.file, downloadable)
+
+                                    //Zielverzeichnis anlegen
+                                    targetDir = getTargetDir(download)
+
+                                    //Entpacken
+                                    download.progress = 0
+                                    download.state = DownloadState.EXTRACTING
+                                    downloadsRepository.save(download)
+                                    extractDownload(download, targetDir)
+
+                                    //Extraktion überprüfen
+                                    download.state = DownloadState.CHECKING
+                                    download.progress = 100
+                                    downloadsRepository.save(download)
+                                    checkFilesInTargetDir(download, targetDir)
+
+                                    //Ist der Worker noch aktuell?
+                                    if (isStopped) {
+                                        throw DownloadException("Download-Verarbeitung abgebrochen",true)
+                                    }
+
+                                    //Überprüfung erfolgreich
+                                    download.state = DownloadState.READY
+                                    download.progress = 100
+                                    download.downloadManagerId = 0
+                                    downloadsRepository.save(download)
+                                    if (download.type == DownloadType.PAPER) {
+                                        notificationUtils.showDownloadFinishedNotification(downloadable as Paper)
+                                    }
+                                    EventBus.getDefault()
+                                            .post(DownloadEvent(download))
+                                    return Result.success()
+                                }
+                            }
                         }
                         else -> {
-                            val downloadable = getDownloadable(download)
-
-                            //Dateigröße und Hash überprüfen
-                            checkDownloadedFile(download.file, downloadable)
-
-                            //Zielverzeichnis anlegen
-                            targetDir = getTargetDir(download)
-
-                            //Entpacken
-                            download.progress = 0
-                            download.state = DownloadState.EXTRACTING
-                            downloadsRepository.save(download)
-                            extractDownload(download, targetDir)
-
-                            //Extraktion überprüfen
-                            download.state = DownloadState.CHECKING
-                            download.progress = 100
-                            downloadsRepository.save(download)
-                            checkFilesInTargetDir(download, targetDir)
-
-                            //Ist der Worker noch aktuell?
-                            if (isStopped) {
-                                throw DownloadException("Download-Verarbeitung abgebrochen",true)
-                            }
-
-                            //Überprüfung erfolgreich
-                            download.state = DownloadState.READY
-                            download.progress = 100
-                            download.downloadManagerId = 0
-                            downloadsRepository.save(download)
-                            if (download.type == DownloadType.PAPER) {
-                                notificationUtils.showDownloadFinishedNotification(downloadable as Paper)
-                            }
-                            EventBus.getDefault()
-                                    .post(DownloadEvent(download))
+                            // Other SystemDownloadManagerResult than Success Or Failure
+                            // do nothing
                             return Result.success()
                         }
                     }

@@ -182,24 +182,29 @@ public class NewLibraryAdapter extends TazListAdapter<PaperWithDownloadState, Ne
                 holder.progress.setVisibility(View.VISIBLE);
                 holder.stateLayout.setVisibility(View.VISIBLE);
                 holder.state.setText(R.string.string_library_item_download_state);
+                holder.infoText.setVisibility(View.VISIBLE);
                 break;
             case EXTRACTING:
                 holder.progress.setVisibility(View.VISIBLE);
                 holder.stateLayout.setVisibility(View.VISIBLE);
                 holder.state.setText(R.string.string_library_item_extract_state);
+                holder.infoText.setVisibility(View.VISIBLE);
                 break;
             case CHECKING:
                 holder.progress.setVisibility(View.VISIBLE);
                 holder.stateLayout.setVisibility(View.VISIBLE);
                 holder.state.setText(R.string.string_library_item_checking_state);
+                holder.infoText.setVisibility(View.VISIBLE);
                 break;
             case READY:
                 holder.progress.setVisibility(View.GONE);
                 holder.stateLayout.setVisibility(View.GONE);
+                holder.infoText.setVisibility(View.GONE);
                 break;
             default:
                 holder.progress.setVisibility(View.VISIBLE);
                 holder.stateLayout.setVisibility(View.GONE);
+                holder.infoText.setVisibility(View.GONE);
                 break;
         }
     }
@@ -298,6 +303,7 @@ public class NewLibraryAdapter extends TazListAdapter<PaperWithDownloadState, Ne
         final FrameLayout     selected;
         final View            stateLayout;
         final TextView        state;
+        final TextView        infoText;
         final OnClickListener listener;
 
 
@@ -309,6 +315,7 @@ public class NewLibraryAdapter extends TazListAdapter<PaperWithDownloadState, Ne
             badge = itemView.findViewById(R.id.lib_item_badge);
             image = itemView.findViewById(R.id.lib_item_facsimile);
             stateLayout = itemView.findViewById(R.id.lib_item_state);
+            infoText = itemView.findViewById(R.id.info_note);
             state = itemView.findViewById(R.id.lib_item_state_text);
             ProgressBar wait = itemView.findViewById(R.id.lib_item_state_wait);
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
@@ -367,7 +374,7 @@ public class NewLibraryAdapter extends TazListAdapter<PaperWithDownloadState, Ne
 
     public static class PaperMetaData {
 
-        public final List<String>         selectedList = new ArrayList<>();
+        public final List<String> selectedList = new ArrayList<>();
         //        public final Map<String, Integer> progressMap  = new HashMap<>();
 //        public final Map<String, Integer> positionMap  = new HashMap<>();
 

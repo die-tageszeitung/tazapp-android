@@ -125,4 +125,10 @@
         <item name="android:textSize">18sp</item>
     </style>
 
+
+    <style name="InfoCheckBox" parent="TextAppearance.AppCompat.Small">
+        <item name="buttonTint">@color/info_checkbox_color</item>
+        <item name="android:button">@drawable/info_checkbox_drawable</item>
+    </style>
+
 </resources>

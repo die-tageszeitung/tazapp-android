@@ -18,8 +18,15 @@ object Migrations {
                 MIGRATION_6_7,
                 MIGRATION_7_8,
                 MIGRATION_8_9,
-                MIGRATION_9_10
+                MIGRATION_9_10,
+                MIGRATION_10_11
         )
+    }
+
+    private val MIGRATION_10_11: Migration = object : Migration(10, 11) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("ALTER TABLE DOWNLOADS ADD COLUMN `unmeteredOnly` INTEGER;")
+        }
     }
 
     private val MIGRATION_9_10: Migration = object : Migration(9, 10) {

@@ -8,10 +8,7 @@ import android.util.Base64
 import androidx.annotation.WorkerThread
 import com.github.ajalt.timberkt.d
 import de.thecode.android.tazreader.*
-import de.thecode.android.tazreader.data.Download
-import de.thecode.android.tazreader.data.DownloadState
-import de.thecode.android.tazreader.data.DownloadType
-import de.thecode.android.tazreader.data.Paper
+import de.thecode.android.tazreader.data.*
 import de.thecode.android.tazreader.okhttp3.RequestHelper
 import de.thecode.android.tazreader.sync.AccountHelper
 import de.thecode.android.tazreader.utils.UserAgentHelper
@@ -39,7 +36,7 @@ class TazDownloadManager private constructor() {
     private val userAgentHelper = UserAgentHelper.getInstance(app)
 
     @WorkerThread
-    fun downloadPaper(bookId: String, wifiOnly: Boolean = false): Result {
+    fun downloadPaper(bookId: String, unmeteredOnly: Boolean = false): Result {
         val paper = paperRepository.getPaperWithBookId(bookId)
         d { "requesting paper download for paper $paper" }
         val download = paperRepository.getDownloadForPaper(bookId)
@@ -53,7 +50,10 @@ class TazDownloadManager private constructor() {
         }
         val requestUri = requestHelper.addToUri(Uri.parse(paper.link))
         val request = createRequest(downloadUri = requestUri, destinationFile = download.file, title = download.title)
-        if (wifiOnly) request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI)
+        if (unmeteredOnly) {
+            request.setAllowedOverMetered(false)
+            download.unmeteredOnly = UnmeteredDownloadOnly.YES
+        }
         if (!paper.publication.isNullOrBlank()) {
             val credentials = accountHelper.getUser(AccountHelper.ACCOUNT_DEMO_USER) + ":" + accountHelper.getPassword(
                     AccountHelper.ACCOUNT_DEMO_PASS)
@@ -68,7 +68,7 @@ class TazDownloadManager private constructor() {
             val resourcePartnerStore = storeRepository.getStore(bookId, Paper.STORE_KEY_RESOURCE_PARTNER)
             resourcePartnerStore.value = resourceKeyForPaper
             storeRepository.saveStore(resourcePartnerStore)
-            downloadResource(resourceKeyForPaper, wifiOnly)
+            downloadResource(resourceKeyForPaper, unmeteredOnly)
         } catch (e: IllegalArgumentException) {
             result.state = Result.STATE.NOMANAGER
             return result
@@ -78,7 +78,7 @@ class TazDownloadManager private constructor() {
     }
 
     @WorkerThread
-    fun downloadResource(key: String, wifiOnly: Boolean = false, override: Boolean = false): Result {
+    fun downloadResource(key: String, unmeteredOnly: Boolean = false, override: Boolean = false): Result {
         val resource = resourceRepository.getWithKey(key)
         d { "requesting resource download for resource $resource" }
         val download = resourceRepository.getDownload(key)
@@ -103,7 +103,10 @@ class TazDownloadManager private constructor() {
 
         val requestUri = requestHelper.addToUri(Uri.parse(resource.url))
         val request = createRequest(downloadUri = requestUri, destinationFile = download.file, title = download.title)
-        if (wifiOnly) request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI)
+        if (unmeteredOnly) {
+            request.setAllowedOverMetered(false)
+            download.unmeteredOnly = UnmeteredDownloadOnly.YES
+        }
         try {
             download.downloadManagerId = systemDownloadManager.enqueue(request)
             download.state = DownloadState.DOWNLOADING
@@ -261,7 +264,7 @@ class TazDownloadManager private constructor() {
                 result.status = SystemDownloadManagerInfo.STATE.fromInt(cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS)))
                 result.statusText = try { res.getString(app.getStringIdByName("download_status_" + result.status)) } catch (e: Exception) { "status: ${result.status}" }
                 result.reason = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_REASON))
-                result.reasonText = try { res.getString(app.getStringIdByName("download_reason_" + result.reason)) } catch (e: Exception) { "reason: ${result.reason}" }
+                result.reasonText = try { res.getString(app.getStringIdByName("download_reason_" + result.reason)) } catch (e: Exception) {  "reason: ${result.reason}" }
                 result.bytesDownloadedSoFar = cursor.getLong(cursor.getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR))
                 result.totalSizeBytes = cursor.getLong(cursor.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES))
                 result.uri = try {

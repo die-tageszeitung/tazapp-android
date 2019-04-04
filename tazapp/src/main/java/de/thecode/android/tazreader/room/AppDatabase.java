@@ -10,6 +10,7 @@ import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Publication;
 import de.thecode.android.tazreader.data.Resource;
 import de.thecode.android.tazreader.data.Store;
+import de.thecode.android.tazreader.data.UnmeteredDownloadOnlyConverter;
 import de.thecode.android.tazreader.data.UuidTypeConverter;
 
 import androidx.room.Database;
@@ -18,10 +19,10 @@ import androidx.room.RoomDatabase;
 import androidx.room.TypeConverters;
 
 @Database(entities = {Paper.class, Resource.class, Store.class, Publication.class, Download.class}, version = AppDatabase.VERSION)
-@TypeConverters({DownloadStateTypeConverter.class, DownloadTypeTypeConverter.class, UuidTypeConverter.class, FileTypeConverter.class})
+@TypeConverters({DownloadStateTypeConverter.class, DownloadTypeTypeConverter.class, UuidTypeConverter.class, FileTypeConverter.class, UnmeteredDownloadOnlyConverter.class})
 public abstract class AppDatabase extends RoomDatabase {
 
-    public static final  int    VERSION = 10;
+    public static final  int    VERSION = 11;
     private static final String DB_NAME = "db";
 
     private static volatile AppDatabase instance;

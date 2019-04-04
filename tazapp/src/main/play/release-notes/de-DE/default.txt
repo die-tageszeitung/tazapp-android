@@ -1,3 +1,3 @@
-* Absturz auf einigen Samsung-Geräten beim Download beseitigt
-* BugFix PDF-Links
-* Konsolidierung des Download- und Extrahierung-Vorgangs
+* Infos zum laufenden Download anzeigen mit einfacherer Möglichkeit, den Download abzubrechen
+* Richtige Fehlermeldung beim Download-Problemen
+* Fehlermeldung bei Synchronisierungsfehler

@@ -77,6 +77,7 @@
     <item name="library_item_badge" type="color">@color/color_primary_dark</item>
     <item name="library_item_badge_text" type="color">@android:color/white</item>
     <item name="library_item_progress_overlay" type="color">@color/grau</item>
+    <item name="library_item_info_background" type="color">#77000000</item>
 
     <item name="help_indicator_fill" type="color">@color/color_accent</item>
     <item name="help_indicator_page" type="color">@android:color/white</item>

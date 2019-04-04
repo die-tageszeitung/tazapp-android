@@ -22,7 +22,8 @@
     <bool name="pref_default_autoload">false</bool>
     <!--  -->
     <string name="pref_key_autoload_wifi">autoload_wifi</string>
-    <string name="pref_title_autoload_wifi">nur über WIFI automatisch laden</string>
+    <string name="pref_title_autoload_wifi">Automatischer Download nur über ungetaktete Verbindung</string>
+    <string name="pref_summary_autoload_wifi">Der automatische Download erfolgt mit dieser Option nur über ungetaktete Verbindungen wie WiFi oder Netzwerk-Verbindungen.</string>
     <bool name="pref_default_autoload_wifi">true</bool>
     <!--  -->
     <string name="pref_key_autodelete">autodelete</string>

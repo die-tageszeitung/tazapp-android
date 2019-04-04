@@ -43,6 +43,7 @@ import de.thecode.android.tazreader.dialog.ArchiveDialog;
 import de.thecode.android.tazreader.dialog.ArchiveEntry;
 import de.thecode.android.tazreader.dialog.HelpDialog;
 import de.thecode.android.tazreader.dialognew.AskForHelpDialog;
+import de.thecode.android.tazreader.dialognew.DownloadInfoDialog;
 import de.thecode.android.tazreader.download.TazDownloadManager;
 import de.thecode.android.tazreader.importer.ImportActivity;
 import de.thecode.android.tazreader.migration.MigrationActivity;
@@ -57,6 +58,7 @@ import de.thecode.android.tazreader.utils.AsyncTaskListener;
 import de.thecode.android.tazreader.utils.BaseActivity;
 import de.thecode.android.tazreader.utils.Charsets;
 import de.thecode.android.tazreader.utils.Connection;
+import de.thecode.android.tazreader.utils.ConnectionInfo;
 import de.thecode.android.tazreader.utils.StreamUtils;
 import de.thecode.android.tazreader.utils.UserDeviceInfo;
 import de.thecode.android.tazreader.widget.CustomToolbar;
@@ -65,6 +67,7 @@ import de.thecode.android.tazreader.worker.SyncWorker;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -90,7 +93,8 @@ import timber.log.Timber;
  * Created by mate on 27.01.2015.
  */
 public class StartActivity extends BaseActivity
-        implements DialogButtonListener, DialogDismissListener, DialogCancelListener, DialogAdapterListListener {
+        implements DownloadInfoDialog.CancelDownloadDialogListener, DialogButtonListener, DialogDismissListener,
+        DialogCancelListener, DialogAdapterListListener {
 
     //private static final String DIALOG_FIRST                 = "dialogFirst";
     private static final String DIALOG_USER_REENTER          = "dialogUserReenter";
@@ -490,20 +494,32 @@ public class StartActivity extends BaseActivity
 
 
     public void startDownload(Paper downloadPaper) {
-        switch (Connection.getConnectionType(this)) {
-            case Connection.CONNECTION_NOT_AVAILABLE:
-                showNoConnectionDialog();
-                break;
-            case Connection.CONNECTION_MOBILE:
-            case Connection.CONNECTION_MOBILE_ROAMING:
-                addToDownloadQueue(downloadPaper.getBookId());
-                if (startViewModel.isMobileDownloadAllowed()) startViewModel.startDownloadQueue();
-                else showMobileConnectionDialog();
-                break;
-            default:
-                addToDownloadQueue(downloadPaper.getBookId());
-                startViewModel.startDownloadQueue();
+        ConnectionInfo info = Connection.Companion.getConnectionInfo();
+        if (!info.getConnected()) {
+            showNoConnectionDialog();
+        } else if (info.getMetered()) {
+            addToDownloadQueue(downloadPaper.getBookId());
+            if (startViewModel.isMobileDownloadAllowed()) startViewModel.startDownloadQueue();
+            else showMobileConnectionDialog();
+        } else {
+            addToDownloadQueue(downloadPaper.getBookId());
+            startViewModel.startDownloadQueue();
         }
+//
+//        switch (info.getType()) {
+//            case NOT_AVAILABLE:
+//                showNoConnectionDialog();
+//                break;
+//            case MOBILE:
+//            case ROAMING:
+//                addToDownloadQueue(downloadPaper.getBookId());
+//                if (startViewModel.isMobileDownloadAllowed()) startViewModel.startDownloadQueue();
+//                else showMobileConnectionDialog();
+//                break;
+//            default:
+//                addToDownloadQueue(downloadPaper.getBookId());
+//                startViewModel.startDownloadQueue();
+//        }
     }
 
     private void addToDownloadQueue(String bookId) {
@@ -674,42 +690,39 @@ public class StartActivity extends BaseActivity
                                                                                           AnalyticsWrapper.getInstance()
                                                                                                           .logData("RESOURCE",
                                                                                                                    resource.toString());
-                                                                                          switch (Connection.getConnectionType(
-                                                                                                  StartActivity.this)) {
-                                                                                              case Connection.CONNECTION_NOT_AVAILABLE:
-                                                                                                  Timber.e(new ConnectException(
-                                                                                                          "Keine Verbindung"));
-                                                                                                  showErrorDialog(getString(R.string.message_resource_not_downloaded_no_connection),
-                                                                                                                  DIALOG_ERROR_OPEN_PAPER);
-                                                                                                  break;
-                                                                                              default:
-                                                                                                  new AsyncTaskListener<Resource, TazDownloadManager.Result>(
-                                                                                                          resources -> {
-                                                                                                              return TazDownloadManager.Companion.getInstance()
-                                                                                                                                                 .downloadResource(
-                                                                                                                                                         resources[0].getKey(),
-                                                                                                                                                         false,true);
-                                                                                                          },
-                                                                                                          result -> {
-                                                                                                              if (result.getState() != TazDownloadManager.Result.STATE.SUCCESS) {
-                                                                                                                  showDownloadErrorDialog(
-                                                                                                                          getString(
-                                                                                                                                  R.string.message_resourcedownload_error),
-                                                                                                                          result.getState()
-                                                                                                                                .getText());
-                                                                                                              } else {
-                                                                                                                  startViewModel.setOpenPaperIdAfterDownload(paper.getBookId());
-                                                                                                                  startViewModel.resourceKeyWaitingForDownload = result.getDownload()
-                                                                                                                                                                       .getKey();
-                                                                                                                  Timber.e(new Resource.MissingResourceException());
-                                                                                                                  showWaitDialog(
-                                                                                                                          DIALOG_WAIT + paper.getBookId(),
-                                                                                                                          getString(
-                                                                                                                                  R.string.dialog_meassage_loading_missing_resource));
+                                                                                          ConnectionInfo info = Connection.Companion.getConnectionInfo();
+                                                                                          if (!info.getConnected()) {
+                                                                                              Timber.e(new ConnectException(
+                                                                                                      "Keine Verbindung"));
+                                                                                              showErrorDialog(getString(R.string.message_resource_not_downloaded_no_connection),
+                                                                                                              DIALOG_ERROR_OPEN_PAPER);
+                                                                                          } else {
+                                                                                              new AsyncTaskListener<Resource, TazDownloadManager.Result>(
+                                                                                                      resources -> {
+                                                                                                          return TazDownloadManager.Companion.getInstance()
+                                                                                                                                             .downloadResource(
+                                                                                                                                                     resources[0].getKey(),
+                                                                                                                                                     false,
+                                                                                                                                                     true);
+                                                                                                      },
+                                                                                                      result -> {
+                                                                                                          if (result.getState() != TazDownloadManager.Result.STATE.SUCCESS) {
+                                                                                                              showDownloadErrorDialog(
+                                                                                                                      getString(R.string.message_resourcedownload_error),
+                                                                                                                      result.getState()
+                                                                                                                            .getText());
+                                                                                                          } else {
+                                                                                                              startViewModel.setOpenPaperIdAfterDownload(
+                                                                                                                      paper.getBookId());
+                                                                                                              startViewModel.resourceKeyWaitingForDownload = result.getDownload()
+                                                                                                                                                                   .getKey();
+                                                                                                              Timber.e(new Resource.MissingResourceException());
+                                                                                                              showWaitDialog(
+                                                                                                                      DIALOG_WAIT + paper.getBookId(),
+                                                                                                                      getString(R.string.dialog_meassage_loading_missing_resource));
 
-                                                                                                              }
-                                                                                                          }).execute(resource);
-
+                                                                                                          }
+                                                                                                      }).execute(resource);
                                                                                           }
                                                                                       }
                                                                                   }).execute(paper);
@@ -732,11 +745,12 @@ public class StartActivity extends BaseActivity
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onPaperDownloadFinished(SyncErrorEvent event) {
+    public void onSyncError(SyncErrorEvent event) {
         Snacky.builder()
               .setView(findViewById(R.id.content_frame))
-              .setDuration(Snacky.LENGTH_SHORT)
-              .setText(event.getMessage())
+              .setDuration(Snacky.LENGTH_LONG)
+              .setText(getString(R.string.sync_job_error, event.getMessage()))
+              .setActionText(android.R.string.ok)
               .error()
               .show();
     }
@@ -763,7 +777,9 @@ public class StartActivity extends BaseActivity
                 }
                 break;
             case RESOURCE:
-                if (event.getDownload().getKey().equals(startViewModel.resourceKeyWaitingForDownload)){
+                if (event.getDownload()
+                         .getKey()
+                         .equals(startViewModel.resourceKeyWaitingForDownload)) {
                     startViewModel.resourceKeyWaitingForDownload = null;
                     String bookId = startViewModel.getOpenPaperIdAfterDownload();
                     if (bookId != null) {
@@ -978,7 +994,8 @@ public class StartActivity extends BaseActivity
         } else if (DIALOG_UPDATE_AVAILABLE.equals(tag)) {
             switch (which) {
                 case Dialog.BUTTON_POSITIVE:
-                    TazApplicationKt.getUpdate().update();
+                    TazApplicationKt.getUpdate()
+                                    .update();
                     break;
             }
         }
@@ -1032,5 +1049,10 @@ public class StartActivity extends BaseActivity
                           .clear();
 //            retainDataFragment.downloadQueue.clear();
         }
+    }
+
+    @Override
+    public void onCancelDownload(@NotNull String bookId) {
+        startViewModel.deletePaper(bookId);
     }
 }
