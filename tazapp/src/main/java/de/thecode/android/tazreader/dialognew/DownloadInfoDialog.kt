@@ -103,11 +103,11 @@ class DownloadInfoDialog : DialogFragment() {
         context?.let {
             dialog = MaterialDialog(context!!)
                     .customView(viewRes = R.layout.dialog_download_info, scrollable = true)
-                    .negativeButton(res = R.string.downloadinfo_cancel_download,click = {
+                    .negativeButton(res = R.string.downloadinfo_cancel_download, click = {
                         (activity as CancelDownloadDialogListener).onCancelDownload(arguments!!.getString(BOOK_ID)!!)
                     })
                     .positiveButton()
-            title.text = app.getString(R.string.downloadinfo_dialog_title,arguments!!.getString(TITLE))
+            title.text = app.getString(R.string.downloadinfo_dialog_title, arguments!!.getString(TITLE))
             viewModel.downloadInfo.observe(this, Observer {
                 if (it.state == DownloadState.READY) {
                     dismiss()
@@ -143,7 +143,7 @@ class DownloadInfoDialogViewModel(val bookId: String) : ViewModel(), Connection.
         onNetworkConnectionChanged(Connection.getConnectionInfo())
         Connection.addListener(this)
         downloadLiveData.observeForever {
-            it?.let{
+            it?.let {
                 downloadInfo.value!!.unmeteredOnly = it.unmeteredOnly!!
                 downloadInfo.value!!.state = it.state
                 when (it.state) {
@@ -174,8 +174,8 @@ class DownloadInfoDialogViewModel(val bookId: String) : ViewModel(), Connection.
                     DownloadState.DOWNLOADING, DownloadState.DOWNLOADED -> {
                         val systemDownloadInfo = TazDownloadManager.getInstance()
                                 .getSystemDownloadManagerInfo(download.downloadManagerId)
-                        val downloadInfoValue = downloadInfo.value
-                        downloadInfoValue!!.progress = (systemDownloadInfo.bytesDownloadedSoFar * 100 / systemDownloadInfo.totalSizeBytes).toInt()
+                        val downloadInfoValue = downloadInfo.value!!
+                        downloadInfoValue.progress = if (systemDownloadInfo.totalSizeBytes != 0L) (systemDownloadInfo.bytesDownloadedSoFar * 100 / systemDownloadInfo.totalSizeBytes).toInt() else 0
                         val reason = if (systemDownloadInfo.reason != 0) " (${systemDownloadInfo.reasonText})" else ""
                         downloadInfoValue.dmLog = "${systemDownloadInfo.statusText}$reason"
                         downloadInfo.postValue(downloadInfoValue)
