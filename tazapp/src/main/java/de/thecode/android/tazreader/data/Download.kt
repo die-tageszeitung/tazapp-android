@@ -94,10 +94,10 @@ class DownloadTypeTypeConverter {
 
 }
 
-enum class UnmeteredDownloadOnly(val booleanValue: Boolean?, @StringRes val resiId: Int) {
-    UNKNOWN(null, R.string.unmetered_only_unknown),
-    YES(true, R.string.unmetered_only_yes),
-    NO(false, R.string.unmetered_only_no);
+enum class UnmeteredDownloadOnly(val booleanValue: Boolean?) {
+    UNKNOWN(null),
+    YES(true),
+    NO(false);
 
     companion object {
         fun fromBoolean(bool:Boolean?): UnmeteredDownloadOnly {
@@ -106,10 +106,6 @@ enum class UnmeteredDownloadOnly(val booleanValue: Boolean?, @StringRes val resi
             }
             return UNKNOWN
         }
-    }
-
-    fun readable(): String {
-        return app.getString(resiId)
     }
 }
 
