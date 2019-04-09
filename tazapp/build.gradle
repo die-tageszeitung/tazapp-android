@@ -18,7 +18,7 @@ plugins {
 def versionMajor = 3
 def versionMinor = 9
 def versionPatch = 1
-def versionBuild = 0
+def versionBuild = 1
 
 def androidXVer = "1.0.+"
 def buildToolsVer = "28.0.3"

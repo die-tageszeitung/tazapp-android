@@ -83,9 +83,9 @@ class DownloadInfoDialog : DialogFragment() {
                 .findViewById<TextView>(R.id.dmLog)
     }
 
-    private val unmeteredOnly: TextView by lazy {
+    private val useMobile: TextView by lazy {
         dialog!!.getCustomView()
-                .findViewById<TextView>(R.id.unmeteredOnly)
+                .findViewById<TextView>(R.id.useMobile)
     }
 
     private val title: TextView by lazy {
@@ -120,7 +120,11 @@ class DownloadInfoDialog : DialogFragment() {
                 state.text = it.state.readable()
                 dmlog.text = it.dmLog
                 progress.progress = it.progress
-                unmeteredOnly.text = it.unmeteredOnly.readable()
+                useMobile.text = getString(when (it.unmeteredOnly) {
+                    UnmeteredDownloadOnly.YES -> R.string.use_mobile_no
+                    UnmeteredDownloadOnly.NO -> R.string.use_mobile_yes
+                    UnmeteredDownloadOnly.UNKNOWN -> R.string.use_mobile_unknown
+                })
             })
             return dialog!!
         }

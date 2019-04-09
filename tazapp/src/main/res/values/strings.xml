@@ -34,7 +34,7 @@
     <string name="dialog_user_reenter">Wir haben die Benutzerdatenspeicherung in unserer App umgestellt. Dadurch werden nun weniger Berechtigungen benötigt, aber leider müssen Sie Ihre Benutzerdaten erneut eingeben.</string>
     <!--<string name="dialog_migration_wait">Migriere Ausgaben für die neue App-Version, bitte warten …\n\nBitte beenden Sie die App während der Migration nicht, um mögliche Fehler zu vermeiden. Vielen Dank.</string>-->
     <!--<string name="dialog_migration_download">%1$d Ausgaben wurden migriert. Möchten Sie die Ausgaben jetzt herunterladen?</string>-->
-    <string name="dialog_mobile_download">Sie sind mit dem Mobilfunknetz verbunden.\nBeim Download können zusätzliche Kosten entstehen.</string>
+    <string name="dialog_mobile_download">Sie benutzen eine mobile Datenverbindung.\nBeim Download können zusätzliche Kosten entstehen.</string>
     <string name="dialog_account_error">Leider ist ein Fehler im Account-Management aufgetreten. Sie haben nicht die nötigen Rechte, um einen Account anzulegen.\nWenn Sie einen eingeschränkten Android-Account auf Ihrem Gerät verwenden, so muss der Hauptuser ebenfalls die App installiert haben.</string>
     <string name="dialog_downloadmanager_error">Leider ist ein Fehler beim Download aufgetreten. Sie haben wahrscheinlich den DownloadManager deaktiviert. Bitte aktivieren Sie den DownloadManager\n\n1. Android-Einstellungen\n2. Apps (ALLE)\n3. Download Manager\n4. Aktivieren</string>
     <string name="dialog_error_download">Beim Download %1$s ist ein Fehler aufgetreten.</string>
@@ -163,14 +163,14 @@
     <string name="downloadinfo_progress_title">Fortschritt</string>
     <string name="downloadinfo_dmlog_title">DL Manager</string>
     <string name="downloadinfo_cancel_download">Download abbrechen</string>
-    <string name="downloadinfo_unmeteredonly_title">nur ungetaktet</string>
+    <string name="downloadinfo_usemobile_title">auch mobil</string>
 
-    <string name="unmetered_only_unknown">unbekannt</string>
-    <string name="unmetered_only_yes">Ja</string>
-    <string name="unmetered_only_no">Nein</string>
+    <string name="use_mobile_unknown">unbekannt</string>
+    <string name="use_mobile_yes">Ja</string>
+    <string name="use_mobile_no">Nein</string>
 
     <string name="connection_connected">Verbunden</string>
-    <string name="connection_metered">Getaktet</string>
+    <string name="connection_metered">Mobil</string>
     <string name="connection_roaming">Roaming</string>
 
 
