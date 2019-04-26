@@ -1,3 +1,4 @@
+* Bugfix falsche Downloaddatei
 * Infos zum laufenden Download anzeigen mit einfacherer Möglichkeit, den Download abzubrechen
 * Richtige Fehlermeldung beim Download-Problemen
 * Fehlermeldung bei Synchronisierungsfehler

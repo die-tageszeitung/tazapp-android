@@ -90,6 +90,13 @@ class DownloadReceiverWorker(context: Context, workerParams: WorkerParameters) :
                             download.state = DownloadState.DOWNLOADED
                             downloadsRepository.save(download)
 
+                            systemDownloadManagerInfo.localUri?.let {
+                                val fileFromLocalUri = File(systemDownloadManagerInfo.localUri!!.path)
+                                if (download.file.absolutePath != fileFromLocalUri.absolutePath) {
+                                    download.file = fileFromLocalUri
+                                    downloadsRepository.save(download)
+                                }
+                            }
                             if (!download.file.exists()) throw DownloadException("Heruntergeladene Datei nicht gefunden")
                             when (download.type) {
                                 DownloadType.UPDATE -> {
