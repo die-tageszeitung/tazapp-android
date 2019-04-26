@@ -285,10 +285,8 @@ android {
         def unzipTask = task "${helpUnzipTaskName}"(dependsOn: [downloadTask, deleteHelpDirTask], type: Copy) {
             from zipTree(downloadTask.target)
             into helpDir
-            doLast {
-                deleteZipTask.execute()
-            }
         }
+        unzipTask.finalizedBy deleteZipTask
         tasks.preBuild.dependsOn unzipTask
     }
     compileOptions {
