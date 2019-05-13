@@ -172,6 +172,7 @@
     <string name="connection_connected">Verbunden</string>
     <string name="connection_metered">Mobil</string>
     <string name="connection_roaming">Roaming</string>
+    <string name="cd_player_button">Artikel vorlesen lassen</string>
 
 
 </resources>

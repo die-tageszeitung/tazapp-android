@@ -1,12 +1,12 @@
 package de.thecode.android.tazreader.reader;
 
-import androidx.lifecycle.ViewModelProviders;
 import android.os.Bundle;
-import androidx.annotation.Nullable;
 import android.text.TextUtils;
 
 import de.thecode.android.tazreader.utils.BaseFragment;
 
+import androidx.annotation.Nullable;
+import androidx.lifecycle.ViewModelProviders;
 import timber.log.Timber;
 
 /**
@@ -32,6 +32,7 @@ public class ReaderBaseFragment extends BaseFragment {
     }
 
     private ReaderViewModel readerViewModel;
+    private ReaderTTSViewModel ttsViewModel;
 
     public ReaderBaseFragment() {
     }
@@ -51,10 +52,16 @@ public class ReaderBaseFragment extends BaseFragment {
                                                                                   bookId))
                                                 .get(ReaderViewModel.class);
         }
+        ttsViewModel = ViewModelProviders.of(getActivity())
+                                         .get(ReaderTTSViewModel.class);
     }
 
     public ReaderViewModel getReaderViewModel() {
         return readerViewModel;
+    }
+
+    public ReaderTTSViewModel getTtsViewModel() {
+        return ttsViewModel;
     }
 
     public ReaderActivity getReaderActivity() {

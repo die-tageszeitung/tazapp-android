@@ -43,7 +43,6 @@ import de.thecode.android.tazreader.utils.AsyncTaskListener;
 import de.thecode.android.tazreader.utils.Charsets;
 import de.thecode.android.tazreader.utils.StorageManager;
 import de.thecode.android.tazreader.utils.TintHelper;
-import de.thecode.android.tazreader.widget.ReaderButton;
 import de.thecode.android.tazreader.widget.ShareButton;
 
 import java.io.File;
@@ -83,15 +82,16 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
     String   key;
     //    Resource   resource;
 //
-    String mPosition = null;
+    String   mPosition = null;
 
     ArticleWebView mWebView;
     ProgressBar    mProgressBar;
     FrameLayout    mBookmarkClickLayout;
     ShareButton    mShareButton;
+    ImageView   playButton;
 
 
-    Handler mUiThreadHandler;
+    Handler  mUiThreadHandler;
     //boolean mIndexUpdated;
     GESTURES mLastGesture = GESTURES.undefined;
 
@@ -158,8 +158,15 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
         mProgressBar = result.findViewById(R.id.progressBar);
 
         mShareButton = result.findViewById(R.id.share);
+        playButton = result.findViewById(R.id.play);
+        playButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getReaderActivity().speak2();
+            }
+        });
 
-        ReaderButton mPageIndexButton = result.findViewById(R.id.pageindex);
+        ImageView mPageIndexButton = result.findViewById(R.id.pageindex);
         if (TazSettings.getInstance(getContext())
                        .getPrefBoolean(TazSettings.PREFKEY.PAGEINDEXBUTTON, false)) {
             mPageIndexButton.setOnClickListener(new View.OnClickListener() {
@@ -180,7 +187,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
             });
         } else mPageIndexButton.setVisibility(View.GONE);
 
-        ReaderButton mIndexButton = result.findViewById(R.id.index);
+        ImageView mIndexButton = result.findViewById(R.id.index);
         if (TazSettings.getInstance(getContext())
                        .isIndexButton()) {
             mIndexButton.setOnClickListener(new View.OnClickListener() {
@@ -241,6 +248,13 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
                                 }
                             });
+        getTtsViewModel().getPlayerVisibleLiveData()
+                         .observe(this, new Observer<Boolean>() {
+                             @Override
+                             public void onChanged(Boolean visible) {
+                                 playButton.setVisibility(visible ? View.GONE : View.VISIBLE);
+                             }
+                         });
     }
 
     //    @Override
@@ -370,7 +384,6 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
     public void onScrollFinished(ArticleWebView view) {
         Timber.d("%s %s", view.getScrollX(), view.getScrollY());
     }
-
 
 
     public void initialBookmark() {
@@ -526,13 +539,13 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
         @JavascriptInterface
         public boolean setConfiguration(String name, String value) {
             boolean result = setConfig(name, value);
-            Timber.d("%s %s %s", key, name, value, result);
+            Timber.d("%s %s %s %s", key, name, value, result);
             return result;
         }
 
         @JavascriptInterface
         public void pageReady(String percentSeen, String position, String numberOfPages) {
-            Timber.d("%s %s %s", key, percentSeen, position, numberOfPages);
+            Timber.d("%s %s %s %s", key, percentSeen, position, numberOfPages);
             Store positionStore = getReaderViewModel().getStoreRepository()
                                                       .getStore(getReaderViewModel().getPaper()
                                                                                     .getBookId(),
@@ -703,25 +716,24 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
         String result = null;
 
-            result = FilesKt.readText(articleFile, Charsets.UTF_8);
+        result = FilesKt.readText(articleFile, Charsets.UTF_8);
 //            result = FileUtilsOld.readFile(articleFile, Charsets.UTF_8);
 //            result = Files.asCharSource(articleFile, Charsets.UTF_8).read();
 //            result = IOUtils.toString(new FileInputStream(articleFile), "UTF-8");
 
-            //            Pattern tazapiPattern = Pattern.compile("(<script.+?src\\s*?=\\s*?(?:\"|'))(res.+?TAZAPI.js)((?:\"|').*?>)", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+        //            Pattern tazapiPattern = Pattern.compile("(<script.+?src\\s*?=\\s*?(?:\"|'))(res.+?TAZAPI.js)((?:\"|').*?>)", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 
-            //            Matcher matcher = tazapiPattern.matcher(result);
-            //            result = matcher.replaceAll("$1" + tazapiReplacement + "$3");
+        //            Matcher matcher = tazapiPattern.matcher(result);
+        //            result = matcher.replaceAll("$1" + tazapiReplacement + "$3");
 
-            Pattern resPattern = Pattern.compile("(<[^>]+?(?:href|src)\\s*?=\\s*?(?:\"|'))(res.+?)((?:\"|').*?>)",
-                                                 Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
-            Matcher matcher = resPattern.matcher(result);
-            result = matcher.replaceAll("$1" + resourceReplacement + "$2$3");
+        Pattern resPattern = Pattern.compile("(<[^>]+?(?:href|src)\\s*?=\\s*?(?:\"|'))(res.+?)((?:\"|').*?>)",
+                                             Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+        Matcher matcher = resPattern.matcher(result);
+        result = matcher.replaceAll("$1" + resourceReplacement + "$2$3");
 
-            Pattern tazapiPattern = Pattern.compile("file://.+?TAZAPI.js", Pattern.CASE_INSENSITIVE);
-            Matcher matcher2 = tazapiPattern.matcher(result);
-            result = matcher2.replaceAll(tazapiReplacement);
-
+        Pattern tazapiPattern = Pattern.compile("file://.+?TAZAPI.js", Pattern.CASE_INSENSITIVE);
+        Matcher matcher2 = tazapiPattern.matcher(result);
+        result = matcher2.replaceAll(tazapiReplacement);
 
 
         if (TextUtils.isEmpty(result)) result = "Fehler beim Laden des Artikels";

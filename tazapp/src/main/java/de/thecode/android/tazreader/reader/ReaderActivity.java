@@ -1,8 +1,6 @@
 package de.thecode.android.tazreader.reader;
 
 import android.annotation.SuppressLint;
-import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
@@ -10,13 +8,6 @@ import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
-import androidx.core.app.NavUtils;
-import androidx.core.content.ContextCompat;
-import androidx.drawerlayout.widget.DrawerLayout;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
@@ -26,6 +17,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 
 import de.mateware.dialog.Dialog;
@@ -53,6 +45,16 @@ import org.json.JSONArray;
 
 import java.util.WeakHashMap;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.app.NavUtils;
+import androidx.core.content.ContextCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProviders;
 import timber.log.Timber;
 
 @SuppressLint("RtlHardcoded")
@@ -89,11 +91,13 @@ public class ReaderActivity extends BaseActivity
 //    public static final  String KEY_EXTRA_RESOURCE_KEY      = "resourceKey";
     public static final  String KEY_EXTRA_BOOK_ID           = "bookId";
 
-    DrawerLayout mDrawerLayout;
-    View         mDrawerLayoutIndex;
-    View         mDrawerLayoutPageIndex;
-    FrameLayout  mContentFrame;
-    ProgressBar  mLoadingProgress;
+    DrawerLayout     mDrawerLayout;
+    View             mDrawerLayoutIndex;
+    View             mDrawerLayoutPageIndex;
+    FrameLayout      mContentFrame;
+    ProgressBar      mLoadingProgress;
+    ConstraintLayout playerLayout;
+    ImageView        playerStopButton;
 
     FragmentManager mFragmentManager;
     StorageManager  mStorage;
@@ -137,6 +141,14 @@ public class ReaderActivity extends BaseActivity
         setBackgroundColor(onGetBackgroundColor(TazSettings.getInstance(this)
                                                            .getPrefString(TazSettings.PREFKEY.THEME, "normal")));
 
+        playerLayout = findViewById(R.id.player_layout);
+        playerStopButton = findViewById(R.id.stop_button);
+        playerStopButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ttsViewModel.setPlayerVisible(false);
+            }
+        });
         mLoadingProgress = findViewById(R.id.loading);
         mLoadingProgress.setVisibility(View.VISIBLE);
 
@@ -227,6 +239,10 @@ public class ReaderActivity extends BaseActivity
                             }
                         }
                     });
+
+        ttsViewModel.getPlayerVisibleLiveData().observe(this, visible -> {
+            playerLayout.setVisibility(visible ? View.VISIBLE : View.GONE);
+        });
 
     }
 
@@ -771,6 +787,10 @@ public class ReaderActivity extends BaseActivity
 //        Timber.d("%s", retainTtsFragment.getTtsState());
 //        return retainTtsFragment.getTtsState();
 //    }
+
+    public void speak2() {
+        ttsViewModel.setPlayerVisible(playerLayout.getVisibility() == View.GONE);
+    }
 
     public void speak(@NonNull String id, CharSequence text) {
         if (TazSettings.getInstance(this)

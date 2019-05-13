@@ -136,6 +136,9 @@ android {
     compileSdkVersion compileSdkVer
     buildToolsVersion buildToolsVer
     defaultConfig {
+        vectorDrawables {
+            useSupportLibrary = true
+        }
         multiDexEnabled true
         resConfigs "en", "de"
         minSdkVersion minSdkVer

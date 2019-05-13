@@ -25,7 +25,7 @@
                 android:layout_height="32dp"
                 android:layout_gravity="right"
                 android:layout_marginRight="4dp"
-                android:src="@drawable/ic_bookmark_24dp"/>
+                app:srcCompat="@drawable/ic_bookmark_24dp"/>
         </FrameLayout>
 
         <LinearLayout

@@ -116,4 +116,10 @@
     <item name="debug_writelog_text" type="color">#FFFFFF</item>
     <item name="debug_writelog_background" type="color">#FF0000</item>
 
+    <color name="player_button_normal">#FFFFFF</color>
+    <color name="player_button_pressed">#88FFFFFF</color>
+
+    <color name="reader_button_normal">#6687888A</color>
+    <color name="reader_button_pressed">@color/taz_red</color>
+
 </resources>
