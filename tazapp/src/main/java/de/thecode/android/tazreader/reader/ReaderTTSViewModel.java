@@ -17,7 +17,6 @@ import java.util.regex.Pattern;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
-import androidx.lifecycle.MutableLiveData;
 import timber.log.Timber;
 
 public class ReaderTTSViewModel extends AndroidViewModel implements TextToSpeech.OnInitListener{
@@ -38,7 +37,6 @@ public class ReaderTTSViewModel extends AndroidViewModel implements TextToSpeech
     private SingleLiveEvent<TTS> liveTtsState = new SingleLiveEvent<>();
     private SingleLiveEvent<TTSERROR> liveTtsError = new SingleLiveEvent<>();
 
-    private MutableLiveData<Boolean> playerVisibleLiveData = new MutableLiveData<>();
 
     private AudioManager.OnAudioFocusChangeListener audioFocusChangeListener = focusChange -> {
         Timber.d("focusChange: %s", focusChange);
@@ -49,7 +47,6 @@ public class ReaderTTSViewModel extends AndroidViewModel implements TextToSpeech
 
     public ReaderTTSViewModel(@NonNull Application application) {
         super(application);
-        playerVisibleLiveData.setValue(false);
     }
 
     public SingleLiveEvent<TTS> getLiveTtsState() {
@@ -148,14 +145,6 @@ public class ReaderTTSViewModel extends AndroidViewModel implements TextToSpeech
         }
 
         sentencesOrderOriginal = new ArrayList<>(sentencesOrder);
-    }
-
-    public void setPlayerVisible(Boolean bool) {
-        playerVisibleLiveData.postValue(bool);
-    }
-
-    public MutableLiveData<Boolean> getPlayerVisibleLiveData() {
-        return playerVisibleLiveData;
     }
 
     private String makeSilenceTag(long millis) {

@@ -33,6 +33,7 @@ public class ReaderBaseFragment extends BaseFragment {
 
     private ReaderViewModel readerViewModel;
     private ReaderTTSViewModel ttsViewModel;
+    private ReaderAudioViewModel audioViewModel;
 
     public ReaderBaseFragment() {
     }
@@ -54,6 +55,9 @@ public class ReaderBaseFragment extends BaseFragment {
         }
         ttsViewModel = ViewModelProviders.of(getActivity())
                                          .get(ReaderTTSViewModel.class);
+        audioViewModel = ViewModelProviders.of(getActivity())
+                                         .get(ReaderAudioViewModel.class);
+
     }
 
     public ReaderViewModel getReaderViewModel() {
@@ -62,6 +66,10 @@ public class ReaderBaseFragment extends BaseFragment {
 
     public ReaderTTSViewModel getTtsViewModel() {
         return ttsViewModel;
+    }
+
+    public ReaderAudioViewModel getAudioViewModel() {
+        return audioViewModel;
     }
 
     public ReaderActivity getReaderActivity() {

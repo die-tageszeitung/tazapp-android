@@ -110,6 +110,7 @@ public class ReaderActivity extends BaseActivity
 
     ReaderViewModel    readerViewModel;
     ReaderTTSViewModel ttsViewModel;
+    ReaderAudioViewModel audioViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -129,6 +130,7 @@ public class ReaderActivity extends BaseActivity
                                             .get(ReaderViewModel.class);
         ttsViewModel = ViewModelProviders.of(this)
                                          .get(ReaderTTSViewModel.class);
+        audioViewModel = ViewModelProviders.of(this).get(ReaderAudioViewModel.class);
 
         mStorage = StorageManager.getInstance(this);
 
@@ -146,7 +148,7 @@ public class ReaderActivity extends BaseActivity
         playerStopButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ttsViewModel.setPlayerVisible(false);
+                audioViewModel.setPlayerVisible(false);
             }
         });
         mLoadingProgress = findViewById(R.id.loading);
@@ -240,7 +242,7 @@ public class ReaderActivity extends BaseActivity
                         }
                     });
 
-        ttsViewModel.getPlayerVisibleLiveData().observe(this, visible -> {
+        audioViewModel.getPlayerVisibleLiveData().observe(this, visible -> {
             playerLayout.setVisibility(visible ? View.VISIBLE : View.GONE);
         });
 
@@ -789,7 +791,7 @@ public class ReaderActivity extends BaseActivity
 //    }
 
     public void speak2() {
-        ttsViewModel.setPlayerVisible(playerLayout.getVisibility() == View.GONE);
+        audioViewModel.setPlayerVisible(playerLayout.getVisibility() == View.GONE);
     }
 
     public void speak(@NonNull String id, CharSequence text) {

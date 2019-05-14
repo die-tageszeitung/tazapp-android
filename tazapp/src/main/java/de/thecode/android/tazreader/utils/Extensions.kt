@@ -3,11 +3,14 @@ package de.thecode.android.tazreader.utils
 
 import android.content.Context
 import android.net.Uri
+import android.os.AsyncTask
 import android.os.Build
 import android.provider.MediaStore
 import android.text.Html
 import android.text.Spanned
 import androidx.annotation.StringRes
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MediatorLiveData
 import de.thecode.android.tazreader.app
 import timber.log.Timber
 import java.io.File
@@ -134,5 +137,16 @@ fun Context.getText(@StringRes resId: Int, vararg formatArgs: Any): CharSequence
         Html.fromHtml(htmlResultString, Html.FROM_HTML_MODE_LEGACY)
     } else {
         Html.fromHtml(htmlResultString)
+    }
+
+}
+
+class AsyncTransformations {
+    companion object {
+        fun <X, Y> map(source: LiveData<X>, mapFunction: (input:X) -> Y): LiveData<Y> {
+            val result = MediatorLiveData<Y>()
+            result.addSource(source) { x -> AsyncTask.execute { result.postValue(mapFunction(x)) } }
+            return result
+        }
     }
 }
