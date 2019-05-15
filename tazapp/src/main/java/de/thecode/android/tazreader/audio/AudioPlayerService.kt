@@ -2,6 +2,8 @@ package de.thecode.android.tazreader.audio
 
 import android.app.Service
 import android.content.Intent
+import android.media.AudioManager
+import android.media.MediaPlayer
 import android.os.IBinder
 import android.os.Parcelable
 import androidx.appcompat.content.res.AppCompatResources
@@ -10,6 +12,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.DrawableCompat
 import androidx.core.graphics.drawable.toBitmap
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import androidx.media.AudioAttributesCompat
 import com.github.ajalt.timberkt.Timber.d
 import de.thecode.android.tazreader.R
 import de.thecode.android.tazreader.notifications.NotificationUtils
@@ -33,6 +36,8 @@ class AudioPlayerService : Service() {
             return false
         }
     }
+
+    var audioItem: AudioItem? = null
 
     override fun onBind(intent: Intent?): IBinder? {
         TODO("not implemented")
@@ -60,40 +65,27 @@ class AudioPlayerService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        d {
-            "XXX SERVICE ONSTART COMMAND $intent ${intent!!.action}"
-        }
         intent?.let {
-            d {
-                "XXX ICH BIN HIER ${intent.action}"
+            when(it.action) {
+               ACTION_PLAY_URI -> {
+                   audioItem = it.getParcelableExtra(EXTRA_AUDIO_ITEM)
+                   audioItem?.let {
+                       initForeground()
+                       val mediaPlayer: MediaPlayer? = MediaPlayer().apply {
+                           setAudioStreamType(AudioManager.STREAM_MUSIC)
+                           setDataSource(audioItem!!.uri)
+                           setOnPreparedListener {
+                               it.start()
+                           }
+                           prepareAsync()
+                       }
+                   }
+               }
+                else -> {
+
+                }
             }
         }
-//        intent?.let {
-//            {
-//                d {
-//                    "XXX HAVE INTENT $intent"
-//                }
-//                when (intent.action) {
-//                    ACTION_PLAY_URI -> {
-//                        val audioItem = intent.getParcelableExtra<AudioItem>(EXTRA_AUDIO_ITEM)
-//                        d {
-//                            "XXX ACTION PLAY $audioItem"
-//                        }
-//
-//                        audioItem?.let {
-//                            d {
-//                                "XXX $it"
-//                            }
-//                        }
-//                    }
-//                    else -> {
-//                    }
-//                }
-//            }
-//        }
-
-        initForeground()
-
         return super.onStartCommand(intent, flags, startId)
     }
 
@@ -104,8 +96,8 @@ class AudioPlayerService : Service() {
 
         // Create notification builder.
         val builder = NotificationCompat.Builder(this, NotificationUtils.AUDIO_CHANNEL_ID)
-        builder.setContentTitle("TITLE")
-                .setContentText("MESSAGE")
+        builder.setContentTitle(audioItem!!.title)
+                .setContentText(audioItem!!.source)
         // Make notification show big text.
         builder.setWhen(System.currentTimeMillis())
         builder.setSmallIcon(R.drawable.ic_audio_notification)
