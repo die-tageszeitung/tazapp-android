@@ -132,6 +132,9 @@ android {
             }
         }
     }
+    androidExtensions {
+        experimental = true
+    }
 
     compileSdkVersion compileSdkVer
     buildToolsVersion buildToolsVer

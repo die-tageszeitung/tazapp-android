@@ -149,7 +149,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
         playButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                getReaderActivity().speak2();
+                getReaderActivity().speak2((Article) articleViewModel.getTocItemLiveData().getValue());
             }
         });
 

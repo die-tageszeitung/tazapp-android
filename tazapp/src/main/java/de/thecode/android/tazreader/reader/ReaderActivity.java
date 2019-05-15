@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.media.AudioManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
@@ -25,6 +26,8 @@ import de.mateware.dialog.listener.DialogButtonListener;
 import de.mateware.dialog.listener.DialogDismissListener;
 import de.mateware.snacky.Snacky;
 import de.thecode.android.tazreader.R;
+import de.thecode.android.tazreader.audio.AudioItem;
+import de.thecode.android.tazreader.audio.AudioPlayerService;
 import de.thecode.android.tazreader.data.ITocItem;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Store;
@@ -43,6 +46,7 @@ import de.thecode.android.tazreader.utils.TintHelper;
 
 import org.json.JSONArray;
 
+import java.io.File;
 import java.util.WeakHashMap;
 
 import androidx.annotation.NonNull;
@@ -144,13 +148,7 @@ public class ReaderActivity extends BaseActivity
                                                            .getPrefString(TazSettings.PREFKEY.THEME, "normal")));
 
         playerLayout = findViewById(R.id.player_layout);
-        playerStopButton = findViewById(R.id.stop_button);
-        playerStopButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                audioViewModel.setPlayerVisible(false);
-            }
-        });
+
         mLoadingProgress = findViewById(R.id.loading);
         mLoadingProgress.setVisibility(View.VISIBLE);
 
@@ -245,6 +243,9 @@ public class ReaderActivity extends BaseActivity
         audioViewModel.getPlayerVisibleLiveData().observe(this, visible -> {
             playerLayout.setVisibility(visible ? View.VISIBLE : View.GONE);
         });
+
+//        Intent intent = new Intent(this, AudioPlayerService.class);
+//        bindService(intent, connection, 0);
 
     }
 
@@ -790,8 +791,20 @@ public class ReaderActivity extends BaseActivity
 //        return retainTtsFragment.getTtsState();
 //    }
 
-    public void speak2() {
-        audioViewModel.setPlayerVisible(playerLayout.getVisibility() == View.GONE);
+    public void speak2(Paper.Plist.Page.Article article) {
+
+
+
+        Uri audioUri = Uri.fromFile(new File(readerViewModel.getPaperDirectory(),article.getAudiolink()));
+
+
+        AudioItem audioItem = new AudioItem(audioUri.toString(),article.getTitle(),article.getPaper().getTitelWithDate(this));
+
+        Timber.d("XXX " + audioItem.toString());
+        Intent intent = new Intent(this, AudioPlayerService.class);
+        intent.setAction(AudioPlayerService.ACTION_PLAY_URI);
+        intent.putExtra(AudioPlayerService.EXTRA_AUDIO_ITEM,audioItem);
+        startService(intent);
     }
 
     public void speak(@NonNull String id, CharSequence text) {
