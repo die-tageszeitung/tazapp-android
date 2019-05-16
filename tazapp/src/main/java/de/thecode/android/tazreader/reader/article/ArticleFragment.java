@@ -102,7 +102,6 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
         articleViewModel = ViewModelProviders.of(this,
                                                  new ArticleViewModelFactory(getReaderViewModel(),
-                                                                             getAudioViewModel(),
                                                                              getArguments().getString(ARG_KEY),
                                                                              getArguments().getString(ARG_POSITION)))
                                              .get(ArticleViewModel.class);
@@ -146,6 +145,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
         mShareButton = result.findViewById(R.id.share);
         playButton = result.findViewById(R.id.play);
+        playButton.setVisibility(View.GONE);
         playButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -211,11 +211,15 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 //                mArticle = iTocItem;
                                 initialBookmark();
                                 loadArticleInWebView();
-
+                                if (iTocItem instanceof Article) {
+                                    if (!TextUtils.isEmpty(((Article) iTocItem).getAudiolink())) {
+                                        playButton.setVisibility(View.VISIBLE);
+                                    }
+                                }
                             }
                         });
-        articleViewModel.getPlayerButtonVisiblityLiveData()
-                        .observe(this, visible -> playButton.setVisibility(visible ? View.VISIBLE : View.GONE));
+//        articleViewModel.getPlayerButtonVisiblityLiveData()
+//                        .observe(this, visible -> playButton.setVisibility(visible ? View.VISIBLE : View.GONE));
 //        getTtsViewModel().getPlayerVisibleLiveData()
 //                         .observe(this, new Observer<Boolean>() {
 //                             @Override

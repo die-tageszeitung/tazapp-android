@@ -8,35 +8,82 @@ import android.content.IntentFilter
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.github.ajalt.timberkt.Timber.d
+import de.thecode.android.tazreader.TazApplication
+import de.thecode.android.tazreader.audio.AudioItem
 import de.thecode.android.tazreader.audio.AudioPlayerService
 
 class ReaderAudioViewModel(application: Application) : AndroidViewModel(application) {
 
     private var service = AudioPlayerService.instance
-    private val serviceCreatedReceiver = ServiceCreatedReceiver()
+    private val serviceBroadcastReceiver = ServiceCommunicationReceiver()
 
-    val playerVisibleLiveData = MutableLiveData<Boolean>()
-
+    val currentAudioItemLiveData = MutableLiveData<AudioItem?>()
+    val isPlayingLiveData = MutableLiveData<Boolean>()
 
     init {
+        syncAudioItemFromService()
         LocalBroadcastManager.getInstance(getApplication())
-                .registerReceiver(serviceCreatedReceiver, IntentFilter(AudioPlayerService.ACTION_SERVICE_CREATED))
-        playerVisibleLiveData.value = AudioPlayerService.isServiceCreated()
+                .registerReceiver(serviceBroadcastReceiver, IntentFilter(AudioPlayerService.ACTION_SERVICE_COMMUNICATION))
     }
 
     override fun onCleared() {
         LocalBroadcastManager.getInstance(getApplication())
-                .unregisterReceiver(serviceCreatedReceiver)
+                .unregisterReceiver(serviceBroadcastReceiver)
     }
 
-    fun setPlayerVisible(visible: Boolean) {
-        playerVisibleLiveData.value = visible
+    fun startPlaying(audioItem: AudioItem){
+        d {
+            "start playing $audioItem"
+        }
+        val intent = Intent(getApplication(), AudioPlayerService::class.java)
+        intent.action = AudioPlayerService.ACTION_PLAY_URI
+        intent.putExtra(AudioPlayerService.EXTRA_AUDIO_ITEM, audioItem)
+
+        getApplication<TazApplication>().startService(intent)
     }
 
-    inner class ServiceCreatedReceiver : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            service = AudioPlayerService.instance
-            playerVisibleLiveData.postValue(true)
+    fun stopPlaying() {
+        service?.stopPlaying()
+    }
+
+    fun pauseOrResume() {
+        service?.pauseOrResumePlaying()
+    }
+
+
+    private fun syncAudioItemFromService() {
+        service?.let {
+            currentAudioItemLiveData.postValue(it.audioItem)
+            isPlayingLiveData.postValue(it.isPlaying())
+        } ?: run {
+            currentAudioItemLiveData.postValue(null)
+            isPlayingLiveData.postValue(false)
         }
     }
+
+    inner class ServiceCommunicationReceiver : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            intent?.let{ innerIntent ->
+                val message = innerIntent.getStringExtra(AudioPlayerService.EXTRA_COMMUNICATION_MESSAGE)
+                message?.let {
+                    when(it) {
+                        AudioPlayerService.MESSAGE_SERVICE_CREATED -> {
+                            service = AudioPlayerService.instance
+                            syncAudioItemFromService()
+                        }
+                        AudioPlayerService.MESSAGE_SERVICE_DESTROYED -> {
+                            service = null
+                            syncAudioItemFromService()
+                        }
+                        AudioPlayerService.MESSAGE_SERVICE_PLAYSTATE_CHANGED -> {
+                            syncAudioItemFromService()
+                        }
+                    }
+                }
+            }
+
+        }
+    }
+
 }

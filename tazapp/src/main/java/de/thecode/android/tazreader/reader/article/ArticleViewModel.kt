@@ -1,16 +1,17 @@
 package de.thecode.android.tazreader.reader.article
 
 import android.os.AsyncTask
-import androidx.lifecycle.*
-import com.github.ajalt.timberkt.Timber
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import de.thecode.android.tazreader.app
 import de.thecode.android.tazreader.data.ITocItem
 import de.thecode.android.tazreader.data.Paper
-import de.thecode.android.tazreader.reader.ReaderAudioViewModel
 import de.thecode.android.tazreader.reader.ReaderViewModel
 import de.thecode.android.tazreader.utils.AsyncTransformations
 
-class ArticleViewModel(private val readerViewModel: ReaderViewModel, private val audioViewModel: ReaderAudioViewModel, val key: String, private val position_: String?) : AndroidViewModel(app) {
+class ArticleViewModel(private val readerViewModel: ReaderViewModel, val key: String, private val position_: String?) : AndroidViewModel(app) {
 
 
     var position: String? = position_
@@ -34,47 +35,56 @@ class ArticleViewModel(private val readerViewModel: ReaderViewModel, private val
         paper.plist.getIndexItem(key)
     }
 
-    val playerButtonVisiblityLiveData: MediatorLiveData<Boolean> = MediatorLiveData()
+//    val playerButtonVisiblityLiveData: MediatorLiveData<Boolean> = MediatorLiveData()
 
 
 
     init {
         readerViewModel.currentKey = key
-        playerButtonVisiblityLiveData.addSource(tocItemLiveData) {
-            checkPlayerButton()
-        }
-        playerButtonVisiblityLiveData.addSource(audioViewModel.playerVisibleLiveData) {
-            checkPlayerButton()
-        }
+//        playerButtonVisiblityLiveData.addSource(tocItemLiveData) {
+//            d {
+//                "XXX source tocItemLiveData changed"
+//            }
+//            checkPlayerButton()
+//        }
+//        playerButtonVisiblityLiveData.addSource(audioViewModel.currentAudioItemLiveData) {
+//            d {
+//                "XXX source currentAudioItemLiveData changed"
+//            }
+//            checkPlayerButton()
+//        }
 
     }
 
-    private fun checkPlayerButton() {
-
-        var showPlayerButton = false
-        tocItemLiveData.value?.let { tocItem ->
-            if (tocItem is Paper.Plist.Page.Article) {
-                if (!tocItem.audiolink.isNullOrBlank()) {
-                    audioViewModel.playerVisibleLiveData.value?.let {
-                        showPlayerButton = !it
-                    }
-                }
-            }
-
-        }
-        Timber.d {
-            "XXXXXX CHECKING PLAYER BUTTON $showPlayerButton"
-        }
-        playerButtonVisiblityLiveData.value = showPlayerButton
-    }
+//    private fun checkPlayerButton() {
+//
+//        var showPlayerButton = false
+//        tocItemLiveData.value?.let { tocItem ->
+//            if (tocItem is Paper.Plist.Page.Article) {
+//                if (!tocItem.audiolink.isNullOrBlank()) {
+//                    d {
+//                        "XXX ${audioViewModel.currentAudioItemLiveData.value}"
+//                    }
+//                    if (audioViewModel.currentAudioItemLiveData.value == null) {
+//                        showPlayerButton = true
+//                    }
+//                }
+//            }
+//
+//        }
+//        Timber.d {
+//            "XXXXXX CHECKING PLAYER BUTTON $showPlayerButton"
+//        }
+//        playerButtonVisiblityLiveData.value = showPlayerButton
+//    }
 
 }
 
-class ArticleViewModelFactory(private val readerViewModel: ReaderViewModel, private val audioViewModel: ReaderAudioViewModel, val key: String, val position: String?) : ViewModelProvider.Factory {
+class ArticleViewModelFactory(private val readerViewModel: ReaderViewModel, val key: String, val position: String?) : ViewModelProvider.Factory {
 
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-        return ArticleViewModel(readerViewModel, audioViewModel, key, position) as T
+        return ArticleViewModel(readerViewModel, key, position) as T
     }
 
 }

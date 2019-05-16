@@ -20,6 +20,7 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import de.mateware.dialog.Dialog;
 import de.mateware.dialog.listener.DialogButtonListener;
@@ -27,7 +28,6 @@ import de.mateware.dialog.listener.DialogDismissListener;
 import de.mateware.snacky.Snacky;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.audio.AudioItem;
-import de.thecode.android.tazreader.audio.AudioPlayerService;
 import de.thecode.android.tazreader.data.ITocItem;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Store;
@@ -112,8 +112,8 @@ public class ReaderActivity extends BaseActivity
     AbstractContentFragment mContentFragment;
 
 
-    ReaderViewModel    readerViewModel;
-    ReaderTTSViewModel ttsViewModel;
+    ReaderViewModel      readerViewModel;
+    ReaderTTSViewModel   ttsViewModel;
     ReaderAudioViewModel audioViewModel;
 
     @Override
@@ -134,7 +134,8 @@ public class ReaderActivity extends BaseActivity
                                             .get(ReaderViewModel.class);
         ttsViewModel = ViewModelProviders.of(this)
                                          .get(ReaderTTSViewModel.class);
-        audioViewModel = ViewModelProviders.of(this).get(ReaderAudioViewModel.class);
+        audioViewModel = ViewModelProviders.of(this)
+                                           .get(ReaderAudioViewModel.class);
 
         mStorage = StorageManager.getInstance(this);
 
@@ -148,6 +149,10 @@ public class ReaderActivity extends BaseActivity
                                                            .getPrefString(TazSettings.PREFKEY.THEME, "normal")));
 
         playerLayout = findViewById(R.id.player_layout);
+        playerLayout.setVisibility(View.GONE);
+        findViewById(R.id.stop_button).setOnClickListener(v -> audioViewModel.stopPlaying());
+        findViewById(R.id.pause_button).setOnClickListener(v -> audioViewModel.pauseOrResume());
+        findViewById(R.id.play_button).setOnClickListener(v -> audioViewModel.pauseOrResume());
 
         mLoadingProgress = findViewById(R.id.loading);
         mLoadingProgress.setVisibility(View.VISIBLE);
@@ -240,10 +245,20 @@ public class ReaderActivity extends BaseActivity
                         }
                     });
 
-        audioViewModel.getPlayerVisibleLiveData().observe(this, visible -> {
-            playerLayout.setVisibility(visible ? View.VISIBLE : View.GONE);
-        });
+        audioViewModel.getCurrentAudioItemLiveData()
+                      .observe(this, audioItem -> {
+                          playerLayout.setVisibility(audioItem != null ? View.VISIBLE : View.GONE);
+                          if (audioItem != null) {
+                              ((TextView) playerLayout.findViewById(R.id.title)).setText(audioItem.getTitle());
+                              ((TextView) playerLayout.findViewById(R.id.source)).setText(audioItem.getSource());
+                          }
+                      });
 
+        audioViewModel.isPlayingLiveData()
+                      .observe(this, isPLaying -> {
+                          findViewById(R.id.play_button).setVisibility(isPLaying ? View.GONE : View.VISIBLE);
+                          findViewById(R.id.pause_button).setVisibility(!isPLaying ? View.GONE : View.VISIBLE);
+                      });
 //        Intent intent = new Intent(this, AudioPlayerService.class);
 //        bindService(intent, connection, 0);
 
@@ -794,17 +809,18 @@ public class ReaderActivity extends BaseActivity
     public void speak2(Paper.Plist.Page.Article article) {
 
 
+        Uri audioUri = Uri.fromFile(new File(readerViewModel.getPaperDirectory(), article.getAudiolink()));
 
-        Uri audioUri = Uri.fromFile(new File(readerViewModel.getPaperDirectory(),article.getAudiolink()));
 
+        AudioItem audioItem = new AudioItem(audioUri.toString(),
+                                            article.getTitle(),
+                                            article.getPaper()
+                                                   .getTitelWithDate(this),
+                                            article.getPaper().getBookId(),
+                                            0);
 
-        AudioItem audioItem = new AudioItem(audioUri.toString(),article.getTitle(),article.getPaper().getTitelWithDate(this));
+        audioViewModel.startPlaying(audioItem);
 
-        Timber.d("XXX " + audioItem.toString());
-        Intent intent = new Intent(this, AudioPlayerService.class);
-        intent.setAction(AudioPlayerService.ACTION_PLAY_URI);
-        intent.putExtra(AudioPlayerService.EXTRA_AUDIO_ITEM,audioItem);
-        startService(intent);
     }
 
     public void speak(@NonNull String id, CharSequence text) {

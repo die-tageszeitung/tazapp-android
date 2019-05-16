@@ -38,6 +38,7 @@ public class NotificationUtils extends ContextWrapper {
 
 
     public static final  int    DOWNLOAD_NOTIFICATION_ID = 1;
+    public static final  int    AUDIOSERVICE_NOTIFICATION_ID = 2;
     private static final String DOWNLOAD_GROUP_KEY       = "notificationDownloadGroup";
     public static final  String DOWNLOAD_CHANNEL_ID      = BuildConfig.APPLICATION_ID + ".DOWNLOAD";
     public static final String MESSAGE_CHANNEL_ID = "MESSAGE";
