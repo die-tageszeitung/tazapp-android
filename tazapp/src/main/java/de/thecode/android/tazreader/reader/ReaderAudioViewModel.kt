@@ -37,9 +37,8 @@ class ReaderAudioViewModel(application: Application) : AndroidViewModel(applicat
             "start playing $audioItem"
         }
         val intent = Intent(getApplication(), AudioPlayerService::class.java)
-        intent.action = AudioPlayerService.ACTION_PLAY_URI
         intent.putExtra(AudioPlayerService.EXTRA_AUDIO_ITEM, audioItem)
-
+    
         getApplication<TazApplication>().startService(intent)
     }
 
@@ -68,7 +67,7 @@ class ReaderAudioViewModel(application: Application) : AndroidViewModel(applicat
                 val message = innerIntent.getStringExtra(AudioPlayerService.EXTRA_COMMUNICATION_MESSAGE)
                 message?.let {
                     when(it) {
-                        AudioPlayerService.MESSAGE_SERVICE_CREATED -> {
+                        AudioPlayerService.MESSAGE_SERVICE_PREPARE_PLAYING -> {
                             service = AudioPlayerService.instance
                             syncAudioItemFromService()
                         }

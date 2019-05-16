@@ -22,6 +22,7 @@ import de.thecode.android.tazreader.notifications.NotificationUtils
 import de.thecode.android.tazreader.start.StartActivity
 import kotlinx.android.parcel.Parcelize
 import java.io.IOException
+import android.content.Context
 
 
 class AudioPlayerService : Service(), MediaPlayer.OnCompletionListener, MediaPlayer.OnBufferingUpdateListener, MediaPlayer.OnPreparedListener, MediaPlayer.OnErrorListener, MediaPlayer.OnInfoListener, AudioManager.OnAudioFocusChangeListener {
@@ -29,11 +30,10 @@ class AudioPlayerService : Service(), MediaPlayer.OnCompletionListener, MediaPla
     companion object {
         val TAG = "AudioPLayerService"
         const val ACTION_SERVICE_COMMUNICATION = "audioServiceDestroyedCommunication"
-        const val ACTION_PLAY_URI = "playUriNow"
         const val EXTRA_AUDIO_ITEM = "audioExtra"
         const val EXTRA_COMMUNICATION_MESSAGE = "messageExtra"
 
-        const val MESSAGE_SERVICE_CREATED = "serviceCreated"
+        const val MESSAGE_SERVICE_PREPARE_PLAYING = "servicePreparePlaying"
         const val MESSAGE_SERVICE_DESTROYED = "serviceDestroyed"
         const val MESSAGE_SERVICE_PLAYSTATE_CHANGED = "playstateChanged"
 
@@ -49,6 +49,7 @@ class AudioPlayerService : Service(), MediaPlayer.OnCompletionListener, MediaPla
 
     var mediaPlayer: MediaPlayer? = null
     var audioItem: AudioItem? = null
+    var audioManager: AudioManager? = null
 
     override fun onBind(intent: Intent?): IBinder? {
         TODO("not implemented")
@@ -64,6 +65,7 @@ class AudioPlayerService : Service(), MediaPlayer.OnCompletionListener, MediaPla
 
     override fun onDestroy() {
         instance = null
+        removeAudioFocus()
         sendLocalBroadcastMessage(MESSAGE_SERVICE_DESTROYED)
         super.onDestroy()
     }
@@ -81,18 +83,25 @@ class AudioPlayerService : Service(), MediaPlayer.OnCompletionListener, MediaPla
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        intent?.let {
-            when (it.action) {
-                ACTION_PLAY_URI -> {
-                    sendLocalBroadcastMessage(MESSAGE_SERVICE_CREATED)
-                    audioItem = it.getParcelableExtra(EXTRA_AUDIO_ITEM)
-                    audioItem?.let {
-                        initForeground()
-                        initMediaPlayer()
-                    }
-                }
-                else -> {
+        d { "onStartCommand $intent" }
+        intent?.let { onStartIntent ->
+            val audioItemExtra = onStartIntent.getParcelableExtra<AudioItem>(EXTRA_AUDIO_ITEM)
 
+            audioItemExtra?.let {
+                audioItem = it
+                if (isPlaying()) {
+                    mediaPlayer?.stop()
+                    mediaPlayer?.release()
+                    mediaPlayer = null
+                }
+                initForeground()
+                //Request audio focus
+                if (requestAudioFocus()) {
+                    initMediaPlayer()
+
+                } else {
+                    //Could not gain focus
+                    stopSelf()
                 }
             }
         }
@@ -100,20 +109,11 @@ class AudioPlayerService : Service(), MediaPlayer.OnCompletionListener, MediaPla
     }
 
     private fun initForeground() {
-        // Create notification default intent.
-        //val intent = Intent()
-        //val pendingIntent = PendingIntent.getActivity(this, 0, intent, 0)
-
-        // Create notification builder.
         val builder = NotificationCompat.Builder(this, NotificationUtils.AUDIO_CHANNEL_ID)
         val title = StringBuilder()
-//        if (!isPlaying()) {
-//            title.append("[Pausiert] ")
-//        }
         title.append(audioItem!!.title)
         builder.setContentTitle(title.toString())
                 .setContentText(audioItem!!.source)
-        // Make notification show big text.
         builder.setWhen(System.currentTimeMillis())
         builder.setSmallIcon(R.drawable.ic_audio_notification)
         val drawableRes = if (isPlaying()) R.drawable.ic_record_voice_over_black_32dp else R.drawable.ic_pause_black_24dp
@@ -124,26 +124,8 @@ class AudioPlayerService : Service(), MediaPlayer.OnCompletionListener, MediaPla
             DrawableCompat.setTint(wrappedDrawable, ContextCompat.getColor(this, R.color.color_accent))
             builder.setLargeIcon(wrappedDrawable.toBitmap())
         }
-        // Make the notification max priority.
         builder.priority = NotificationCompat.PRIORITY_DEFAULT
-        // Make head-up notification.
-        // builder.setFullScreenIntent(pendingIntent, true)
 
-//        // Add Play button intent in notification.
-//        val playIntent = Intent(this, MyForeGroundService::class.java)
-//        playIntent.action = ACTION_PLAY
-//        val pendingPlayIntent = PendingIntent.getService(this, 0, playIntent, 0)
-//        val playAction = NotificationCompat.Action(android.R.drawable.ic_media_play, "Play", pendingPlayIntent)
-//        builder.addAction(playAction)
-//
-//        // Add Pause button intent in notification.
-//        val pauseIntent = Intent(this, MyForeGroundService::class.java)
-//        pauseIntent.action = ACTION_PAUSE
-//        val pendingPrevIntent = PendingIntent.getService(this, 0, pauseIntent, 0)
-//        val prevAction = NotificationCompat.Action(android.R.drawable.ic_media_pause, "Pause", pendingPrevIntent)
-//        builder.addAction(prevAction)
-
-        // Build the notification.
 
         val intent = Intent(this, StartActivity::class.java)
         intent.putExtra(NotificationUtils.NOTIFICATION_EXTRA_BOOKID, audioItem!!.sourceId)
@@ -165,7 +147,6 @@ class AudioPlayerService : Service(), MediaPlayer.OnCompletionListener, MediaPla
     }
 
     private fun initMediaPlayer() {
-        mediaPlayer?.release()
         val mp = MediaPlayer()
         mp.setOnBufferingUpdateListener(this)
         mp.setOnCompletionListener(this)
@@ -181,6 +162,7 @@ class AudioPlayerService : Service(), MediaPlayer.OnCompletionListener, MediaPla
             e(ex)
             stopSelf()
         }
+        sendLocalBroadcastMessage(MESSAGE_SERVICE_PREPARE_PLAYING)
         mp.prepareAsync()
         mediaPlayer = mp
     }
@@ -197,6 +179,7 @@ class AudioPlayerService : Service(), MediaPlayer.OnCompletionListener, MediaPla
 
 
     fun pauseOrResumePlaying() {
+        d { "pauseOrResumePlaying" }
         mediaPlayer?.let { mp ->
             if (mp.isPlaying) {
                 mp.pause()
@@ -214,6 +197,21 @@ class AudioPlayerService : Service(), MediaPlayer.OnCompletionListener, MediaPla
             }
             initForeground()
         }
+    }
+
+    private fun requestAudioFocus(): Boolean {
+        val audioManagerService = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        audioManager = audioManagerService
+        val result = audioManagerService.requestAudioFocus(this, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN)
+        d { "requestAudioFocus $result" }
+        return result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
+    }
+
+    private fun removeAudioFocus(): Boolean {
+        d { "removeAudioFocus" }
+        audioManager?.let {
+            return AudioManager.AUDIOFOCUS_REQUEST_GRANTED == it.abandonAudioFocus(this)
+        } ?: return false
     }
 
     override fun onBufferingUpdate(mp: MediaPlayer?, percent: Int) {
@@ -251,7 +249,33 @@ class AudioPlayerService : Service(), MediaPlayer.OnCompletionListener, MediaPla
     }
 
     override fun onAudioFocusChange(focusChange: Int) {
-        TODO("not implemented")
+        d { "onAudioFocusChange $focusChange" }
+        when(focusChange) {
+            AudioManager.AUDIOFOCUS_GAIN -> {
+                if (mediaPlayer == null) {
+                    initMediaPlayer()
+                } else if (!isPlaying()) {
+                    pauseOrResumePlaying()
+                }
+                mediaPlayer?.setVolume(1F,1F)
+                // resume or start playback
+            }
+            AudioManager.AUDIOFOCUS_LOSS -> {
+                // Lost focus for an unbounded amount of time: stop playback and release media player
+                stopPlaying()
+            }
+            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {
+                // Lost focus for a short time, but we have to stop
+                // playback. We don't release the media player because playback
+                // is likely to resume
+                if (isPlaying()) pauseOrResumePlaying()
+            }
+            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
+                // Lost focus for a short time, but it's ok to keep playing
+                if (isPlaying()) mediaPlayer?.setVolume(0.1F,0.1F)
+            }
+
+        }
     }
 
 
