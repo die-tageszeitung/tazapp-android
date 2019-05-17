@@ -28,15 +28,21 @@ import java.io.IOException
 
 class AudioPlayerService : Service(), MediaPlayer.OnCompletionListener, MediaPlayer.OnBufferingUpdateListener, MediaPlayer.OnPreparedListener, MediaPlayer.OnErrorListener, MediaPlayer.OnInfoListener, AudioManager.OnAudioFocusChangeListener {
 
+    enum class State {
+        LOADING, PLAYING, PAUSED
+    }
+
     companion object {
         val TAG = "AudioPLayerService"
-        const val ACTION_SERVICE_COMMUNICATION = "audioServiceDestroyedCommunication"
+//        const val ACTION_SERVICE_COMMUNICATION = "audioServiceDestroyedCommunication"
         const val EXTRA_AUDIO_ITEM = "audioExtra"
-        const val EXTRA_COMMUNICATION_MESSAGE = "messageExtra"
+        const val ACTION_STATE_CHANGED = "serviceAudioStateChanged"
+//        const val EXTRA_COMMUNICATION_MESSAGE = "messageExtra"
+//        const val EXTRA_STATE = "state"
 
         const val MESSAGE_SERVICE_PREPARE_PLAYING = "servicePreparePlaying"
-        const val MESSAGE_SERVICE_DESTROYED = "serviceDestroyed"
-        const val MESSAGE_SERVICE_PLAYSTATE_CHANGED = "playstateChanged"
+//        const val MESSAGE_SERVICE_DESTROYED = "serviceDestroyed"
+//        const val MESSAGE_SERVICE_PLAYSTATE_CHANGED = "playstateChanged"
 
         var instance: AudioPlayerService? = null
 
@@ -48,9 +54,19 @@ class AudioPlayerService : Service(), MediaPlayer.OnCompletionListener, MediaPla
         }
     }
 
-    var mediaPlayer: MediaPlayer? = null
+    private var mediaPlayer: MediaPlayer? = null
+    private var audioManager: AudioManager? = null
+
     var audioItem: AudioItem? = null
-    var audioManager: AudioManager? = null
+    var state: State = State.LOADING
+        set(value) {
+            d {"setState $value"}
+            field = value
+            val serviceIntent = Intent()
+            serviceIntent.action = ACTION_STATE_CHANGED
+            LocalBroadcastManager.getInstance(this)
+                    .sendBroadcast(serviceIntent)
+        }
 
     override fun onBind(intent: Intent?): IBinder? {
         TODO("not implemented")
@@ -67,7 +83,7 @@ class AudioPlayerService : Service(), MediaPlayer.OnCompletionListener, MediaPla
     override fun onDestroy() {
         instance = null
         removeAudioFocus()
-        sendLocalBroadcastMessage(MESSAGE_SERVICE_DESTROYED)
+        state = State.LOADING
         super.onDestroy()
     }
 
@@ -75,13 +91,14 @@ class AudioPlayerService : Service(), MediaPlayer.OnCompletionListener, MediaPla
         return true
     }
 
-    private fun sendLocalBroadcastMessage(message: String) {
-        val serviceIntent = Intent()
-        serviceIntent.action = ACTION_SERVICE_COMMUNICATION
-        serviceIntent.putExtra(EXTRA_COMMUNICATION_MESSAGE, message)
-        LocalBroadcastManager.getInstance(this)
-                .sendBroadcast(serviceIntent)
-    }
+//    private fun sendLocalBroadcastMessage(message: String) {
+//        val serviceIntent = Intent()
+//        serviceIntent.action = ACTION_SERVICE_COMMUNICATION
+//        serviceIntent.putExtra(EXTRA_COMMUNICATION_MESSAGE, message)
+//        LocalBroadcastManager.getInstance(this)
+//                .sendBroadcast(serviceIntent)
+//    }
+
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         d { "onStartCommand $intent" }
@@ -98,10 +115,11 @@ class AudioPlayerService : Service(), MediaPlayer.OnCompletionListener, MediaPla
                 initForeground()
                 //Request audio focus
                 if (requestAudioFocus()) {
-                    initMediaPlayer()
 
+                    initMediaPlayer()
                 } else {
-                    Toast.makeText(this,R.string.audio_service_error_gain_focus,Toast.LENGTH_LONG).show()
+                    Toast.makeText(this, R.string.audio_service_error_gain_focus, Toast.LENGTH_LONG)
+                            .show()
                     //Could not gain focus
                     stopSelf()
                 }
@@ -145,7 +163,11 @@ class AudioPlayerService : Service(), MediaPlayer.OnCompletionListener, MediaPla
     }
 
     fun isPlaying(): Boolean {
-        return mediaPlayer?.isPlaying ?: false
+        return try {
+            mediaPlayer?.isPlaying ?: throw IllegalStateException() //mediaPlayer.isPlaying also throws IllegalstateException
+        } catch (ex: IllegalStateException) {
+            false
+        }
     }
 
     private fun initMediaPlayer() {
@@ -164,7 +186,8 @@ class AudioPlayerService : Service(), MediaPlayer.OnCompletionListener, MediaPla
             e(ex)
             stopSelf()
         }
-        sendLocalBroadcastMessage(MESSAGE_SERVICE_PREPARE_PLAYING)
+        state = State.LOADING
+//        sendLocalBroadcastMessage(MESSAGE_SERVICE_PREPARE_PLAYING)
         mp.prepareAsync()
         mediaPlayer = mp
     }
@@ -185,7 +208,8 @@ class AudioPlayerService : Service(), MediaPlayer.OnCompletionListener, MediaPla
         mediaPlayer?.let { mp ->
             if (mp.isPlaying) {
                 mp.pause()
-                sendLocalBroadcastMessage(MESSAGE_SERVICE_PLAYSTATE_CHANGED)
+                state = State.PAUSED
+//                sendLocalBroadcastMessage(MESSAGE_SERVICE_PLAYSTATE_CHANGED)
                 audioItem?.let {
                     it.resumePosition = mp.currentPosition
                 }
@@ -195,7 +219,8 @@ class AudioPlayerService : Service(), MediaPlayer.OnCompletionListener, MediaPla
                     mp.seekTo(it.resumePosition)
                 }
                 mp.start()
-                sendLocalBroadcastMessage(MESSAGE_SERVICE_PLAYSTATE_CHANGED)
+                state= State.PLAYING
+//                sendLocalBroadcastMessage(MESSAGE_SERVICE_PLAYSTATE_CHANGED)
             }
             initForeground()
         }
@@ -252,14 +277,14 @@ class AudioPlayerService : Service(), MediaPlayer.OnCompletionListener, MediaPla
 
     override fun onAudioFocusChange(focusChange: Int) {
         d { "onAudioFocusChange $focusChange" }
-        when(focusChange) {
+        when (focusChange) {
             AudioManager.AUDIOFOCUS_GAIN -> {
                 if (mediaPlayer == null) {
                     initMediaPlayer()
                 } else if (!isPlaying()) {
                     pauseOrResumePlaying()
                 }
-                mediaPlayer?.setVolume(1F,1F)
+                mediaPlayer?.setVolume(1F, 1F)
                 // resume or start playback
             }
             AudioManager.AUDIOFOCUS_LOSS -> {
@@ -274,7 +299,7 @@ class AudioPlayerService : Service(), MediaPlayer.OnCompletionListener, MediaPla
             }
             AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
                 // Lost focus for a short time, but it's ok to keep playing
-                if (isPlaying()) mediaPlayer?.setVolume(0.1F,0.1F)
+                if (isPlaying()) mediaPlayer?.setVolume(0.1F, 0.1F)
             }
 
         }
