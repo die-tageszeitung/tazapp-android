@@ -2,12 +2,14 @@ package de.thecode.android.tazreader.audio
 
 import android.app.PendingIntent
 import android.app.Service
+import android.content.Context
 import android.content.Intent
 import android.media.AudioManager
 import android.media.MediaPlayer
 import android.os.IBinder
 import android.os.Parcelable
 import android.os.PowerManager
+import android.widget.Toast
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
@@ -22,7 +24,6 @@ import de.thecode.android.tazreader.notifications.NotificationUtils
 import de.thecode.android.tazreader.start.StartActivity
 import kotlinx.android.parcel.Parcelize
 import java.io.IOException
-import android.content.Context
 
 
 class AudioPlayerService : Service(), MediaPlayer.OnCompletionListener, MediaPlayer.OnBufferingUpdateListener, MediaPlayer.OnPreparedListener, MediaPlayer.OnErrorListener, MediaPlayer.OnInfoListener, AudioManager.OnAudioFocusChangeListener {
@@ -100,6 +101,7 @@ class AudioPlayerService : Service(), MediaPlayer.OnCompletionListener, MediaPla
                     initMediaPlayer()
 
                 } else {
+                    Toast.makeText(this,R.string.audio_service_error_gain_focus,Toast.LENGTH_LONG).show()
                     //Could not gain focus
                     stopSelf()
                 }
