@@ -1,22 +1,14 @@
 package de.thecode.android.tazreader.reader;
 
 import android.annotation.SuppressLint;
-import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.media.AudioManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
-import androidx.core.app.NavUtils;
-import androidx.core.content.ContextCompat;
-import androidx.drawerlayout.widget.DrawerLayout;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
@@ -26,13 +18,16 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import de.mateware.dialog.Dialog;
 import de.mateware.dialog.listener.DialogButtonListener;
 import de.mateware.dialog.listener.DialogDismissListener;
 import de.mateware.snacky.Snacky;
 import de.thecode.android.tazreader.R;
+import de.thecode.android.tazreader.audio.AudioItem;
 import de.thecode.android.tazreader.data.ITocItem;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Store;
@@ -51,8 +46,19 @@ import de.thecode.android.tazreader.utils.TintHelper;
 
 import org.json.JSONArray;
 
+import java.io.File;
 import java.util.WeakHashMap;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.app.NavUtils;
+import androidx.core.content.ContextCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProviders;
 import timber.log.Timber;
 
 @SuppressLint("RtlHardcoded")
@@ -89,11 +95,13 @@ public class ReaderActivity extends BaseActivity
 //    public static final  String KEY_EXTRA_RESOURCE_KEY      = "resourceKey";
     public static final  String KEY_EXTRA_BOOK_ID           = "bookId";
 
-    DrawerLayout mDrawerLayout;
-    View         mDrawerLayoutIndex;
-    View         mDrawerLayoutPageIndex;
-    FrameLayout  mContentFrame;
-    ProgressBar  mLoadingProgress;
+    DrawerLayout     mDrawerLayout;
+    View             mDrawerLayoutIndex;
+    View             mDrawerLayoutPageIndex;
+    FrameLayout      mContentFrame;
+    ProgressBar      mLoadingProgress;
+    ConstraintLayout playerLayout;
+    ImageView        playerStopButton;
 
     FragmentManager mFragmentManager;
     StorageManager  mStorage;
@@ -104,8 +112,9 @@ public class ReaderActivity extends BaseActivity
     AbstractContentFragment mContentFragment;
 
 
-    ReaderViewModel    readerViewModel;
-    ReaderTTSViewModel ttsViewModel;
+    ReaderViewModel      readerViewModel;
+    ReaderTTSViewModel   ttsViewModel;
+    ReaderAudioViewModel audioViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -125,6 +134,8 @@ public class ReaderActivity extends BaseActivity
                                             .get(ReaderViewModel.class);
         ttsViewModel = ViewModelProviders.of(this)
                                          .get(ReaderTTSViewModel.class);
+        audioViewModel = ViewModelProviders.of(this)
+                                           .get(ReaderAudioViewModel.class);
 
         mStorage = StorageManager.getInstance(this);
 
@@ -136,6 +147,12 @@ public class ReaderActivity extends BaseActivity
 
         setBackgroundColor(onGetBackgroundColor(TazSettings.getInstance(this)
                                                            .getPrefString(TazSettings.PREFKEY.THEME, "normal")));
+
+        playerLayout = findViewById(R.id.player_layout);
+        playerLayout.setVisibility(View.GONE);
+        findViewById(R.id.stop_button).setOnClickListener(v -> audioViewModel.stopPlaying());
+        findViewById(R.id.pause_button).setOnClickListener(v -> audioViewModel.pauseOrResume());
+        findViewById(R.id.play_button).setOnClickListener(v -> audioViewModel.pauseOrResume());
 
         mLoadingProgress = findViewById(R.id.loading);
         mLoadingProgress.setVisibility(View.VISIBLE);
@@ -227,6 +244,23 @@ public class ReaderActivity extends BaseActivity
                             }
                         }
                     });
+
+        audioViewModel.getCurrentAudioItemLiveData()
+                      .observe(this, audioItem -> {
+                          playerLayout.setVisibility(audioItem != null ? View.VISIBLE : View.GONE);
+                          if (audioItem != null) {
+                              ((TextView) playerLayout.findViewById(R.id.title)).setText(audioItem.getTitle());
+                              ((TextView) playerLayout.findViewById(R.id.source)).setText(audioItem.getSource());
+                          }
+                      });
+
+        audioViewModel.isPlayingLiveData()
+                      .observe(this, isPLaying -> {
+                          findViewById(R.id.play_button).setVisibility(isPLaying ? View.GONE : View.VISIBLE);
+                          findViewById(R.id.pause_button).setVisibility(!isPLaying ? View.GONE : View.VISIBLE);
+                      });
+//        Intent intent = new Intent(this, AudioPlayerService.class);
+//        bindService(intent, connection, 0);
 
     }
 
@@ -771,6 +805,23 @@ public class ReaderActivity extends BaseActivity
 //        Timber.d("%s", retainTtsFragment.getTtsState());
 //        return retainTtsFragment.getTtsState();
 //    }
+
+    public void speak2(Paper.Plist.Page.Article article) {
+
+
+        Uri audioUri = Uri.fromFile(new File(readerViewModel.getPaperDirectory(), article.getAudiolink()));
+
+
+        AudioItem audioItem = new AudioItem(audioUri.toString(),
+                                            article.getTitle(),
+                                            article.getPaper()
+                                                   .getTitelWithDate(this),
+                                            article.getPaper().getBookId(),
+                                            0);
+
+        audioViewModel.startPlaying(audioItem);
+
+    }
 
     public void speak(@NonNull String id, CharSequence text) {
         if (TazSettings.getInstance(this)

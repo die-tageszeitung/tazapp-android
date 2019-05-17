@@ -2,23 +2,18 @@ package de.thecode.android.tazreader.widget;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.drawable.Drawable;
-import androidx.core.content.ContextCompat;
-import androidx.core.graphics.drawable.DrawableCompat;
-import androidx.appcompat.widget.AppCompatImageView;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.Toast;
 
 import de.thecode.android.tazreader.R;
 
+import androidx.appcompat.widget.AppCompatImageView;
+
 /**
  * Created by mate on 22.01.2015.
  */
 public class ShareButton extends AppCompatImageView implements View.OnClickListener, View.OnLongClickListener {
-
-    int colorNormal;
-    int colorPressed;
 
     Context mContext;
     ShareButtonCallback mCallback;
@@ -42,25 +37,10 @@ public class ShareButton extends AppCompatImageView implements View.OnClickListe
     private void init(Context context) {
         mContext = context;
         setImageResource(R.drawable.ic_share_24dp);
-        setScaleType(ScaleType.CENTER);
-        colorPressed = ContextCompat.getColor(context,R.color.index_bookmark_on);
-        colorNormal = ContextCompat.getColor(context,R.color.index_bookmark_off);
-
-        tintDrawable(colorNormal);
         setClickable(true);
         setOnClickListener(this);
         setOnLongClickListener(this);
         if (!isInEditMode()) setVisibility(View.INVISIBLE);
-    }
-
-    @Override
-    public void setPressed(boolean pressed) {
-        super.setPressed(pressed);
-        if (pressed) {
-            tintDrawable(colorPressed);
-        } else {
-            tintDrawable(colorNormal);
-        }
     }
 
     public void setCallback(ShareButtonCallback callback) {
@@ -92,11 +72,5 @@ public class ShareButton extends AppCompatImageView implements View.OnClickListe
     public interface ShareButtonCallback {
         Intent getShareIntent(Context context);
         boolean isShareable();
-    }
-
-    private void tintDrawable(int color) {
-        Drawable wrappedDrawable = DrawableCompat.wrap(getDrawable());
-        wrappedDrawable = wrappedDrawable.mutate();
-        DrawableCompat.setTint(wrappedDrawable, color);
     }
 }

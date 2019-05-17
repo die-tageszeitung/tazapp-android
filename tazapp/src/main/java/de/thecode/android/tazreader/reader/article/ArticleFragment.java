@@ -39,11 +39,9 @@ import de.thecode.android.tazreader.reader.ReaderActivity;
 import de.thecode.android.tazreader.reader.ReaderActivity.DIRECTIONS;
 import de.thecode.android.tazreader.reader.ReaderBaseFragment;
 import de.thecode.android.tazreader.reader.article.ArticleWebView.ArticleWebViewCallback;
-import de.thecode.android.tazreader.utils.AsyncTaskListener;
 import de.thecode.android.tazreader.utils.Charsets;
 import de.thecode.android.tazreader.utils.StorageManager;
 import de.thecode.android.tazreader.utils.TintHelper;
-import de.thecode.android.tazreader.widget.ReaderButton;
 import de.thecode.android.tazreader.widget.ShareButton;
 
 import java.io.File;
@@ -55,6 +53,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProviders;
 import kotlin.io.FilesKt;
 import timber.log.Timber;
 
@@ -62,8 +61,8 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
     private static final String JAVASCRIPT_API_NAME = "ANDROIDAPI";
 
-    protected static final String ARG_KEY      = "arg_article_key";
-    protected static final String ARG_POSITION = "arg_article_position";
+    static final         String ARG_KEY      = "arg_article_key";
+    private static final String ARG_POSITION = "arg_article_position";
 
     public static ArticleFragment newInstance(String bookId, String articleKey, String position) {
         ArticleFragment fragment = ReaderBaseFragment.newInstance(ArticleFragment.class, bookId);
@@ -79,21 +78,17 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
         undefined, swipeUp, swipeDown, swipeRight, swipeLeft
     }
 
-    ITocItem mArticle;
-    String   key;
-    //    Resource   resource;
-//
-    String mPosition = null;
-
     ArticleWebView mWebView;
     ProgressBar    mProgressBar;
     FrameLayout    mBookmarkClickLayout;
     ShareButton    mShareButton;
+    ImageView      playButton;
 
 
-    Handler mUiThreadHandler;
-    //boolean mIndexUpdated;
+    Handler  mUiThreadHandler;
     GESTURES mLastGesture = GESTURES.undefined;
+
+    ArticleViewModel articleViewModel;
 
     public ArticleFragment() {
         super();
@@ -104,22 +99,13 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (savedInstanceState != null) {
-            key = savedInstanceState.getString(ARG_KEY);
-            mPosition = savedInstanceState.getString(ARG_POSITION);
-        } else {
-            if (getArguments() != null) {
-                key = getArguments().getString(ARG_KEY);
-                mPosition = getArguments().getString(ARG_POSITION);
-            }
-        }
-    }
 
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        outState.putString(ARG_KEY, key);
-        outState.putString(ARG_POSITION, mPosition);
-        super.onSaveInstanceState(outState);
+        articleViewModel = ViewModelProviders.of(this,
+                                                 new ArticleViewModelFactory(getReaderViewModel(),
+                                                                             getArguments().getString(ARG_KEY),
+                                                                             getArguments().getString(ARG_POSITION)))
+                                             .get(ArticleViewModel.class);
+
     }
 
     @SuppressLint({"SetJavaScriptEnabled", "NewApi", "AddJavascriptInterface"})
@@ -158,8 +144,16 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
         mProgressBar = result.findViewById(R.id.progressBar);
 
         mShareButton = result.findViewById(R.id.share);
+        playButton = result.findViewById(R.id.play);
+        playButton.setVisibility(View.GONE);
+        playButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getReaderActivity().speak2((Article) articleViewModel.getTocItemLiveData().getValue());
+            }
+        });
 
-        ReaderButton mPageIndexButton = result.findViewById(R.id.pageindex);
+        ImageView mPageIndexButton = result.findViewById(R.id.pageindex);
         if (TazSettings.getInstance(getContext())
                        .getPrefBoolean(TazSettings.PREFKEY.PAGEINDEXBUTTON, false)) {
             mPageIndexButton.setOnClickListener(new View.OnClickListener() {
@@ -180,7 +174,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
             });
         } else mPageIndexButton.setVisibility(View.GONE);
 
-        ReaderButton mIndexButton = result.findViewById(R.id.index);
+        ImageView mIndexButton = result.findViewById(R.id.index);
         if (TazSettings.getInstance(getContext())
                        .isIndexButton()) {
             mIndexButton.setOnClickListener(new View.OnClickListener() {
@@ -210,66 +204,43 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        getReaderViewModel().getPaperLiveData()
-                            .observe(this, new Observer<Paper>() {
-                                @Override
-                                public void onChanged(@Nullable Paper paper) {
-                                    getReaderViewModel().setCurrentKey(key);
-                                    if (paper != null) {
-                                        new AsyncTaskListener<Paper, ITocItem>(new AsyncTaskListener.OnExecute<Paper, ITocItem>() {
-                                            @Override
-                                            public ITocItem execute(Paper... papers) {
-                                                ITocItem article = papers[0].getPlist()
-                                                                            .getIndexItem(key);
-                                                if (TextUtils.isEmpty(mPosition)) {
-                                                    Store positionStore = getReaderViewModel().getStore(Paper.STORE_KEY_POSITION_IN_ARTICLE + "_" + key);
-                                                    if (positionStore != null) mPosition = positionStore.getValue();
-                                                }
-                                                return article;
-                                            }
-                                        }, new AsyncTaskListener.OnSuccess<ITocItem>() {
-                                            @Override
-                                            public void onSuccess(ITocItem iTocItem) {
-                                                if (iTocItem != null) {
-                                                    mArticle = iTocItem;
-                                                    initialBookmark();
-                                                    loadArticleInWebView();
-                                                }
-                                            }
-                                        }).execute(paper);
+        articleViewModel.getTocItemLiveData()
+                        .observe(this, new Observer<ITocItem>() {
+                            @Override
+                            public void onChanged(ITocItem iTocItem) {
+//                mArticle = iTocItem;
+                                initialBookmark();
+                                loadArticleInWebView();
+                                if (iTocItem instanceof Article) {
+                                    if (!TextUtils.isEmpty(((Article) iTocItem).getAudiolink())) {
+                                        playButton.setVisibility(View.VISIBLE);
                                     }
-
                                 }
-                            });
+                            }
+                        });
+//        articleViewModel.getPlayerButtonVisiblityLiveData()
+//                        .observe(this, visible -> playButton.setVisibility(visible ? View.VISIBLE : View.GONE));
+//        getTtsViewModel().getPlayerVisibleLiveData()
+//                         .observe(this, new Observer<Boolean>() {
+//                             @Override
+//                             public void onChanged(Boolean visible) {
+//                                 playButton.setVisibility(visible ? View.GONE : View.VISIBLE);
+//                             }
+//                         });
     }
 
-    //    @Override
-//    public void init(Paper paper, String key, String position) {
-//        Timber.d("initialising ArticleFragment %s and position %s", key, position);
-//        mArticle = paper.getPlist()
-//                        .getIndexItem(key);
-//        mStartPosition = position;
-//    }
 
     private void runOnUiThread(Runnable runnable) {
         mUiThreadHandler.post(runnable);
     }
 
     private void loadArticleInWebView() {
-        String baseUrl = "file://" + getReaderViewModel().getPaperDirectory() + "/" + key + "?position=" + mPosition;
-
-
-//        String baseUrl = "file://" + StorageManager.getInstance(context)
-//                                                   .getPaperDirectory(mArticle.getPaper()) + "/";
-
+        String baseUrl = "file://" + getReaderViewModel().getPaperDirectory() + "/" + articleViewModel.getKey() + "?position=" + articleViewModel.getPosition();
         mWebView.loadDataWithBaseURL(baseUrl, getHtml(), "text/html", "UTF-8", null);
-        mShareButton.setCallback(mArticle);
+        mShareButton.setCallback(articleViewModel.getTocItemLiveData()
+                                                 .getValue());
     }
 
-
-//    private void callTazapi(String function, String value) {
-//        mWebView.loadUrl("javascript:TAZAPI." + function + "(" + value + ")");
-//    }
 
     public void callTazapi(String methodname, Object... params) {
 
@@ -350,7 +321,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
     @Override
     public boolean onDoubleTap(MotionEvent e) {
         if (getReaderActivity() != null) {
-            getReaderActivity().speak(key, getTextToSpeech());
+            getReaderActivity().speak(articleViewModel.getKey(), getTextToSpeech());
         }
         return true;
     }
@@ -372,8 +343,9 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
     }
 
 
-
     public void initialBookmark() {
+        ITocItem mArticle = articleViewModel.getTocItemLiveData()
+                                            .getValue();
         if (!(mArticle instanceof Article)) mBookmarkClickLayout.setVisibility(View.GONE);
         else {
             mBookmarkClickLayout.setOnClickListener(new View.OnClickListener() {
@@ -422,19 +394,19 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
             switch (consoleMessage.messageLevel()) {
                 case TIP:
-                    Timber.i("%s %s", key, messagBuilder.toString());
+                    Timber.i("%s %s", articleViewModel.getKey(), messagBuilder.toString());
                     break;
                 case WARNING:
-                    Timber.w("%s %s", key, messagBuilder.toString());
+                    Timber.w("%s %s", articleViewModel.getKey(), messagBuilder.toString());
                     break;
                 case DEBUG:
-                    Timber.d("%s %s", key, messagBuilder.toString());
+                    Timber.d("%s %s", articleViewModel.getKey(), messagBuilder.toString());
                     break;
                 case ERROR:
-                    Timber.e("%s %s", key, messagBuilder.toString());
+                    Timber.e("%s %s", articleViewModel.getKey(), messagBuilder.toString());
                     break;
                 case LOG:
-                    Timber.i("%s %s", key, messagBuilder.toString());
+                    Timber.i("%s %s", articleViewModel.getKey(), messagBuilder.toString());
                     break;
             }
             return true;
@@ -453,7 +425,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
         @JavascriptInterface
         public void openUrl(final String url) {
-            Timber.d("%s %s", key, url);
+            Timber.d("%s %s", articleViewModel.getKey(), url);
             if (url.startsWith("http")) {
                 Intent i = new Intent(Intent.ACTION_VIEW);
                 i.setData(Uri.parse(url));
@@ -468,7 +440,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
                     Toast.makeText(getContext(), "Kein gültiger RFC 2368 mailto: Link\n" + url, Toast.LENGTH_LONG)
                          .show();
                 }
-            } else if (url.startsWith(key) || url.startsWith("?")) {
+            } else if (url.startsWith(articleViewModel.getKey()) || url.startsWith("?")) {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -489,7 +461,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
             Store store = getReaderViewModel().getStoreRepository()
                                               .getStoreForPath(path);
             String result = store.getValue();
-            Timber.d("%s %s %s", key, path, result);
+            Timber.d("%s %s %s", articleViewModel.getKey(), path, result);
             return result;
         }
 
@@ -519,28 +491,28 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
         @JavascriptInterface
         public String getConfiguration(String name) {
             String result = getConfig(name);
-            Timber.d("%s %s %s", key, name, result);
+            Timber.d("%s %s %s", articleViewModel.getKey(), name, result);
             return result;
         }
 
         @JavascriptInterface
         public boolean setConfiguration(String name, String value) {
             boolean result = setConfig(name, value);
-            Timber.d("%s %s %s", key, name, value, result);
+            Timber.d("%s %s %s %s", articleViewModel.getKey(), name, value, result);
             return result;
         }
 
         @JavascriptInterface
         public void pageReady(String percentSeen, String position, String numberOfPages) {
-            Timber.d("%s %s %s", key, percentSeen, position, numberOfPages);
-            Store positionStore = getReaderViewModel().getStoreRepository()
-                                                      .getStore(getReaderViewModel().getPaper()
-                                                                                    .getBookId(),
-                                                                Paper.STORE_KEY_POSITION_IN_ARTICLE + "_" + key);
-            positionStore.setValue(position);
-            getReaderViewModel().getStoreRepository()
-                                .saveStore(positionStore);
-            mPosition = position;
+            Timber.d("%s %s %s %s", articleViewModel.getKey(), percentSeen, position, numberOfPages);
+//            Store positionStore = getReaderViewModel().getStoreRepository()
+//                                                      .getStore(getReaderViewModel().getPaper()
+//                                                                                    .getBookId(),
+//                                                                Paper.STORE_KEY_POSITION_IN_ARTICLE + "_" + key);
+//            positionStore.setValue(position);
+//            getReaderViewModel().getStoreRepository()
+//                                .saveStore(positionStore);
+            articleViewModel.setPosition(position);
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -565,17 +537,17 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
         @JavascriptInterface
         public void enableRegionScroll(boolean isOn) {
-            Timber.d("%s %s", key, isOn);
+            Timber.d("%s %s", articleViewModel.getKey(), isOn);
         }
 
         @JavascriptInterface
         public void beginRendering() {
-            Timber.d(key);
+            Timber.d(articleViewModel.getKey());
         }
 
         @JavascriptInterface
         public void nextArticle(final int position) {
-            Timber.d("%s %s", key, position);
+            Timber.d("%s %s", articleViewModel.getKey(), position);
             //mAnimationLock = true;
             runOnUiThread(new Runnable() {
 
@@ -605,7 +577,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
         @JavascriptInterface
         public void previousArticle(final int position) {
-            Timber.d("%s %s", key, position);
+            Timber.d("%s %s", articleViewModel.getKey(), position);
 
             runOnUiThread(new Runnable() {
 
@@ -684,9 +656,9 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
         @Override
         public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
-            Timber.e("%s errorCode: %d", key, errorCode);
-            Timber.e("%s description: %s", key, description);
-            Timber.e("%s failingUrl: %s", key, failingUrl);
+            Timber.e("%s errorCode: %d", articleViewModel.getKey(), errorCode);
+            Timber.e("%s description: %s", articleViewModel.getKey(), description);
+            Timber.e("%s failingUrl: %s", articleViewModel.getKey(), failingUrl);
             super.onReceivedError(view, errorCode, description, failingUrl);
         }
     }
@@ -695,7 +667,7 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
 
     public String getHtml() {
-        File articleFile = new File(getReaderViewModel().getPaperDirectory(), key);
+        File articleFile = new File(getReaderViewModel().getPaperDirectory(), articleViewModel.getKey());
         File resourceDir = getReaderViewModel().getResourceDirectory();
 
         String resourceReplacement = "file://" + resourceDir.getAbsolutePath() + "/";
@@ -703,25 +675,24 @@ public class ArticleFragment extends AbstractContentFragment implements ArticleW
 
         String result = null;
 
-            result = FilesKt.readText(articleFile, Charsets.UTF_8);
+        result = FilesKt.readText(articleFile, Charsets.UTF_8);
 //            result = FileUtilsOld.readFile(articleFile, Charsets.UTF_8);
 //            result = Files.asCharSource(articleFile, Charsets.UTF_8).read();
 //            result = IOUtils.toString(new FileInputStream(articleFile), "UTF-8");
 
-            //            Pattern tazapiPattern = Pattern.compile("(<script.+?src\\s*?=\\s*?(?:\"|'))(res.+?TAZAPI.js)((?:\"|').*?>)", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+        //            Pattern tazapiPattern = Pattern.compile("(<script.+?src\\s*?=\\s*?(?:\"|'))(res.+?TAZAPI.js)((?:\"|').*?>)", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 
-            //            Matcher matcher = tazapiPattern.matcher(result);
-            //            result = matcher.replaceAll("$1" + tazapiReplacement + "$3");
+        //            Matcher matcher = tazapiPattern.matcher(result);
+        //            result = matcher.replaceAll("$1" + tazapiReplacement + "$3");
 
-            Pattern resPattern = Pattern.compile("(<[^>]+?(?:href|src)\\s*?=\\s*?(?:\"|'))(res.+?)((?:\"|').*?>)",
-                                                 Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
-            Matcher matcher = resPattern.matcher(result);
-            result = matcher.replaceAll("$1" + resourceReplacement + "$2$3");
+        Pattern resPattern = Pattern.compile("(<[^>]+?(?:href|src)\\s*?=\\s*?(?:\"|'))(res.+?)((?:\"|').*?>)",
+                                             Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+        Matcher matcher = resPattern.matcher(result);
+        result = matcher.replaceAll("$1" + resourceReplacement + "$2$3");
 
-            Pattern tazapiPattern = Pattern.compile("file://.+?TAZAPI.js", Pattern.CASE_INSENSITIVE);
-            Matcher matcher2 = tazapiPattern.matcher(result);
-            result = matcher2.replaceAll(tazapiReplacement);
-
+        Pattern tazapiPattern = Pattern.compile("file://.+?TAZAPI.js", Pattern.CASE_INSENSITIVE);
+        Matcher matcher2 = tazapiPattern.matcher(result);
+        result = matcher2.replaceAll(tazapiReplacement);
 
 
         if (TextUtils.isEmpty(result)) result = "Fehler beim Laden des Artikels";

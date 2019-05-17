@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
              xmlns:app="http://schemas.android.com/apk/res-auto"
-             xmlns:fab="http://schemas.android.com/apk/res-auto"
              android:layout_width="match_parent"
              android:layout_height="match_parent"
              android:background="@drawable/background_library">
@@ -33,7 +32,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/fab_margin"
             android:clickable="true"
-            android:src="@drawable/ic_today_24dp"
+            app:srcCompat="@drawable/ic_today_24dp"
             android:tint="@color/library_fab_icon"
             app:backgroundTint="@color/fab_background"
             app:borderWidth="0dp"

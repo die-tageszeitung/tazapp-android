@@ -1,29 +1,29 @@
 package de.thecode.android.tazreader.reader.page;
 
-import androidx.lifecycle.Observer;
 import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import de.thecode.android.tazreader.R;
+import de.thecode.android.tazreader.data.ITocItem;
 import de.thecode.android.tazreader.data.Paper.Plist.Page;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.reader.AbstractContentFragment;
 import de.thecode.android.tazreader.reader.ReaderActivity;
-import de.thecode.android.tazreader.data.ITocItem;
-import de.thecode.android.tazreader.widget.ReaderButton;
 import de.thecode.android.tazreader.widget.ShareButton;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.lifecycle.Observer;
 import timber.log.Timber;
 
 public class PagesFragment extends AbstractContentFragment {
@@ -92,7 +92,7 @@ public class PagesFragment extends AbstractContentFragment {
         });
         _readerView.setAdapter(_adapter);
         mShareButton = view.findViewById(R.id.share);
-        ReaderButton mPageIndexButton = view.findViewById(R.id.pageindex);
+        ImageView mPageIndexButton = view.findViewById(R.id.pageindex);
         if (TazSettings.getInstance(getContext())
                        .getPrefBoolean(TazSettings.PREFKEY.PAGEINDEXBUTTON, false)) {
             mPageIndexButton.setOnClickListener(new View.OnClickListener() {
@@ -113,7 +113,7 @@ public class PagesFragment extends AbstractContentFragment {
             });
         } else mPageIndexButton.setVisibility(View.GONE);
 
-        ReaderButton mIndexButton = view.findViewById(R.id.index);
+        ImageView mIndexButton = view.findViewById(R.id.index);
         if (TazSettings.getInstance(getContext())
                        .getPrefBoolean(TazSettings.PREFKEY.PAGEINDEXBUTTON, false)) {
             mIndexButton.setOnClickListener(new View.OnClickListener() {

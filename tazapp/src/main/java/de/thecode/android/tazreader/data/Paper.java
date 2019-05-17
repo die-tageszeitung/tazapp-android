@@ -921,12 +921,14 @@ public class Paper extends Downloadable {
                 private static final String KEY_SUBTITLE   = "Untertitel";
                 private static final String KEY_AUTHOR     = "Autor";
                 private static final String KEY_ONLINELINK = "OnlineLink";
+                private static final String KEY_AUDIOLINK = "AudioLink";
 
                 private String key;
                 private String title;
                 private String subtitle;
                 private String author;
                 private String onlinelink;
+                private String audiolink;
                 private Page   realPage;
 
                 public Article(String key, NSDictionary dict) {
@@ -935,6 +937,7 @@ public class Paper extends Downloadable {
                     this.subtitle = PlistHelper.getString(dict, KEY_SUBTITLE);
                     this.author = PlistHelper.getString(dict, KEY_AUTHOR);
                     this.onlinelink = PlistHelper.getString(dict, KEY_ONLINELINK);
+                    this.audiolink  = PlistHelper.getString(dict, KEY_AUDIOLINK);
                 }
 
                 public String getKey() {
@@ -956,6 +959,10 @@ public class Paper extends Downloadable {
 
                 public String getOnlinelink() {
                     return onlinelink;
+                }
+
+                public String getAudiolink() {
+                    return audiolink;
                 }
 
                 public Category getCategory() {

@@ -128,6 +128,7 @@
     <string name="sync_job_error">Fehler beim Synchronisieren der Daten.\n\n%1$s</string>
     <string name="notification_channel_download">Downloads</string>
     <string name="notification_channel_message">Mitteilungen</string>
+    <string name="notification_channel_audio">Audio</string>
     <string name="dialog_meassage_loading_missing_resource">Lade fehlende Ressourcen für die Ausgabe herunter, bitte warten…</string>
     <string name="dialog_message_delete_wait">Lösche Ausgabe(n), bitte warten…</string>
     <string name="download_error_hints">Sollten Sie AdBlocker, Antiviren- oder Proxy-Software verwenden, deaktivieren Sie diese bzw. fügen Sie eine Ausnahme hinzu.</string>
@@ -172,6 +173,8 @@
     <string name="connection_connected">Verbunden</string>
     <string name="connection_metered">Mobil</string>
     <string name="connection_roaming">Roaming</string>
+    <string name="cd_player_button">Artikel vorlesen lassen</string>
+    <string name="audio_service_error_gain_focus">Fehler beim Anfordern des Audiofocus.</string>
 
 
 </resources>

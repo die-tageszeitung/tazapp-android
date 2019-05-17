@@ -38,9 +38,11 @@ public class NotificationUtils extends ContextWrapper {
 
 
     public static final  int    DOWNLOAD_NOTIFICATION_ID = 1;
+    public static final  int    AUDIOSERVICE_NOTIFICATION_ID = 2;
     private static final String DOWNLOAD_GROUP_KEY       = "notificationDownloadGroup";
     public static final  String DOWNLOAD_CHANNEL_ID      = BuildConfig.APPLICATION_ID + ".DOWNLOAD";
     public static final String MESSAGE_CHANNEL_ID = "MESSAGE";
+    public static final  String AUDIO_CHANNEL_ID      = BuildConfig.APPLICATION_ID + ".AUDIO";
 
     public static final String TAG_NOTIFICATION_UPDATE = "appUpdate";
 
@@ -65,12 +67,14 @@ public class NotificationUtils extends ContextWrapper {
     private NotificationManager notificationManager;
     private String              downloadChannelName;
     private String              messageChannelName;
+    private String              audioChannelName;
 
 
     private NotificationUtils(Context base) {
         super(base);
         downloadChannelName = base.getString(R.string.notification_channel_download);
         messageChannelName = base.getString(R.string.notification_channel_message);
+        audioChannelName = base.getString(R.string.notification_channel_audio);
     }
 
     public void createChannels() {
@@ -96,6 +100,17 @@ public class NotificationUtils extends ContextWrapper {
             messageChannel.setLightColor(ContextCompat.getColor(this, R.color.color_primary));
             messageChannel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
             channelList.add(messageChannel);
+
+
+            NotificationChannel audioChannel = new NotificationChannel(AUDIO_CHANNEL_ID,
+                                                                         audioChannelName,
+                                                                         NotificationManager.IMPORTANCE_DEFAULT);
+            audioChannel.setSound(null,null);
+            audioChannel.enableLights(false);
+            audioChannel.enableVibration(false);
+            audioChannel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
+            channelList.add(audioChannel);
+
 
             getManager().createNotificationChannels(channelList);
 

@@ -16,9 +16,9 @@ plugins {
 }
 
 def versionMajor = 3
-def versionMinor = 9
-def versionPatch = 2
-def versionBuild = 2
+def versionMinor = 10
+def versionPatch = 0
+def versionBuild = 0
 
 def androidXVer = "1.0.+"
 def buildToolsVer = "28.0.3"
@@ -132,10 +132,16 @@ android {
             }
         }
     }
+    androidExtensions {
+        experimental = true
+    }
 
     compileSdkVersion compileSdkVer
     buildToolsVersion buildToolsVer
     defaultConfig {
+        vectorDrawables {
+            useSupportLibrary = true
+        }
         multiDexEnabled true
         resConfigs "en", "de"
         minSdkVersion minSdkVer

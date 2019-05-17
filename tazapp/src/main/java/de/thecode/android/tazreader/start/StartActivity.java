@@ -377,7 +377,8 @@ public class StartActivity extends BaseActivity
             if (intent.hasExtra(NotificationUtils.NOTIFICATION_EXTRA_TYPE_ID) && intent.hasExtra(NotificationUtils.NOTIFICATION_EXTRA_BOOKID)) {
                 String bookId = intent.getStringExtra(NotificationUtils.NOTIFICATION_EXTRA_BOOKID);
                 int type = intent.getIntExtra(NotificationUtils.NOTIFICATION_EXTRA_TYPE_ID, -1);
-                if (type == NotificationUtils.DOWNLOAD_NOTIFICATION_ID && !TextUtils.isEmpty(bookId)) {
+                if ((type == NotificationUtils.DOWNLOAD_NOTIFICATION_ID || type == NotificationUtils.AUDIOSERVICE_NOTIFICATION_ID) && !TextUtils.isEmpty(
+                        bookId)) {
                     openReader(bookId);
                 }
             }

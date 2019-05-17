@@ -3,6 +3,7 @@ package de.thecode.android.tazreader
 import android.content.res.Resources
 import android.os.Build
 import android.webkit.WebView
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.multidex.MultiDexApplication
 import com.github.ajalt.timberkt.Timber.d
 import de.thecode.android.tazreader.analytics.AnalyticsWrapper
@@ -91,6 +92,7 @@ class TazApplication : MultiDexApplication() {
                 .addIndex(EventBusIndex())
                 .installDefaultEventBus()
         notificationUtils.createChannels()
+        AppCompatDelegate.setCompatVectorFromResourcesEnabled(true)
         PicassoHelper.initPicasso(app)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT && BuildConfig.DEBUG) {
             WebView.setWebContentsDebuggingEnabled(true)

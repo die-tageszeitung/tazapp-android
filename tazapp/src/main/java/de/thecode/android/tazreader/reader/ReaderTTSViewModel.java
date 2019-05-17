@@ -1,12 +1,10 @@
 package de.thecode.android.tazreader.reader;
 
 import android.app.Application;
-import androidx.lifecycle.AndroidViewModel;
 import android.media.AudioManager;
 import android.os.Build;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
-import androidx.annotation.NonNull;
 
 import de.thecode.android.tazreader.utils.SingleLiveEvent;
 
@@ -17,6 +15,8 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import androidx.annotation.NonNull;
+import androidx.lifecycle.AndroidViewModel;
 import timber.log.Timber;
 
 public class ReaderTTSViewModel extends AndroidViewModel implements TextToSpeech.OnInitListener{
@@ -36,6 +36,7 @@ public class ReaderTTSViewModel extends AndroidViewModel implements TextToSpeech
 
     private SingleLiveEvent<TTS> liveTtsState = new SingleLiveEvent<>();
     private SingleLiveEvent<TTSERROR> liveTtsError = new SingleLiveEvent<>();
+
 
     private AudioManager.OnAudioFocusChangeListener audioFocusChangeListener = focusChange -> {
         Timber.d("focusChange: %s", focusChange);

@@ -9,6 +9,8 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <supports-screens android:anyDensity="true"/>
 
@@ -140,6 +142,9 @@
                 android:name="io.fabric.ApiKey"
                 android:value="${fabricApiKey}"
                 />
+
+        <service
+                android:name=".audio.AudioPlayerService"/>
     </application>
 
 </manifest>
