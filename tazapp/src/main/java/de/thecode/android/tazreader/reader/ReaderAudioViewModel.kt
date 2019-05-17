@@ -19,12 +19,13 @@ class ReaderAudioViewModel(application: Application) : AndroidViewModel(applicat
     private val serviceBroadcastReceiver = ServiceCommunicationReceiver()
 
     val currentAudioItemLiveData = MutableLiveData<AudioItem?>()
-    val isPlayingLiveData = MutableLiveData<Boolean>()
+    val currentStateLiveData = MutableLiveData<AudioPlayerService.State>()
+//    val isPlayingLiveData = MutableLiveData<Boolean>()
 
     init {
         syncAudioItemFromService()
         LocalBroadcastManager.getInstance(getApplication())
-                .registerReceiver(serviceBroadcastReceiver, IntentFilter(AudioPlayerService.ACTION_SERVICE_COMMUNICATION))
+                .registerReceiver(serviceBroadcastReceiver, IntentFilter(AudioPlayerService.ACTION_STATE_CHANGED))
     }
 
     override fun onCleared() {
@@ -52,36 +53,19 @@ class ReaderAudioViewModel(application: Application) : AndroidViewModel(applicat
 
 
     private fun syncAudioItemFromService() {
+        service = AudioPlayerService.instance
         service?.let {
             currentAudioItemLiveData.postValue(it.audioItem)
-            isPlayingLiveData.postValue(it.isPlaying())
+            currentStateLiveData.postValue(it.state)
         } ?: run {
             currentAudioItemLiveData.postValue(null)
-            isPlayingLiveData.postValue(false)
         }
     }
 
     inner class ServiceCommunicationReceiver : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            intent?.let{ innerIntent ->
-                val message = innerIntent.getStringExtra(AudioPlayerService.EXTRA_COMMUNICATION_MESSAGE)
-                message?.let {
-                    when(it) {
-                        AudioPlayerService.MESSAGE_SERVICE_PREPARE_PLAYING -> {
-                            service = AudioPlayerService.instance
-                            syncAudioItemFromService()
-                        }
-                        AudioPlayerService.MESSAGE_SERVICE_DESTROYED -> {
-                            service = null
-                            syncAudioItemFromService()
-                        }
-                        AudioPlayerService.MESSAGE_SERVICE_PLAYSTATE_CHANGED -> {
-                            syncAudioItemFromService()
-                        }
-                    }
-                }
-            }
-
+            d { "onReceive $intent"}
+            syncAudioItemFromService()
         }
     }
 

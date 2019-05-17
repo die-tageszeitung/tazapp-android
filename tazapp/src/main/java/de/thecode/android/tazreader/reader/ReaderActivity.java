@@ -17,6 +17,7 @@ import android.text.style.StyleSpan;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.webkit.URLUtil;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -101,7 +102,10 @@ public class ReaderActivity extends BaseActivity
     FrameLayout      mContentFrame;
     ProgressBar      mLoadingProgress;
     ConstraintLayout playerLayout;
-    ImageView        playerStopButton;
+    ImageView        playerButtonStop;
+    ImageView        playerButtonPause;
+    ImageView        playerButtonPausePlay;
+    ProgressBar        playerWait;
 
     FragmentManager mFragmentManager;
     StorageManager  mStorage;
@@ -150,9 +154,13 @@ public class ReaderActivity extends BaseActivity
 
         playerLayout = findViewById(R.id.player_layout);
         playerLayout.setVisibility(View.GONE);
-        findViewById(R.id.stop_button).setOnClickListener(v -> audioViewModel.stopPlaying());
-        findViewById(R.id.pause_button).setOnClickListener(v -> audioViewModel.pauseOrResume());
-        findViewById(R.id.play_button).setOnClickListener(v -> audioViewModel.pauseOrResume());
+        playerButtonPausePlay =findViewById(R.id.play_button);
+        playerButtonStop =findViewById(R.id.stop_button);
+        playerButtonPause =findViewById(R.id.pause_button);
+        playerWait =findViewById(R.id.wait_progress);
+        playerButtonStop.setOnClickListener(v -> audioViewModel.stopPlaying());
+        playerButtonPausePlay.setOnClickListener(v -> audioViewModel.pauseOrResume());
+        playerButtonPause.setOnClickListener(v -> audioViewModel.pauseOrResume());
 
         mLoadingProgress = findViewById(R.id.loading);
         mLoadingProgress.setVisibility(View.VISIBLE);
@@ -247,6 +255,7 @@ public class ReaderActivity extends BaseActivity
 
         audioViewModel.getCurrentAudioItemLiveData()
                       .observe(this, audioItem -> {
+
                           playerLayout.setVisibility(audioItem != null ? View.VISIBLE : View.GONE);
                           if (audioItem != null) {
                               ((TextView) playerLayout.findViewById(R.id.title)).setText(audioItem.getTitle());
@@ -254,11 +263,31 @@ public class ReaderActivity extends BaseActivity
                           }
                       });
 
-        audioViewModel.isPlayingLiveData()
-                      .observe(this, isPLaying -> {
-                          findViewById(R.id.play_button).setVisibility(isPLaying ? View.GONE : View.VISIBLE);
-                          findViewById(R.id.pause_button).setVisibility(!isPLaying ? View.GONE : View.VISIBLE);
-                      });
+        audioViewModel.getCurrentStateLiveData().observe(this, state -> {
+            switch (state) {
+                case LOADING:
+                    playerButtonPausePlay.setVisibility(View.GONE);
+                    playerButtonPause.setVisibility(View.GONE);
+                    playerWait.setVisibility(View.VISIBLE);
+                    break;
+                case PLAYING:
+                    playerButtonPausePlay.setVisibility(View.GONE);
+                    playerButtonPause.setVisibility(View.VISIBLE);
+                    playerWait.setVisibility(View.GONE);
+                    break;
+                case PAUSED:
+                    playerButtonPausePlay.setVisibility(View.VISIBLE);
+                    playerButtonPause.setVisibility(View.GONE);
+                    playerWait.setVisibility(View.GONE);
+                    break;
+            }
+        });
+
+//        audioViewModel.isPlayingLiveData()
+//                      .observe(this, isPLaying -> {
+//                          findViewById(R.id.play_button).setVisibility(isPLaying ? View.GONE : View.VISIBLE);
+//                          findViewById(R.id.pause_button).setVisibility(!isPLaying ? View.GONE : View.VISIBLE);
+//                      });
 //        Intent intent = new Intent(this, AudioPlayerService.class);
 //        bindService(intent, connection, 0);
 
@@ -809,18 +838,27 @@ public class ReaderActivity extends BaseActivity
     public void speak2(Paper.Plist.Page.Article article) {
 
 
-        Uri audioUri = Uri.fromFile(new File(readerViewModel.getPaperDirectory(), article.getAudiolink()));
 
+        if (article != null && article.getAudiolink() != null) {
+            Uri audioUri;
+            if (URLUtil.isNetworkUrl(article.getAudiolink())) {
+                audioUri = Uri.parse(article.getAudiolink());
+            } else {
+                audioUri = Uri.fromFile(new File(readerViewModel.getPaperDirectory(), article.getAudiolink()));
+            }
+            if (audioUri != null) {
 
-        AudioItem audioItem = new AudioItem(audioUri.toString(),
-                                            article.getTitle(),
-                                            article.getPaper()
-                                                   .getTitelWithDate(this),
-                                            article.getPaper().getBookId(),
-                                            0);
+                AudioItem audioItem = new AudioItem(audioUri.toString(),
+                                                    article.getTitle(),
+                                                    article.getPaper()
+                                                           .getTitelWithDate(this),
+                                                    article.getPaper().getBookId(),
+                                                    0);
 
-        audioViewModel.startPlaying(audioItem);
+                audioViewModel.startPlaying(audioItem);
 
+            }
+        }
     }
 
     public void speak(@NonNull String id, CharSequence text) {

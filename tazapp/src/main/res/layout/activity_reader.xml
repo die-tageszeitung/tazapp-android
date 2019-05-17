@@ -111,8 +111,17 @@
                     android:id="@+id/buttonBarrier"
 
                     app:barrierDirection="left"
-                    app:constraint_referenced_ids="stop_button,pause_button,play_button"
+                    app:constraint_referenced_ids="stop_button,pause_button,play_button,wait_progress"
                     tools:layout_editor_absoluteX="411dp"/>
+
+            <ProgressBar
+                    style="?android:attr/progressBarStyleSmall"
+                    android:layout_width="48dp"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/wait_progress"
+                    app:layout_constraintEnd_toStartOf="@+id/stop_button"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"/>
         </androidx.constraintlayout.widget.ConstraintLayout>
         <FrameLayout
 
