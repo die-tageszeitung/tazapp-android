@@ -24,6 +24,10 @@ import de.thecode.android.tazreader.notifications.NotificationUtils
 import de.thecode.android.tazreader.start.StartActivity
 import kotlinx.android.parcel.Parcelize
 import java.io.IOException
+import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledExecutorService
+import java.util.concurrent.TimeUnit
+import kotlin.math.max
 
 
 class AudioPlayerService : Service(), MediaPlayer.OnCompletionListener, MediaPlayer.OnBufferingUpdateListener, MediaPlayer.OnPreparedListener, MediaPlayer.OnErrorListener, MediaPlayer.OnInfoListener, AudioManager.OnAudioFocusChangeListener {
@@ -37,10 +41,11 @@ class AudioPlayerService : Service(), MediaPlayer.OnCompletionListener, MediaPla
 //        const val ACTION_SERVICE_COMMUNICATION = "audioServiceDestroyedCommunication"
         const val EXTRA_AUDIO_ITEM = "audioExtra"
         const val ACTION_STATE_CHANGED = "serviceAudioStateChanged"
+        const val ACTION_POSITION_UPDATE = "serviceAudioPositionChanged"
 //        const val EXTRA_COMMUNICATION_MESSAGE = "messageExtra"
 //        const val EXTRA_STATE = "state"
 
-        const val MESSAGE_SERVICE_PREPARE_PLAYING = "servicePreparePlaying"
+//        const val MESSAGE_SERVICE_PREPARE_PLAYING = "servicePreparePlaying"
 //        const val MESSAGE_SERVICE_DESTROYED = "serviceDestroyed"
 //        const val MESSAGE_SERVICE_PLAYSTATE_CHANGED = "playstateChanged"
 
@@ -56,6 +61,7 @@ class AudioPlayerService : Service(), MediaPlayer.OnCompletionListener, MediaPla
 
     private var mediaPlayer: MediaPlayer? = null
     private var audioManager: AudioManager? = null
+    private var executor:ScheduledExecutorService? = null
 
     var audioItem: AudioItem? = null
     var state: State = State.LOADING
@@ -66,6 +72,20 @@ class AudioPlayerService : Service(), MediaPlayer.OnCompletionListener, MediaPla
             serviceIntent.action = ACTION_STATE_CHANGED
             LocalBroadcastManager.getInstance(this)
                     .sendBroadcast(serviceIntent)
+            when(value) {
+                State.PLAYING -> {
+                    if (executor == null) {
+                        executor = Executors.newSingleThreadScheduledExecutor()
+                        executor?.scheduleAtFixedRate({
+                            updatePlayerPosition()
+                        }, 0, 500, TimeUnit.MILLISECONDS)
+                    }
+                }
+                else -> {
+                    executor?.shutdown()
+                    executor = null
+                }
+            }
         }
 
     override fun onBind(intent: Intent?): IBinder? {
@@ -226,6 +246,29 @@ class AudioPlayerService : Service(), MediaPlayer.OnCompletionListener, MediaPla
         }
     }
 
+    fun seekToPosition(position:Int) {
+        mediaPlayer?.seekTo(position)
+        updatePlayerPosition()
+    }
+
+    fun rewind30Seconds() {
+        mediaPlayer?.let {
+            val newPos = it.currentPosition - TimeUnit.SECONDS.toMillis(30).toInt()
+            it.seekTo(max(newPos,0))
+            updatePlayerPosition()
+        }
+    }
+
+    private fun updatePlayerPosition() {
+        mediaPlayer?.let {
+            audioItem?.resumePosition = it.currentPosition
+            val timeIntent = Intent()
+            timeIntent.action = ACTION_POSITION_UPDATE
+            LocalBroadcastManager.getInstance(this)
+                    .sendBroadcast(timeIntent)
+        }
+    }
+
     private fun requestAudioFocus(): Boolean {
         val audioManagerService = getSystemService(Context.AUDIO_SERVICE) as AudioManager
         audioManager = audioManagerService
@@ -248,9 +291,11 @@ class AudioPlayerService : Service(), MediaPlayer.OnCompletionListener, MediaPla
     }
 
     override fun onPrepared(mp: MediaPlayer?) {
+
         d {
-            "onPrepared"
+            "onPrepared duration ${mp?.duration}"
         }
+        mp?.let { audioItem?.duration = mp.duration }
         pauseOrResumePlaying()
     }
 
@@ -309,4 +354,4 @@ class AudioPlayerService : Service(), MediaPlayer.OnCompletionListener, MediaPla
 }
 
 @Parcelize
-data class AudioItem(val uri: String, val title: String, val source: String, val sourceId: String, var resumePosition: Int = 0) : Parcelable
+data class AudioItem(val uri: String, val title: String, val source: String, val sourceId: String, var resumePosition: Int = 0, var duration: Int = 0) : Parcelable
