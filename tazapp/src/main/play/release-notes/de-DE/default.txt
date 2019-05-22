@@ -1,5 +1,1 @@
-* Zu Artikeln können jetzt die eingesprochenen Texte abgespielt werden sofern vorhanden.
-* Bugfix falsche Downloaddatei
-* Infos zum laufenden Download anzeigen mit einfacherer Möglichkeit, den Download abzubrechen
-* Richtige Fehlermeldung beim Download-Problemen
-* Fehlermeldung bei Synchronisierungsfehler
+* Sofern vorhanden können jetzt zu Artikeln die eingesprochenen Texte abgespielt werden.
