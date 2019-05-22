@@ -16,11 +16,27 @@
         <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:id="@+id/player_layout"
-                android:layout_height="48dp"
+                android:layout_height="64dp"
                 android:animateLayoutChanges="true"
                 android:background="@color/toolbar_background_color"
                 app:layout_constraintBottom_toBottomOf="@+id/title"
                 app:layout_constraintTop_toBottomOf="@+id/title">
+
+            <androidx.constraintlayout.widget.Guideline
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/guidelineButton1"
+                    app:layout_constraintGuide_end="48dp"
+                    android:orientation="vertical"
+                    app:layout_constraintEnd_toEndOf="parent"/>
+
+            <androidx.constraintlayout.widget.Guideline
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/guidelineButton2"
+                    app:layout_constraintGuide_end="96dp"
+                    android:orientation="vertical"
+                    app:layout_constraintEnd_toEndOf="parent"/>
 
             <ImageView
                     android:layout_width="48dp"
@@ -32,7 +48,20 @@
                     android:clickable="true"
                     app:tint="@color/player_button"
                     android:scaleType="center"
-                    app:layout_constraintEnd_toStartOf="@+id/stop_button"
+                    app:layout_constraintEnd_toStartOf="@+id/guidelineButton1"
+                    />
+
+            <ImageView
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:id="@+id/rev_button"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:srcCompat="@drawable/ic_rewind30_black_24dp"
+                    android:clickable="true"
+                    app:tint="@color/player_button"
+                    android:scaleType="center"
+                    app:layout_constraintEnd_toStartOf="@+id/guidelineButton2"
                     />
 
             <ImageView
@@ -45,7 +74,7 @@
                     android:clickable="true"
                     app:tint="@color/player_button"
                     android:scaleType="center"
-                    app:layout_constraintEnd_toStartOf="@+id/stop_button"
+                    app:layout_constraintEnd_toStartOf="@+id/guidelineButton1"
                     />
 
             <ImageView
@@ -70,12 +99,13 @@
                     android:maxLines="1"
                     android:ellipsize="end"
                     app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintBottom_toTopOf="@+id/source"
                     app:layout_constraintVertical_chainStyle="packed"
                     app:layout_constraintStart_toEndOf="@+id/imageView"
                     android:layout_marginLeft="8dp"
                     android:layout_marginStart="8dp"
-                    app:layout_constraintEnd_toStartOf="@+id/buttonBarrier"/>
+                    app:layout_constraintEnd_toStartOf="@+id/buttonBarrier"
+                    app:layout_constraintHorizontal_bias="0.5"
+                    app:layout_constraintBottom_toTopOf="@+id/source"/>
 
             <TextView
                     android:text="@string/dummy"
@@ -86,12 +116,36 @@
                     android:maxLines="1"
                     android:ellipsize="end"
                     android:textSize="12sp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/title"
                     app:layout_constraintStart_toEndOf="@+id/imageView"
                     android:layout_marginLeft="8dp"
                     android:layout_marginStart="8dp"
-                    app:layout_constraintEnd_toEndOf="@+id/buttonBarrier"/>
+                    app:layout_constraintEnd_toEndOf="@+id/buttonBarrier"
+                    app:layout_constraintHorizontal_bias="0.5"
+                    app:layout_constraintTop_toBottomOf="@+id/title"
+                    app:layout_constraintBottom_toTopOf="@+id/player_seekbar"/>
+
+
+            <TextView
+                    android:text="-"
+                    android:textSize="12sp"
+                    android:textColor="@color/player_button_normal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/duration"
+                    app:layout_constraintEnd_toEndOf="@+id/source"
+                    app:layout_constraintTop_toTopOf="@+id/player_seekbar"
+                    app:layout_constraintBottom_toBottomOf="@+id/player_seekbar"/>
+
+            <TextView
+                    android:text="-"
+                    android:textSize="12sp"
+                    android:textColor="@color/player_button_normal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/position"
+                    app:layout_constraintStart_toStartOf="@+id/source"
+                    app:layout_constraintTop_toTopOf="@+id/player_seekbar"
+                    app:layout_constraintBottom_toBottomOf="@+id/player_seekbar"/>
 
             <ImageView
                     app:tint="@color/player_button_normal"
@@ -111,7 +165,7 @@
                     android:id="@+id/buttonBarrier"
 
                     app:barrierDirection="left"
-                    app:constraint_referenced_ids="stop_button,pause_button,play_button,wait_progress"
+                    app:constraint_referenced_ids="stop_button,pause_button,play_button,wait_progress,rev_button"
                     tools:layout_editor_absoluteX="411dp"/>
 
             <ProgressBar
@@ -119,9 +173,20 @@
                     android:layout_width="48dp"
                     android:layout_height="wrap_content"
                     android:id="@+id/wait_progress"
-                    app:layout_constraintEnd_toStartOf="@+id/stop_button"
+                    app:layout_constraintEnd_toStartOf="@+id/guidelineButton1"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent"/>
+
+            <SeekBar
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/player_seekbar"
+                    app:layout_constraintStart_toEndOf="@+id/position"
+                    app:layout_constraintEnd_toStartOf="@+id/duration"
+                    app:layout_constraintTop_toBottomOf="@+id/source"
+                    app:layout_constraintBottom_toBottomOf="parent"/>
+
+
         </androidx.constraintlayout.widget.ConstraintLayout>
         <FrameLayout
 

@@ -21,6 +21,7 @@ import android.webkit.URLUtil;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import de.mateware.dialog.Dialog;
@@ -105,7 +106,12 @@ public class ReaderActivity extends BaseActivity
     ImageView        playerButtonStop;
     ImageView        playerButtonPause;
     ImageView        playerButtonPausePlay;
+    ImageView        playerButtonRewind30;
     ProgressBar        playerWait;
+    TextView playerDuration;
+    TextView playerPosition;
+    SeekBar playerSeekBar;
+    boolean playSeekbarChanging = false;
 
     FragmentManager mFragmentManager;
     StorageManager  mStorage;
@@ -134,12 +140,6 @@ public class ReaderActivity extends BaseActivity
 //        long paperId = getIntent().getLongExtra(KEY_EXTRA_PAPER_ID, -1L);
 //        if (paperId == -1L) throw new IllegalStateException("Activity Reader has to be called with extra PaperId");
 
-        readerViewModel = ViewModelProviders.of(this, ReaderViewModel.createFactory(getApplication(), bookId))
-                                            .get(ReaderViewModel.class);
-        ttsViewModel = ViewModelProviders.of(this)
-                                         .get(ReaderTTSViewModel.class);
-        audioViewModel = ViewModelProviders.of(this)
-                                           .get(ReaderAudioViewModel.class);
 
         mStorage = StorageManager.getInstance(this);
 
@@ -157,13 +157,47 @@ public class ReaderActivity extends BaseActivity
         playerButtonPausePlay =findViewById(R.id.play_button);
         playerButtonStop =findViewById(R.id.stop_button);
         playerButtonPause =findViewById(R.id.pause_button);
+        playerButtonRewind30 =findViewById(R.id.rev_button);
         playerWait =findViewById(R.id.wait_progress);
+        playerDuration = findViewById(R.id.duration);
+        playerPosition = findViewById(R.id.position);
+        playerSeekBar = findViewById(R.id.player_seekbar);
+
         playerButtonStop.setOnClickListener(v -> audioViewModel.stopPlaying());
         playerButtonPausePlay.setOnClickListener(v -> audioViewModel.pauseOrResume());
         playerButtonPause.setOnClickListener(v -> audioViewModel.pauseOrResume());
+        playerButtonRewind30.setOnClickListener(v -> audioViewModel.rewind30Seconds());
+        playerSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (fromUser) {
+                    audioViewModel.seekTo(progress);
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                playSeekbarChanging = true;
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                playSeekbarChanging = false;
+            }
+        });
+
+
+        readerViewModel = ViewModelProviders.of(this, ReaderViewModel.createFactory(getApplication(), bookId))
+                                            .get(ReaderViewModel.class);
+        ttsViewModel = ViewModelProviders.of(this)
+                                         .get(ReaderTTSViewModel.class);
+        audioViewModel = ViewModelProviders.of(this)
+                                           .get(ReaderAudioViewModel.class);
+
 
         mLoadingProgress = findViewById(R.id.loading);
         mLoadingProgress.setVisibility(View.VISIBLE);
+
 
         mDrawerLayoutPageIndex = findViewById(R.id.right_drawer);
         DrawerLayout.LayoutParams pageIndexLayoutParams = (DrawerLayout.LayoutParams) mDrawerLayoutPageIndex.getLayoutParams();
@@ -255,13 +289,24 @@ public class ReaderActivity extends BaseActivity
 
         audioViewModel.getCurrentAudioItemLiveData()
                       .observe(this, audioItem -> {
-
+                          playerSeekBar.setMax(audioItem != null ? audioItem.getDuration(): 0);
+                          playerSeekBar.setProgress(audioItem != null ? audioItem.getResumePosition(): 0);
+                          playerDuration.setText(audioItem != null ? ReaderAudioViewModel.Companion.millisToTimeString(audioItem.getDuration()) : "-");
                           playerLayout.setVisibility(audioItem != null ? View.VISIBLE : View.GONE);
                           if (audioItem != null) {
                               ((TextView) playerLayout.findViewById(R.id.title)).setText(audioItem.getTitle());
                               ((TextView) playerLayout.findViewById(R.id.source)).setText(audioItem.getSource());
+
                           }
                       });
+
+        audioViewModel.getCurrentPositionLiveData().observe(this, position -> {
+
+            Timber.d("position! %d",position);
+            playerPosition.setText(ReaderAudioViewModel.Companion.millisToTimeString(position));
+            if (!playSeekbarChanging)
+            playerSeekBar.setProgress(position);
+        });
 
         audioViewModel.getCurrentStateLiveData().observe(this, state -> {
             switch (state) {
@@ -269,16 +314,20 @@ public class ReaderActivity extends BaseActivity
                     playerButtonPausePlay.setVisibility(View.GONE);
                     playerButtonPause.setVisibility(View.GONE);
                     playerWait.setVisibility(View.VISIBLE);
+                    playerButtonRewind30.setVisibility(View.GONE);
                     break;
                 case PLAYING:
                     playerButtonPausePlay.setVisibility(View.GONE);
                     playerButtonPause.setVisibility(View.VISIBLE);
                     playerWait.setVisibility(View.GONE);
+                    playerButtonRewind30.setVisibility(View.VISIBLE);
                     break;
                 case PAUSED:
                     playerButtonPausePlay.setVisibility(View.VISIBLE);
                     playerButtonPause.setVisibility(View.GONE);
                     playerWait.setVisibility(View.GONE);
+                    playerButtonRewind30.setVisibility(View.VISIBLE);
+
                     break;
             }
         });
@@ -853,7 +902,7 @@ public class ReaderActivity extends BaseActivity
                                                     article.getPaper()
                                                            .getTitelWithDate(this),
                                                     article.getPaper().getBookId(),
-                                                    0);
+                                                    0,0);
 
                 audioViewModel.startPlaying(audioItem);
 
