@@ -34,7 +34,7 @@ import de.thecode.android.tazreader.data.ITocItem;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.Store;
 import de.thecode.android.tazreader.data.TazSettings;
-import de.thecode.android.tazreader.dialog.HelpDialog;
+import de.thecode.android.tazreader.dialognew.HelpPage;
 import de.thecode.android.tazreader.notifications.NotificationUtils;
 import de.thecode.android.tazreader.reader.article.ArticleFragment;
 import de.thecode.android.tazreader.reader.article.TopLinkFragment;
@@ -502,9 +502,11 @@ public class ReaderActivity extends BaseActivity
 
     public void onShowHelp() {
         if (mContentFragment instanceof PagesFragment) {
-            showHelpDialog(HelpDialog.HELP_PAGE);
+//            showHelpDialog(HelpDialog.HELP_PAGE);
+            showNewHelpDialog(HelpPage.PAGE);
         } else {
-            showHelpDialog(HelpDialog.HELP_ARTICLE);
+//            showHelpDialog(HelpDialog.HELP_ARTICLE);
+            showNewHelpDialog(HelpPage.ARTICLE);
         }
     }
 

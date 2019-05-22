@@ -9,6 +9,7 @@ import de.thecode.android.tazreader.utils.StorageManager;
 
 import java.util.List;
 
+import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
 import androidx.work.WorkManager;
 
@@ -47,7 +48,7 @@ public class ResourceRepository {
     }
 
     @WorkerThread
-    public ResourceWithDownloadState getResourceForPaper(Paper paper) {
+    public @Nullable ResourceWithDownloadState getResourceForPaper(Paper paper) {
         String resource = storeRepository.getStore(paper.getBookId(), Paper.STORE_KEY_RESOURCE_PARTNER)
                                          .getValue(paper.getResource()); //default value as Fallback
         return getWithKey(resource);
@@ -56,7 +57,7 @@ public class ResourceRepository {
     }
 
     @WorkerThread
-    public ResourceWithDownloadState getWithKey(String key) {
+    public @Nullable ResourceWithDownloadState getWithKey(String key) {
         return appDatabase.resourceDao()
                           .resourceWithKey(key);
     }

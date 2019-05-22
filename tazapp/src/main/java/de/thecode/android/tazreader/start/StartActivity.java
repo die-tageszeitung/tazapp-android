@@ -41,9 +41,9 @@ import de.thecode.android.tazreader.data.ResourceWithDownloadState;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.dialog.ArchiveDialog;
 import de.thecode.android.tazreader.dialog.ArchiveEntry;
-import de.thecode.android.tazreader.dialog.HelpDialog;
 import de.thecode.android.tazreader.dialognew.AskForHelpDialog;
 import de.thecode.android.tazreader.dialognew.DownloadInfoDialog;
+import de.thecode.android.tazreader.dialognew.HelpPage;
 import de.thecode.android.tazreader.download.TazDownloadManager;
 import de.thecode.android.tazreader.importer.ImportActivity;
 import de.thecode.android.tazreader.migration.MigrationActivity;
@@ -420,9 +420,11 @@ public class StartActivity extends BaseActivity
     public void onNavigationClick(NavigationDrawerFragment.ClickItem item) {
         Timber.i("");
         if (helpItem.equals(item)) {
-            showHelpDialog(HelpDialog.HELP_LIBRARY);
+//            showHelpDialog(HelpDialog.HELP_LIBRARY);
+            showNewHelpDialog(HelpPage.LIBRARY);
         } else if (privacyTermsItem.equals(item)) {
-            showHelpDialog(HelpDialog.HELP_PRIVACY);
+//            showHelpDialog(HelpDialog.HELP_PRIVACY);
+            showNewHelpDialog(HelpPage.PRIVACY);
         } else if (rateAppItem.equals(item)) {
             Intent rateIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + BuildConfig.APPLICATION_ID));
             rateIntent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
@@ -872,7 +874,8 @@ public class StartActivity extends BaseActivity
             return showDialog;
         }, aBoolean -> {
             if (aBoolean) {
-                showHelpDialog(HelpDialog.HELP_INTRO);
+//                showHelpDialog(HelpDialog.HELP_INTRO);
+                showNewHelpDialog(HelpPage.INTRO);
             } else {
                 if (getSupportFragmentManager().findFragmentByTag(AskForHelpDialog.TAG) == null && startViewModel.getSettings()
                                                                                                                  .isAskForHelpAllowed()) {

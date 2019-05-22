@@ -3,8 +3,6 @@ package de.thecode.android.tazreader.utils;
 
 import android.content.Intent;
 import android.os.Bundle;
-import androidx.fragment.app.FragmentManager;
-import androidx.appcompat.app.AppCompatActivity;
 
 import de.mateware.dialog.DialogAdapterList;
 import de.mateware.dialog.listener.DialogAdapterListListener;
@@ -13,10 +11,9 @@ import de.mateware.dialog.listener.DialogCancelListener;
 import de.mateware.dialog.listener.DialogDismissListener;
 import de.mateware.dialog.listener.DialogListListener;
 import de.thecode.android.tazreader.BuildConfig;
-import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.TazSettings;
-import de.thecode.android.tazreader.dialog.HelpDialog;
 import de.thecode.android.tazreader.dialog.PushNotificationDialog;
+import de.thecode.android.tazreader.dialognew.HelpPage;
 import de.thecode.android.tazreader.push.PushHelper;
 import de.thecode.android.tazreader.push.PushNotification;
 import de.thecode.android.tazreader.worker.PushRestApiWorker;
@@ -25,6 +22,8 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentManager;
 import timber.log.Timber;
 
 /**
@@ -110,18 +109,24 @@ public class BaseActivity extends AppCompatActivity
                                             .show(getSupportFragmentManager(), DIALOG_PUSH);
     }
 
-    public void showHelpDialog(@HelpDialog.HelpPage String helpPage) {
-        if (getSupportFragmentManager().findFragmentByTag(DIALOG_HELP) == null) {
-            HelpDialog.Builder builder = new HelpDialog.Builder().setPositiveButton()
-                                                                 .setHelpPage(helpPage);
-            if (HelpDialog.HELP_INTRO.equals(helpPage)){
-                builder.setNeutralButton(R.string.drawer_account);
-            }
-            builder.buildSupport()
-                   .show(getSupportFragmentManager(), DIALOG_HELP);
+//    public void showHelpDialog(@HelpDialog.HelpPage String helpPage) {
+//        if (getSupportFragmentManager().findFragmentByTag(DIALOG_HELP) == null) {
+//            HelpDialog.Builder builder = new HelpDialog.Builder().setPositiveButton()
+//                                                                 .setHelpPage(helpPage);
+//            if (HelpDialog.HELP_INTRO.equals(helpPage)){
+//                builder.setNeutralButton(R.string.drawer_account);
+//            }
+//            builder.buildSupport()
+//                   .show(getSupportFragmentManager(), DIALOG_HELP);
+//        }
+//    }
+
+
+    public void showNewHelpDialog(HelpPage helpPage) {
+        if (getSupportFragmentManager().findFragmentByTag(de.thecode.android.tazreader.dialognew.HelpDialog.TAG) == null) {
+            de.thecode.android.tazreader.dialognew.HelpDialog.Companion.newInstance(helpPage).show(getSupportFragmentManager(),de.thecode.android.tazreader.dialognew.HelpDialog.TAG);
         }
     }
-
 
     @Override
     public void onDialogClick(String tag, Bundle dialogArguments, int which) {

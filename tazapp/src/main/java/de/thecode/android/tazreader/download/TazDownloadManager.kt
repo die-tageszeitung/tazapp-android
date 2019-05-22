@@ -79,7 +79,7 @@ class TazDownloadManager private constructor() {
 
     @WorkerThread
     fun downloadResource(key: String, unmeteredOnly: Boolean = false, override: Boolean = false): Result {
-        val resource = resourceRepository.getWithKey(key)
+        val resource = resourceRepository.getWithKey(key)!!
         d { "requesting resource download for resource $resource" }
         val download = resourceRepository.getDownload(key)
         d { "download $download" }
