@@ -7,7 +7,11 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.fragment.app.DialogFragment
-import androidx.lifecycle.*
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.customview.customView
 import com.afollestad.materialdialogs.customview.getCustomView
@@ -19,6 +23,8 @@ import de.thecode.android.tazreader.resourceRepository
 import de.thecode.android.tazreader.storageManager
 import org.jetbrains.anko.doAsync
 import java.io.File
+import java.net.URL
+import java.util.*
 
 class HelpDialog : DialogFragment() {
 
@@ -44,20 +50,34 @@ class HelpDialog : DialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         d { "XXXX onCreateDialog" }
         context?.let { dialogContext ->
-            val dialog = MaterialDialog(dialogContext).customView(R.layout.dialog_help)
+            val dialog = MaterialDialog(dialogContext).customView(viewRes = R.layout.dialog_help,noVerticalPadding = true,dialogWrapContent = true)
             dialog.maxWidth(R.dimen.help_max_width)
             dialog.positiveButton()
-            webView = dialog.getCustomView().findViewById(R.id.help_web_view)
+            webView = dialog.getCustomView()
+                    .findViewById(R.id.help_web_view)
             webView?.settings!!.javaScriptEnabled = true
             webView?.webViewClient = object : WebViewClient() {
                 override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
+                    d { "XXX shouldOverrideUrlLoading $request" }
                     return super.shouldOverrideUrlLoading(view, request)
+                }
+
+                override fun onPageFinished(view: WebView?, url: String?) {
+                    d { "XXX onPageFinished $url" }
+                    url?.let {
+                        val ref = URL(url).ref
+                        d { "XXX $ref" }
+                        val timer = Timer()
+
+                        ref?.let { webView?.loadUrl("javascript:scrollAnchor($ref);") }
+                    }
+                    super.onPageFinished(view, url)
                 }
             }
             viewModel.currentUrlLiveData.observe(this, Observer { url ->
-                d { "XXX $url"}
+                d { "XXX $url" }
                 webView?.let {
-                    if (it.url != url){
+                    if (it.url != url) {
                         it.loadUrl(url)
                     }
                 }
@@ -79,7 +99,7 @@ class HelpDialog : DialogFragment() {
 enum class HelpPage(val pageName: String) {
     INTRO("intro.html"),
     LIBRARY("ausgaben.html"),
-    PAGE("seiten.html"),
+    PAGE("help.html#seiten"),
     ARTICLE("artikel.html"),
     PRIVACY("datenschutz.html");
 }
@@ -96,28 +116,30 @@ class HelpDialogViewModel(val page: HelpPage) : ViewModel() {
         //currentUrlLiveData.value = "file:///android_asset/help/${page.pageName}"
         doAsync {
             var path = PACKAGED_HELP_PATH
-            run finder@ {
-                paperRepository.allPapers.forEach {paper ->
+            run finder@{
+                paperRepository.allPapers.forEach { paper ->
                     val latestResource = resourceRepository.getResourceForPaper(paper)
                     latestResource?.let { resource ->
-                        d { "XXX $latestResource"}
+                        d { "XXX $latestResource" }
                         if (resource.downloadState == DownloadState.READY) {
                             val latestResourceDir = storageManager.getResourceDirectory(resource)
-                            d { "XXX $latestResourceDir"}
+                            d { "XXX $latestResourceDir" }
                             arrayOf("res/android-help", "res/ios-help").map {
-                                File(latestResourceDir,it)
-                            }.find {
-                                it.exists()
-                            }?.let {
-                                path = "file://${it.absolutePath}/"
-                                return@finder
+                                File(latestResourceDir, it)
                             }
+                                    .find {
+                                        it.exists()
+                                    }
+                                    ?.let {
+                                        path = "file://${it.absolutePath}/"
+                                        return@finder
+                                    }
 
                         }
                     }
                 }
             }
-            currentUrlLiveData.postValue(path+page.pageName)
+            currentUrlLiveData.postValue(path + page.pageName)
         }
     }
 }
