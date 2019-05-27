@@ -7,11 +7,7 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.fragment.app.DialogFragment
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.*
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.customview.customView
 import com.afollestad.materialdialogs.customview.getCustomView
@@ -23,8 +19,6 @@ import de.thecode.android.tazreader.resourceRepository
 import de.thecode.android.tazreader.storageManager
 import org.jetbrains.anko.doAsync
 import java.io.File
-import java.net.URL
-import java.util.*
 
 class HelpDialog : DialogFragment() {
 
@@ -64,13 +58,6 @@ class HelpDialog : DialogFragment() {
 
                 override fun onPageFinished(view: WebView?, url: String?) {
                     d { "XXX onPageFinished $url" }
-                    url?.let {
-                        val ref = URL(url).ref
-                        d { "XXX $ref" }
-                        val timer = Timer()
-
-                        ref?.let { webView?.loadUrl("javascript:scrollAnchor($ref);") }
-                    }
                     super.onPageFinished(view, url)
                 }
             }

@@ -293,11 +293,18 @@ android {
             into helpDir
         }
         unzipTask.finalizedBy deleteZipTask
-        tasks.preBuild.dependsOn unzipTask
+//        tasks."assemble${flavor.name.capitalize()}Release".dependsOn(unzipTask)
+//        tasks.preBuild.dependsOn unzipTask
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+afterEvaluate {
+    android.productFlavors.all { flavor ->
+        tasks."generate${flavor.name.capitalize()}ReleaseResources".dependsOn "helpUnzipFile${flavor.name.capitalize()}"
     }
 }
 
