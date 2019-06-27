@@ -945,7 +945,11 @@ public class Paper extends Downloadable {
                 }
 
                 public String getTitle() {
-                    if (title == null || "".equals(title)) return getRealPage().getTitle();
+                    if (TextUtils.isEmpty(title)) {
+                        if (getRealPage() != null && !TextUtils.isEmpty(getRealPage().getTitle())) {
+                            return getRealPage().getTitle();
+                        }
+                    }
                     return title;
                 }
 
