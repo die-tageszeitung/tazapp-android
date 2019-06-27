@@ -176,5 +176,7 @@
     <string name="cd_player_button">Artikel vorlesen lassen</string>
     <string name="audio_service_error_gain_focus">Fehler beim Anfordern des Audiofocus.</string>
 
+    <string name="no_title">Kein Titel</string>
+
 
 </resources>
