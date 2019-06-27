@@ -43,6 +43,7 @@ import de.thecode.android.tazreader.dialog.ArchiveDialog;
 import de.thecode.android.tazreader.dialog.ArchiveEntry;
 import de.thecode.android.tazreader.dialognew.AskForHelpDialog;
 import de.thecode.android.tazreader.dialognew.DownloadInfoDialog;
+import de.thecode.android.tazreader.dialognew.HelpIntroActivity;
 import de.thecode.android.tazreader.dialognew.HelpPage;
 import de.thecode.android.tazreader.download.TazDownloadManager;
 import de.thecode.android.tazreader.importer.ImportActivity;
@@ -94,7 +95,7 @@ import timber.log.Timber;
  */
 public class StartActivity extends BaseActivity
         implements DownloadInfoDialog.CancelDownloadDialogListener, DialogButtonListener, DialogDismissListener,
-        DialogCancelListener, DialogAdapterListListener {
+        DialogCancelListener, DialogAdapterListListener, HelpIntroActivity {
 
     //private static final String DIALOG_FIRST                 = "dialogFirst";
     private static final String DIALOG_USER_REENTER          = "dialogUserReenter";
@@ -119,7 +120,7 @@ public class StartActivity extends BaseActivity
     private static final String ARGUMENT_ARCHIVE_YEAR           = "archiveYear";
 
     private CustomToolbar            toolbar;
-    private NavigationDrawerFragment mDrawerFragment;
+    NavigationDrawerFragment mDrawerFragment;
     private View                     logWritingMessageView;
 
 //    RetainDataFragment retainDataFragment;
@@ -460,6 +461,7 @@ public class StartActivity extends BaseActivity
             super.onBackPressed();
         }
     }
+
 
 
     public void onSuccessfulCredentialsCheck() {
@@ -905,9 +907,7 @@ public class StartActivity extends BaseActivity
     @Override
     public void onDialogClick(String tag, Bundle arguments, int which) {
         super.onDialogClick(tag, arguments, which);
-        if (DIALOG_HELP.equals(tag)) {
-            if (which == Dialog.BUTTON_NEUTRAL) mDrawerFragment.simulateClick(userItem, true);
-        } else if (DIALOG_USER_REENTER.equals(tag)) {
+        if (DIALOG_USER_REENTER.equals(tag)) {
             if (which == Dialog.BUTTON_POSITIVE) {
                 TazSettings.getInstance(this)
                            .setPref(TazSettings.PREFKEY.USERMIGRATIONNOTIFICATION, true);
@@ -1058,5 +1058,10 @@ public class StartActivity extends BaseActivity
     @Override
     public void onCancelDownload(@NotNull String bookId) {
         startViewModel.deletePaper(bookId);
+    }
+
+    @Override
+    public void onAccountDataClick() {
+        mDrawerFragment.simulateClick(userItem, true);
     }
 }

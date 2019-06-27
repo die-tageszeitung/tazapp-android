@@ -1,9 +1,10 @@
 package de.thecode.android.tazreader.dialognew
 
 import android.app.Dialog
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.View
-import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.fragment.app.DialogFragment
@@ -47,25 +48,41 @@ class HelpDialog : DialogFragment() {
             val dialog = MaterialDialog(dialogContext).customView(viewRes = R.layout.dialog_help,noVerticalPadding = true,dialogWrapContent = true)
             dialog.maxWidth(R.dimen.help_max_width)
             dialog.positiveButton()
+            if (viewModel.page == HelpPage.INTRO){
+                dialog.neutralButton(R.string.drawer_account) {
+                    activity?.let {
+                        if (it is HelpIntroActivity){
+                            it.onAccountDataClick()
+                        }
+                    }
+                }
+            }
             webView = dialog.getCustomView()
                     .findViewById(R.id.help_web_view)
             webView?.settings!!.javaScriptEnabled = true
             webView?.webViewClient = object : WebViewClient() {
-                override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
-                    d { "XXX shouldOverrideUrlLoading $request" }
-                    return super.shouldOverrideUrlLoading(view, request)
+                override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
+                    url?.let {
+                        if (url.startsWith(viewModel.baseUrl)) {
+                            view?.loadUrl(url)
+                        } else {
+                            context?.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+                        }
+                    }
+                    return true
                 }
 
                 override fun onPageFinished(view: WebView?, url: String?) {
                     d { "XXX onPageFinished $url" }
+                    viewModel.currentUrlLiveData.value = url
                     super.onPageFinished(view, url)
                 }
             }
-            viewModel.currentUrlLiveData.observe(this, Observer { url ->
-                d { "XXX $url" }
+            viewModel.currentUrlLiveData.observe(this, Observer { urlString ->
+                d { "XXX ${webView!!.url}" }
                 webView?.let {
-                    if (it.url != url) {
-                        it.loadUrl(url)
+                    if (it.url != urlString) {
+                        webView?.loadUrl(urlString)
                     }
                 }
             })
@@ -93,16 +110,12 @@ enum class HelpPage(val pageName: String) {
 
 class HelpDialogViewModel(val page: HelpPage) : ViewModel() {
 
-    companion object {
-        const val PACKAGED_HELP_PATH = "file:///android_asset/help/"
-    }
-
+    var baseUrl = "file:///android_asset/help/"
     val currentUrlLiveData = MutableLiveData<String>()
 
     init {
         //currentUrlLiveData.value = "file:///android_asset/help/${page.pageName}"
         doAsync {
-            var path = PACKAGED_HELP_PATH
             run finder@{
                 paperRepository.allPapers.forEach { paper ->
                     val latestResource = resourceRepository.getResourceForPaper(paper)
@@ -118,7 +131,7 @@ class HelpDialogViewModel(val page: HelpPage) : ViewModel() {
                                         it.exists()
                                     }
                                     ?.let {
-                                        path = "file://${it.absolutePath}/"
+                                        baseUrl = "file://${it.absolutePath}/"
                                         return@finder
                                     }
 
@@ -126,7 +139,7 @@ class HelpDialogViewModel(val page: HelpPage) : ViewModel() {
                     }
                 }
             }
-            currentUrlLiveData.postValue(path + page.pageName)
+            currentUrlLiveData.postValue(baseUrl + page.pageName)
         }
     }
 }
@@ -136,4 +149,8 @@ class HelpDialogViewModelFactory(val page: HelpPage) : ViewModelProvider.Factory
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
         return HelpDialogViewModel(page) as T
     }
+}
+
+interface HelpIntroActivity {
+    fun onAccountDataClick()
 }

@@ -10,12 +10,10 @@
   <link rel="stylesheet" type="text/css" href="help.css" />
   <script type="text/javascript">
     window.onload = function () {
-      setTimeout(function() {
-        if (location.hash) {
-	      var e = document.getElementById(location.hash.substr(1));
-	      if (e) e.checked=false;
-        };
-      }, 500);
+      if (location.hash) {
+	var e = document.getElementById(location.hash.substr(1));
+	if (e) e.checked=false;
+      }
       closeTabs = function() {
         var allInputs = document.getElementsByTagName("input");
         for (var i = 0; i < allInputs.length; i++){

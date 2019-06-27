@@ -305,6 +305,8 @@ android {
 afterEvaluate {
     android.productFlavors.all { flavor ->
         tasks."generate${flavor.name.capitalize()}ReleaseResources".dependsOn "helpUnzipFile${flavor.name.capitalize()}"
+        tasks."generate${flavor.name.capitalize()}DebugResources".dependsOn "helpUnzipFile${flavor.name.capitalize()}"
+        tasks."generate${flavor.name.capitalize()}StagingResources".dependsOn "helpUnzipFile${flavor.name.capitalize()}"
     }
 }
 
