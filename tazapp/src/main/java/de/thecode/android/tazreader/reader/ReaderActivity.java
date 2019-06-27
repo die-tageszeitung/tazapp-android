@@ -710,9 +710,13 @@ public class ReaderActivity extends BaseActivity
                                                   .getPlist()
                                                   .getIndexItem(readerViewModel.getCurrentKey());
             if (currentItem instanceof Paper.Plist.Page.Article) {
-                loadContentFragment(((Paper.Plist.Page.Article) currentItem).getRealPage()
-                                                                            .getKey());
-                return;
+                Paper.Plist.Page.Article article = (Paper.Plist.Page.Article) currentItem;
+
+                if (article.getRealPage() != null) {
+                    loadContentFragment(((Paper.Plist.Page.Article) currentItem).getRealPage()
+                                                                                .getKey());
+                    return;
+                }
             }
         }
         NavUtils.navigateUpFromSameTask(this);

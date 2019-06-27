@@ -1,8 +1,5 @@
 package de.thecode.android.tazreader.reader.usertoc;
 
-import androidx.core.content.ContextCompat;
-import androidx.recyclerview.widget.DiffUtil;
-import androidx.recyclerview.widget.RecyclerView;
 import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -19,6 +16,10 @@ import de.thecode.android.tazreader.utils.TazListAdapter;
 import de.thecode.android.tazreader.utils.TintHelper;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
+
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.RecyclerView;
 
 /**
  * Created by mate on 16.03.18.
@@ -86,8 +87,14 @@ public class UserTocAdapter extends TazListAdapter<UserTocItem, UserTocAdapter.V
 
     private void onBindArticleViewHolder(ArticleViewHolder viewHolder, Paper.Plist.Page.Article item, int position) {
 
+        if (TextUtils.isEmpty(item.getTitle())) {
+            viewHolder.title.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_emoticon_dead_24dp,0,0,0);
+            viewHolder.title.setText("");
+        } else {
+            viewHolder.title.setCompoundDrawablesWithIntrinsicBounds(0,0,0,0);
+            viewHolder.title.setText(item.getTitle());
+        }
 
-        viewHolder.title.setText(item.getTitle());
 
         if (TextUtils.isEmpty(item.getSubtitle()) || !showSubtitles)
             viewHolder.subtitle.setVisibility(View.GONE);
