@@ -3,6 +3,7 @@ package de.thecode.android.tazreader.firebase;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
+import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.push.PushHelper;
 import de.thecode.android.tazreader.push.PushNotification;
 
@@ -41,5 +42,11 @@ public class TazFirebaseMessagingService extends FirebaseMessagingService {
     public void onDeletedMessages() {
         Timber.d("");
         super.onDeletedMessages();
+    }
+
+    @Override
+    public void onNewToken(String refreshedToken) {
+        Timber.d("Refreshed token: %s", refreshedToken);
+        TazSettings.getInstance(this).setFirebaseToken(refreshedToken);
     }
 }
