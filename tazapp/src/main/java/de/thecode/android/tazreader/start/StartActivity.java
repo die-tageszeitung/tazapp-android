@@ -540,8 +540,7 @@ public class StartActivity extends BaseActivity
     }
 
     public void openReader(String bookId) {
-        new AsyncTaskListener<String, PaperWithDownloadState>(bookIdParams -> startViewModel.getPaperRepository()
-                                                                                            .getWithBookId(bookIdParams[0]),
+        new AsyncTaskListener<String, PaperWithDownloadState>(bookIdParams -> startViewModel.getPaperRepository().getWithBookId(bookIdParams[0]),
                                                               paper -> {
                                                                   if (paper.getDownloadState() != DownloadState.READY) {
                                                                       showErrorDialog(getString(R.string.message_paper_not_downloaded),
