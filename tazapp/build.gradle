@@ -322,7 +322,6 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.1.0-rc01'
     implementation "androidx.recyclerview:recyclerview:$androidXVer"
     implementation "com.google.android.material:material:$androidXVer"
-//    implementation "androidx.legacy:legacy-support-v4:$androidXVer"
     implementation "androidx.cardview:cardview:$androidXVer"
     implementation "com.takisoft.preferencex:preferencex:$androidXVer"
 
@@ -362,10 +361,8 @@ dependencies {
 //    implementation "android.arch.lifecycle:common-java8:1.1.1"
 
     implementation "org.apache.commons:commons-lang3:3.9"
-//    implementation "commons-io:commons-io:2.5" // Dont update until Android 4 is supported
     implementation 'com.github.bosphere.android-filelogger:filelogger:1.0.6'
 
-//    implementation "com.google.guava:guava:24.1-android"
 
     implementation "android.arch.work:work-runtime:1.0.1"
 
