@@ -47,8 +47,9 @@ class ReportErrorFragment : PreferenceFragmentCompat() {
         val reportErrorPreference = findPreference(getString(R.string.pref_key_report_error))
         reportErrorPreference.setOnPreferenceClickListener {
             if (settings.isWriteLogfile) context?.let { context -> ErrorReporter.sendErrorMail(context) }
-            else RequestFileLogDialog.newInstance().show(fragmentManager, RequestFileLogDialog.DIALOG_FILELOG_REQUEST)
-//            if (context != null) ErrorReporter.sendErrorMail(context!!)
+            else fragmentManager?.let {
+                RequestFileLogDialog.newInstance().show(it, RequestFileLogDialog.DIALOG_FILELOG_REQUEST)
+            }
             true
         }
     }

@@ -4,8 +4,6 @@
     <string name="string_pref_text_pass">Passwort</string>
     <string name="string_nopapernopref_button_abo">ePaper-Abo bestellen</string>
     <string name="string_badge_update">Update</string>
-    <string name="string_badge_kiosk">Kiosk</string>
-    <string name="dialog_yes">Ja</string>
     <string name="dialog_understood">Verstanden</string>
     <string name="dialog_wifi">WiFi</string>
     <string name="string_titel_seperator">vom</string>
@@ -17,38 +15,28 @@
     <string name="ic_action_selectinvert">Auswahl umkehren</string>
     <string name="ic_action_selectnotloaded">Nicht geladene auswählen</string>
     <string name="string_login_button">Daten prüfen</string>
-    <string name="string_deleteAccount_button">Daten löschen</string>
     <string name="string_library_selected">%1$d ausgewählt</string>
     <string name="string_library_item_download_state">wird geladen…</string>
     <string name="string_library_item_extract_state">wird entpackt…</string>
     <string name="string_library_item_checking_state">wird überprüft…</string>
     <string name="string_library_item_info_note">Tippen für\nmehr Infos</string>
     <string name="dialog_error_title">Fehler</string>
-    <string name="dialog_error_unknown">Es ist ein Fehler aufgetreten.</string>
     <string name="dialog_check_credentials">Kontaktiere Server und überprüfe Daten</string>
     <string name="dialog_noconnection">Keine Verbindung zum Internet.</string>
     <string name="dialog_error_no_credentials">Email/Passwort Feld leer</string>
     <string name="dialog_error_credentials_not_allowed">Benutzer ist nicht erlaubt</string>
-    <string name="dialog_resources_loading">Ressourcen werden im Moment heruntergeladen, bitte versuchen Sie es in einigen Augenblicken nochmal.</string>
-    <string name="dialog_resources_not_found">Ressourcen, die zum Anzeigen der Ausgabe benötigt werden, wurden nicht gefunden. Möchten Sie diese jetzt herunterladen?</string>
     <string name="dialog_user_reenter">Wir haben die Benutzerdatenspeicherung in unserer App umgestellt. Dadurch werden nun weniger Berechtigungen benötigt, aber leider müssen Sie Ihre Benutzerdaten erneut eingeben.</string>
     <!--<string name="dialog_migration_wait">Migriere Ausgaben für die neue App-Version, bitte warten …\n\nBitte beenden Sie die App während der Migration nicht, um mögliche Fehler zu vermeiden. Vielen Dank.</string>-->
     <!--<string name="dialog_migration_download">%1$d Ausgaben wurden migriert. Möchten Sie die Ausgaben jetzt herunterladen?</string>-->
     <string name="dialog_mobile_download">Sie benutzen eine mobile Datenverbindung.\nBeim Download können zusätzliche Kosten entstehen.</string>
-    <string name="dialog_account_error">Leider ist ein Fehler im Account-Management aufgetreten. Sie haben nicht die nötigen Rechte, um einen Account anzulegen.\nWenn Sie einen eingeschränkten Android-Account auf Ihrem Gerät verwenden, so muss der Hauptuser ebenfalls die App installiert haben.</string>
-    <string name="dialog_downloadmanager_error">Leider ist ein Fehler beim Download aufgetreten. Sie haben wahrscheinlich den DownloadManager deaktiviert. Bitte aktivieren Sie den DownloadManager\n\n1. Android-Einstellungen\n2. Apps (ALLE)\n3. Download Manager\n4. Aktivieren</string>
     <string name="dialog_error_download">Beim Download %1$s ist ein Fehler aufgetreten.</string>
 
     <string name="message_resourcedownload_error">einer benötigten Ressource</string>
-    <string name="message_resourcedownload_late_error">Sollte der Fehler wiederholt auftreten, schicken Sie uns bitte einen Fehlerbericht [Impressum -> Fehler melden], am besten mit Screenshot dieser Fehlermeldung.\n\nDetails: %1$s</string>
     <string name="message_not_enough_space">Nicht genügend Speicherplatz vorhanden.</string>
-    <string name="message_download_not_allowed">Der Download ist nicht gestattet.</string>
-    <string name="message_paper_not_found">Ausgabe nicht gefunden.</string>
     <string name="message_paper_not_downloaded">Ausgabe nicht heruntergeladen.</string>
     <string name="message_paper_files_not_downloaded">Dateien zur Ausgabe nicht gefunden. Bitte kontrollieren Sie die Einstellungen zum Speicherort oder laden Sie die Ausgabe gegebenenfalls erneut herunter.</string>
     <string name="message_resource_not_downloaded_no_connection">Eine benötigte Ressource steht nicht zur Verfügung und muss heruntergeladen werden. Bitte aktivieren Sie Ihre Internetverbindung.</string>
     <string name="notification_message_install_finished">Download fertig!</string>
-    <string name="notification_content_text_summary">%1$d Ausgaben heruntergeladen</string>
     <string name="notification_error_download_title">Fehler</string>
 
 
@@ -66,42 +54,17 @@
     <string name="drawer_open">Öffnen</string>
     <string name="drawer_close">Schließen</string>
 
-    <string name="drawer_no_account">nicht angemeldet</string>
     <string name="drawer_account">Kundendaten</string>
     <string name="drawer_library">Ausgaben</string>
-    <string name="drawer_settings">Einstellungen</string>
     <string name="drawer_preferences">Einstellungen</string>
     <string name="drawer_help">Hilfe</string>
     <string name="drawer_imprint">Impressum</string>
     <string name="drawer_privacy_terms">Datenschutz</string>
-    <string name="drawer_import">Importieren</string>
     <string name="drawer_rate_app">App bewerten</string>
     <string name="drawer_report_error">Fehler melden</string>
 
-    <string name="drawer_header_alpha" translatable="false">α</string>
-    <string name="drawer_header_beta" translatable="false">β</string>
-    <string name="drawer_header_debug" translatable="false">δ</string>
-
     <string name="imprint_licenses">Lizenzen</string>
     <string name="imprint_tech_info">Technische Informationen</string>
-
-    <string name="import_parent_directory">Übergeordnetes Verzeichnis</string>
-    <string name="import_wait">Lade Verzeichnis…</string>
-    <string name="import_error_detail">Fehler beim Auslesen der Datei</string>
-    <string name="import_error">Fehler beim Importieren von\n\n%1$s\n\n%2$s</string>
-    <string name="import_already_exists">Eine Ausgabe mit der Id %1$s ist bereits vorhanden. Möchten sie die Ausgabe überschreiben?</string>
-    <string name="import_layout_text">Importiere…</string>
-
-    <plurals name="import_download">
-        <item quantity="one">Die Ausgabe muss neu geladen werden. Möchten Sie den Download jetzt starten? Sie können die Ausgabe auch später in der Ausgabenansicht laden.</item>
-        <item quantity="other">%d Ausgaben müssen neu geladen werden. Möchten Sie den Download jetzt starten? Sie können die Ausgaben auch später in der Ausgabenansicht laden.</item>
-    </plurals>
-
-    <string name="import_download_positive">Jetzt</string>
-    <string name="import_download_negative">Später</string>
-
-    <string name="migration_layout_text">Neue Version wird vorbereitet…</string>
-    <string name="migration_wait_text">Bitte warten…</string>
 
     <string name="reader_action_share">Teilen</string>
     <string name="reader_action_share_open">Öffnen / Teilen</string>
@@ -119,19 +82,14 @@
     <string name="dialog_tts_error_lang_not_supported">Die Sprache wird nicht unterstützt.</string>
     <string name="dialog_tts_error_settings">Einstellungen</string>
 
-    <string name="dialog_import_permission_explanation">Die Berechtigung wird benötigt, um den Inhalt Ihres Speichers anzuzeigen.</string>
     <string name="dialog_techinfo_version">Version</string>
     <string name="dialog_techinfo_supported_abis">Unterstützte ABIs</string>
     <string name="dialog_techinfo_installations_id">Installations ID</string>
     <string name="dialog_techinfo_android_version">Android Version</string>
-    <string name="dialog_techinfo_push_token">Push Token</string>
-    <string name="sync_job_error">Fehler beim Synchronisieren der Daten.\n\n%1$s</string>
     <string name="notification_channel_download">Downloads</string>
     <string name="notification_channel_message">Mitteilungen</string>
     <string name="notification_channel_audio">Audio</string>
     <string name="dialog_meassage_loading_missing_resource">Lade fehlende Ressourcen für die Ausgabe herunter, bitte warten…</string>
-    <string name="dialog_message_delete_wait">Lösche Ausgabe(n), bitte warten…</string>
-    <string name="download_error_hints">Sollten Sie AdBlocker, Antiviren- oder Proxy-Software verwenden, deaktivieren Sie diese bzw. fügen Sie eine Ausnahme hinzu.</string>
 
     <string name="errormail_subject">Fehler in %1$s - Abo-ID: %2$s</string>
     <string name="dialog_update_available_title">Update verfügbar</string>
@@ -159,7 +117,6 @@
     <string name="download_title_resource">zusätzlich benötigte Dateien</string>
     <string name="downloadinfo_dialog_title">Download von \"%1$s\"</string>
     <string name="downloadinfo_connection">Aktuelle\nVerbindung</string>
-    <string name="downloadinfo_filename_title">Dateiname</string>
     <string name="downloadinfo_state_title">Status</string>
     <string name="downloadinfo_progress_title">Fortschritt</string>
     <string name="downloadinfo_dmlog_title">DL Manager</string>
@@ -175,8 +132,6 @@
     <string name="connection_roaming">Roaming</string>
     <string name="cd_player_button">Artikel vorlesen lassen</string>
     <string name="audio_service_error_gain_focus">Fehler beim Anfordern des Audiofocus.</string>
-
-    <string name="no_title">Kein Titel</string>
 
 
 </resources>

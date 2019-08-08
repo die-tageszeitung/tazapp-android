@@ -1,5 +1,2 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="fontBold" translatable="false">fonts/AktivGrotesk_Bd.ttf</string>
-    <string name="fontRegular" translatable="false">fonts/AktivGrotesk_Md.ttf</string>
-</resources>
+<resources></resources>

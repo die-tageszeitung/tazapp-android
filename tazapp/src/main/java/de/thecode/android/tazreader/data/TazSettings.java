@@ -205,10 +205,6 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
         sharedPreferences.edit()
                          .putString(key, uriString)
                          .apply();
-//        if (key.equals(PREFKEY.NOTIFICATION_SOUND_PUSH)) {
-//            PushRestApiJob.scheduleJob();
-//        }
-
     }
 
 

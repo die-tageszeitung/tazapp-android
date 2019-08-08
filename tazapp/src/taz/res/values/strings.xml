@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="dialog_first">Sie haben die App zum Lesen der digitalen Ausgabe der taz erfolgreich installiert. Wenn es das erste Mal für Sie ist, tippen Sie im Menü auf \"Hilfe\", um ein wenig Hilfestellung bei Ihren ersten Schritten zu bekommen.\n\nDie Ausgaben werden in Kürze aktualisiert, oder Sie wischen in der Ausgabenansicht nach unten.</string>
     <string name="dialog_archive_year_title">taz-Archiv - Jahr wählen</string>
     <string name="dialog_archive_month_title">taz-Archiv - Monat wählen</string>
-
-    <string name="notification_group_name">taznotifications</string>
 
 </resources>

@@ -15,14 +15,14 @@ class AskForHelpDialog : DialogFragment() {
             return MaterialDialog(it).title(R.string.dialog_ask_for_help_title)
                     .message(res = R.string.dialog_ask_for_help_message)
                     .positiveButton { _ ->
-                        TazSettings.getInstance(dialog.context)
+                        TazSettings.getInstance(it)
                                 .crashlyticsAlwaysSend = true
-                        TazSettings.getInstance(dialog.context).isAskForHelpAllowed = false
+                        TazSettings.getInstance(it).isAskForHelpAllowed = false
                     }
                     .negativeButton(R.string.dialog_button_no) { _ ->
-                        TazSettings.getInstance(dialog.context).isAskForHelpAllowed = false
+                        TazSettings.getInstance(it).isAskForHelpAllowed = false
                     }
-                    .neutralButton(R.string.dialog_neutral_button_later) { _ -> }
+                    .neutralButton(R.string.dialog_neutral_button_later) {}
         }
         return super.onCreateDialog(savedInstanceState)
     }

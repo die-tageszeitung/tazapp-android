@@ -3,9 +3,4 @@
     <dimen name="custom_dialog_padding">@dimen/abc_dialog_padding_material</dimen>
     <dimen name="custom_dialog_padding_top">@dimen/abc_dialog_padding_top_material</dimen>
 
-    <style name="Dialog" parent="Theme.AppCompat.Light.Dialog">
-        <item name="colorPrimary">@color/color_primary</item>
-        <item name="colorPrimaryDark">@color/color_primary_dark</item>
-        <item name="colorAccent">@color/color_accent</item>
-    </style>
 </resources>

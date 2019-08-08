@@ -1,14 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="SettingsLayout.SpecialWidth">
-        <item name="android:layout_width">600dp</item>
-    </style>
 
-    <style name="ImportLayout.SpecialWidth">
-        <item name="android:layout_width">600dp</item>
-    </style>
-
-    <style name="PreferenceLayout.SpecialWidth">
-        <item name="android:layout_width">600dp</item>
-    </style>
 </resources>

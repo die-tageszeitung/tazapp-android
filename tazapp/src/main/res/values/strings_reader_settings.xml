@@ -8,34 +8,10 @@
     <string name="isscrolltonext">Weiterscrollen</string>
     <string name="isjustify">Blocksatz</string>
     <string name="fullscreen">Vollbild</string>
-    <string name="header_screen">BILDSCHIRM</string>
-    <string name="screen_active">beim lesen aktiv lassen</string>
-    <string name="header_read">ANSICHT</string>
-    <string name="index_button">Button für Inhaltsverzeichnis anzeigen</string>
-    <string name="index_button_exp">Wenn Sie nicht vom linken Bildschirmrand wischen können, wird links oben ein zusätzlicher Button eingeblendet.</string>
-    <string name="pageindex_button">Button für Seitenübersicht anzeigen</string>
-    <string name="pageindex_button_exp">Wenn Sie nicht vom rechten Bildschirmrand wischen können, wird rechts oben ein zusätzlicher Button eingeblendet.</string>
-    <string name="header_read_page">SEITENANSICHT</string>
-    <string name="tap_to_turn_page">Blätter durch Einfaches Tippen am Bildschirmrand</string>
-    <string name="tap_for_article">Artikelansicht durch Einfaches Tippen</string>
-    <string name="doubletap_for_zoom">Vergrößerung durch Doppeltes Tippen</string>
-    <string name="header_read_article">ARTIKELANSICHT</string>
-    <string name="texttospeach">Text vorlesen durch "doppeltes Tippen"</string>
-    <string name="screen_orientation">Ausrichtung</string>
 
     <string name="theme_normal">Normal</string>
     <string name="theme_sepia">Sepia</string>
     <string name="theme_night">Nacht</string>
-    
-    <string name="orientationAuto">Auto</string>
-    <string name="orientationPort">Hoch</string>
-    <string name="orientationLand">Quer</string>
 
-
-    <string-array name="orientationValue">
-        <item>auto</item>
-        <item>port</item>
-        <item>land</item>
-    </string-array>
 
 </resources>

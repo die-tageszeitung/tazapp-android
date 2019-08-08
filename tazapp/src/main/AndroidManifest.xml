@@ -70,41 +70,6 @@
                     android:value="de.thecode.android.tazreader.start.StartActivity" />
 
         </activity>
-        <!--<activity android:name=".importer.ImportActivity">-->
-            <!--<intent-filter>-->
-                <!--<action android:name="android.intent.action.VIEW"/>-->
-
-                <!--<category android:name="android.intent.category.DEFAULT"/>-->
-                <!--<category android:name="android.intent.category.BROWSABLE"/>-->
-
-                <!--<data-->
-                        <!--android:host="*"-->
-                        <!--android:mimeType="application/taz+app"-->
-                        <!--android:scheme="content"/>-->
-                <!--<data-->
-                        <!--android:host="*"-->
-                        <!--android:mimeType="application/taz+app"-->
-                        <!--android:scheme="file"/>-->
-            <!--</intent-filter>-->
-            <!--<intent-filter>-->
-                <!--<action android:name="android.intent.action.VIEW"/>-->
-
-                <!--<category android:name="android.intent.category.DEFAULT"/>-->
-                <!--<category android:name="android.intent.category.BROWSABLE"/>-->
-
-                <!--<data-->
-                        <!--android:host="*"-->
-                        <!--android:mimeType="*/*"-->
-                        <!--android:pathPattern=".*\\.tazandroid"-->
-                        <!--android:scheme="file"/>-->
-                <!--<data-->
-                        <!--android:host="*"-->
-                        <!--android:mimeType="*/*"-->
-                        <!--android:pathPattern=".*\\.tpaper"-->
-                        <!--android:scheme="file"/>-->
-            <!--</intent-filter>-->
-        <!--</activity>-->
-        <!--<activity android:name=".migration.MigrationActivity"/>-->
 
         <receiver android:name="de.thecode.android.tazreader.download.SystemDownloadManagerReceiver">
             <intent-filter>

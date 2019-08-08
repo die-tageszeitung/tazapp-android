@@ -22,7 +22,6 @@
 
     <color name="taz_red">#d50d2e</color>
     <color name="taz_red_dark">#c40b29</color>
-    <color name="black">#000</color>
     <color name="dark_gray">#58585a</color>
     <color name="gray">#87888a</color>
     <color name="light_gray">#eceded</color>
@@ -32,17 +31,13 @@
     <item name="color_primary" type="color">@color/taz_red</item>
     <item name="color_primary_dark" type="color">@color/taz_red_dark</item>
     <item name="color_accent" type="color">@color/taz_red</item>
-    <item name="color_primary_dark_transparent" type="color">#99c40b29</item>
 
     <color name="ic_launcher_background">@color/taz_red</color>
 
     <item name="toolbar_background_color" type="color">@color/color_primary_dark</item>
     <item name="toolbar_foreground_color" type="color">@color/white</item>
 
-    <item name="button_normal" type="color">@color/color_primary</item>
     <item name="button_text_normal" type="color">@color/white</item>
-
-    <item name="snackbar_action" type="color">@color/color_accent</item>
 
     <item name="refresh_color_1" type="color">@color/color_accent</item>
     <item name="refresh_color_2" type="color">@color/color_primary</item>
@@ -51,12 +46,10 @@
     <item name="index_divider" type="color">@color/white</item>
     <item name="index_background_source" type="color">@color/color_primary</item>
     <item name="index_background_category" type="color">@color/light_gray</item>
-    <item name="index_background_page" type="color">@color/dark_white</item>
     <item name="index_background_article" type="color">@color/dark_white</item>
     <item name="index_background_toplink" type="color">@color/dark_white</item>
     <item name="index_text_source" type="color">@android:color/white</item>
     <item name="index_text_category" type="color">@android:color/black</item>
-    <item name="index_text_page" type="color">@android:color/black</item>
     <item name="index_text_article" type="color">@android:color/black</item>
     <item name="index_text_article_author" type="color">@color/dark_gray</item>
     <item name="index_text_toplink" type="color">@android:color/black</item>
@@ -73,18 +66,8 @@
     <item name="start_navigation_background" type="color">@color/white</item>
     <item name="start_navigation_header_background" type="color">@color/color_primary</item>
     <item name="start_fragment_background" type="color">@color/white</item>
-    <item name="start_login_calltoaction_button_background" type="color">@color/color_primary</item>
     <item name="start_navigation_item_icon" type="color">@color/gray</item>
     <item name="start_navigation_item_icon_active" type="color">@color/color_primary</item>
-
-    <item name="settings_text_color" type="color">@color/black</item>
-    <item name="settings_header_text_color" type="color">@color/gray</item>
-    <item name="settings_note_text_color" type="color">@color/gray</item>
-    <item name="settings_text_enabled" type="color">@color/settings_text_color</item>
-    <item name="settings_text_disabled" type="color">@color/gray</item>
-    <item name="settings_edit_text_enabled" type="color">@color/color_primary</item>
-    <item name="settings_edit_text_disabled" type="color">@color/gray</item>
-    <item name="settings_divider" type="color">@color/color_primary_dark</item>
 
     <item name="library_fab_normal" type="color">@color/white</item>
     <item name="library_fab_pressed" type="color">@color/gray</item>
@@ -93,23 +76,14 @@
 
     <item name="library_card_background" type="color">@color/color_primary_dark</item>
     <item name="library_item_text" type="color">@color/white</item>
-    <item name="library_item_background" type="color">@color/color_primary_dark</item>
     <item name="library_item_badge" type="color">@color/color_primary_dark</item>
     <item name="library_item_badge_text" type="color">@color/white</item>
     <item name="library_item_progress_overlay" type="color">@color/gray</item>
     <item name="library_item_info_background" type="color">#77000000</item>
 
 
-    <item name="help_indicator_fill" type="color">@color/color_primary</item>
-    <item name="help_indicator_page" type="color">@color/white</item>
-    <item name="help_indicator_stroke" type="color">@color/color_accent</item>
-
     <item name="reader_settings_button_text_activated" type="color">@color/button_text_normal</item>
     <item name="reader_settings_button_text" type="color">@color/dark_gray</item>
-
-    <item name="login_order_button_text" type="color">@color/white</item>
-
-    <item name="import_text" type="color">@color/white</item>
 
     <item name="notification" type="color">@color/color_primary</item>
 
