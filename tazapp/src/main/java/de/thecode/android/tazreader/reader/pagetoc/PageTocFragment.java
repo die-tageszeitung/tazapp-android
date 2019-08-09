@@ -1,6 +1,5 @@
 package de.thecode.android.tazreader.reader.pagetoc;
 
-import androidx.lifecycle.Observer;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -28,12 +27,7 @@ public class PageTocFragment extends ReaderBaseFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        adapter = new PageTocAdapter(new PageTocAdapter.IPageIndexViewHolderClicks() {
-            @Override
-            public void onItemClick(int position) {
-                PageTocFragment.this.onItemClick(position);
-            }
-        });
+        adapter = new PageTocAdapter(PageTocFragment.this::onItemClick);
     }
 
     @Override
@@ -51,20 +45,17 @@ public class PageTocFragment extends ReaderBaseFragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        getReaderViewModel().getPageTocLiveData().observe(this, new Observer<PageTocLiveData.ResultWrapper>() {
-            @Override
-            public void onChanged(@Nullable PageTocLiveData.ResultWrapper resultWrapper) {
+        getReaderViewModel().getPageTocLiveData().observe(this, resultWrapper -> {
                 if (resultWrapper != null) {
                     adapter.submitList(resultWrapper.getList());
                     if (resultWrapper.getScrollToPosition() != -1) {
                         mRecyclerView.smoothScrollToPosition(resultWrapper.getScrollToPosition());
                     }
                 }
-            }
         });
     }
 
-    public void onItemClick(int position) {
+    private void onItemClick(int position) {
         Timber.d("position: %s", position);
         PageTocItem item = adapter.getItem(position);
         getReaderActivity().loadContentFragment(item.getKey());

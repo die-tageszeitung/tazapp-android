@@ -9,7 +9,7 @@ import de.thecode.android.tazreader.utils.StorageManager;
 
 public class FileCachePDFThumbHelper extends FileCacheImageHelper {
 
-    public static final String SUB = "pdfthumbs";
+    private static final String SUB = "pdfthumbs";
 
     public FileCachePDFThumbHelper(StorageManager storage, String key) {
         super(storage, SUB + "/" + key);
@@ -18,15 +18,7 @@ public class FileCachePDFThumbHelper extends FileCacheImageHelper {
     @SuppressLint("NewApi")
     @Override
     public CompressFormat getBitmapCompressFormat() {
-        if (Build.VERSION.SDK_INT >= 14)
-            return Bitmap.CompressFormat.WEBP;
-        else
-            return Bitmap.CompressFormat.JPEG;
-    }
-
-    @Override
-    public int getBitmapCompressQuality() {
-        return 60;
+        return Bitmap.CompressFormat.JPEG;
     }
 
 }

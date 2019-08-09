@@ -31,7 +31,6 @@ public class TAZPageView extends PageView {
 
     TAZMuPDFCore mCore;
     Page _page;
-    //Context _context;
 
     public TAZPageView(Context c, Point parentSize, Bitmap sharedHqBm) {
         super(c, parentSize, sharedHqBm);

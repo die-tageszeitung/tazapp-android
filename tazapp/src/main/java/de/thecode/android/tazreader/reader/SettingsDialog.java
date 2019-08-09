@@ -7,7 +7,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CompoundButton;
-import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 
@@ -31,103 +30,70 @@ public class SettingsDialog extends DialogCustomView {
 
         boolean isScroll = TazSettings.getInstance(getContext())
                                       .getPrefBoolean(TazSettings.PREFKEY.ISSCROLL, false);
-        //boolean isFullscreen = TazSettings.getPrefBoolean(getContext(), TazSettings.PREFKEY.FULLSCREEN, false);
         mCallback = (SettingsDialogCallback) getContext();
 
         View view = inflater.inflate(R.layout.reader_settings, parent);
 
 
         btnNormal = view.findViewById(R.id.btnNormal);
-        btnNormal.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
+        btnNormal.setOnClickListener(v -> {
                 Timber.d("v: %s", v);
                 if (mCallback != null) mCallback.onConfigurationChange(TazSettings.PREFKEY.THEME, THEMES.normal.name());
                 colorThemeButtonText(THEMES.normal);
-            }
         });
 
         btnSepia = view.findViewById(R.id.btnSepia);
-        btnSepia.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
+        btnSepia.setOnClickListener(v -> {
                 Timber.d("v: %s", v);
                 mCallback.onConfigurationChange(TazSettings.PREFKEY.THEME, THEMES.sepia.name());
                 colorThemeButtonText(THEMES.sepia);
-            }
         });
 
         btnNight = view.findViewById(R.id.btnNight);
-        btnNight.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
+        btnNight.setOnClickListener(v -> {
                 Timber.d("v: %s", v);
                 mCallback.onConfigurationChange(TazSettings.PREFKEY.THEME, THEMES.night.name());
                 colorThemeButtonText(THEMES.night);
-            }
         });
         colorThemeButtonText(THEMES.valueOf(TazSettings.getInstance(getContext())
                                                        .getPrefString(TazSettings.PREFKEY.THEME, null)));
 
         SwitchCompat switchIsScroll = view.findViewById(R.id.switchIsScroll);
         switchIsScroll.setChecked(!isScroll);
-        switchIsScroll.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+        switchIsScroll.setOnCheckedChangeListener((CompoundButton buttonView, boolean isChecked)-> {
                 Timber.d("buttonView: %s, isChecked: %s", buttonView, isChecked);
-                if (mCallback != null) mCallback.onConfigurationChange(TazSettings.PREFKEY.ISSCROLL, !isChecked);
+                if (mCallback != null)
+                    mCallback.onConfigurationChange(TazSettings.PREFKEY.ISSCROLL, !isChecked);
                 seekBarColumns.setEnabled(isChecked);
-            }
         });
 
         SwitchCompat switchIsPaging = view.findViewById(R.id.switchIsPaging);
         switchIsPaging.setChecked(TazSettings.getInstance(getContext())
                                              .getPrefBoolean(TazSettings.PREFKEY.ISPAGING, false));
-        switchIsPaging.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (mCallback != null) mCallback.onConfigurationChange(TazSettings.PREFKEY.ISPAGING, isChecked);
-            }
+        switchIsPaging.setOnCheckedChangeListener((CompoundButton buttonView, boolean isChecked) -> {
+                if (mCallback != null)
+                    mCallback.onConfigurationChange(TazSettings.PREFKEY.ISPAGING, isChecked);
         });
 
         SwitchCompat switchIsScrollToNext = view.findViewById(R.id.switchIsScrollToNext);
         switchIsScrollToNext.setChecked(TazSettings.getInstance(getContext())
                                                    .getPrefBoolean(TazSettings.PREFKEY.ISSCROLLTONEXT, false));
-        switchIsScrollToNext.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (mCallback != null) mCallback.onConfigurationChange(TazSettings.PREFKEY.ISSCROLLTONEXT, isChecked);
-            }
+        switchIsScrollToNext.setOnCheckedChangeListener((CompoundButton buttonView, boolean isChecked) -> {
+                    if (mCallback != null)
+                        mCallback.onConfigurationChange(TazSettings.PREFKEY.ISSCROLLTONEXT, isChecked);
         });
 
         SwitchCompat switchIsJustify = view.findViewById(R.id.switchIsJustify);
         switchIsJustify.setChecked(TazSettings.getInstance(getContext())
                                               .getPrefBoolean(TazSettings.PREFKEY.ISJUSTIFY, false));
-        switchIsJustify.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (mCallback != null) mCallback.onConfigurationChange(TazSettings.PREFKEY.ISJUSTIFY, isChecked);
-            }
+        switchIsJustify.setOnCheckedChangeListener((CompoundButton buttonView, boolean isChecked) -> {
+                if (mCallback != null)
+                    mCallback.onConfigurationChange(TazSettings.PREFKEY.ISJUSTIFY, isChecked);
         });
 
 
         SwitchCompat switchFullscreen = view.findViewById(R.id.switchFullscreen);
         switchFullscreen.setVisibility(View.GONE);
-//        switchFullscreen.setChecked(isFullscreen);
-//        switchFullscreen.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-//
-//            @Override
-//            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-//                Log.v();
-//                TazSettings.setPref(getActivity(), TazSettings.PREFKEY.FULLSCREEN, isChecked);
-//                mCallback.setImmersiveMode();
-//            }
-//        });
-
 
         seekBarColumns = view.findViewById(R.id.seekBarColumn);
 

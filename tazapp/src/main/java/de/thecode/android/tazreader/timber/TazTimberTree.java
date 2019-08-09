@@ -2,6 +2,8 @@ package de.thecode.android.tazreader.timber;
 
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import timber.log.Timber;
 
 /**
@@ -27,7 +29,7 @@ public class TazTimberTree extends Timber.DebugTree {
     }
 
     @Override
-    protected String createStackElementTag(StackTraceElement element) {
+    protected String createStackElementTag(@NonNull StackTraceElement element) {
         return super.createStackElementTag(
                 element) + "." + element.getMethodName() + ":" + element.getLineNumber() + "[" + Thread.currentThread()
                                                                                                        .getName() + "]";

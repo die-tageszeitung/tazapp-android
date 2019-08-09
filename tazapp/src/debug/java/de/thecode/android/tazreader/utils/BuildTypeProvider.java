@@ -17,7 +17,6 @@ public class BuildTypeProvider {
     public static void installStetho(Context context) {
         Stetho.initialize(
                 Stetho.newInitializerBuilder(context)
-//                      .enableDumpapp(Stetho.defaultDumperPluginsProvider(context))
                       .enableWebKitInspector(Stetho.defaultInspectorModulesProvider(context))
                       .build());
     }

@@ -37,6 +37,7 @@ public class StartViewModel extends AndroidViewModel {
     private final List<NavigationDrawerFragment.NavigationItem> navBackstack                = new ArrayList<>();
     private       boolean                                       mobileDownloadAllowed       = false;
     private       String                                        openPaperIdAfterDownload;
+    private       boolean                                       openReaderAfterDownload     = false;
                   String                                        resourceKeyWaitingForDownload;
     private       boolean                                       actionMode                  = false;
     private       NewLibraryAdapter.PaperMetaData               paperMetaDataMap            = new NewLibraryAdapter.PaperMetaData();
@@ -139,11 +140,23 @@ public class StartViewModel extends AndroidViewModel {
     void setOpenPaperIdAfterDownload(String bookId) {
         if (TextUtils.isEmpty(openPaperIdAfterDownload)) {
             openPaperIdAfterDownload = bookId;
+            openReaderAfterDownload = true;
+        } else {
+            openReaderAfterDownload = false;
         }
+    }
+
+    String getOpenPaperIdAfterDownload() {
+        return openPaperIdAfterDownload;
     }
 
     public void removeOpenPaperIdAfterDownload() {
         openPaperIdAfterDownload = null;
+        openReaderAfterDownload = true;
+    }
+
+    boolean isOpenReaderAfterDownload() {
+        return openReaderAfterDownload;
     }
 
     public void deletePaper(String... bookIds) {

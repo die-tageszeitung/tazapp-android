@@ -17,6 +17,7 @@ import de.thecode.android.tazreader.utils.TintHelper;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 
+import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
@@ -27,44 +28,29 @@ import androidx.recyclerview.widget.RecyclerView;
 
 public class UserTocAdapter extends TazListAdapter<UserTocItem, UserTocAdapter.ViewHolder> {
 
-    protected UserTocAdapter(UserTocAdapterClickListener clickListener) {
+    UserTocAdapter(UserTocAdapterClickListener clickListener) {
         super(new UserTocItemCallback());
         this.clickListener = clickListener;
     }
 
     //TODO
     private boolean showSubtitles = false;
-//    private String markedAsCurrentKey;
 
     private UserTocAdapterClickListener clickListener;
 
-//    private UserTocItem currentItem;
-
-    public void setShowSubtitles(boolean showSubtitles) {
+    void setShowSubtitles(boolean showSubtitles) {
         this.showSubtitles = showSubtitles;
         if (getItemCount() > 0) notifyDataSetChanged();
     }
 
-//    public void setCurrentItem(UserTocItem currentItem) {
-//        this.currentItem = currentItem;
-//    }
-//
-//    public UserTocItem getCurrentItem() {
-//        return currentItem;
-//    }
-
     @SuppressWarnings("incomplete-switch")
     @Override
-    public void onBindViewHolder(ViewHolder viewholder, int position) {
+    public void onBindViewHolder(@NonNull ViewHolder viewholder, int position) {
         UserTocItem tocItem = getItem(position);
         ITocItem item = tocItem.getIndexItem();
 
         if (viewholder.mCurrentMarker != null) {
             viewholder.mCurrentMarker.setVisibility(tocItem.isActive() ? View.VISIBLE : View.INVISIBLE);
-
-
-//            viewholder.mCurrentMarker.setVisibility(currentItem != null && item.getKey()
-//                                                                               .equals(currentItem.getKey()) ? View.VISIBLE : View.INVISIBLE);
         }
 
         switch (ITocItem.Type.values()[viewholder.getItemViewType()]) {
@@ -77,7 +63,7 @@ public class UserTocAdapter extends TazListAdapter<UserTocItem, UserTocAdapter.V
                 else image.setImageDrawable(ContextCompat.getDrawable(image.getContext(), R.drawable.ic_add_24dp));
                 break;
             case ARTICLE:
-                onBindArticleViewHolder((ArticleViewHolder) viewholder, (Paper.Plist.Page.Article) item, position);
+                onBindArticleViewHolder((ArticleViewHolder) viewholder, (Paper.Plist.Page.Article) item);
                 break;
             case TOPLINK:
                 ((ToplinkViewHolder) viewholder).title.setText(item.getTitle());
@@ -85,7 +71,7 @@ public class UserTocAdapter extends TazListAdapter<UserTocItem, UserTocAdapter.V
         }
     }
 
-    private void onBindArticleViewHolder(ArticleViewHolder viewHolder, Paper.Plist.Page.Article item, int position) {
+    private void onBindArticleViewHolder(ArticleViewHolder viewHolder, Paper.Plist.Page.Article item) {
 
         if (TextUtils.isEmpty(item.getTitle())) {
             viewHolder.title.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_emoticon_dead_24dp,0,0,0);
@@ -137,7 +123,7 @@ public class UserTocAdapter extends TazListAdapter<UserTocItem, UserTocAdapter.V
 
     @SuppressWarnings("incomplete-switch")
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int itemType) {
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int itemType) {
         switch (ITocItem.Type.values()[itemType]) {
             case CATEGORY:
                 return new CategoryViewHolder(LayoutInflater.from(parent.getContext())
@@ -163,13 +149,13 @@ public class UserTocAdapter extends TazListAdapter<UserTocItem, UserTocAdapter.V
     private static class UserTocItemCallback extends DiffUtil.ItemCallback<UserTocItem> {
 
         @Override
-        public boolean areItemsTheSame(UserTocItem oldItem, UserTocItem newItem) {
+        public boolean areItemsTheSame(@NonNull UserTocItem oldItem, @NonNull UserTocItem newItem) {
             return oldItem.getKey()
                           .equals(newItem.getKey());
         }
 
         @Override
-        public boolean areContentsTheSame(UserTocItem oldItem, UserTocItem newItem) {
+        public boolean areContentsTheSame(@NonNull UserTocItem oldItem, @NonNull UserTocItem newItem) {
             return new EqualsBuilder().append(oldItem.isActive(), newItem.isActive())
                                       .append(oldItem.areChildsVisible(), newItem.areChildsVisible())
                                       .append(oldItem.isBookmarked(), newItem.isBookmarked())
@@ -177,12 +163,12 @@ public class UserTocAdapter extends TazListAdapter<UserTocItem, UserTocAdapter.V
         }
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
+    static class ViewHolder extends RecyclerView.ViewHolder {
 
         View                        mCurrentMarker;
         UserTocAdapterClickListener listener;
 
-        public ViewHolder(View itemView, UserTocAdapterClickListener clickListener) {
+        ViewHolder(View itemView, UserTocAdapterClickListener clickListener) {
             super(itemView);
             this.listener = clickListener;
             mCurrentMarker = itemView.findViewById(R.id.currentMarker);
@@ -192,7 +178,7 @@ public class UserTocAdapter extends TazListAdapter<UserTocItem, UserTocAdapter.V
 
     private static class CategoryViewHolder extends ViewHolder {
 
-        public CategoryViewHolder(View itemView, UserTocAdapterClickListener clickListener) {
+        CategoryViewHolder(View itemView, UserTocAdapterClickListener clickListener) {
             super(itemView, clickListener);
             title = itemView.findViewById(R.id.title);
             image = itemView.findViewById(R.id.image);
@@ -211,7 +197,7 @@ public class UserTocAdapter extends TazListAdapter<UserTocItem, UserTocAdapter.V
         TextView  author;
         View      bookmarkLayout;
 
-        public ArticleViewHolder(View itemView, UserTocAdapterClickListener clickListener) {
+        ArticleViewHolder(View itemView, UserTocAdapterClickListener clickListener) {
             super(itemView, clickListener);
             title = itemView.findViewById(R.id.title);
             subtitle = itemView.findViewById(R.id.subtitle);
@@ -226,7 +212,7 @@ public class UserTocAdapter extends TazListAdapter<UserTocItem, UserTocAdapter.V
 
         TextView title;
 
-        public ToplinkViewHolder(View itemView, UserTocAdapterClickListener clickListener) {
+        ToplinkViewHolder(View itemView, UserTocAdapterClickListener clickListener) {
             super(itemView, clickListener);
             title = itemView.findViewById(R.id.title);
         }

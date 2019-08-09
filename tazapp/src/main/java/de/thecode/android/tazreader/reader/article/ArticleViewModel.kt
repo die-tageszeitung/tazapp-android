@@ -35,48 +35,9 @@ class ArticleViewModel(private val readerViewModel: ReaderViewModel, val key: St
         paper.plist.getIndexItem(key)
     }
 
-//    val playerButtonVisiblityLiveData: MediatorLiveData<Boolean> = MediatorLiveData()
-
-
-
     init {
         readerViewModel.currentKey = key
-//        playerButtonVisiblityLiveData.addSource(tocItemLiveData) {
-//            d {
-//                "XXX source tocItemLiveData changed"
-//            }
-//            checkPlayerButton()
-//        }
-//        playerButtonVisiblityLiveData.addSource(audioViewModel.currentAudioItemLiveData) {
-//            d {
-//                "XXX source currentAudioItemLiveData changed"
-//            }
-//            checkPlayerButton()
-//        }
-
     }
-
-//    private fun checkPlayerButton() {
-//
-//        var showPlayerButton = false
-//        tocItemLiveData.value?.let { tocItem ->
-//            if (tocItem is Paper.Plist.Page.Article) {
-//                if (!tocItem.audiolink.isNullOrBlank()) {
-//                    d {
-//                        "XXX ${audioViewModel.currentAudioItemLiveData.value}"
-//                    }
-//                    if (audioViewModel.currentAudioItemLiveData.value == null) {
-//                        showPlayerButton = true
-//                    }
-//                }
-//            }
-//
-//        }
-//        Timber.d {
-//            "XXXXXX CHECKING PLAYER BUTTON $showPlayerButton"
-//        }
-//        playerButtonVisiblityLiveData.value = showPlayerButton
-//    }
 
 }
 

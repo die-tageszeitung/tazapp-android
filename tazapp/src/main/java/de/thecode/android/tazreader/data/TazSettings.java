@@ -14,7 +14,6 @@ import com.scottyab.aescrypt.AESCrypt;
 
 import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.R;
-import de.thecode.android.tazreader.secure.SimpleCrypto;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -148,12 +147,6 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
         return sharedPreferences.getString(key, defValue);
     }
 
-    public String getOldDecryptedPrefString(String key, String defValue) throws ClassCastException {
-        String result = getPrefString(key, null);
-        if (result != null) return SimpleCrypto.decrypt(result);
-        return defValue;
-    }
-
     public String getDecrytedPrefString(String password, String key, String defValue) {
         String result = getPrefString(key, null);
         if (result != null) {
@@ -240,7 +233,6 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
         }
         editor.putString(PREFKEY.FIREBASETOKEN, token)
               .apply();
-        //PushRestApiJob.scheduleJob();
     }
 
     public void setCrashlyticsAlwaysSend(boolean alwaysSend) {
@@ -261,16 +253,6 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
         return sharedPreferences.contains(key);
     }
 
-
-//    public long getSyncServiceNextRun() {
-//        return sharedPreferences.getLong(PREFKEY.SYNCSERVICENEXTRUN, 0);
-//    }
-//
-//    public void setSyncServiceNextRun(long timeInMillis) {
-//        sharedPreferences.edit()
-//                         .putLong(PREFKEY.SYNCSERVICENEXTRUN, timeInMillis)
-//                         .apply();
-//    }
 
     public int getAskForHelpCount() {
         return sharedPreferences.getInt(PREFKEY.ASK_HELP_COUNTER, 0);
@@ -370,7 +352,7 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
 
     private Map<String, List<OnPreferenceChangeListener>> changeListeners = new HashMap<>();
 
-    public void addOnPreferenceChangeListener(String key, OnPreferenceChangeListener listener) {
+    public <T> void addOnPreferenceChangeListener(String key, OnPreferenceChangeListener<T> listener) {
         if (changeListeners.containsKey(key)) {
             List<OnPreferenceChangeListener> listenerList = changeListeners.get(key);
             int listSize = listenerList.size();

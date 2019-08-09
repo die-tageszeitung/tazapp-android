@@ -60,7 +60,7 @@ public class UserTocFragment extends ReaderBaseFragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.reader_index, container, false);
         toolbar = view.findViewById(R.id.toolbar_article);
@@ -99,30 +99,19 @@ public class UserTocFragment extends ReaderBaseFragment {
         CustomToolbar toolbar2 = view.findViewById(R.id.toolbar2);
         toolbar2.setItemColor(ContextCompat.getColor(inflater.getContext(), R.color.toolbar_foreground_color));
         toolbar2.setNavigationIcon(R.drawable.ic_arrow_back_24dp);
-        toolbar2.setNavigationOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                NavUtils.navigateUpFromSameTask(getActivity());
-            }
-        });
+        toolbar2.setNavigationOnClickListener(v -> NavUtils.navigateUpFromSameTask(getActivity()));
         toolbar2.inflateMenu(R.menu.reader_index_main);
-        toolbar2.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
-
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
+        toolbar2.setOnMenuItemClickListener(item -> {
                 switch (item.getItemId()) {
                     case R.id.toolbar_settings:
-                        // mReaderCallback.showSettingsFragment();
                         new SettingsDialog.Builder().setPositiveButton()
                                                     .setPadding(0)
                                                     .buildSupport()
                                                     .show(getFragmentManager(), ReaderActivity.TAG_FRAGMENT_DIALOG_SETTING);
-                        // new SettingsDialogFragment().show(getFragmentManager(), Reader.TAG_FRAGMENT_DIALOG_SETTING);
                         getReaderActivity().closeDrawers();
                         break;
                 }
                 return true;
-            }
         });
 
 
@@ -131,7 +120,6 @@ public class UserTocFragment extends ReaderBaseFragment {
 
         mRecyclerView = view.findViewById(R.id.recycler);
         mRecyclerView.setHasFixedSize(true);
-        //mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         layoutManager = new SnapLayoutManager(inflater.getContext());
         mRecyclerView.setLayoutManager(layoutManager);
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
@@ -140,7 +128,6 @@ public class UserTocFragment extends ReaderBaseFragment {
                                                                                                  .marginResId(R.dimen.index_divider_margin)
                                                                                                  .showLastDivider()
                                                                                                  .build());
-//        mRecyclerView.setAdapter(adapter);
         mRecyclerView.setAdapter(newAdapter);
 
         return view;
@@ -179,7 +166,7 @@ public class UserTocFragment extends ReaderBaseFragment {
         super.onDestroyView();
     }
 
-    public void setFilterBookmarksToolbarItems(boolean bool) {
+    private void setFilterBookmarksToolbarItems(boolean bool) {
         getReaderViewModel().getUserTocLiveData()
                             .setFilterBookmarks(bool);
         Menu menu = toolbar.getMenu();

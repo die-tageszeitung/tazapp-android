@@ -130,16 +130,8 @@ public class ReaderActivity extends BaseActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        //Orientation.setActivityOrientationFromPrefs(this);
-
         bookId = getIntent().getStringExtra(KEY_EXTRA_BOOK_ID);
         if (TextUtils.isEmpty(bookId)) throw new IllegalStateException("Activity Reader has to be called with extra BookID");
-//        resourceKey = getIntent().getStringExtra(KEY_EXTRA_RESOURCE_KEY);
-//        if (TextUtils.isEmpty(resourceKey))
-//            throw new IllegalStateException("Activity Reader has to be called with extra Resource Key");
-//        long paperId = getIntent().getLongExtra(KEY_EXTRA_PAPER_ID, -1L);
-//        if (paperId == -1L) throw new IllegalStateException("Activity Reader has to be called with extra PaperId");
-
 
         mStorage = StorageManager.getInstance(this);
 
@@ -212,9 +204,6 @@ public class ReaderActivity extends BaseActivity
         mFragmentManager = getSupportFragmentManager();
 
         audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-//        retainTtsFragment = ReaderTtsFragment.createOrRetainDataFragment(getSupportFragmentManager(), ReaderTtsFragment.class);
-//        retainTtsFragment.setCallback(this);
-//        if (retainTtsFragment.getTtsState() == ReaderTtsFragment.TTS.PLAYING) ttsPreparePlayingInActivity();
 
         mContentFragment = (AbstractContentFragment) getSupportFragmentManager().findFragmentById(R.id.content_frame);
         loadIndexFragment();
@@ -222,20 +211,15 @@ public class ReaderActivity extends BaseActivity
 
 
         readerViewModel.getCurrentKeyLiveData()
-                       .observe(this, new Observer<ITocItem>() {
-                           @Override
-                           public void onChanged(@Nullable ITocItem iTocItem) {
+                       .observe(this, iTocItem -> {
                                mLoadingProgress.setVisibility(View.GONE);
                                if (mContentFragment == null && iTocItem != null) {
                                    loadContentFragment(iTocItem.getKey());
                                }
-                           }
                        });
 
         ttsViewModel.getLiveTtsState()
-                    .observe(this, new Observer<ReaderTTSViewModel.TTS>() {
-                        @Override
-                        public void onChanged(@Nullable ReaderTTSViewModel.TTS ttsState) {
+                    .observe(this, ttsState -> {
                             Timber.d("new tts state: %s", ttsState);
                             switch (ttsState) {
                                 case IDLE:
@@ -245,25 +229,18 @@ public class ReaderActivity extends BaseActivity
                                     audioManager.abandonAudioFocus(ttsViewModel.getAudioFocusChangeListener());
                                     showTtsSnackbar(getString(R.string.toast_tts_paused),
                                                     getString(R.string.toast_tts_action_restart),
-                                                    new View.OnClickListener() {
-                                                        @Override
-                                                        public void onClick(View v) {
+                                                    v -> {
                                                             ttsViewModel.stopTts();
                                                             if (ttsPreparePlayingInActivity()) {
                                                                 ttsViewModel.restartTts();
                                                             }
-                                                        }
                                                     });
-
                                     break;
                             }
-                        }
                     });
 
         ttsViewModel.getLiveTtsError()
-                    .observe(this, new Observer<ReaderTTSViewModel.TTSERROR>() {
-                        @Override
-                        public void onChanged(@Nullable ReaderTTSViewModel.TTSERROR ttserror) {
+                    .observe(this, ttserror -> {
                             if (ttserror != null) {
                                 Timber.w("error: %s", ttserror);
                                 StringBuilder message = new StringBuilder(getString(R.string.dialog_tts_error));
@@ -284,7 +261,6 @@ public class ReaderActivity extends BaseActivity
                                                     .show(getSupportFragmentManager(), TAG_DIALOG_TTS_ERROR);
 
                             }
-                        }
                     });
 
         audioViewModel.getCurrentAudioItemLiveData()
@@ -574,19 +550,10 @@ public class ReaderActivity extends BaseActivity
 
     public int onGetBackgroundColor(String themeName) {
         THEMES theme = THEMES.valueOf(themeName);
-        // THEMES theme = THEMES.valueOf(TazSettings.getPrefString(this, TazSettings.PREFKEY.THEME, "normal"));
         String hexColor = TazSettings.getInstance(this)
                                      .getPrefString(theme.getBgColorName(), "#FFFFFF");
         return Color.parseColor(hexColor);
     }
-
-//    @Override
-//    public boolean onLoad(String key) {
-//
-//        loadContentFragment(key);
-//        return false;
-//    }
-
 
     public void onBookmarkClick(ITocItem item) {
         Timber.d("%s", item.getKey());
@@ -595,15 +562,12 @@ public class ReaderActivity extends BaseActivity
         readerViewModel.getUserTocLiveData()
                        .onBookmarkChanged(item);
 
-//        if (mUserTocFragment != null) mUserTocFragment.onBookmarkChange(item.getKey());
         ITocItem currentItem = readerViewModel.getCurrentKeyLiveData()
                                               .getValue();
-        if (currentItem.equals(item)) {
+        if (currentItem!= null && currentItem.equals(item)) {
             if (mContentFragment instanceof ArticleFragment) ((ArticleFragment) mContentFragment).initialBookmark();
         }
-        new AsyncTaskListener<JSONArray, Void>(new AsyncTaskListener.OnExecute<JSONArray, Void>() {
-            @Override
-            public Void execute(JSONArray... jsonArrays) {
+        new AsyncTaskListener<JSONArray, Void>(jsonArrays -> {
                 JSONArray jsonArray = jsonArrays[0];
 
                 Store bookmarkStore = readerViewModel.getStoreRepository()
@@ -620,7 +584,6 @@ public class ReaderActivity extends BaseActivity
                 }
 
                 return null;
-            }
         }).execute(readerViewModel.getPaper()
                                   .getBookmarkJson());
 
@@ -636,14 +599,6 @@ public class ReaderActivity extends BaseActivity
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 this.startActivity(intent);
             }
-        }
-    }
-
-    @Override
-    public void onDialogDismiss(String tag, Bundle arguments) {
-        super.onDialogDismiss(tag, arguments);
-        if (TAG_FRAGMENT_DIALOG_SETTING.equals(tag)) {
-            //setImmersiveMode();
         }
     }
 
@@ -724,106 +679,13 @@ public class ReaderActivity extends BaseActivity
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-
-        switch (keyCode) {
+        switch(keyCode) {
             case KeyEvent.KEYCODE_MENU:
                 togglePageIndexDrawer();
                 return true;
         }
         return super.onKeyDown(keyCode, event);
     }
-
-
-    public void setImmersiveMode() {
-
-        boolean onOff = TazSettings.getInstance(this)
-                                   .getPrefBoolean(TazSettings.PREFKEY.FULLSCREEN, false);
-
-        mContentFrame.setFitsSystemWindows(!onOff);
-
-        int newUiOptions = getWindow().getDecorView()
-                                      .getSystemUiVisibility();
-
-        if (onOff) {
-            // Navigation bar hiding:  Backwards compatible to ICS.
-            if (Build.VERSION.SDK_INT >= 14) {
-                newUiOptions |= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
-            }
-
-            // Status bar hiding: Backwards compatible to Jellybean
-            if (Build.VERSION.SDK_INT >= 16) {
-                //newUiOptions |= View.SYSTEM_UI_FLAG_LAYOUT_STABLE;
-                newUiOptions |= View.SYSTEM_UI_FLAG_FULLSCREEN;
-                newUiOptions |= View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION;
-                newUiOptions |= View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
-            }
-            // Immersive mode: Backward compatible to KitKat.
-            // Note that this flag doesn't do anything by itself, it only augments the behavior
-            // of HIDE_NAVIGATION and FLAG_FULLSCREEN.  For the purposes of this sample
-            // all three flags are being toggled together.
-            // Note that there are two immersive mode UI flags, one of which is referred to as "sticky".
-            // Sticky immersive mode differs in that it makes the navigation and status bars
-            // semi-transparent, and the UI flag does not get cleared when the user interacts with
-            // the screen.
-            if (Build.VERSION.SDK_INT >= 19) {
-                newUiOptions |= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
-            }
-        } else {
-            newUiOptions = 0;
-        }
-
-
-        getWindow().getDecorView()
-                   .setSystemUiVisibility(newUiOptions);
-        mContentFrame.requestLayout();
-
-    }
-
-//    @Override
-//    public void onTtsStateChanged(ReaderTtsFragment.TTS newState) {
-//        Timber.d(newState.name());
-//        if (mContentFragment != null) mContentFragment.onTtsStateChanged(newState);
-//    }
-//
-//    @Override
-//    public void onTtsInitError(ReaderTtsFragment.TTSERROR error) {
-//        Timber.w("error: %s", error);
-//        StringBuilder message = new StringBuilder(getString(R.string.dialog_tts_error));
-//        switch (error) {
-//            case LANG_MISSING_DATA:
-//                message.append(" ")
-//                       .append(getString(R.string.dialog_tts_error_lang_missing_data));
-//                break;
-//            case LANG_NOT_SUPPORTED:
-//                message.append(" ")
-//                       .append(getString(R.string.dialog_tts_error_lang_not_supported));
-//                break;
-//        }
-//        new Dialog.Builder().setMessage(message.toString())
-//                            .setNeutralButton(R.string.dialog_tts_error_settings)
-//                            .setPositiveButton()
-//                            .buildSupport()
-//                            .show(getSupportFragmentManager(), TAG_DIALOG_TTS_ERROR);
-//    }
-//
-//    @Override
-//    public void onTtsStopped() {
-//        audioManager.abandonAudioFocus(retainTtsFragment.getAudioFocusChangeListener());
-//        if (retainTtsFragment.getTtsState() == ReaderTtsFragment.TTS.PAUSED) {
-//            showTtsSnackbar(getString(R.string.toast_tts_paused),
-//                            getString(R.string.toast_tts_action_restart),
-//                            new View.OnClickListener() {
-//                                @Override
-//                                public void onClick(View v) {
-//                                    retainTtsFragment.stopTts();
-//                                    if (ttsPreparePlayingInActivity()) {
-//                                        retainTtsFragment.restartTts();
-//                                    }
-//                                }
-//                            });
-//        }
-//
-//    }
 
 
     public boolean ttsPreparePlayingInActivity() {
@@ -842,12 +704,9 @@ public class ReaderActivity extends BaseActivity
                     case PAUSED:
                         showTtsSnackbar(makeTtsPlayingSpan(getString(R.string.toast_tts_continued)),
                                         getString(R.string.toast_tts_action_restart),
-                                        new View.OnClickListener() {
-                                            @Override
-                                            public void onClick(View v) {
+                                         v -> {
                                                 ttsViewModel.stopTts();
                                                 ttsViewModel.restartTts();
-                                            }
                                         });
                 }
                 return true;
@@ -882,11 +741,6 @@ public class ReaderActivity extends BaseActivity
         return snackbarText;
     }
 
-
-//    public ReaderTtsFragment.TTS getTtsState() {
-//        Timber.d("%s", retainTtsFragment.getTtsState());
-//        return retainTtsFragment.getTtsState();
-//    }
 
     public void speak2(Paper.Plist.Page.Article article) {
 
@@ -955,8 +809,7 @@ public class ReaderActivity extends BaseActivity
         Snacky.builder()
               .setActivity(this)
               .setText(message)
-              .setIcon(TintHelper.tintAndReturnDrawable(ContextCompat.getDrawable(this,
-                                                                                  R.drawable.ic_record_voice_over_black_24dp),
+              .setIcon(TintHelper.tintAndReturnDrawable(ContextCompat.getDrawable(this, R.drawable.ic_record_voice_over_black_24dp),
                                                         Color.WHITE))
               .setDuration(Snacky.LENGTH_LONG)
               .setActionText(action)

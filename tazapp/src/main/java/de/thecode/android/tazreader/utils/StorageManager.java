@@ -21,7 +21,6 @@ import timber.log.Timber;
 
 public class StorageManager {
 
-    public static final String TEMP     = "temp";
     public static final String PAPER    = "paper";
     public static final String RESOURCE = "resource";
 
@@ -37,22 +36,17 @@ public class StorageManager {
         return instance;
     }
 
-    //private final TazSettings settings;
-
     private File dataFolder;
     private File cacheFolder;
 
     private StorageManager(Context context) {
 
         TazSettings settings = TazSettings.getInstance(context);
-        settings.addOnPreferenceChangeListener(TazSettings.PREFKEY.DATA_FOLDER,
-                                               new TazSettings.OnPreferenceChangeListener<String>() {
-                                                   @Override
-                                                   public void onPreferenceChanged(String changedValue) {
-                                                       dataFolder = new File(changedValue);
-                                                       createNoMediaFileInDir(dataFolder);
-                                                   }
-                                               });
+        settings.<String>addOnPreferenceChangeListener(
+                TazSettings.PREFKEY.DATA_FOLDER, changedValue  -> {
+                    dataFolder = new File(changedValue);
+                    createNoMediaFileInDir(dataFolder);
+                });
         String dataFolderPath = settings.getDataFolderPath();
         if (TextUtils.isEmpty(dataFolderPath)) {
             File externalFilesDir = context.getExternalFilesDir(null);
@@ -155,7 +149,6 @@ public class StorageManager {
 
     public void deletePaperDir(Paper paper) {
         if (getPaperDirectory(paper).exists()) ExtensionsKt.deleteQuietly(getPaperDirectory(paper));
-//        Utils.deleteDir(getPaperDirectory(paper));
         new FileCachePDFThumbHelper(this, paper.fileHash).deleteDir();
     }
 
@@ -163,7 +156,6 @@ public class StorageManager {
         File dir = getResourceDirectory(key);
         if (dir.exists()) ExtensionsKt.deleteQuietly(dir);
         FilesKt.deleteRecursively(dir);
-        //Utils.deleteDir(getResourceDirectory(key));
     }
 
 }

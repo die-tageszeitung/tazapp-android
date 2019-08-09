@@ -24,7 +24,6 @@ import java.util.List;
 public class PageTocAdapter extends TazListAdapter<PageTocItem, PageTocAdapter.ViewHolder> {
 
     public static final short PAYLOAD_OVERLAY = 1;
-    //        private ITocItem currentItem;
     private final IPageIndexViewHolderClicks mRecyclerViewClickListener;
 
     public PageTocAdapter(IPageIndexViewHolderClicks clickListener) {
@@ -32,50 +31,6 @@ public class PageTocAdapter extends TazListAdapter<PageTocItem, PageTocAdapter.V
         this.mRecyclerViewClickListener = clickListener;
     }
 
-
-//        public void markAsCurrent(ITocItem tocItem) {
-//            Page page = null;
-//            if (tocItem != null) {
-//                if (tocItem instanceof Page) page = (Page) tocItem;
-//                else if (tocItem instanceof Page.Article) page = ((Page.Article) tocItem).getRealPage();
-//                else if (tocItem instanceof Paper.Plist.TopLink) page = ((Paper.Plist.TopLink) tocItem).getPage();
-//                if (page != null) {
-//                    Handler handler = new Handler();
-//                    Page finalPage = page;
-//                    new Thread(() -> {
-//                        float x1 = 0;
-//                        float x2 = 1F;
-//                        float y1 = 0;
-//                        float y2 = 1F;
-//                        for (Page.Geometry geometry : finalPage.getGeometries()) {
-//                            if (geometry.getLink()
-//                                        .equals(tocItem.getKey())) {
-//                                if (x1 == 0 || geometry.getX1() < x1) x1 = geometry.getX1();
-//                                if (y1 == 0 || geometry.getY1() < y1) y1 = geometry.getY1();
-//                                if (x2 == 1F || geometry.getX2() > x2) x2 = geometry.getX2();
-//                                if (y2 == 1F || geometry.getY2() > y2) y2 = geometry.getY2();
-//                            }
-//                        }
-//                        makeOverlayBitmap(x1, y1, x2, y2);
-//                        handler.post(() -> {
-//                            ITocItem oldCurrentItem = currentItem;
-//                            currentItem = finalPage;
-//                            int oldPos = indexOf(oldCurrentItem);
-//                            int pos = indexOf(currentItem);
-//
-//                            if (oldPos != -1) {
-//                                notifyItemChanged(oldPos, PAYLOAD_OVERLAY);
-//                            }
-//                            if (pos != -1) notifyItemChanged(pos, PAYLOAD_OVERLAY);
-//                            mRecyclerView.smoothScrollToPosition(pos);
-//
-//                        });
-//                    }).start();
-//
-//                    //mRecyclerView.center(position);
-//                }
-//            }
-//        }
 
     @Override
     public int getItemViewType(int position) {
@@ -103,7 +58,6 @@ public class PageTocAdapter extends TazListAdapter<PageTocItem, PageTocAdapter.V
     }
 
     private void onBindPageViewHolder(PageViewHolder viewholder, PageTocItem item, int position, List<Object> payloads) {
-//        Timber.d("binding: %s hasBitmap:%b",item.getKey(),item.hasOverlayBitmap());
         if (payloads.isEmpty()) {
             loadBitmap((Paper.Plist.Page) item.getIndexItem(), viewholder.image);
         }
@@ -115,20 +69,12 @@ public class PageTocAdapter extends TazListAdapter<PageTocItem, PageTocAdapter.V
                 viewholder.articelOverlayImage.setVisibility(View.GONE);
             }
         }
-
-//                if (page.equals(currentItem) && mCurrentArticleOverlay != null) {
-//                    viewholder.articelOverlayImage.setVisibility(View.VISIBLE);
-//                    viewholder.articelOverlayImage.setImageBitmap(mCurrentArticleOverlay);
-//                } else {
-//                    viewholder.articelOverlayImage.setVisibility(View.GONE);
-//                }
-//
     }
 
 
     @SuppressWarnings("incomplete-switch")
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int itemType) {
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int itemType) {
         View v;
         switch (ITocItem.Type.values()[itemType]) {
             case SOURCE:
@@ -144,7 +90,6 @@ public class PageTocAdapter extends TazListAdapter<PageTocItem, PageTocAdapter.V
         return null;
     }
 
-    @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         //notUsed
     }
@@ -167,28 +112,28 @@ public class PageTocAdapter extends TazListAdapter<PageTocItem, PageTocAdapter.V
     public static class PageIndexDiffCallback extends DiffUtil.ItemCallback<PageTocItem> {
 
         @Override
-        public boolean areItemsTheSame(PageTocItem oldItem, PageTocItem newItem) {
+        public boolean areItemsTheSame(@NonNull PageTocItem oldItem, @NonNull PageTocItem newItem) {
             return oldItem.getKey()
                           .equals(newItem.getKey());
         }
 
         @Override
-        public boolean areContentsTheSame(PageTocItem oldItem, PageTocItem newItem) {
+        public boolean areContentsTheSame(@NonNull PageTocItem oldItem, @NonNull PageTocItem newItem) {
             return new EqualsBuilder().append(oldItem.hasOverlayBitmap(), newItem.hasOverlayBitmap())
                                       .build();
         }
 
         @Override
-        public Object getChangePayload(PageTocItem oldItem, PageTocItem newItem) {
+        public Object getChangePayload(@NonNull PageTocItem oldItem, @NonNull PageTocItem newItem) {
             return PAYLOAD_OVERLAY;
         }
     }
 
-    protected static class ViewHolder extends RecyclerView.ViewHolder {
+    static class ViewHolder extends RecyclerView.ViewHolder {
 
         IPageIndexViewHolderClicks clickListener;
 
-        public ViewHolder(View itemView, IPageIndexViewHolderClicks clickListener) {
+        ViewHolder(View itemView, IPageIndexViewHolderClicks clickListener) {
             super(itemView);
             this.clickListener = clickListener;
             itemView.setOnClickListener(v -> ViewHolder.this.clickListener.onItemClick(getAdapterPosition()));
@@ -200,7 +145,7 @@ public class PageTocAdapter extends TazListAdapter<PageTocItem, PageTocAdapter.V
 
         TextView text;
 
-        public SourceViewHolder(View itemView, IPageIndexViewHolderClicks clickListener) {
+        SourceViewHolder(View itemView, IPageIndexViewHolderClicks clickListener) {
             super(itemView, clickListener);
             text = itemView.findViewById(R.id.text);
         }
@@ -211,7 +156,7 @@ public class PageTocAdapter extends TazListAdapter<PageTocItem, PageTocAdapter.V
         ImageView image;
         ImageView articelOverlayImage;
 
-        public PageViewHolder(View itemView, IPageIndexViewHolderClicks clickListener) {
+        PageViewHolder(View itemView, IPageIndexViewHolderClicks clickListener) {
             super(itemView, clickListener);
             image = itemView.findViewById(R.id.image);
             articelOverlayImage = itemView.findViewById(R.id.articelOverlayImage);

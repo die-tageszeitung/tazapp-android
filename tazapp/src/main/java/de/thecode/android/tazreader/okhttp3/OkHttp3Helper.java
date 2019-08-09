@@ -7,6 +7,7 @@ import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.utils.BuildTypeProvider;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import okhttp3.Call;
@@ -44,8 +45,7 @@ public class OkHttp3Helper {
     private final TazSettings          settings;
 
     private OkHttp3Helper(Context context) {
-        standardHeaders = HeaderHelper.getInstance(context)
-                                      .getStandardHeader();
+        standardHeaders =  new HashMap<>();
         userAgentInterceptor = new UserAgentInterceptor(context);
         settings = TazSettings.getInstance(context);
     }

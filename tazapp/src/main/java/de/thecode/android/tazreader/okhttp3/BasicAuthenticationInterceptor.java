@@ -17,7 +17,7 @@ public class BasicAuthenticationInterceptor implements Interceptor {
 
     private final String basic;
 
-    public BasicAuthenticationInterceptor(@NonNull String username, @NonNull String password) {
+    BasicAuthenticationInterceptor(@NonNull String username, @NonNull String password) {
         String credentials = username + ":" + password;
         basic = "Basic " + Base64.encodeToString(credentials.getBytes(), Base64.NO_WRAP);
     }

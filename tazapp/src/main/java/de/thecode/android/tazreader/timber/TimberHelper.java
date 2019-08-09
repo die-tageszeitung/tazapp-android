@@ -31,12 +31,7 @@ public class TimberHelper extends ContextWrapper {
         super(base);
         TazSettings settings = TazSettings.getInstance(this);
 
-        settings.addOnPreferenceChangeListener(TazSettings.PREFKEY.LOGFILE, new TazSettings.OnPreferenceChangeListener<Boolean>() {
-            @Override
-            public void onPreferenceChanged(Boolean changedValue) {
-                forrestFileLoggingTree(changedValue);
-            }
-        });
+        settings.addOnPreferenceChangeListener(TazSettings.PREFKEY.LOGFILE, this::forrestFileLoggingTree);
 
         forestLoggingTree();
         forrestFileLoggingTree(settings.isWriteLogfile());
@@ -58,9 +53,6 @@ public class TimberHelper extends ContextWrapper {
             fileLoggingTree = new FLTimberTree(this);
             Timber.plant(fileLoggingTree);
         }
-//         else {
-//            ExtensionsKt.deleteQuietly(StorageManager.getInstance(this).getLogCache());
-//        }
     }
 
 }

@@ -37,19 +37,8 @@ public class BaseActivity extends AppCompatActivity
     public static final  String DIALOG_HELP = "hilfeDialog";
     private static final String DIALOG_PUSH = "DialogPush";
 
-    private TazSettings.OnPreferenceChangeListener<String> orientationPreferenceListener = new TazSettings.OnPreferenceChangeListener<String>() {
-        @Override
-        public void onPreferenceChanged(String changedValue) {
-            setOrientation(changedValue);
-        }
-    };
-    private TazSettings.OnPreferenceChangeListener<Object> pushPreferenceListener        = new TazSettings.OnPreferenceChangeListener<Object>() {
-        @Override
-        public void onPreferenceChanged(Object changedValue) {
-            PushRestApiWorker.scheduleNow();
-        }
-    };
-
+    private TazSettings.OnPreferenceChangeListener<String> orientationPreferenceListener = this::setOrientation;
+    private TazSettings.OnPreferenceChangeListener<Object> pushPreferenceListener = changedValue -> PushRestApiWorker.scheduleNow();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

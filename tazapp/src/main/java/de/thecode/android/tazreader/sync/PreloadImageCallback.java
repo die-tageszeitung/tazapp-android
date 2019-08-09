@@ -10,7 +10,7 @@ import de.thecode.android.tazreader.data.Paper;
 
 public abstract class PreloadImageCallback implements Callback {
 
-    final Paper paper;
+    private final Paper paper;
 
 
     protected PreloadImageCallback(Paper paper) {

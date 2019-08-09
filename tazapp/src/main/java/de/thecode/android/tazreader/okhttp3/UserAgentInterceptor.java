@@ -9,6 +9,7 @@ import java.io.IOException;
 import okhttp3.Interceptor;
 import okhttp3.Request;
 import okhttp3.Response;
+import okhttp3.internal.annotations.EverythingIsNonNull;
 
 /**
  * Created by Mate on 18.02.2017.
@@ -18,11 +19,12 @@ public class UserAgentInterceptor implements Interceptor {
 
     private final UserAgentHelper userAgentHelper;
 
-    public UserAgentInterceptor(Context context) {
+    UserAgentInterceptor(Context context) {
         userAgentHelper = UserAgentHelper.getInstance(context);
     }
 
     @Override
+    @EverythingIsNonNull
     public Response intercept(Chain chain) throws IOException {
         final Request originalRequest = chain.request();
         final Request requestWithUserAgent = originalRequest.newBuilder()

@@ -45,7 +45,7 @@ public class PageTocLiveData extends LiveData<PageTocLiveData.ResultWrapper> {
     private final int    overlayBitmapColor;
     private final int    overlayBitmapPadding;
 
-    private final Observer<ITocItem> currentKeyObserver = tocItem -> {
+    private final Observer<ITocItem> currentKeyObserver = tocItem ->
         executor.execute(new ParametrizedRunnable<ITocItem>() {
             @Override
             public void run(ITocItem tocItem) {
@@ -78,22 +78,11 @@ public class PageTocLiveData extends LiveData<PageTocLiveData.ResultWrapper> {
                                 pageTocItem.removeOverlayBitmap();
                             }
                         }
-
-//                if (tocItem instanceof Paper.Plist.Page.Article) tocItem = tocItem.getIndexParent();
-//                expandInternal(tocItem, true);
-//                for (Map.Entry<String, PageTocItem> userTocItemEntry : pageTocMap.entrySet()) {
-//                    UserTocItem userTocItem = userTocItemEntry.getValue();
-//                    if (userTocItem != null) {
-//                        userTocItem.setActive(tocItem.getKey()
-//                                                     .equals(userTocItem.getKey()));
-//                    }
-//                }
                     }
                     publish();
                 }
             }
         }.set(tocItem));
-    };
 
 
     public PageTocLiveData(Context context, LiveData<ITocItem> currentKeyLiveData) {
@@ -122,7 +111,6 @@ public class PageTocLiveData extends LiveData<PageTocLiveData.ResultWrapper> {
             @Override
             public void run(Paper.Plist plist) {
                 Map<String, PageTocItem> result = new LinkedHashMap<>();
-                List<ITocItem> index = new ArrayList<>();
                 for (Paper.Plist.Source source : plist.getSources()) {
                     PageTocItem sourceItem = new PageTocItem(source);
                     result.put(source.getKey(), sourceItem);
@@ -142,7 +130,7 @@ public class PageTocLiveData extends LiveData<PageTocLiveData.ResultWrapper> {
         }.set(plist));
     }
 
-    public void publish() {
+    private void publish() {
         executor.execute(() -> {
             List<PageTocItem> shownList = new ArrayList<>();
             ResultWrapper resultWrapper = new ResultWrapper();
@@ -185,8 +173,6 @@ public class PageTocLiveData extends LiveData<PageTocLiveData.ResultWrapper> {
             float dy2 = (y2 * overlayBitmapHeight) + halfPadding;
             if (dy2 > overlayBitmapHeight - halfPadding) dy2 = overlayBitmapHeight - halfPadding;
 
-            //Log.d(dx1, dy1, dx2, dy2);
-
             canvas.drawRect(dx1, dy1, dx2, dy2, paint);
         } catch (IllegalStateException e) {
             Timber.w(e);
@@ -198,7 +184,7 @@ public class PageTocLiveData extends LiveData<PageTocLiveData.ResultWrapper> {
         private List<PageTocItem> list;
         private int scrollToPosition = -1;
 
-        public int getScrollToPosition() {
+        int getScrollToPosition() {
             return scrollToPosition;
         }
 

@@ -32,6 +32,7 @@
     <string name="dialog_error_download">Beim Download %1$s ist ein Fehler aufgetreten.</string>
 
     <string name="message_resourcedownload_error">einer benötigten Ressource</string>
+    <string name="message_resourcedownload_late_error">Sollte der Fehler wiederholt auftreten, schicken Sie uns bitte einen Fehlerbericht [Impressum -> Fehler melden], am besten mit Screenshot dieser Fehlermeldung.\n\nDetails: %1$s</string>
     <string name="message_not_enough_space">Nicht genügend Speicherplatz vorhanden.</string>
     <string name="message_paper_not_downloaded">Ausgabe nicht heruntergeladen.</string>
     <string name="message_paper_files_not_downloaded">Dateien zur Ausgabe nicht gefunden. Bitte kontrollieren Sie die Einstellungen zum Speicherort oder laden Sie die Ausgabe gegebenenfalls erneut herunter.</string>
@@ -86,6 +87,8 @@
     <string name="dialog_techinfo_supported_abis">Unterstützte ABIs</string>
     <string name="dialog_techinfo_installations_id">Installations ID</string>
     <string name="dialog_techinfo_android_version">Android Version</string>
+    <string name="dialog_techinfo_push_token">Push Token</string>
+    <string name="sync_job_error">Fehler beim Synchronisieren der Daten.\n\n%1$s</string>
     <string name="notification_channel_download">Downloads</string>
     <string name="notification_channel_message">Mitteilungen</string>
     <string name="notification_channel_audio">Audio</string>

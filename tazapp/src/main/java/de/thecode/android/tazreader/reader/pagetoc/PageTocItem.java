@@ -14,23 +14,23 @@ public class PageTocItem implements Cloneable {
     private       Bitmap   overlayBitmap;
 
 
-    public PageTocItem(ITocItem indexItem) {
+    PageTocItem(ITocItem indexItem) {
         this.indexItem = indexItem;
     }
 
-    public void setOverlayBitmap(Bitmap overlayBitmap) {
+    void setOverlayBitmap(Bitmap overlayBitmap) {
         this.overlayBitmap = overlayBitmap;
     }
 
-    public Bitmap getOverlayBitmap() {
+    Bitmap getOverlayBitmap() {
         return overlayBitmap;
     }
 
-    public boolean hasOverlayBitmap() {
+    boolean hasOverlayBitmap() {
         return overlayBitmap != null;
     }
 
-    public void removeOverlayBitmap() {
+    void removeOverlayBitmap() {
         overlayBitmap = null;
     }
 

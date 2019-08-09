@@ -9,8 +9,6 @@ import android.os.AsyncTask;
 import android.util.LruCache;
 import android.widget.ImageView;
 
-import com.artifex.mupdfdemo.MuPDFCore;
-
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.data.FileCachePDFThumbHelper;
 import de.thecode.android.tazreader.data.Paper;
@@ -45,9 +43,7 @@ public class BitmapWorkerTask extends AsyncTask<Void, Void, Bitmap> {
     }
 
     private final WeakReference<ImageView> imageViewReference;
-    private final Paper.Plist.Page         page;
     private final String                   key;
-    private       MuPDFCore.Cookie         cookie;
 
     private final int                     mThumbnailImageHeight;
     private final int                     mThumbnailImageWidth;
@@ -56,10 +52,9 @@ public class BitmapWorkerTask extends AsyncTask<Void, Void, Bitmap> {
 
     private static Bitmap placeHolderBitmap = null;
 
-    public BitmapWorkerTask(ImageView imageView, Paper.Plist.Page page) {
+    BitmapWorkerTask(ImageView imageView, Paper.Plist.Page page) {
         // Use a WeakReference to ensure the ImageView can be garbage collected
         this.key = page.getKey();
-        this.page = page;
         imageViewReference = new WeakReference<>(imageView);
         Context context = imageView.getContext();
         mThumbnailImageHeight = context.getResources()
@@ -82,7 +77,7 @@ public class BitmapWorkerTask extends AsyncTask<Void, Void, Bitmap> {
         }
     }
 
-    public Bitmap getPlaceHolderBitmap() {
+    Bitmap getPlaceHolderBitmap() {
         return placeHolderBitmap;
     }
 
@@ -107,7 +102,7 @@ public class BitmapWorkerTask extends AsyncTask<Void, Void, Bitmap> {
         if (bitmap != null && imageViewReference != null) {
             final ImageView imageView = imageViewReference.get();
             final BitmapWorkerTask bitmapWorkerTask = getBitmapWorkerTask(imageView);
-            if (this == bitmapWorkerTask && imageView != null) {
+            if (this == bitmapWorkerTask) {
                 imageView.setImageBitmap(bitmap);
             }
         }
@@ -152,7 +147,6 @@ public class BitmapWorkerTask extends AsyncTask<Void, Void, Bitmap> {
                                                      new File(paperDirectory, key).getAbsolutePath());
                 core.countPages();
                 core.setPageSize(core.getPageSize(0));
-                cookie = core.new Cookie();
 
                 core.drawPage(lq,
                               0,
@@ -162,7 +156,7 @@ public class BitmapWorkerTask extends AsyncTask<Void, Void, Bitmap> {
                               0,
                               mThumbnailImageWidth,
                               mThumbnailImageHeight,
-                              cookie);
+                              core.new Cookie());
 
                 pdfThumbHelper.save(lq, key);
                 core.onDestroy();
@@ -207,7 +201,7 @@ public class BitmapWorkerTask extends AsyncTask<Void, Void, Bitmap> {
         return null;
     }
 
-    public static boolean cancelPotentialWork(String key, ImageView imageView) {
+    static boolean cancelPotentialWork(String key, ImageView imageView) {
         final BitmapWorkerTask bitmapWorkerTask = getBitmapWorkerTask(imageView);
 
         if (bitmapWorkerTask != null) {

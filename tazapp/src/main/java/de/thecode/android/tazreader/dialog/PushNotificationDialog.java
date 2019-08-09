@@ -31,7 +31,6 @@ import java.io.InputStream;
 public class PushNotificationDialog extends DialogCustomView {
 
     private static final String ARG_PUSH_NOTIFICATION = "pushNotification";
-    //private PushNotification   pushNotification;
     private WebView            mWebView;
     private PaperRepository    paperRepository;
     private ResourceRepository resourceRepository;
@@ -57,17 +56,12 @@ public class PushNotificationDialog extends DialogCustomView {
             } else {
                 webView.getSettings()
                        .setAllowFileAccess(true);
-                new AsyncTaskListener<PushNotification, String>(new AsyncTaskListener.OnExecute<PushNotification, String>() {
-                    @Override
-                    public String execute(PushNotification... pushNotifications) {
-                        return getHtml(pushNotifications[0]);
-                    }
-                }, new AsyncTaskListener.OnSuccess<String>() {
-                    @Override
-                    public void onSuccess(String html) {
-                        mWebView.loadDataWithBaseURL("file:///android_asset/push/", html, "text/html", "utf-8", null);
-                    }
-                }).execute(pushNotification);
+                new AsyncTaskListener<PushNotification, String>(
+                        pushNotifications -> getHtml(pushNotifications[0]),
+                        html -> mWebView.loadDataWithBaseURL(
+                                "file:///android_asset/push/", html, "text/html", "utf-8", null
+                        )
+                ).execute(pushNotification);
             }
         }
         return webView;
@@ -97,8 +91,6 @@ public class PushNotificationDialog extends DialogCustomView {
             InputStream inputStream = assetManager.open("push/template.html");
             html = StreamUtils.toString(inputStream, Charsets.UTF_8);
             inputStream.close();
-
-//            html = IOUtils.toString(assetManager.open("push/template.html"), "UTF-8");
 
             String cssfilepath = "file:///android_asset/push/simple.css";
             Paper latestPaper = paperRepository.getLatestPaper();

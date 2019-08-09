@@ -25,10 +25,13 @@ import de.mateware.dialog.listener.DialogAdapterListListener;
 import de.mateware.dialog.listener.DialogButtonListener;
 import de.mateware.dialog.listener.DialogCancelListener;
 import de.mateware.dialog.listener.DialogDismissListener;
+import de.mateware.snacky.Snacky;
 import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.TazApplicationKt;
 import de.thecode.android.tazreader.analytics.AnalyticsWrapper;
+import de.thecode.android.tazreader.data.Download;
+import de.thecode.android.tazreader.data.DownloadEvent;
 import de.thecode.android.tazreader.data.DownloadState;
 import de.thecode.android.tazreader.data.Paper;
 import de.thecode.android.tazreader.data.PaperWithDownloadState;
@@ -46,6 +49,7 @@ import de.thecode.android.tazreader.notifications.NotificationUtils;
 import de.thecode.android.tazreader.reader.ReaderActivity;
 import de.thecode.android.tazreader.start.library.LibraryFragment;
 import de.thecode.android.tazreader.sync.AccountHelper;
+import de.thecode.android.tazreader.sync.SyncErrorEvent;
 import de.thecode.android.tazreader.update.Update;
 import de.thecode.android.tazreader.utils.AsyncTaskListener;
 import de.thecode.android.tazreader.utils.BaseActivity;
@@ -58,6 +62,8 @@ import de.thecode.android.tazreader.widget.CustomToolbar;
 import de.thecode.android.tazreader.worker.DataFolderMigrationWorker;
 import de.thecode.android.tazreader.worker.SyncWorker;
 
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -399,27 +405,11 @@ public class StartActivity extends BaseActivity
             addToDownloadQueue(downloadPaper.getBookId());
             startViewModel.startDownloadQueue();
         }
-//
-//        switch (info.getType()) {
-//            case NOT_AVAILABLE:
-//                showNoConnectionDialog();
-//                break;
-//            case MOBILE:
-//            case ROAMING:
-//                addToDownloadQueue(downloadPaper.getBookId());
-//                if (startViewModel.isMobileDownloadAllowed()) startViewModel.startDownloadQueue();
-//                else showMobileConnectionDialog();
-//                break;
-//            default:
-//                addToDownloadQueue(downloadPaper.getBookId());
-//                startViewModel.startDownloadQueue();
-//        }
     }
 
     private void addToDownloadQueue(String bookId) {
         startViewModel.getDownloadQueue()
                       .add(bookId);
-//        retainDataFragment.downloadQueue.add(bookId);
         startViewModel.setOpenPaperIdAfterDownload(bookId);
     }
 
@@ -518,8 +508,6 @@ public class StartActivity extends BaseActivity
         StringBuilder message = new StringBuilder(String.format(getString(R.string.dialog_error_download), downloadTitle));
         if (!TextUtils.isEmpty(extraMessage)) message.append("\n\n")
                                                      .append(extraMessage);
-//        if (exception != null && BuildConfig.DEBUG) message.append("\n\n")
-//                                                           .append(exception);
 
         new Dialog.Builder().setMessage(message.toString())
                             .setPositiveButton()
@@ -533,6 +521,11 @@ public class StartActivity extends BaseActivity
                                                                      .setMessage(message)
                                                                      .buildSupport()
                                                                      .show(getSupportFragmentManager(), tag);
+    }
+
+    public void hideWaitDialog(String tag) {
+        DialogFragment dialog = (DialogFragment) getSupportFragmentManager().findFragmentByTag(tag);
+        if (dialog != null) dialog.dismiss();
     }
 
     public void callArchive() {
@@ -566,10 +559,8 @@ public class StartActivity extends BaseActivity
                                                                                                    paper);
                                                                                           Intent intent = new Intent(StartActivity.this,
                                                                                                                      ReaderActivity.class);
-//                intent.putExtra(ReaderActivity.KEY_EXTRA_PAPER_ID, id);
                                                                                           intent.putExtra(ReaderActivity.KEY_EXTRA_BOOK_ID,
                                                                                                           paper.getBookId());
-//                    intent.putExtra(ReaderActivity.KEY_EXTRA_RESOURCE_KEY, resource.getKey());
                                                                                           startActivity(intent);
                                                                                       } else {
                                                                                           AnalyticsWrapper.getInstance()
@@ -629,6 +620,61 @@ public class StartActivity extends BaseActivity
         }
         if (getSupportActionBar() != null) {
             getSupportActionBar().setTitle(titleBuilder.toString());
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onSyncError(SyncErrorEvent event) {
+        Snacky.builder()
+              .setView(findViewById(R.id.content_frame))
+              .setDuration(Snacky.LENGTH_LONG)
+              .setText(getString(R.string.sync_job_error, event.getMessage()))
+              .setActionText(android.R.string.ok)
+              .error()
+              .show();
+    }
+
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onDownloadEvent(DownloadEvent event) {
+        Timber.d("event: %s", event);
+        Download download = event.getDownload();
+        switch (download.getType()) {
+            case PAPER:
+                if (event.getSuccess()) {
+                    if (startViewModel.isOpenReaderAfterDownload()) {
+                        if (download.getKey()
+                                    .equals(startViewModel.getOpenPaperIdAfterDownload())) {
+                            startViewModel.removeOpenPaperIdAfterDownload();
+                            openReader(download.getKey());
+                        }
+                    }
+                } else {
+                    showDownloadErrorDialog(download.getTitle(), event.getMessage());
+                    NotificationUtils.getInstance(this)
+                                     .removeDownloadNotification(download.getKey());
+                }
+                break;
+            case RESOURCE:
+                if (event.getDownload()
+                         .getKey()
+                         .equals(startViewModel.resourceKeyWaitingForDownload)) {
+                    startViewModel.resourceKeyWaitingForDownload = null;
+                    String bookId = startViewModel.getOpenPaperIdAfterDownload();
+                    if (bookId != null) {
+                        startViewModel.removeOpenPaperIdAfterDownload();
+                        hideWaitDialog(DIALOG_WAIT + bookId);
+                        if (event.getSuccess()) {
+                            openReader(bookId);
+                        } else {
+                            showDownloadErrorDialog(getString(R.string.message_resourcedownload_error),
+                                                    String.format(getString(R.string.message_resourcedownload_late_error),
+                                                                  event.getMessage()));
+                        }
+                    }
+                }
+
+                break;
         }
     }
 

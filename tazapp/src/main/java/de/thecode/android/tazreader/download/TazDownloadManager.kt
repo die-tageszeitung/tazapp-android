@@ -43,7 +43,6 @@ class TazDownloadManager private constructor() {
         d { "download $download" }
         val result = Result(download = download)
         download.file = storageManager.getDownloadFile("$bookId.paper.zip")
-        //val destinationFile = storageManager.getDownloadFile(paper)
         if (!checkFreeSpace(download.file, calculateBytesNeeded(paper.len))) {
             result.state = Result.STATE.NOSPACE
             return result

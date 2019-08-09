@@ -34,108 +34,53 @@ public class PagesFragment extends AbstractContentFragment {
 
     TazReaderViewAdaper _adapter;
 
-//    List<Page> pages;
-
-//    String _startKey;
-
-    String currentKey;
-
-
     public PagesFragment() {
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        AnalyticsWrapper.getInstance()
-//                        .trackBreadcrumb("onCreate in PagesFragment");
-//        if (savedInstanceState == null) {
-//            if (getArguments() != null) _startKey = getArguments().getString(ARG_STARTKEY);
-//        } else {
-//            _startKey = savedInstanceState.getString(ARG_STARTKEY);
-//        }
-//        pages = new ArrayList<>();
-//        Paper paper = getReaderViewModel().getPaper();
-//        if (paper != null){
-//            for (Paper.Plist.Source source : paper
-//                                                     .getPlist()
-//                                                     .getSources()) {
-//                for (Paper.Plist.Book book : source.getBooks()) {
-//                    for (Paper.Plist.Category category : book.getCategories()) {
-//                        pages.addAll(category.getPages());
-//                    }
-//                }
-//            }
-//
-//        }
         _adapter = new TazReaderViewAdaper();
-        //setRetainInstance(true);
     }
 
-//    @Override
-//    public void onSaveInstanceState(Bundle outState) {
-//        super.onSaveInstanceState(outState);
-//        outState.putString(ARG_STARTKEY, _startKey);
-//    }
-
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-//        AnalyticsWrapper.getInstance()
-//                        .trackBreadcrumb("onCreateView in PagesFragment");
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.reader_pagereader, container, false);
         _readerView = view.findViewById(R.id.readerview);
-        _readerView.setListener(new TAZReaderView.TAZReaderViewListener() {
-            @Override
-            public void onMoveToChild(String key) {
+        _readerView.setListener(key -> {
                 getReaderViewModel().setCurrentKey(key);
-            }
         });
         _readerView.setAdapter(_adapter);
         mShareButton = view.findViewById(R.id.share);
         ImageView mPageIndexButton = view.findViewById(R.id.pageindex);
         if (TazSettings.getInstance(getContext())
                        .getPrefBoolean(TazSettings.PREFKEY.PAGEINDEXBUTTON, false)) {
-            mPageIndexButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
+            mPageIndexButton.setOnClickListener(v -> {
                     if (getActivity() instanceof ReaderActivity) {
                         ((ReaderActivity) getActivity()).openPageIndexDrawer();
                     }
-                }
             });
-            mPageIndexButton.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
+            mPageIndexButton.setOnLongClickListener(v ->  {
                     Toast.makeText(v.getContext(), R.string.reader_action_pageindex, Toast.LENGTH_LONG)
                          .show();
                     return true;
-                }
             });
         } else mPageIndexButton.setVisibility(View.GONE);
 
         ImageView mIndexButton = view.findViewById(R.id.index);
         if (TazSettings.getInstance(getContext())
                        .getPrefBoolean(TazSettings.PREFKEY.PAGEINDEXBUTTON, false)) {
-            mIndexButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
+            mIndexButton.setOnClickListener(v -> {
                     if (getActivity() instanceof ReaderActivity) {
                         ((ReaderActivity) getActivity()).openIndexDrawer();
                     }
-                }
             });
-            mIndexButton.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
+            mIndexButton.setOnLongClickListener(v -> {
                     Toast.makeText(v.getContext(), R.string.reader_action_index, Toast.LENGTH_LONG)
                          .show();
                     return true;
-                }
             });
         } else mIndexButton.setVisibility(View.GONE);
-
-
-//        if (!TextUtils.isEmpty(_startKey)) setPage(_startKey);
 
         return view;
     }
@@ -144,16 +89,9 @@ public class PagesFragment extends AbstractContentFragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         getReaderViewModel().getPagesLiveData()
-                            .observe(this, new Observer<List<Page>>() {
-                                @Override
-                                public void onChanged(@Nullable List<Page> pages) {
-                                    _adapter.update(pages);
-                                }
-                            });
+                            .observe(this, _adapter::update);
         getReaderViewModel().getCurrentKeyLiveData()
-                            .observe(this, new Observer<ITocItem>() {
-                                @Override
-                                public void onChanged(@Nullable ITocItem tocItem) {
+                            .observe(this, tocItem -> {
                                     if (tocItem != null && _adapter.pages.size() > 0 && tocItem instanceof Page) {
                                         setShareButtonCallback(tocItem);
                                         int moveToPos = _adapter.pages.indexOf(tocItem);
@@ -163,26 +101,8 @@ public class PagesFragment extends AbstractContentFragment {
                                             _readerView.setDisplayedViewIndex(moveToPos);
                                         }
                                     }
-                                }
                             });
     }
-
-//    public void setPage(String key) {
-////        Timber.d("key: %s", key);
-////        if (_readerView != null) {
-////            for (Page page : pages) {
-////                if (page.getKey()
-////                        .equals(key)) {
-////                    Timber.d("setting page with key: %s", key);
-////                    _readerView.resetScale();
-////                    _readerView.setDisplayedViewIndex(pages.indexOf(page));
-////                    break;
-////                }
-////            }
-////        } else {
-////            _startKey = key;
-////        }
-//    }
 
     public void setShareButtonCallback(ITocItem item) {
         if (mShareButton != null) mShareButton.setCallback(item);
@@ -213,7 +133,7 @@ public class PagesFragment extends AbstractContentFragment {
     public class TazReaderViewAdaper extends BaseAdapter {
 
         private Bitmap mSharedHqBm;
-        private List<Page> pages = new ArrayList<>();
+        List<Page> pages = new ArrayList<>();
 
         public void update(List<Page> newPages) {
             pages.clear();
@@ -262,11 +182,5 @@ public class PagesFragment extends AbstractContentFragment {
 
             return pageView;
         }
-
     }
-
-//    @Override
-//    public void onTtsStateChanged(ReaderTtsFragment.TTS state) {
-//        Timber.d("state: %s", state);
-//    }
 }

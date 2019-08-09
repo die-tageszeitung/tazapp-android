@@ -28,22 +28,6 @@ public class AccountHelper {
     private AccountHelper(Context context) {
         preferences = TazSettings.getInstance(context);
         cipherPassword = Installation.id(context);
-        // Migrtion von vorhandenen User-Daten aus Version vor 2
-        if (TazSettings.getInstance(context)
-                       .getSharedPreferences()
-                       .contains("credentialsWorking")) {
-            Timber.d("Migration vorhandener Credentials");
-            String user = TazSettings.getInstance(context)
-                                     .getOldDecryptedPrefString(TazSettings.PREFKEY.USER, AccountHelper.ACCOUNT_DEMO_USER);
-            String pass = TazSettings.getInstance(context)
-                                     .getOldDecryptedPrefString(TazSettings.PREFKEY.PASS, AccountHelper.ACCOUNT_DEMO_PASS);
-            Editor edit = TazSettings.getInstance(context)
-                                     .getSharedPreferences()
-                                     .edit();
-            edit.remove("credentialsWorking");
-            edit.apply();
-            setUser(user, pass);
-        }
     }
 
     public String getUser(String defValue) {

@@ -44,7 +44,6 @@ class DownloadReceiverWorker(context: Context, workerParams: WorkerParameters) :
             val download = downloadsRepository.get(downloadId)
             if (download != null) {
                 val data = Data.Builder()
-                        //.putLong(ARG_DOWNLOAD_ID, downloadId)
                         .putString(ARG_ACTION, action)
                         .build()
                 val request = OneTimeWorkRequest.Builder(DownloadReceiverWorker::class.java)

@@ -38,7 +38,7 @@ public class PaperLiveData extends LiveData<Paper> {
     private final ResourceRepository resourceRepository;
     private Resource resource;
 
-    public PaperLiveData(Context context, String bookId) {
+    PaperLiveData(Context context, String bookId) {
         this.bookId = bookId;
         paperRepository = PaperRepository.getInstance(context);
         storageManager = StorageManager.getInstance(context);
@@ -55,7 +55,6 @@ public class PaperLiveData extends LiveData<Paper> {
             public Paper doInBackgroundWithException(Void... voids) throws Exception {
                 Paper paper = paperRepository.getPaperWithBookId(bookId);
                 if (paper == null) throw new Paper.PaperNotFoundException();
-                //paper.parsePlist(mStorage.getPaperFile(paper));
                 resource = resourceRepository.getResourceForPaper(paper);
                 paper.parsePlist(new File(storageManager.getPaperDirectory(paper), Paper.CONTENT_PLIST_FILENAME));
                 String bookmarkJsonString = storeRepository.getStore(bookId,Paper.STORE_KEY_BOOKMARKS)
@@ -96,7 +95,6 @@ public class PaperLiveData extends LiveData<Paper> {
                                             articleCollectionOrder.put(topLink.getKey(), position);
                                             articleCollectionPositionIndex.put(position, topLink.getKey());
                                             position++;
-                                            //articleItems.add(topLink);
                                             i.remove();
                                         }
                                     }
@@ -106,7 +104,6 @@ public class PaperLiveData extends LiveData<Paper> {
                                         articleCollectionOrder.put(article.getKey(), position);
                                         articleCollectionPositionIndex.put(position, article.getKey());
                                         position++;
-                                        //articleItems.add(article);
                                     }
                                 }
                             }
@@ -120,8 +117,6 @@ public class PaperLiveData extends LiveData<Paper> {
                         position++;
                     }
                 }
-
-                //            articleItems.addAll(toplinksToSortIn);
 
                 paper.setArticleCollectionOrder(articleCollectionOrder);
                 paper.setArticleCollectionPositionIndex(articleCollectionPositionIndex);

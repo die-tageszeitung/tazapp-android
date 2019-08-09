@@ -27,7 +27,6 @@ import timber.log.Timber;
 public class TAZReaderView extends ReaderView implements GestureDetector.OnDoubleTapListener {
 
     private boolean tapDisabled = false;
-//    private IReaderCallback mReaderCallback;
     private boolean         mScrolling;
     private int             tapPageMargin;
     private TAZReaderViewListener listener;
@@ -50,17 +49,12 @@ public class TAZReaderView extends ReaderView implements GestureDetector.OnDoubl
     }
 
     private void init(Context context) {
-//        AnalyticsWrapper.getInstance()
-//                        .trackBreadcrumb("init in TazReaderView");
-//        if (!isInEditMode()) mReaderCallback = (IReaderCallback) context;
         tapPageMargin = context.getResources()
                                .getDimensionPixelSize(R.dimen.reader_page_tapmargin);
     }
 
     @Override
     public void setAdapter(Adapter adapter) {
-//        AnalyticsWrapper.getInstance()
-//                        .trackBreadcrumb("setAdapter in TazReaderView");
         super.setAdapter(adapter);
     }
 
@@ -106,7 +100,6 @@ public class TAZReaderView extends ReaderView implements GestureDetector.OnDoubl
         Timber.d("i: %s", i);
         Page page = (Page) getAdapter().getItem(i);
         if (listener != null) listener.onMoveToChild(page.getKey());
-//        mReaderCallback.updateIndexes(page.getKey());
 
     }
 
@@ -156,11 +149,6 @@ public class TAZReaderView extends ReaderView implements GestureDetector.OnDoubl
         mScale = 1.0F;
     }
 
-
-//    public IReaderCallback getReaderCallback() {
-//        return mReaderCallback;
-//    }
-//
 
     @Override
     public boolean onSingleTapConfirmed(MotionEvent e) {

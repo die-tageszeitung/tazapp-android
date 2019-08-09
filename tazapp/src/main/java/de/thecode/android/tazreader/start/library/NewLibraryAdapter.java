@@ -135,25 +135,6 @@ public class NewLibraryAdapter extends TazListAdapter<PaperWithDownloadState, Ne
     }
 
     private void bindBadge(ViewHolder holder, Paper paper) {
-
-//        if (paper.isKiosk()) {
-//            holder.badge.setText(R.string.string_badge_kiosk);
-//            holder.badge.setVisibility(View.VISIBLE);
-//        } else
-//        if (paper.hasDownloadingState() || paper.hasExtractingState()) {
-//            switch (paper.getState()) {
-//                case Paper.STATE_DOWNLOADING:
-//                    holder.badge.setText("Herunterladen");
-//                    break;
-//                case Paper.STATE_EXTRACTING:
-//                    holder.badge.setText("Entpacken");
-//                    break;
-//
-//            }
-//            holder.badge.setVisibility(View.VISIBLE);
-//        } else {
-//
-//        }
         holder.badge.setVisibility(View.GONE);
     }
 
@@ -330,7 +311,6 @@ public class NewLibraryAdapter extends TazListAdapter<PaperWithDownloadState, Ne
 
             progress = itemView.findViewById(R.id.lib_item_progress);
             selected = itemView.findViewById(R.id.lib_item_selected_overlay);
-//            overlay = itemView.findViewById(R.id.lib_item_overlay);
             card.setOnClickListener(v -> {
                 if (listener != null) listener.onClick(getAdapterPosition());
             });
@@ -375,8 +355,6 @@ public class NewLibraryAdapter extends TazListAdapter<PaperWithDownloadState, Ne
     public static class PaperMetaData {
 
         public final List<String> selectedList = new ArrayList<>();
-        //        public final Map<String, Integer> progressMap  = new HashMap<>();
-//        public final Map<String, Integer> positionMap  = new HashMap<>();
 
         public int getSelectedCount() {
             return selectedList.size();
@@ -408,26 +386,6 @@ public class NewLibraryAdapter extends TazListAdapter<PaperWithDownloadState, Ne
         public String[] getSelected() {
             return selectedList.toArray(new String[0]);
         }
-
-//        public int getProgress(String bookId) {
-//            if (progressMap.containsKey(bookId)) return progressMap.get(bookId);
-//            else return 0;
-//        }
-//
-//        public boolean setProgress(String bookId, int value) {
-//            if (progressMap.containsKey(bookId) && progressMap.get(bookId) == value) return false;
-//            progressMap.put(bookId, value);
-//            return true;
-//        }
-
-//        public void setPosition(String bookId, int position) {
-//            positionMap.put(bookId, position);
-//        }
-//
-//        public int getPosition(String bookId) {
-//            return positionMap.get(bookId);
-//        }
-
 
     }
 

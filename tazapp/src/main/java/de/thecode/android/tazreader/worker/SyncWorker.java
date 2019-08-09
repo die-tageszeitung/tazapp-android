@@ -82,8 +82,6 @@ public class SyncWorker extends LoggingWorker {
     @NonNull
     @Override
     public Result doBackgroundWork() {
-//        EventBus.getDefault()
-//                .postSticky(new SyncStateChangedEvent(true));
 
         String startDate = getInputData().getString(ARG_START_DATE);
         String endDate = getInputData().getString(ARG_END_DATE);
@@ -137,27 +135,6 @@ public class SyncWorker extends LoggingWorker {
     }
 
     private void cleanUpResources() {
-        // TODO
-//        List<Paper> allPapers = paperRepository.getAllPapers();
-//        List<Resource> keepResources = new ArrayList<>();
-//        if (allPapers != null) {
-//            for (Paper paper : allPapers) {
-//                if (paperRepository.getDownloadStateForPaper(paper.getBookId()) != DownloadState.NONE) {
-//                    Resource resource = resourceRepository.getResourceForPaper(paper);
-//                    if (resource != null && !keepResources.contains(resource)) keepResources.add(resource);
-//                }
-//            }
-//        }
-//        List<Resource> deleteResources = resourceRepository.getAllResources();
-//        Paper latestPaper = paperRepository.getLatestPaper();
-//
-//        if (latestPaper != null) deleteResources.remove(resourceRepository.getWithKey(latestPaper.getResource()));
-//        for (Resource keepResource : keepResources) {
-//            deleteResources.remove(keepResource);
-//        }
-//        for (Resource deleteResource : deleteResources) {
-//            resourceRepository.deleteResource(deleteResource);
-//        }
     }
 
     private void handlePlist(NSDictionary root) {
@@ -231,22 +208,12 @@ public class SyncWorker extends LoggingWorker {
             if (latestResource != null && downloadState == DownloadState.NONE) {
                 TazDownloadManager.Companion.getInstance()
                                             .downloadResource(latestResource.getKey(), false, false);
-//                try {
-//                    OldDownloadManager.getInstance(getApplicationContext())
-//                                      .enqueResource(latestResource, false);
-//                } catch (OldDownloadManager.NotEnoughSpaceException e) {
-//                    Timber.e(e);
-//                }
             }
         }
     }
 
     private void autoDeleteTask() {
         if (settings.getPrefBoolean(TazSettings.PREFKEY.AUTODELETE, false)) {
-
-//            long currentOpenPaperId = TazSettings.getInstance(getContext())
-//                                                 .getPrefLong(TazSettings.PREFKEY.LASTOPENPAPER, -1L);
-//            Timber.d("+++++++ TazSettings: Current Paper SyncAdapter View: %s", currentOpenPaperId);
 
             //TODO Get BookId from Setting, an set it in Reader
             String currentOpenPaperBookId = null;

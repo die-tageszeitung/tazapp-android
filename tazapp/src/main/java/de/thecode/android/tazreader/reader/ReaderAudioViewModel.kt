@@ -34,7 +34,6 @@ class ReaderAudioViewModel(application: Application) : AndroidViewModel(applicat
     val currentAudioItemLiveData = MutableLiveData<AudioItem?>()
     val currentStateLiveData = MutableLiveData<AudioPlayerService.State>()
     val currentPositionLiveData = MutableLiveData<Int>()
-//    val isPlayingLiveData = MutableLiveData<Boolean>()
 
     init {
         currentAudioItemLiveData.observeForever {

@@ -53,10 +53,6 @@ class DownloadInfoDialog : DialogFragment() {
         dialog!!.getCustomView()
                 .findViewById<TextView>(R.id.state)
     }
-//    private val connection: TextView by lazy {
-//        dialog!!.getCustomView()
-//                .findViewById<TextView>(R.id.connection)
-//    }
 
     private val connected: CheckBox by lazy {
         dialog!!.getCustomView()
@@ -115,7 +111,6 @@ class DownloadInfoDialog : DialogFragment() {
                 connected.isChecked = it.connectionInfo.connected
                 metered.isChecked = it.connectionInfo.metered
                 roaming.isChecked = it.connectionInfo.roaming
-//                connection.text = it.connectionInfo
                 @SuppressLint("SetTextI18n")
                 state.text = it.state.readable()
                 dmlog.text = it.dmLog
@@ -170,7 +165,7 @@ class DownloadInfoDialogViewModel(val bookId: String) : ViewModel(), Connection.
         viewModelJob.cancel()
     }
 
-    fun poll() {
+    private fun poll() {
         uiScope.launch {
             withContext(Dispatchers.Default) {
                 val download = paperRepository.getDownloadForPaper(bookId)

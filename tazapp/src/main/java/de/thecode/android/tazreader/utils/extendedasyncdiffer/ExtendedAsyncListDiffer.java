@@ -143,7 +143,6 @@ public class ExtendedAsyncListDiffer<T> {
      *
      * @see DiffUtil.DiffResult#dispatchUpdatesTo(RecyclerView.Adapter)
      */
-    @SuppressWarnings("WeakerAccess")
     public ExtendedAsyncListDiffer(@NonNull ExtendedAdapterListUpdateCallback listUpdateCallback,
                                    @NonNull ExtendedAsyncDifferConfig<T> config) {
         mUpdateCallback = listUpdateCallback;
@@ -190,7 +189,6 @@ public class ExtendedAsyncListDiffer<T> {
      *
      * @param newList The new List.
      */
-    @SuppressWarnings("WeakerAccess")
     public void submitList(final List<T> newList) {
         if (newList == mList) {
             // nothing to do
@@ -201,7 +199,6 @@ public class ExtendedAsyncListDiffer<T> {
         final int runGeneration = ++mMaxScheduledGeneration;
 
         if (newList == null) {
-            //noinspection ConstantConditions
             mUpdateCallback.onRemoved(0, mList.size());
             mList = null;
             mReadOnlyList = Collections.emptyList();
@@ -217,48 +214,42 @@ public class ExtendedAsyncListDiffer<T> {
         }
 
         final List<T> oldList = mList;
-        mConfig.getBackgroundThreadExecutor().execute(new Runnable() {
-            @Override
-            public void run() {
-                final DiffUtil.DiffResult result = DiffUtil.calculateDiff(new DiffUtil.Callback() {
-                    @Override
-                    public int getOldListSize() {
-                        return oldList.size();
-                    }
+        mConfig.getBackgroundThreadExecutor().execute(() -> {
+            final DiffUtil.DiffResult result = DiffUtil.calculateDiff(new DiffUtil.Callback() {
+                @Override
+                public int getOldListSize() {
+                                          return oldList.size();
+                                                                }
 
-                    @Override
-                    public int getNewListSize() {
-                        return newList.size();
-                    }
+                @Override
+                public int getNewListSize() {
+                                          return newList.size();
+                                                                }
 
-                    @Override
-                    public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
-                        return mConfig.getDiffCallback().areItemsTheSame(
-                                oldList.get(oldItemPosition), newList.get(newItemPosition));
-                    }
+                @Override
+                public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
+                    return mConfig.getDiffCallback().areItemsTheSame(
+                            oldList.get(oldItemPosition), newList.get(newItemPosition));
+                }
 
-                    @Override
-                    public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
-                        return mConfig.getDiffCallback().areContentsTheSame(
-                                oldList.get(oldItemPosition), newList.get(newItemPosition));
-                    }
+                @Override
+                public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
+                    return mConfig.getDiffCallback().areContentsTheSame(
+                            oldList.get(oldItemPosition), newList.get(newItemPosition));
+                }
 
-                    @Nullable
-                    @Override
-                    public Object getChangePayload(int oldItemPosition, int newItemPosition) {
-                        return mConfig.getDiffCallback().getChangePayload(oldList.get(oldItemPosition), newList.get(newItemPosition));
-                    }
-                });
+                @Nullable
+                @Override
+                public Object getChangePayload(int oldItemPosition, int newItemPosition) {
+                    return mConfig.getDiffCallback().getChangePayload(oldList.get(oldItemPosition), newList.get(newItemPosition));
+                }
+            });
 
-                mConfig.getMainThreadExecutor().execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (mMaxScheduledGeneration == runGeneration) {
-                            latchList(newList, result);
-                        }
-                    }
-                });
-            }
+            mConfig.getMainThreadExecutor().execute(() -> {
+                if (mMaxScheduledGeneration == runGeneration) {
+                    latchList(newList, result);
+                }
+            });
         });
     }
 

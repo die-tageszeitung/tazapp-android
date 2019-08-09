@@ -23,9 +23,7 @@ public abstract class FileCacheImageHelper {
     private File mCacheDir;
 
 
-    public FileCacheImageHelper(StorageManager storage, String subDir) {
-        //mContext = context;
-        //ExternalStorage storage = new ExternalStorage(context);
+    FileCacheImageHelper(StorageManager storage, String subDir) {
         mCacheDir = storage.getCache(subDir);
     }
 
@@ -33,7 +31,7 @@ public abstract class FileCacheImageHelper {
         return save(bitmap, hash, 0, 0);
     }
 
-    public boolean save(Bitmap bitmap, String hash, int width, int height) throws IOException {
+    boolean save(Bitmap bitmap, String hash, int width, int height) throws IOException {
         Timber.d("bitmap: %s, hash: %s, width: %d, height: %d", bitmap, hash, width, height);
         if (mCacheDir.exists()) {
             File imageFile = new File(mCacheDir, hash + "." + getFileEndingForBitmapCompressFormat());
@@ -64,12 +62,8 @@ public abstract class FileCacheImageHelper {
     }
 
     @SuppressLint("NewApi")
-    public String getFileEndingForBitmapCompressFormat() {
+    private String getFileEndingForBitmapCompressFormat() {
         return getBitmapCompressFormat().name().toLowerCase(Locale.getDefault());
-    }
-
-    public int getBitmapCompressQuality() {
-        return quality;
     }
 
     public boolean delete(String hash) {
@@ -106,7 +100,7 @@ public abstract class FileCacheImageHelper {
 
         private String hash;
 
-        public ImageNameFileFilter(String hash) {
+        ImageNameFileFilter(String hash) {
             this.hash = hash;
         }
 
