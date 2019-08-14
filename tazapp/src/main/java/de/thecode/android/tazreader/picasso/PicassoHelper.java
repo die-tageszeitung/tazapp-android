@@ -31,6 +31,10 @@ public class PicassoHelper {
         picassoBuilder.downloader(new OkHttp3Downloader(picassoClient));
         Picasso picasso = picassoBuilder.build();
         picasso.setLoggingEnabled(BuildConfig.DEBUG);
-        Picasso.setSingletonInstance(picasso);
+        try {
+            Picasso.setSingletonInstance(picasso);
+        } catch (IllegalStateException e) {
+            //already initialized
+        }
     }
 }

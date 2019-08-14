@@ -611,7 +611,10 @@ public abstract class PageView extends ViewGroup {
 				mPatch = new OpaqueImageView(mContext);
 				mPatch.setScaleType(ImageView.ScaleType.MATRIX);
 				addView(mPatch);
-				mSearchView.bringToFront();
+				if(mSearchView != null) {
+					// TODO MATE was ist das?
+					mSearchView.bringToFront();
+				}
 			}
 
 			CancellableTaskDefinition<Void, Void> task;

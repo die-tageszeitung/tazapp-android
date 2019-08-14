@@ -307,15 +307,6 @@ public class ReaderActivity extends BaseActivity
                     break;
             }
         });
-
-//        audioViewModel.isPlayingLiveData()
-//                      .observe(this, isPLaying -> {
-//                          findViewById(R.id.play_button).setVisibility(isPLaying ? View.GONE : View.VISIBLE);
-//                          findViewById(R.id.pause_button).setVisibility(!isPLaying ? View.GONE : View.VISIBLE);
-//                      });
-//        Intent intent = new Intent(this, AudioPlayerService.class);
-//        bindService(intent, connection, 0);
-
     }
 
     @Override
@@ -360,8 +351,6 @@ public class ReaderActivity extends BaseActivity
             indexesFragmentTransaction.replace(R.id.left_drawer, mUserTocFragment, TAG_FRAGMENT_INDEX);
             indexesFragmentTransaction.commit();
         }
-
-        //mIndexFragment.init(retainDataFragment.getPaper());
     }
 
     private void loadPageIndexFragment() {
@@ -374,7 +363,6 @@ public class ReaderActivity extends BaseActivity
             indexesFragmentTransaction.replace(R.id.right_drawer, mPageTocFragment, TAG_FRAGMENT_PAGEINDEX);
             indexesFragmentTransaction.commit();
         }
-        //mPageIndexFragment.init(getReaderDataFragment().getPaper());
     }
 
     public void loadContentFragment(String key) {
@@ -390,11 +378,9 @@ public class ReaderActivity extends BaseActivity
                 case ARTICLE:
                 case TOPLINK:
                     loadArticleFragment(indexItem, DIRECTIONS.NONE, null);
-//                    closeDrawers();
                     break;
                 case PAGE:
                     loadPagesFragment(indexItem);
-//                    closeDrawers();
                     break;
             }
         }
@@ -408,19 +394,7 @@ public class ReaderActivity extends BaseActivity
     }
 
     private void loadArticleFragment(ITocItem indexItem, DIRECTIONS direction, String position) {
-
-
-//        if (TextUtils.isEmpty(position)) position = readerViewModel.getStoreRepository()
-//                                                                   .getStore(readerViewModel.getPaper()
-//                                                                                            .getBookId(),
-//                                                                             Paper.STORE_KEY_POSITION_IN_ARTICLE + "_" + indexItem.getKey())
-//                                                                   .getValue("0");
-
         FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
-
-        //AbstractContentFragment oldContentFragment = (AbstractContentFragment) getSupportFragmentManager().findFragmentById(R.id.content_frame);
-
-        //if (oldContentFragment != null) fragmentTransaction.remove(oldContentFragment);
 
         if (indexItem.getType() == ITocItem.Type.TOPLINK) {
             mContentFragment = TopLinkFragment.newInstance(bookId, indexItem.getKey());
@@ -433,19 +407,15 @@ public class ReaderActivity extends BaseActivity
         switch (direction) {
             case TOP:
                 fragmentTransaction.setCustomAnimations(R.anim.in_from_top, R.anim.out_to_bottom);
-                //fragmentTransaction.setCustomAnimations(R.animator.top_in, R.animator.bottom_out);
                 break;
             case BOTTOM:
                 fragmentTransaction.setCustomAnimations(R.anim.in_from_bottom, R.anim.out_to_top);
-                //fragmentTransaction.setCustomAnimations(R.animator.bottom_in, R.animator.top_out);
                 break;
             case LEFT:
                 fragmentTransaction.setCustomAnimations(R.anim.in_from_left, R.anim.out_to_right);
-                //fragmentTransaction.setCustomAnimations(R.animator.left_in, R.animator.right_out);
                 break;
             case RIGHT:
                 fragmentTransaction.setCustomAnimations(R.anim.in_from_right, R.anim.out_to_left);
-                //fragmentTransaction.setCustomAnimations(R.animator.right_in, R.animator.left_out);
                 break;
             default:
                 break;
@@ -454,8 +424,6 @@ public class ReaderActivity extends BaseActivity
         fragmentTransaction.replace(R.id.content_frame, mContentFragment);
 
         fragmentTransaction.commit();
-
-        //mContentFragment.init(retainDataFragment.getPaper(), indexItem.getPath(), position);
     }
 
     private void loadPagesFragment(ITocItem indexItem) {
@@ -467,12 +435,9 @@ public class ReaderActivity extends BaseActivity
             if (!(mContentFragment instanceof PagesFragment)) {
                 FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
                 mContentFragment = ReaderBaseFragment.newInstance(PagesFragment.class, bookId);
-//                mContentFragment = PagesFragment.newInstance(/*indexItem.getKey()*/);
                 fragmentTransaction.replace(R.id.content_frame, mContentFragment);
                 fragmentTransaction.commit();
-            } /*else {
-                ((PagesFragment) mContentFragment).setPage(indexItem.getKey());
-            }*/
+            }
         }
     }
 
