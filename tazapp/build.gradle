@@ -375,7 +375,7 @@ dependencies {
 
     implementation 'com.github.ajalt:timberkt:1.5.1'
 
-    implementation 'org.apache.commons:commons-compress:1.18' // JAVA 6 kompatible,  nihct updaten
+    implementation 'org.apache.commons:commons-compress:1.12' // JAVA 6 compatible, DO NOT UPDATE
 
     implementation 'androidx.core:core-ktx:1.0.2'
     implementation 'androidx.fragment:fragment-ktx:1.0.0'
