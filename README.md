@@ -1,4 +1,4 @@
-#taz.app für Android
+# taz.app für Android
 
 Täglich die neueste Ausgabe der "tageszeitung" (taz) direkt auf Ihr Smartphone oder Tablet. 
 
@@ -11,7 +11,7 @@ Weitere Infos unter [http://www.taz.de/android](http://www.taz.de/android)
 
 [![Android app on Google Play](https://developer.android.com/images/brand/de_app_rgb_wo_60.png)](https://play.google.com/store/apps/details?id=de.thecode.android.tazreader)
 
-#Lizenz
+# Lizenz
 
     taz.app
     Copyright (C) 2015 Contrapress Satz und Druck GmbH & Co. Neue KG
