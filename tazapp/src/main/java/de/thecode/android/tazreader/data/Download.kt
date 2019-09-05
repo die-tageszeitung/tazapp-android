@@ -10,8 +10,7 @@ import java.io.File
 import java.util.*
 
 @Entity(tableName = "DOWNLOADS")
-data class Download(@PrimaryKey()
-                    val key: String,
+data class Download(@PrimaryKey val key: String,
                     val title: String,
                     var file: File,
                     val type: DownloadType,

@@ -20,8 +20,6 @@ public class Publication {
         public static final String CREATED = "created";
         public static final String VALIDUNTIL = "validUntil";
         public static final String APPANDROIDVERSION = "appAndroidVersion";
-//        public static final String FULL_ID=TABLE_NAME+"."+_ID;
-//        public static final String FULL_VALIDUNTIL = TABLE_NAME+"."+VALIDUNTIL;
     }
 
     @PrimaryKey

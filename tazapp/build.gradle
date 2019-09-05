@@ -358,7 +358,6 @@ dependencies {
     implementation "androidx.room:room-runtime:2.1.0-alpha06"
     annotationProcessor "androidx.room:room-compiler:2.1.0-alpha06"
     kapt "androidx.room:room-compiler:2.1.0-alpha06"
-//    implementation "android.arch.lifecycle:common-java8:1.1.1"
 
     implementation "org.apache.commons:commons-lang3:3.9"
     implementation 'com.github.bosphere.android-filelogger:filelogger:1.0.6'
