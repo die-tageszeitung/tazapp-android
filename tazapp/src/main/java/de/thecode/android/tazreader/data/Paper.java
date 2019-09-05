@@ -140,8 +140,21 @@ public class Paper extends Downloadable {
         return image;
     }
 
+    public boolean isDemo() {
+        return demo;
+    }
+
     public String getDate() {
         return date;
+    }
+
+    public long getDateInMillis() {
+        try {
+            return new SimpleDateFormat("yyyy-MM-dd", Locale.GERMANY).parse(getDate())
+                                                                     .getTime();
+        } catch (ParseException e) {
+            return 0;
+        }
     }
 
     public void setDate(String date) {
@@ -152,8 +165,20 @@ public class Paper extends Downloadable {
         return imageHash;
     }
 
+    public void setImageHash(String imageHash) {
+        this.imageHash = imageHash;
+    }
+
     public void setImage(String image) {
         this.image = image;
+    }
+
+    public void setLastModified(long lastModified) {
+        this.lastModified = lastModified;
+    }
+
+    public void setDemo(boolean isDemo) {
+        this.demo = isDemo;
     }
 
     public void setLink(String link) {
@@ -162,6 +187,10 @@ public class Paper extends Downloadable {
 
     public String getLink() {
         return link;
+    }
+
+    public long getLastModified() {
+        return lastModified;
     }
 
     public void setBookId(String bookId) {
@@ -235,6 +264,11 @@ public class Paper extends Downloadable {
         parsePlist(fis, parseIndex);
     }
 
+    public void parsePlist(InputStream is) throws IOException, PropertyListFormatException, ParseException,
+            ParserConfigurationException, SAXException {
+        parsePlist(is, true);
+    }
+
     public void parsePlist(InputStream is, boolean parseIndex) throws IOException, PropertyListFormatException, ParseException,
             ParserConfigurationException, SAXException {
         Timber.i("Start parsing Plist - parse Index: %s", parseIndex);
@@ -246,6 +280,15 @@ public class Paper extends Downloadable {
     public Plist getPlist() {
         if (plist == null) throw new IllegalStateException("No Plist parsed. Call parsePlist() before!");
         return plist;
+    }
+
+    public boolean parseMissingAttributes(boolean overwrite) {
+        boolean result = false; //Did you write somthing new?
+        if (TextUtils.isEmpty(getResource()) || overwrite) {
+            setResource(getPlist().getResource());
+            result = true;
+        }
+        return result;
     }
 
     public class Plist {
@@ -1236,6 +1279,18 @@ public class Paper extends Downloadable {
 
     public static class PaperNotFoundException extends ReadableException {
         public PaperNotFoundException() {
+        }
+
+        public PaperNotFoundException(String detailMessage) {
+            super(detailMessage);
+        }
+
+        public PaperNotFoundException(String detailMessage, Throwable throwable) {
+            super(detailMessage, throwable);
+        }
+
+        public PaperNotFoundException(Throwable throwable) {
+            super(throwable);
         }
     }
 }
