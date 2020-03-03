@@ -44,7 +44,7 @@ class DownloadInfoDialog : DialogFragment() {
     }
 
     val bookId: String by lazy {
-        arguments!!.getString(BOOK_ID)
+        requireArguments().getString(BOOK_ID)
     }
 
     var dialog: MaterialDialog? = null
@@ -90,20 +90,20 @@ class DownloadInfoDialog : DialogFragment() {
     }
 
     private val viewModel: DownloadInfoDialogViewModel by lazy {
-        ViewModelProviders.of(this, DownloadInfoDialogViewModelFactory(arguments!!.getString(BOOK_ID)!!))
+        ViewModelProvider(this, DownloadInfoDialogViewModelFactory(requireArguments().getString(BOOK_ID)!!))
                 .get(DownloadInfoDialogViewModel::class.java)
     }
 
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         context?.let {
-            dialog = MaterialDialog(context!!)
+            dialog = MaterialDialog(requireContext())
                     .customView(viewRes = R.layout.dialog_download_info, scrollable = true)
                     .negativeButton(res = R.string.downloadinfo_cancel_download, click = {
-                        (activity as CancelDownloadDialogListener).onCancelDownload(arguments!!.getString(BOOK_ID)!!)
+                        (activity as CancelDownloadDialogListener).onCancelDownload(requireArguments().getString(BOOK_ID)!!)
                     })
                     .positiveButton()
-            title.text = app.getString(R.string.downloadinfo_dialog_title, arguments!!.getString(TITLE))
+            title.text = app.getString(R.string.downloadinfo_dialog_title, requireArguments().getString(TITLE))
             viewModel.downloadInfo.observe(this, Observer {
                 if (it.state == DownloadState.READY) {
                     dismiss()

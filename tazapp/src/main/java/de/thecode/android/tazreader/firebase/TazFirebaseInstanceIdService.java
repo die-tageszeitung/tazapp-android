@@ -1,7 +1,8 @@
 package de.thecode.android.tazreader.firebase;
 
-import com.google.firebase.iid.FirebaseInstanceId;
-import com.google.firebase.iid.FirebaseInstanceIdService;
+import androidx.annotation.NonNull;
+
+import com.google.firebase.messaging.FirebaseMessagingService;
 
 import de.thecode.android.tazreader.data.TazSettings;
 
@@ -11,13 +12,13 @@ import timber.log.Timber;
  * Created by mate on 24.07.2017.
  */
 
-public class TazFirebaseInstanceIdService extends FirebaseInstanceIdService {
+public class TazFirebaseInstanceIdService extends FirebaseMessagingService {
 
     @Override
-    public void onTokenRefresh() {
+    public void onNewToken(@NonNull String refreshedToken) {
+        super.onNewToken(refreshedToken);
         // Get updated InstanceID token.
-        String refreshedToken = FirebaseInstanceId.getInstance().getToken();
-        Timber.d("Refreshed token: " + refreshedToken);
+        Timber.d("Refreshed token: %s", refreshedToken);
         TazSettings.getInstance(this).setFirebaseToken(refreshedToken);
         // If you want to send messages to this application instance or
         // manage this apps subscriptions on the server side, send the
