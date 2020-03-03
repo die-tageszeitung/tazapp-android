@@ -355,9 +355,9 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.8.5'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.0-beta4'
 
-    implementation "androidx.room:room-runtime:2.1.0-alpha06"
-    annotationProcessor "androidx.room:room-compiler:2.1.0-alpha06"
-    kapt "androidx.room:room-compiler:2.1.0-alpha06"
+    implementation "androidx.room:room-runtime:2.2.4"
+    annotationProcessor "androidx.room:room-compiler:2.2.4"
+    kapt "androidx.room:room-compiler:2.2.4"
 
     implementation "org.apache.commons:commons-lang3:3.9"
     implementation 'com.github.bosphere.android-filelogger:filelogger:1.0.6'

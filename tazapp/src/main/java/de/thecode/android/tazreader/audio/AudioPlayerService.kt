@@ -4,7 +4,6 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
-import android.media.AudioAttributes
 import android.media.AudioManager
 import android.media.MediaPlayer
 import android.os.IBinder
@@ -43,13 +42,6 @@ class AudioPlayerService : Service(), MediaPlayer.OnCompletionListener, MediaPla
         const val ACTION_POSITION_UPDATE = "serviceAudioPositionChanged"
 
         var instance: AudioPlayerService? = null
-
-        fun isServiceCreated(): Boolean {
-            instance?.let {
-                return it.ping()
-            }
-            return false
-        }
     }
 
     private var mediaPlayer: MediaPlayer? = null
@@ -98,10 +90,6 @@ class AudioPlayerService : Service(), MediaPlayer.OnCompletionListener, MediaPla
         removeAudioFocus()
         state = State.LOADING
         super.onDestroy()
-    }
-
-    private fun ping(): Boolean {
-        return true
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
