@@ -3,11 +3,9 @@ package de.thecode.android.tazreader.reader;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Configuration;
 import android.graphics.Color;
 import android.media.AudioManager;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.text.Spannable;
@@ -70,22 +68,6 @@ public class ReaderActivity extends BaseActivity
     private AudioManager audioManager;
     private String bookId;
 //    private String       resourceKey;
-
-    /**
-     * Workaround for AppCompat 1.1.0 and WebView on API 21 - 25
-     * See: https://issuetracker.google.com/issues/141132133
-     * TODO: try to remove when updating appcompat
-     */
-    @Override
-    public void applyOverrideConfiguration(Configuration overrideConfiguration) {
-        if (21 <= Build.VERSION.SDK_INT && Build.VERSION.SDK_INT <= 25 && (
-                getResources().getConfiguration().uiMode == getApplicationContext().getResources().getConfiguration().uiMode)
-        ) {
-            return;
-        }
-        super.applyOverrideConfiguration(overrideConfiguration);
-    }
-
 
     public enum THEMES {
         normal("bgColorNormal"), sepia("bgColorSepia"), night("bgColorNight");
