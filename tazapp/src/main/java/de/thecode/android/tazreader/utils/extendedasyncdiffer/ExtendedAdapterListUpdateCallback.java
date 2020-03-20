@@ -59,11 +59,11 @@ public class ExtendedAdapterListUpdateCallback implements ListUpdateCallback {
         void onFinished(int firstInserted);
     }
 
-    public void resetCounters() {
+    void resetCounters() {
         firstInserted = -1;
     }
 
-    public void callListener(){
+    void callListener(){
         if (mListener != null && firstInserted != -1) mListener.onFinished(firstInserted);
     }
 }

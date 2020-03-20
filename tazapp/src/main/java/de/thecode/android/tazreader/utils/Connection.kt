@@ -27,7 +27,7 @@ class Connection {
             val manager = app.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             val info = manager.activeNetworkInfo
             val result = if (info != null) ConnectionInfo(info.isConnectedOrConnecting, manager.isActiveNetworkMetered, info.isRoaming)
-                            else ConnectionInfo(false, false, false)
+                            else ConnectionInfo(metered = false, connected = false, roaming = false)
             i { "ConnectionInfo: $result" }
             return result
         }

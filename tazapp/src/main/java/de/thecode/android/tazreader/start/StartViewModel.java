@@ -24,15 +24,11 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Transformations;
 
-//import de.thecode.android.tazreader.start.library.LibraryPaperLiveData;
-
 public class StartViewModel extends AndroidViewModel {
 
-//    private final LibraryPaperLiveData libraryPaperLiveData;
 
     private final MutableLiveData<Boolean>                      demoModeLiveData            = new MutableLiveData<>();
     private final LiveData<List<PaperWithDownloadState>>        livePapers;
-    //    private final LiveData<List<Paper>> livePapers;
     private final TazSettings                                   settings;
     private final StorageManager                                storageManager;
     private final PaperRepository                               paperRepository;
@@ -42,18 +38,12 @@ public class StartViewModel extends AndroidViewModel {
     private       boolean                                       mobileDownloadAllowed       = false;
     private       String                                        openPaperIdAfterDownload;
     private       boolean                                       openReaderAfterDownload     = false;
-    //    private       String                                        paperWaitingForResource;
-    public        String                                        resourceKeyWaitingForDownload;
+                  String                                        resourceKeyWaitingForDownload;
     private       boolean                                       actionMode                  = false;
     private       NewLibraryAdapter.PaperMetaData               paperMetaDataMap            = new NewLibraryAdapter.PaperMetaData();
 
 
-    private final TazSettings.OnPreferenceChangeListener<Boolean> demoModeListener = new TazSettings.OnPreferenceChangeListener<Boolean>() {
-        @Override
-        public void onPreferenceChanged(Boolean changedValue) {
-            demoModeLiveData.setValue(changedValue);
-        }
-    };
+    private final TazSettings.OnPreferenceChangeListener<Boolean> demoModeListener = demoModeLiveData::setValue;
 
     public StartViewModel(@NonNull Application application) {
         super(application);
@@ -82,12 +72,12 @@ public class StartViewModel extends AndroidViewModel {
         settings.removeOnPreferenceChangeListener(demoModeListener);
     }
 
-    public void addToNavBackstack(NavigationDrawerFragment.NavigationItem item) {
+    void addToNavBackstack(NavigationDrawerFragment.NavigationItem item) {
         navBackstack.remove(item);
         navBackstack.add(item);
     }
 
-    public List<NavigationDrawerFragment.NavigationItem> getNavBackstack() {
+    List<NavigationDrawerFragment.NavigationItem> getNavBackstack() {
         return navBackstack;
     }
 
@@ -103,31 +93,20 @@ public class StartViewModel extends AndroidViewModel {
         return paperMetaDataMap;
     }
 
-    public MutableLiveData<Boolean> getDemoModeLiveData() {
-        return demoModeLiveData;
-    }
-
-//    public LibraryPaperLiveData getLibraryPaperLiveData() {
-//        return libraryPaperLiveData;
-//    }
-
-    public List<String> getDownloadQueue() {
+    List<String> getDownloadQueue() {
         return downloadQueue;
     }
 
-    public SingleLiveEvent<TazDownloadManager.Result> getDownloadErrorLiveSingleData() {
+    SingleLiveEvent<TazDownloadManager.Result> getDownloadErrorLiveSingleData() {
         return downloadErrorLiveSingleData;
     }
 
-    public void startDownloadQueue() {
-        new AsyncTaskListener<Void, Void>(new AsyncTaskListener.OnExecute<Void, Void>() {
-            @Override
-            public Void execute(Void... aVoid) {
+    void startDownloadQueue() {
+        new AsyncTaskListener<>(aVoid -> {
                 while (downloadQueue.size() > 0) {
                     String bookId = downloadQueue.get(0);
                     TazDownloadManager.Result result = TazDownloadManager.Companion.getInstance()
                                                                                    .downloadPaper(bookId, false);
-                    //OldDownloadManager.DownloadManagerResult result = oldDownloadManager.downloadPaper(bookId, false);
                     if (result.getState() != TazDownloadManager.Result.STATE.SUCCESS) {
                         downloadErrorLiveSingleData.postValue(result);
                     }
@@ -135,7 +114,7 @@ public class StartViewModel extends AndroidViewModel {
                 }
                 return null;
             }
-        }).execute();
+        ).execute();
     }
 
     public PaperRepository getPaperRepository() {
@@ -150,15 +129,15 @@ public class StartViewModel extends AndroidViewModel {
         return settings;
     }
 
-    public boolean isMobileDownloadAllowed() {
+    boolean isMobileDownloadAllowed() {
         return mobileDownloadAllowed;
     }
 
-    public void setMobileDownloadAllowed(boolean mobileDownloadAllowed) {
+    void setMobileDownloadAllowed(boolean mobileDownloadAllowed) {
         this.mobileDownloadAllowed = mobileDownloadAllowed;
     }
 
-    public void setOpenPaperIdAfterDownload(String bookId) {
+    void setOpenPaperIdAfterDownload(String bookId) {
         if (TextUtils.isEmpty(openPaperIdAfterDownload)) {
             openPaperIdAfterDownload = bookId;
             openReaderAfterDownload = true;
@@ -167,7 +146,7 @@ public class StartViewModel extends AndroidViewModel {
         }
     }
 
-    public String getOpenPaperIdAfterDownload() {
+    String getOpenPaperIdAfterDownload() {
         return openPaperIdAfterDownload;
     }
 
@@ -175,23 +154,9 @@ public class StartViewModel extends AndroidViewModel {
         openPaperIdAfterDownload = null;
         openReaderAfterDownload = true;
     }
-//
-//    public void setPaperWaitingForResource(String bookId) {
-//        this.paperWaitingForResource = bookId;
-//    }
-//
-//    public String getPaperWaitingForResource() {
-//        return paperWaitingForResource;
-//    }
-//
 
-
-    public boolean isOpenReaderAfterDownload() {
+    boolean isOpenReaderAfterDownload() {
         return openReaderAfterDownload;
-    }
-
-    public void setOpenReaderAfterDownload(boolean openReaderAfterDownload) {
-        this.openReaderAfterDownload = openReaderAfterDownload;
     }
 
     public void deletePaper(String... bookIds) {
@@ -202,8 +167,6 @@ public class StartViewModel extends AndroidViewModel {
                 if (download.getState() == DownloadState.DOWNLOADING) {
                     TazDownloadManager.Companion.getInstance()
                                                 .cancelDownload(download.getDownloadManagerId());
-                } else {
-
                 }
                 paperRepository.deletePaper(paperToDelete);
             }
@@ -219,33 +182,4 @@ public class StartViewModel extends AndroidViewModel {
         this.actionMode = actionMode;
     }
 
-//    public static class DownloadError {
-//        final String    title;
-//        final String    details;
-//        final Exception exception;
-//
-//        public DownloadError(String title, String details, Exception exception) {
-//            this.title = title;
-//            this.details = details;
-//            this.exception = exception;
-//        }
-//
-//        public DownloadError(String title, String details) {
-//            this(title, details, null);
-//        }
-//
-//
-//        public Exception getException() {
-//            return exception;
-//        }
-//
-//        public String getTitle() {
-//            return title;
-//        }
-//
-//        public String getDetails() {
-//            return details;
-//        }
-//
-//    }
 }

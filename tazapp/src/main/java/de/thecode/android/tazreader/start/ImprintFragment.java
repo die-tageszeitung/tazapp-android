@@ -35,14 +35,11 @@ public class ImprintFragment extends StartBaseFragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.start_imprint, container, false);
         Button techInfoButton = view.findViewById(R.id.buttonTechInfo);
-        techInfoButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        techInfoButton.setOnClickListener(v -> {
                 new TechInfoDialog.Builder().setPositiveButton()
                                             .setNeutralButton(R.string.imprint_licenses)
                                             .buildSupport()
                                             .show(getFragmentManager(), DIALOG_TECHINFO);
-            }
         });
 
         WebView webView = view.findViewById(R.id.webView);

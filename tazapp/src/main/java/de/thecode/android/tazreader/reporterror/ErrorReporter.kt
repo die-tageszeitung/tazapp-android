@@ -67,7 +67,6 @@ class ErrorReporter {
                             .map {
                                 Timber.d("Adding %s to mail", it)
                                 StreamProvider.getUriForFile(BuildConfig.APPLICATION_ID + ".streamprovider", it)
-//                                uris.add(contentUri)
                             }
                             .toList()
 

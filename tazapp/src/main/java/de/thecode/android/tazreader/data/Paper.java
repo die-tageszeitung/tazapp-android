@@ -113,7 +113,7 @@ public class Paper extends Downloadable {
     }
 
     private Date parseDate() throws ParseException {
-        SimpleDateFormat informat = new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat informat = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
         return informat.parse(this.date);
     }
 

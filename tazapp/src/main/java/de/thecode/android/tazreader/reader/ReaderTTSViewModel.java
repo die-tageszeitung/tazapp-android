@@ -49,11 +49,11 @@ public class ReaderTTSViewModel extends AndroidViewModel implements TextToSpeech
         super(application);
     }
 
-    public SingleLiveEvent<TTS> getLiveTtsState() {
+    SingleLiveEvent<TTS> getLiveTtsState() {
         return liveTtsState;
     }
 
-    public SingleLiveEvent<TTSERROR> getLiveTtsError() {
+    SingleLiveEvent<TTSERROR> getLiveTtsError() {
         return liveTtsError;
     }
 
@@ -80,7 +80,7 @@ public class ReaderTTSViewModel extends AndroidViewModel implements TextToSpeech
         }
     }
 
-    public void initTts(String utteranceBaseId, CharSequence text) {
+    void initTts(String utteranceBaseId, CharSequence text) {
         if (getTtsState() == TTS.DISABLED) {
             setTtsState(TTS.INIT);
             prepareTts(utteranceBaseId, text);
@@ -96,51 +96,44 @@ public class ReaderTTSViewModel extends AndroidViewModel implements TextToSpeech
         }
     }
 
-    public TTS getTtsState() {
+    TTS getTtsState() {
         return ttsState;
     }
 
-    public String getUtteranceBaseId() {
+    String getUtteranceBaseId() {
         return utteranceBaseId;
     }
 
 
-    public void prepareTts(String utteranceBaseId, CharSequence text) {
+    void prepareTts(String utteranceBaseId, CharSequence text) {
 
         this.utteranceBaseId = utteranceBaseId;
-
-        int maxLength = 2000;
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN_MR2) {
-            maxLength = TextToSpeech.getMaxSpeechInputLength();
-        }
 
         String[] paragraphArray = text.toString()
                                       .split("\\n");
         int counter = 0;
 
-        if (paragraphArray.length > 0) {
-            for (int i = 0; i < paragraphArray.length; i++) {
-                if (paragraphArray[i].length() > 0) {
-                    BreakIterator breakIterator = BreakIterator.getSentenceInstance(Locale.GERMANY);
-                    breakIterator.setText(paragraphArray[i]);
-                    int start = breakIterator.first();
+        for (String paragraph: paragraphArray) {
+            if (paragraph.length() > 0) {
+                BreakIterator breakIterator = BreakIterator.getSentenceInstance(Locale.GERMANY);
+                breakIterator.setText(paragraph);
+                int start = breakIterator.first();
 
-                    for (int end = breakIterator.next(); end != BreakIterator.DONE; start = end, end = breakIterator.next()) {
-                        String utteranceId = utteranceBaseId + counter;
-                        sentencesOrder.add(utteranceId);
-                        sentences.put(utteranceId, paragraphArray[i].substring(start, end));
-                        counter++;
-                        utteranceId = utteranceBaseId + counter;
-                        sentencesOrder.add(utteranceId);
-                        sentences.put(utteranceId, makeSilenceTag(200));
-                        counter++;
-                    }
-                } else {
+                for (int end = breakIterator.next(); end != BreakIterator.DONE; start = end, end = breakIterator.next()) {
                     String utteranceId = utteranceBaseId + counter;
                     sentencesOrder.add(utteranceId);
-                    sentences.put(utteranceId, makeSilenceTag(700));
+                    sentences.put(utteranceId, paragraph.substring(start, end));
+                    counter++;
+                    utteranceId = utteranceBaseId + counter;
+                    sentencesOrder.add(utteranceId);
+                    sentences.put(utteranceId, makeSilenceTag(200));
                     counter++;
                 }
+            } else {
+                String utteranceId = utteranceBaseId + counter;
+                sentencesOrder.add(utteranceId);
+                sentences.put(utteranceId, makeSilenceTag(700));
+                counter++;
             }
         }
 
@@ -151,11 +144,11 @@ public class ReaderTTSViewModel extends AndroidViewModel implements TextToSpeech
         return TTSBREAK + millis;
     }
 
-    public void startTts() {
+    void startTts() {
         Pattern p = Pattern.compile("^" + TTSBREAK + "(\\d+)$");
         for (String utteranceId : sentencesOrder) {
             String sentence = sentences.get(utteranceId);
-            if (sentence.length() > 0) {
+            if (sentence != null && sentence.length() > 0) {
                 Matcher m = p.matcher(sentence);
                 if (m.find()) {
                     long value = Long.valueOf(m.group(1));
@@ -179,7 +172,7 @@ public class ReaderTTSViewModel extends AndroidViewModel implements TextToSpeech
         }
     }
 
-    public void pauseTts() {
+    void pauseTts() {
         tts.stop();
         if (sentencesOrder.size() > 0) {
             setTtsState(TTS.PAUSED);
@@ -190,25 +183,25 @@ public class ReaderTTSViewModel extends AndroidViewModel implements TextToSpeech
         //if (hasCallback()) getCallback().onTtsStopped();
     }
 
-    public void stopTts() {
+    void stopTts() {
         if (tts != null && tts.isSpeaking()) tts.stop();
         setTtsState(TTS.IDLE);
     }
 
-    public void flushTts() {
+    void flushTts() {
         stopTts();
         utteranceBaseId = null;
         sentences.clear();
         sentencesOrder.clear();
     }
 
-    public void restartTts() {
+    void restartTts() {
         sentencesOrder = new ArrayList<>(sentencesOrderOriginal);
         startTts();
     }
 
 
-    UtteranceProgressListener ttsListener = new UtteranceProgressListener() {
+    private UtteranceProgressListener ttsListener = new UtteranceProgressListener() {
         @Override
         public void onStart(String utteranceId) {
             Timber.d("utteranceId: %s", utteranceId);
@@ -243,7 +236,7 @@ public class ReaderTTSViewModel extends AndroidViewModel implements TextToSpeech
     };
 
 
-    public AudioManager.OnAudioFocusChangeListener getAudioFocusChangeListener() {
+    AudioManager.OnAudioFocusChangeListener getAudioFocusChangeListener() {
         return audioFocusChangeListener;
     }
 

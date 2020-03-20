@@ -19,17 +19,8 @@ import timber.log.Timber;
 
 public abstract class PreferenceFragmentCompat extends com.takisoft.preferencex.PreferenceFragmentCompat {
 
-    public static final int REQUESTCODE_RINGTONE = 7491;
-    public static String lastRingtoneRequestForKey;
-//
-//    @Override
-//    public View onCreateView(LayoutInflater inflater, ViewGroup container, @Nullable Bundle savedInstanceState) {
-//        try {
-//            return super.onCreateView(inflater, container, savedInstanceState);
-//        } finally {
-//            setDividerPreferences(DIVIDER_PADDING_CHILD | DIVIDER_CATEGORY_AFTER_LAST | DIVIDER_CATEGORY_BETWEEN);
-//        }
-//    }
+    private static final int REQUESTCODE_RINGTONE = 7491;
+    private static String lastRingtoneRequestForKey;
 
     @Override
     public boolean onPreferenceTreeClick(Preference preference) {

@@ -21,8 +21,10 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 
+import androidx.appcompat.widget.AppCompatImageView;
+
 // Make our ImageViews opaque to optimize redraw
-class OpaqueImageView extends ImageView {
+class OpaqueImageView extends AppCompatImageView {
 
 	public OpaqueImageView(Context context) {
 		super(context);
@@ -280,14 +282,11 @@ public abstract class PageView extends ViewGroup {
 				if (mBusyIndicator == null) {
 					mBusyIndicator = new ProgressBar(mContext);
 					mBusyIndicator.setIndeterminate(true);
-					//mBusyIndicator.setBackgroundResource(R.drawable.busy);
 					addView(mBusyIndicator);
 					mBusyIndicator.setVisibility(INVISIBLE);
-					mHandler.postDelayed(new Runnable() {
-						public void run() {
-							if (mBusyIndicator != null)
-								mBusyIndicator.setVisibility(VISIBLE);
-						}
+					mHandler.postDelayed(() -> {
+						if (mBusyIndicator != null)
+							mBusyIndicator.setVisibility(VISIBLE);
 					}, PROGRESS_DIALOG_DELAY);
 				}
 			}
@@ -306,14 +305,14 @@ public abstract class PageView extends ViewGroup {
 		mDrawEntire.execute();
 
 		if (mSearchView == null) {
+			final Paint paint = new Paint();
 			mSearchView = new View(mContext) {
 				@Override
 				protected void onDraw(final Canvas canvas) {
 					super.onDraw(canvas);
 					// Work out current total scale factor
 					// from source to view
-					final float scale = mSourceScale*(float)getWidth()/(float)mSize.x;
-					final Paint paint = new Paint();
+					final float scale = mSourceScale * (float)getWidth() / (float)mSize.x;
 
 					if (!mIsBlank && mSearchBoxes != null) {
 						paint.setColor(HIGHLIGHT_COLOR);
@@ -405,7 +404,7 @@ public abstract class PageView extends ViewGroup {
 		requestLayout();
 	}
 
-	public void setSearchBoxes(RectF searchBoxes[]) {
+	public void setSearchBoxes(RectF[] searchBoxes) {
 		mSearchBoxes = searchBoxes;
 		if (mSearchView != null)
 			mSearchView.invalidate();
@@ -611,7 +610,9 @@ public abstract class PageView extends ViewGroup {
 				mPatch = new OpaqueImageView(mContext);
 				mPatch.setScaleType(ImageView.ScaleType.MATRIX);
 				addView(mPatch);
-				mSearchView.bringToFront();
+				if(mSearchView != null) {
+					mSearchView.bringToFront();
+				}
 			}
 
 			CancellableTaskDefinition<Void, Void> task;
@@ -632,7 +633,6 @@ public abstract class PageView extends ViewGroup {
 					mPatchArea     = patchArea;
 					mPatch.setImageBitmap(mPatchBm);
 					mPatch.invalidate();
-					//requestLayout();
 					// Calling requestLayout here doesn't lead to a later call to layout. No idea
 					// why, but apparently others have run into the problem.
 					mPatch.layout(mPatchArea.left, mPatchArea.top, mPatchArea.right, mPatchArea.bottom);

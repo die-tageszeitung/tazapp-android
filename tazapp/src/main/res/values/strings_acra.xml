@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="crash_toast_text">Entschuldigung, die App ist abgestürzt oder ein unerwarteter Fehler ist aufgetreten. Ein Crash-Report wird zusammengestellt.</string>
-    <string name="crash_dialog_text">Ein unerwarteter Fehler ist aufgetreten. Bitte helfen Sie uns, den Fehler zu beseitigen, indem Sie uns die Fehlerdaten zusenden. Dazu müssen Sie nur mit OK bestätigen.</string>
-    <string name="crash_dialog_comment_prompt">Sie können zusätzlich einen Kommentar zum Fehler eingeben:</string>
-    <string name="crash_dialog_ok_toast">Vielen Dank für Ihre Unterstützung!</string>
-    <string name="crash_dialog_always_accept">Immer senden</string>
-</resources>

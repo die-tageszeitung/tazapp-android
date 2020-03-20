@@ -45,11 +45,8 @@ import de.thecode.android.tazreader.dialog.HelpDialog;
 import de.thecode.android.tazreader.dialognew.AskForHelpDialog;
 import de.thecode.android.tazreader.dialognew.DownloadInfoDialog;
 import de.thecode.android.tazreader.download.TazDownloadManager;
-import de.thecode.android.tazreader.importer.ImportActivity;
-import de.thecode.android.tazreader.migration.MigrationActivity;
 import de.thecode.android.tazreader.notifications.NotificationUtils;
 import de.thecode.android.tazreader.reader.ReaderActivity;
-import de.thecode.android.tazreader.start.importer.ImportFragment;
 import de.thecode.android.tazreader.start.library.LibraryFragment;
 import de.thecode.android.tazreader.sync.AccountHelper;
 import de.thecode.android.tazreader.sync.SyncErrorEvent;
@@ -77,13 +74,11 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
-import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.work.WorkInfo;
 import androidx.work.WorkManager;
@@ -99,13 +94,10 @@ public class StartActivity extends BaseActivity
     //private static final String DIALOG_FIRST                 = "dialogFirst";
     private static final String DIALOG_USER_REENTER          = "dialogUserReenter";
     //private static final String DIALOG_MISSING_RESOURCE = "dialogMissingResource";
-    private static final String DIALOG_RESOURCE_DOWNLOADING  = "dialogResourceDownloading";
     private static final String DIALOG_NO_CONNECTION         = "dialogNoConnection";
-    private static final String DIALOG_MIGRATION_FINISHED    = "dialogMigrationFinished";
     private static final String DIALOG_DOWNLOAD_MOBILE       = "dialogDownloadMobile";
     private static final String DIALOG_ACCOUNT_ERROR         = "dialogAccountError";
     private static final String DIALOG_DOWNLOADMANAGER_ERROR = "dialogDownloadManagerError";
-    private static final String DIALOG_DOWNLOAD_ERROR        = "dialogDownloadError";
     private static final String DIALOG_ARCHIVE_YEAR          = "dialogArchiveYear";
     private static final String DIALOG_ARCHIVE_MONTH         = "dialogArchiveMonth";
     private static final String DIALOG_WAIT                  = "dialogWait";
@@ -113,46 +105,28 @@ public class StartActivity extends BaseActivity
     private static final String DIALOG_ERROR_OPEN_PAPER      = "dialogErrorOpenPaper";
     private static final String DIALOG_UPDATE_AVAILABLE      = "dialogUpdateAvailable";
 
-    private static final String ARGUMENT_RESOURCE_KEY           = "resourceKey";
-    private static final String ARGUMENT_RESOURCE_URL           = "resourceUrl";
-    private static final String ARGUMENT_MIGRATED_IDS_JSONARRAY = "migratedIds";
     private static final String ARGUMENT_ARCHIVE_YEAR           = "archiveYear";
 
     private CustomToolbar            toolbar;
     private NavigationDrawerFragment mDrawerFragment;
     private View                     logWritingMessageView;
 
-//    RetainDataFragment retainDataFragment;
-
     NavigationDrawerFragment.NavigationItem userItem;
     NavigationDrawerFragment.NavigationItem libraryItem;
-    //    NavigationDrawerFragment.NavigationItem settingsItem;
     NavigationDrawerFragment.NavigationItem preferencesItem;
 
     NavigationDrawerFragment.ClickItem      helpItem;
     NavigationDrawerFragment.NavigationItem imprintItem;
     NavigationDrawerFragment.ClickItem      privacyTermsItem;
-    // NavigationDrawerFragment.NavigationItem importItem;
     NavigationDrawerFragment.ClickItem      rateAppItem;
     NavigationDrawerFragment.ClickItem      reportErrorItem;
 
     private StartViewModel startViewModel;
     private MaterialDialog migrationDialog;
 
-    TazSettings.OnPreferenceChangeListener demoModeChanged = new TazSettings.OnPreferenceChangeListener<Boolean>() {
-        @Override
-        public void onPreferenceChanged(Boolean value) {
-            onDemoModeChanged(value);
-        }
-    };
+    TazSettings.OnPreferenceChangeListener<Boolean> demoModeChanged = this::onDemoModeChanged;
 
-    TazSettings.OnPreferenceChangeListener logWritingListener = new TazSettings.OnPreferenceChangeListener<Boolean>() {
-
-        @Override
-        public void onPreferenceChanged(Boolean changedValue) {
-            onLogWriting(changedValue);
-        }
-    };
+    TazSettings.OnPreferenceChangeListener<Boolean> logWritingListener = this::onLogWriting;
 
     @Override
     public void onStart() {
@@ -174,7 +148,7 @@ public class StartActivity extends BaseActivity
 
     @Override
     protected void onNewIntent(Intent intent) {
-        Timber.i("receiviing new intent");
+        Timber.i("receiving new intent");
         //TODO handle intent data to open book
         super.onNewIntent(intent);
         openReaderFromDownloadNotificationIntent(intent);
@@ -184,39 +158,8 @@ public class StartActivity extends BaseActivity
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (TazSettings.getInstance(this)
-                       .getPrefInt(TazSettings.PREFKEY.PAPERMIGRATEFROM, 0) != 0) {
-            Intent migrationIntent = new Intent(this, MigrationActivity.class);
-            migrationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            startActivity(migrationIntent);
-            return;
-        }
-        TazSettings.getInstance(this)
-                   .removePref(TazSettings.PREFKEY.PAPERMIGRATEFROM);
-
-        //Orientation.setActivityOrientationFromPrefs(this);
-
         startViewModel = ViewModelProviders.of(this)
                                            .get(StartViewModel.class);
-
-//        retainDataFragment = RetainDataFragment.findOrCreateRetainFragment(getSupportFragmentManager(), this);
-//
-//
-//        if (retainDataFragment.getCache() == null) {
-//            final int maxMemory = (int) (Runtime.getRuntime()
-//                                                .maxMemory() / 1024);
-//            final int cacheSize = maxMemory / 8;
-//            retainDataFragment.cache = new LruCache<String, Bitmap>(cacheSize) {
-//
-//                @SuppressLint("NewApi")
-//                @Override
-//                protected int sizeOf(String key, Bitmap bitmap) {
-//                    // The cache size will be measured in kilobytes rather than
-//                    // number of items.
-//                    return bitmap.getByteCount() / 1024;
-//                }
-//            };
-//        }
 
         setContentView(R.layout.activity_start);
 
@@ -238,15 +181,9 @@ public class StartActivity extends BaseActivity
         userItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_account),
                                                                R.drawable.ic_account,
                                                                LoginFragment.class);
-//        importItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_import), R.drawable.ic_file_folder,
-//                                                                 ImportFragment.class);
-//        importItem.setAccessibilty(false);
         libraryItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_library),
                                                                   R.drawable.ic_local_library_black_24dp,
                                                                   LibraryFragment.class);
-//        settingsItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_settings), R.drawable.ic_settings,
-//                                                                   SettingsFragment.class);
-//        settingsItem.setAccessibilty(false);
 
         preferencesItem = new NavigationDrawerFragment.NavigationItem(getString(R.string.drawer_preferences),
                                                                       R.drawable.ic_settings_black_24dp,
@@ -273,7 +210,6 @@ public class StartActivity extends BaseActivity
         mDrawerFragment.addItem(libraryItem);
         mDrawerFragment.addDividerItem();
         mDrawerFragment.addItem(userItem);
-//        mDrawerFragment.addItem(importItem);
         mDrawerFragment.addItem(preferencesItem);
         mDrawerFragment.addItem(helpItem);
         mDrawerFragment.addDividerItem();
@@ -282,18 +218,10 @@ public class StartActivity extends BaseActivity
         mDrawerFragment.addDividerItem();
         mDrawerFragment.addItem(imprintItem);
         mDrawerFragment.addItem(privacyTermsItem);
-        // mDrawerFragment.addItem(settingsItem);
-
-
-        //has to be after adding useritem
-        //updateUserInDrawer();
 
         //initial Fragment with colored navdrawer
         if (getSupportFragmentManager().findFragmentById(R.id.content_frame) == null)
             mDrawerFragment.simulateClick(libraryItem, false);
-
-
-        //        showMigrationDownloadDialog();
 
 
         if (TazSettings.getInstance(this)
@@ -303,7 +231,6 @@ public class StartActivity extends BaseActivity
                        .setPref(TazSettings.PREFKEY.FISRTSTART, false);
             TazSettings.getInstance(this)
                        .setPref(TazSettings.PREFKEY.USERMIGRATIONNOTIFICATION, true);
-//            firstStartDialog();
         } else if (!TazSettings.getInstance(this)
                                .getPrefBoolean(TazSettings.PREFKEY.USERMIGRATIONNOTIFICATION, false)) {
             new Dialog.Builder().setCancelable(false)
@@ -314,27 +241,21 @@ public class StartActivity extends BaseActivity
         }
 
         //Todo run Sync on first start
-//        if (TazSettings.getInstance(this)
-//                       .getSyncServiceNextRun() == 0) SyncHelper.requestSync(this);
-        //Intent intent = getIntent();
         openReaderFromDownloadNotificationIntent(getIntent());
         checkForNewerVersion();
         startViewModel.getDownloadErrorLiveSingleData()
-                      .observe(this, new Observer<TazDownloadManager.Result>() {
-                          @Override
-                          public void onChanged(@Nullable TazDownloadManager.Result downloadError) {
-                              if (downloadError != null) showDownloadErrorDialog(downloadError.getDownload()
-                                                                                              .getTitle(),
-                                                                                 downloadError.getState()
-                                                                                              .getText());
-                          }
+                      .observe(this, downloadError -> {
+                              if (downloadError != null) {
+                                  showDownloadErrorDialog(
+                                          downloadError.getDownload().getTitle(),
+                                          downloadError.getState().getText()
+                                  );
+                              }
                       });
 
         WorkManager.getInstance()
                    .getWorkInfosForUniqueWorkLiveData(DataFolderMigrationWorker.UNIQUE_TAG)
-                   .observe(this, new Observer<List<WorkInfo>>() {
-                       @Override
-                       public void onChanged(List<WorkInfo> workStatuses) {
+                   .observe(this, workStatuses -> {
                            boolean isDataMigrationRunning = false;
                            if (workStatuses != null) {
                                for (WorkInfo workStatus : workStatuses) {
@@ -349,11 +270,7 @@ public class StartActivity extends BaseActivity
                            } else {
                                if (migrationDialog != null) migrationDialog.dismiss();
                            }
-
-                       }
                    });
-
-
     }
 
     public void checkForNewerVersion() {
@@ -381,17 +298,6 @@ public class StartActivity extends BaseActivity
                         bookId)) {
                     openReader(bookId);
                 }
-            }
-        }
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        Timber.d("requestCode: %s, resultCode: %s, data: %s", requestCode, resultCode, data);
-        if (requestCode == ImportActivity.REQUEST_CODE_IMPORT_ACTIVITY) {
-            if (resultCode == RESULT_OK) {
-
             }
         }
     }
@@ -477,13 +383,6 @@ public class StartActivity extends BaseActivity
         return toolbar;
     }
 
-    //    public void updateUserInDrawer() {
-    //        if (mAccountHelper.isAuthenticated()) userItem.setText(mAccountHelper.getUser());
-    //        else userItem.setText(getString(R.string.drawer_no_account));
-    //        mDrawerFragment.handleChangedItem(userItem);
-    //    }
-
-
     public void enableDrawer(boolean bool) {
         mDrawerFragment.setEnabled(bool);
     }
@@ -506,27 +405,11 @@ public class StartActivity extends BaseActivity
             addToDownloadQueue(downloadPaper.getBookId());
             startViewModel.startDownloadQueue();
         }
-//
-//        switch (info.getType()) {
-//            case NOT_AVAILABLE:
-//                showNoConnectionDialog();
-//                break;
-//            case MOBILE:
-//            case ROAMING:
-//                addToDownloadQueue(downloadPaper.getBookId());
-//                if (startViewModel.isMobileDownloadAllowed()) startViewModel.startDownloadQueue();
-//                else showMobileConnectionDialog();
-//                break;
-//            default:
-//                addToDownloadQueue(downloadPaper.getBookId());
-//                startViewModel.startDownloadQueue();
-//        }
     }
 
     private void addToDownloadQueue(String bookId) {
         startViewModel.getDownloadQueue()
                       .add(bookId);
-//        retainDataFragment.downloadQueue.add(bookId);
         startViewModel.setOpenPaperIdAfterDownload(bookId);
     }
 
@@ -625,8 +508,6 @@ public class StartActivity extends BaseActivity
         StringBuilder message = new StringBuilder(String.format(getString(R.string.dialog_error_download), downloadTitle));
         if (!TextUtils.isEmpty(extraMessage)) message.append("\n\n")
                                                      .append(extraMessage);
-//        if (exception != null && BuildConfig.DEBUG) message.append("\n\n")
-//                                                           .append(exception);
 
         new Dialog.Builder().setMessage(message.toString())
                             .setPositiveButton()
@@ -652,8 +533,7 @@ public class StartActivity extends BaseActivity
     }
 
     public void openReader(String bookId) {
-        new AsyncTaskListener<String, PaperWithDownloadState>(bookIdParams -> startViewModel.getPaperRepository()
-                                                                                            .getWithBookId(bookIdParams[0]),
+        new AsyncTaskListener<String, PaperWithDownloadState>(bookIdParams -> startViewModel.getPaperRepository().getWithBookId(bookIdParams[0]),
                                                               paper -> {
                                                                   if (paper.getDownloadState() != DownloadState.READY) {
                                                                       showErrorDialog(getString(R.string.message_paper_not_downloaded),
@@ -679,10 +559,8 @@ public class StartActivity extends BaseActivity
                                                                                                    paper);
                                                                                           Intent intent = new Intent(StartActivity.this,
                                                                                                                      ReaderActivity.class);
-//                intent.putExtra(ReaderActivity.KEY_EXTRA_PAPER_ID, id);
                                                                                           intent.putExtra(ReaderActivity.KEY_EXTRA_BOOK_ID,
                                                                                                           paper.getBookId());
-//                    intent.putExtra(ReaderActivity.KEY_EXTRA_RESOURCE_KEY, resource.getKey());
                                                                                           startActivity(intent);
                                                                                       } else {
                                                                                           AnalyticsWrapper.getInstance()
@@ -800,56 +678,6 @@ public class StartActivity extends BaseActivity
         }
     }
 
-//    @Subscribe(threadMode = ThreadMode.MAIN)
-//    public void onPaperDownloadFinished(PaperDownloadFinishedEvent event) {
-//        Timber.d("event: %s", event);
-//        if (startViewModel.isOpenReaderAfterDownload()) {
-//            if (event.getBookId()
-//                     .equals(startViewModel.getOpenPaperIdAfterDownload())) {
-//                startViewModel.removeOpenPaperIdAfterDownload();
-//                openReader(event.getBookId());
-//            }
-//        }
-//    }
-
-//    @Subscribe(threadMode = ThreadMode.MAIN)
-//    public void onPaperDownloadFailed(PaperDownloadFailedEvent event) {
-//        showDownloadErrorDialog(event.getPaper()
-//                                     .getTitelWithDate(this), null, event.getException());
-//        NotificationUtils.getInstance(this)
-//                         .removeDownloadNotification(event.getPaper()
-//                                                          .getBookId());
-//    }
-
-//    @Subscribe(threadMode = ThreadMode.MAIN)
-//    public void onResourceDownload(ResourceDownloadEvent event) {
-//        String waitingBookId = startViewModel.getPaperWaitingForResource();
-//        if (!TextUtils.isEmpty(waitingBookId)) {
-//            new AsyncTaskListener<ResourceDownloadEvent, Void>(new AsyncTaskListener.OnExecute<ResourceDownloadEvent, Void>() {
-//                @Override
-//                public Void execute(ResourceDownloadEvent... resourceDownloadEvents) {
-//                    Paper waitingPaper = startViewModel.getPaperRepository()
-//                                                       .getPaperWithBookId(waitingBookId);
-//                    if (resourceDownloadEvents[0].getKey()
-//                                                 .equals(ResourceRepository.getInstance(StartActivity.this)
-//                                                                           .getResourceForPaper(waitingPaper)
-//                                                                           .getKey())) {
-//                        hideWaitDialog(DIALOG_WAIT + waitingBookId);
-//                        startViewModel.setPaperWaitingForResource(null);
-//                        if (resourceDownloadEvents[0].isSuccessful()) {
-//                            openReader(waitingBookId);
-//                        } else {
-//                            showDownloadErrorDialog(getString(R.string.message_resourcedownload_error),
-//                                                    String.format(getString(R.string.message_resourcedownload_late_error),
-//                                                                  resourceDownloadEvents[0].getException()));
-//                        }
-//                    }
-//                    return null;
-//                }
-//            }).execute(event);
-//        }
-//    }
-
     AsyncTask<Void, Void, Boolean> firstStartTask;
 
     @Override
@@ -910,18 +738,6 @@ public class StartActivity extends BaseActivity
                            .setPref(TazSettings.PREFKEY.USERMIGRATIONNOTIFICATION, true);
                 mDrawerFragment.simulateClick(userItem, true);
             }
-        } else if (DIALOG_MIGRATION_FINISHED.equals(tag)) {
-            if (which == Dialog.BUTTON_POSITIVE) {
-//                try {
-//                    JSONArray json = new JSONArray(arguments.getString(ARGUMENT_MIGRATED_IDS_JSONARRAY));
-//                    for (int i = 0; i < json.length(); i++) {
-//                        startDownload(json.getString(i));
-//                    }
-//                } catch (JSONException | Paper.PaperNotFoundException e) {
-//                    Timber.w(e);
-//                }
-
-            }
         } else if (ImprintFragment.DIALOG_TECHINFO.equals(tag)) {
             switch (which) {
                 case Dialog.BUTTON_NEUTRAL:
@@ -933,29 +749,19 @@ public class StartActivity extends BaseActivity
                 case Dialog.BUTTON_POSITIVE:
                     startViewModel.setMobileDownloadAllowed(true);
                     startViewModel.startDownloadQueue();
-//                    startDownloadQueue();
                     break;
                 case Dialog.BUTTON_NEGATIVE:
                     startViewModel.getDownloadQueue()
                                   .clear();
-//                    retainDataFragment.downloadQueue.clear();
                     break;
                 case Dialog.BUTTON_NEUTRAL:
                     startViewModel.getDownloadQueue()
                                   .clear();
-//                    retainDataFragment.downloadQueue.clear();
                     startActivity(new Intent(android.provider.Settings.ACTION_WIFI_SETTINGS));
                     break;
             }
         } else if (DIALOG_ACCOUNT_ERROR.equals(tag)) {
             finish();
-        } else if (ImportFragment.DIALOG_PERMISSION_WRITE.equals(tag) && which == Dialog.BUTTON_POSITIVE) {
-            Fragment contentFragment = getSupportFragmentManager().findFragmentById(R.id.content_frame);
-            if (contentFragment != null && contentFragment instanceof ImportFragment) {
-                ((ImportFragment) contentFragment).startWithPermissionCheck();
-            } else {
-                onBackPressed();
-            }
         } else if (ImprintFragment.DIALOG_ERRORMAIL.equals(tag)) {
             switch (which) {
                 case Dialog.BUTTON_POSITIVE:
@@ -1016,7 +822,6 @@ public class StartActivity extends BaseActivity
                 startCal.set(year, Calendar.JANUARY, 1);
                 endCal.set(year, Calendar.DECEMBER, 31);
                 SyncWorker.scheduleJobImmediately(true, startCal, endCal);
-                //SyncHelper.requestSync(this, startCal, endCal);
             }
         } else if (DIALOG_ARCHIVE_MONTH.equals(tag)) {
             int year = arguments.getInt(ARGUMENT_ARCHIVE_YEAR);
@@ -1026,7 +831,6 @@ public class StartActivity extends BaseActivity
             startCal.set(year, month, 1);
             int lastDayOfMont = startCal.getActualMaximum(Calendar.DAY_OF_MONTH);
             endCal.set(year, month, lastDayOfMont);
-            //SyncHelper.requestSync(this, startCal, endCal);
             SyncWorker.scheduleJobImmediately(true, startCal, endCal);
         }
     }
@@ -1038,7 +842,6 @@ public class StartActivity extends BaseActivity
         if (DIALOG_DOWNLOAD_MOBILE.equals(tag)) {
             startViewModel.getDownloadQueue()
                           .clear();
-//            retainDataFragment.downloadQueue.clear();
         }
     }
 
@@ -1048,7 +851,6 @@ public class StartActivity extends BaseActivity
         if (DIALOG_DOWNLOAD_MOBILE.equals(tag)) {
             startViewModel.getDownloadQueue()
                           .clear();
-//            retainDataFragment.downloadQueue.clear();
         }
     }
 

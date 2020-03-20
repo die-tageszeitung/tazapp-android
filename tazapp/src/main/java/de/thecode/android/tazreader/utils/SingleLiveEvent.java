@@ -24,22 +24,6 @@ public class SingleLiveEvent<T> extends MutableLiveData<T> {
 
     private final AtomicBoolean mPending = new AtomicBoolean(false);
 
-//    @MainThread
-//    public void observe(LifecycleOwner owner, final Observer<T> observer) {
-//
-//        if (hasActiveObservers()) {
-//            Timber.w("Multiple observers registered but only one will be notified of changes.");
-//        }
-//
-//        // Observe the internal MutableLiveData
-//        super.observe(owner, t -> {
-//            if (mPending.compareAndSet(true, false)) {
-//                observer.onChanged(t);
-//            }
-//        });
-//    }
-
-
     @Override
     public void observe(@NonNull LifecycleOwner owner, @NonNull Observer<? super T> observer) {
         if (hasActiveObservers()) {

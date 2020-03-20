@@ -44,7 +44,7 @@ class DownloadInfoDialog : DialogFragment() {
     }
 
     val bookId: String by lazy {
-        arguments!!.getString(BOOK_ID)
+        requireArguments().getString(BOOK_ID)
     }
 
     var dialog: MaterialDialog? = null
@@ -53,10 +53,6 @@ class DownloadInfoDialog : DialogFragment() {
         dialog!!.getCustomView()
                 .findViewById<TextView>(R.id.state)
     }
-//    private val connection: TextView by lazy {
-//        dialog!!.getCustomView()
-//                .findViewById<TextView>(R.id.connection)
-//    }
 
     private val connected: CheckBox by lazy {
         dialog!!.getCustomView()
@@ -94,20 +90,20 @@ class DownloadInfoDialog : DialogFragment() {
     }
 
     private val viewModel: DownloadInfoDialogViewModel by lazy {
-        ViewModelProviders.of(this, DownloadInfoDialogViewModelFactory(arguments!!.getString(BOOK_ID)!!))
+        ViewModelProvider(this, DownloadInfoDialogViewModelFactory(requireArguments().getString(BOOK_ID)!!))
                 .get(DownloadInfoDialogViewModel::class.java)
     }
 
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         context?.let {
-            dialog = MaterialDialog(context!!)
+            dialog = MaterialDialog(requireContext())
                     .customView(viewRes = R.layout.dialog_download_info, scrollable = true)
                     .negativeButton(res = R.string.downloadinfo_cancel_download, click = {
-                        (activity as CancelDownloadDialogListener).onCancelDownload(arguments!!.getString(BOOK_ID)!!)
+                        (activity as CancelDownloadDialogListener).onCancelDownload(requireArguments().getString(BOOK_ID)!!)
                     })
                     .positiveButton()
-            title.text = app.getString(R.string.downloadinfo_dialog_title, arguments!!.getString(TITLE))
+            title.text = app.getString(R.string.downloadinfo_dialog_title, requireArguments().getString(TITLE))
             viewModel.downloadInfo.observe(this, Observer {
                 if (it.state == DownloadState.READY) {
                     dismiss()
@@ -115,7 +111,6 @@ class DownloadInfoDialog : DialogFragment() {
                 connected.isChecked = it.connectionInfo.connected
                 metered.isChecked = it.connectionInfo.metered
                 roaming.isChecked = it.connectionInfo.roaming
-//                connection.text = it.connectionInfo
                 @SuppressLint("SetTextI18n")
                 state.text = it.state.readable()
                 dmlog.text = it.dmLog
@@ -170,7 +165,7 @@ class DownloadInfoDialogViewModel(val bookId: String) : ViewModel(), Connection.
         viewModelJob.cancel()
     }
 
-    fun poll() {
+    private fun poll() {
         uiScope.launch {
             withContext(Dispatchers.Default) {
                 val download = paperRepository.getDownloadForPaper(bookId)

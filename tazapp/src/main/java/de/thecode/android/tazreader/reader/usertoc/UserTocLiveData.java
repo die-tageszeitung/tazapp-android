@@ -32,7 +32,7 @@ public class UserTocLiveData extends LiveData<UserTocLiveData.ResultWrapper> {
     private       boolean            filterBookmarks;
     private       boolean            expanded;
 
-    private final Observer<ITocItem> currentKeyObserver = tocItem -> {
+    private final Observer<ITocItem> currentKeyObserver = tocItem ->
         executor.execute(new ParametrizedRunnable<ITocItem>() {
             @Override
             public void run(ITocItem tocItem) {
@@ -49,7 +49,6 @@ public class UserTocLiveData extends LiveData<UserTocLiveData.ResultWrapper> {
                 publish(true);
             }
         }.set(tocItem));
-    };
 
     public UserTocLiveData(LiveData<ITocItem> currentKeyLiveData, boolean expanded) {
         this.currentKeyLiveData = currentKeyLiveData;
@@ -58,16 +57,13 @@ public class UserTocLiveData extends LiveData<UserTocLiveData.ResultWrapper> {
 
     public void setExpandAll(boolean expanded) {
         this.expanded = expanded;
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
+        executor.execute(() -> {
                 expandAllInternal(UserTocLiveData.this.expanded);
                 publish(false);
-            }
         });
     }
 
-    public void setExpanded(String key, boolean expanded) {
+    void setExpanded(String key, boolean expanded) {
         executor.execute(new ParametrizedRunnable<Pair<String, Boolean>>() {
             @Override
             public void run(Pair<String, Boolean> parameter) {
@@ -132,7 +128,7 @@ public class UserTocLiveData extends LiveData<UserTocLiveData.ResultWrapper> {
         }.set(plist));
     }
 
-    public void setFilterBookmarks(boolean filterBookmarks) {
+    void setFilterBookmarks(boolean filterBookmarks) {
         if (filterBookmarks == this.filterBookmarks) return;
         this.filterBookmarks = filterBookmarks;
         publish(false);
@@ -142,7 +138,7 @@ public class UserTocLiveData extends LiveData<UserTocLiveData.ResultWrapper> {
         return filterBookmarks;
     }
 
-    public void publish(boolean scrollToActive) {
+    private void publish(boolean scrollToActive) {
         executor.execute(new ParametrizedRunnable<Boolean>() {
             @Override
             public void run(Boolean scrollToActive) {
@@ -192,7 +188,7 @@ public class UserTocLiveData extends LiveData<UserTocLiveData.ResultWrapper> {
         private boolean           centerScroll;
         private List<UserTocItem> list;
 
-        public int getScrollToPosition() {
+        int getScrollToPosition() {
             return scrollToPosition;
         }
 
@@ -200,7 +196,7 @@ public class UserTocLiveData extends LiveData<UserTocLiveData.ResultWrapper> {
             return list;
         }
 
-        public boolean isCenterScroll() {
+        boolean isCenterScroll() {
             return centerScroll;
         }
     }

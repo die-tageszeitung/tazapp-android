@@ -14,7 +14,6 @@ public class StreamUtils {
         while ((length = inputStream.read(buffer)) != -1) {
             result.write(buffer, 0, length);
         }
-        // StandardCharsets.UTF_8.name() > JDK 7
         return result.toString(charset.name());
     }
 

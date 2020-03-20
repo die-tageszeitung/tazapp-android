@@ -583,17 +583,6 @@ public class ReaderView
 
 			if (!memAlert) {
 				memAlert = true;
-				//TODO BETTER
-//				AlertDialog alertDialog = MuPDFActivity.getAlertBuilder().create();
-//				alertDialog.setMessage("Out of memory during layout");
-//				alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
-//					new DialogInterface.OnClickListener() {
-//						public void onClick(DialogInterface dialog, int which) {
-//							dialog.dismiss();
-//							memAlert = false;
-//						}
-//					});
-//				alertDialog.show();
 			}
 		}
 	}
@@ -883,19 +872,11 @@ public class ReaderView
 		// onSettle and onUnsettle are posted so that the calls
 		// won't be executed until after the system has performed
 		// layout.
-		post (new Runnable() {
-			public void run () {
-				onSettle(v);
-			}
-		});
+		post (() -> onSettle(v));
 	}
 
 	private void postUnsettle(final View v) {
-		post (new Runnable() {
-			public void run () {
-				onUnsettle(v);
-			}
-		});
+		post (() -> onUnsettle(v));
 	}
 
 	private void slideViewOntoScreen(View v) {

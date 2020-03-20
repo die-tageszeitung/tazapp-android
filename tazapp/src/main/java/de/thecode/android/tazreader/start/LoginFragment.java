@@ -6,6 +6,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.google.android.material.snackbar.Snackbar;
 import androidx.fragment.app.Fragment;
@@ -41,8 +43,8 @@ import okhttp3.Response;
  */
 public class LoginFragment extends StartBaseFragment {
 
-    public static final String DIALOG_CHECK_CREDENTIALS = "checkCrd";
-    public static final String DIALOG_ERROR_CREDENTIALS = "errorCrd";
+    private static final String DIALOG_CHECK_CREDENTIALS = "checkCrd";
+    private static final String DIALOG_ERROR_CREDENTIALS = "errorCrd";
     private EditText                      editUser;
     private EditText                      editPass;
     private Button                        loginButton;
@@ -59,39 +61,28 @@ public class LoginFragment extends StartBaseFragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         getStartActivity().onUpdateDrawer(this);
 
         View view = inflater.inflate(R.layout.start_login, container, false);
         loginButton = view.findViewById(R.id.buttonLogin);
-        loginButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                checkLogin();
-            }
-        });
+        loginButton.setOnClickListener(v -> checkLogin());
         Button orderButton = view.findViewById(R.id.buttonOrder);
-        orderButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        orderButton.setOnClickListener(v -> {
                 Intent i = new Intent(Intent.ACTION_VIEW);
                 i.setData(Uri.parse(BuildConfig.ABOURL));
                 startActivity(i);
-            }
         });
 
         editUser = view.findViewById(R.id.editUser);
         editPass = view.findViewById(R.id.editPass);
-        editPass.setOnKeyListener(new View.OnKeyListener() {
-            @Override
-            public boolean onKey(View v, int keyCode, KeyEvent event) {
+        editPass.setOnKeyListener((View v, int keyCode, KeyEvent event) -> {
                 if ((event.getAction() == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_ENTER)) {
                     checkLogin();
                     return true;
                 }
                 return false;
-            }
         });
 
         editUser.setText(AccountHelper.getInstance(getContext())
@@ -202,7 +193,6 @@ public class LoginFragment extends StartBaseFragment {
                         TazSettings.getInstance(getContext())
                                    .setDemoMode(true);
                         hideWaitingDialog();
-                        //if (hasCallback()) getCallback().onDemoModeChanged(true);
                         Snacky.builder()
                               .setView(getActivity().findViewById(R.id.content_frame))
                               .setDuration(Snacky.LENGTH_INDEFINITE)

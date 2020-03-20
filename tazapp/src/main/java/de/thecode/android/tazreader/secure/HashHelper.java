@@ -15,12 +15,10 @@ import java.security.NoSuchAlgorithmException;
 public class HashHelper {
 
     public static final String SHA_1 = "SHA-1";
-    public static final String SHA_256 = "SHA-256";
-    public static final String MD5 = "MD5";
 
     public static final String UTF_8 = "UTF-8";
 
-    public static String getHash(byte[] data, String algorithm) throws NoSuchAlgorithmException {
+    private static String getHash(byte[] data, String algorithm) throws NoSuchAlgorithmException {
         MessageDigest digest = MessageDigest.getInstance(algorithm);
         digest.reset();
         return convertByteArrayToHexString(digest.digest(data));
@@ -50,10 +48,6 @@ public class HashHelper {
 
     public static boolean verifyHash(File file, String hash, String algorithm) throws IOException, NoSuchAlgorithmException {
         return hash != null && hash.equals(getHash(file, algorithm));
-    }
-
-    public static boolean verifyHash(String data, String encoding, String hash, String algorithm) throws UnsupportedEncodingException, NoSuchAlgorithmException {
-        return hash != null && hash.equals(getHash(data,encoding,algorithm));
     }
 
     private static String convertByteArrayToHexString(byte[] arrayBytes) {

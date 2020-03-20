@@ -28,12 +28,9 @@
 
     <dimen name="reader_navdrawer_topmargin">0dp</dimen>
 
-    <dimen name="help_padding">24dp</dimen>
-
     <dimen name="fab_margin">0dp</dimen>
 
     <bool name="isTablet">false</bool>
-    <bool name="isNotTablet">false</bool>
 
     <item name="library_overlay_alpha" format="float" type="dimen">0.4</item>
     <item name="icon_button_alpha" format="float" type="dimen">0.4</item>

@@ -23,8 +23,7 @@ import timber.log.Timber;
 
 public class FLTimberTree extends Timber.DebugTree {
 
-    public FLTimberTree(Context context) {
-        UserDeviceInfo userDeviceInfo = UserDeviceInfo.getInstance(context);
+    FLTimberTree(Context context) {
         FL.init(new FLConfig.Builder(context).dir(StorageManager.getInstance(context)
                                                                 .getLogCache())
                                              .formatter(new TazFileLogFormatter(UserDeviceInfo.getInstance(context)
@@ -93,7 +92,7 @@ public class FLTimberTree extends Timber.DebugTree {
         // 09-23 12:31:53.839 PROCESS_ID-THREAD_ID LEVEL/TAG: LOG
         private final String mLineFmt = "%s %d-%d %s/%s: %s";
 
-        public TazFileLogFormatter(String installationsId) {
+        TazFileLogFormatter(String installationsId) {
             this.installationsId = installationsId;
         }
 

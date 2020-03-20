@@ -31,7 +31,6 @@ public class AnalyticsWrapper {
     private static AnalyticsWrapper instance;
 
 
-
     public static void initialize(Context context) {
         if (instance != null) throw new IllegalStateException("AnalyticsWrapper must only be initialized once");
         instance = new AnalyticsWrapper(context);
@@ -46,19 +45,15 @@ public class AnalyticsWrapper {
     private TazSettings settings;
 
     private AnalyticsWrapper(Context context) {
-        //TazAcraHelper.init((Application) context);
         initFabric(context);
         settings = TazSettings.getInstance(context);
     }
 
     private void initFabric(Context context) {
-        if (!BuildConfig.BUILD_TYPE.equalsIgnoreCase("debug")) {
+        /* if (!BuildConfig.BUILD_TYPE.equalsIgnoreCase("debug")) {
             Timber.plant(new CrashlyticsLogTree(Log.INFO));
-            Timber.plant(new CrashlyticsLogExceptionTree(Log.ERROR, new LogExclusionStrategy() {
-                @Override
-                public boolean shouldSkipLog(int priority, String tag, String message, Throwable t) {
+            Timber.plant(new CrashlyticsLogExceptionTree(Log.ERROR, (int priority, String tag, String message, Throwable t) -> {
                     return !settings.getCrashlyticsAlwaysSend();
-                }
             }));
         }
 
@@ -74,18 +69,18 @@ public class AnalyticsWrapper {
 
         Fabric.with(fabric);
         Crashlytics.setUserIdentifier(Installation.id(context));
-        setUserEncrypted(AccountHelper.getInstance(context).getUser(""));
+        setUserEncrypted(AccountHelper.getInstance(context).getUser(""));*/
     }
 
     public void setUserEncrypted(String user){
-        try {
+        /* try {
             Crashlytics.setUserName(HashHelper.getHash(user,HashHelper.UTF_8,HashHelper.SHA_1));
         } catch (UnsupportedEncodingException | NoSuchAlgorithmException e) {
             Timber.e(e);
-        }
+        } */
     }
 
     public void logData(String key, String value) {
-        Crashlytics.setString(key,value);
+        /*Crashlytics.setString(key,value);*/
     }
 }

@@ -57,15 +57,14 @@ class DataFolderDialog : DialogFragment() {
                 entries += entryString.format(it.name, FileUtils.readableSize(it.freeSpace))
             }
 
-            val dialog = MaterialDialog(context)
+            return MaterialDialog(context)
                     .title(R.string.pref_title_storage_folder)
                     .negativeButton()
-                    .listItemsSingleChoice(waitForPositiveButton = false, items = entries,initialSelection = selected) { dialog, index, text ->
+                    .listItemsSingleChoice(waitForPositiveButton = false, items = entries,initialSelection = selected) { dialog, index, _ ->
                         val selectedVolume = volumes[index]
                         DataFolderMigrationWorker.scheduleNow(newPath = selectedVolume.path)
                         dialog.dismiss()
                     }
-            return dialog
         }
         return super.onCreateDialog(savedInstanceState)
     }

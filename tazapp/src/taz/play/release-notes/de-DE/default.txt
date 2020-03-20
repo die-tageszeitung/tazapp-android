@@ -1,1 +1,1 @@
-* Bugfix - Absturz bei der App bei der Ausgabe vom 26. Juni 2019
+* Update genutzter Bibliotheken

@@ -17,18 +17,8 @@
         <item name="android:gravity">center_vertical</item>
     </style>
 
-    <style name="IndexText.Source">
-        <item name="android:textColor">@color/index_text_source</item>
-        <item name="android:textStyle">bold</item>
-    </style>
-
     <style name="IndexText.Category">
         <item name="android:textColor">@color/index_text_category</item>
-        <item name="android:textStyle">bold</item>
-    </style>
-
-    <style name="IndexText.Page">
-        <item name="android:textColor">@color/index_text_page</item>
         <item name="android:textStyle">bold</item>
     </style>
 
@@ -73,16 +63,8 @@
         <item name="android:foreground">?attr/selectableItemBackground</item>
     </style>
 
-    <style name="Index.Source">
-        <item name="android:background">@color/index_background_source</item>
-    </style>
-
     <style name="Index.Category">
         <item name="android:background">@color/index_background_category</item>
-    </style>
-
-    <style name="Index.Page">
-        <item name="android:background">@color/index_background_page</item>
     </style>
 
     <style name="Index.Article">
@@ -101,12 +83,6 @@
     <style name="PageIndex.Source">
         <item name="android:background">@color/pageindex_background_source</item>
     </style>
-
-    <style name="PageIndex.Page">
-
-    </style>
-
-
 
 
     <style name="SettingsTextAppearance">

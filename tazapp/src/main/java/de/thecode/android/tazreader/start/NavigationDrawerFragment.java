@@ -1,7 +1,10 @@
 package de.thecode.android.tazreader.start;
 
 
+import android.app.Activity;
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.core.view.ViewCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -46,7 +49,7 @@ public class NavigationDrawerFragment extends StartBaseFragment {
     private Item.ClickListener mClickListener;
     private NavigationAdapter navigationAdapter;
 
-    int mActive = -1;
+    private int mActive = -1;
 
     private List<Item> items = new ArrayList<>();
 
@@ -63,25 +66,18 @@ public class NavigationDrawerFragment extends StartBaseFragment {
 
         mUserLearnedDrawer = TazSettings.getInstance(getActivity()).getPrefBoolean(TazSettings.PREFKEY.NAVDRAWERLEARNED, false);
         if (savedInstanceState != null) mFromSavedInstanceState = true;
-        mClickListener = new Item.ClickListener() {
-            @Override
-            public void onItemClick(int position) {
+        mClickListener = position -> {
                 //Give the User a chance to see touchfeedback, therefor its delayed
-                mDrawerLayout.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        mDrawerLayout.closeDrawer(mDrawerContainerView);
-                    }
-                }, CLOSE_DRAWER_DELAY);
+                mDrawerLayout.postDelayed(() -> mDrawerLayout.closeDrawer(mDrawerContainerView),
+                        CLOSE_DRAWER_DELAY);
                 if (mActive != position) {
                     onClick(position);
                 }
-            }
         };
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.start_navigation, container, false);
         mRecyclerView = view.findViewById(R.id.recycler);
@@ -93,7 +89,11 @@ public class NavigationDrawerFragment extends StartBaseFragment {
 
     public void setUp(int drawerId, DrawerLayout drawerLayout, Toolbar toolbar) {
 
-        mDrawerContainerView = getActivity().findViewById(drawerId);
+        Activity activity = getActivity();
+        if (activity != null) {
+            mDrawerContainerView = getActivity().findViewById(drawerId);
+        }
+
         mDrawerLayout = drawerLayout;
         mDrawerToggle = new ActionBarDrawerToggle(getActivity(), drawerLayout, toolbar, R.string.drawer_open, R.string.drawer_close) {
             @Override
@@ -120,28 +120,17 @@ public class NavigationDrawerFragment extends StartBaseFragment {
         if (!mUserLearnedDrawer && !mFromSavedInstanceState) {
             mDrawerLayout.openDrawer(mDrawerContainerView);
         }
-        mDrawerLayout.setDrawerListener(mDrawerToggle);
-        mDrawerLayout.post(new Runnable() {
-            @Override
-            public void run() {
-                mDrawerToggle.syncState();
-            }
-        });
+        mDrawerLayout.addDrawerListener(mDrawerToggle);
+        mDrawerLayout.post(() -> mDrawerToggle.syncState());
 
         navigationAdapter = new NavigationAdapter();
-        //
-        //        UserItem userItem = new UserItem();
-        //        userItem.setUsername(getActivity());
-        //        navigationAdapter.addItem(userItem);
-        //        navigationAdapter.addItem(new Item(Item.TYPE.DIVIDER));
-        //        navigationAdapter.addItem(new NavigationItem(getString(R.string.drawer_library),R.drawable.ic_library,StartActivity.FragmentFactory.LIBRARY_FRAGMENT));
 
         mRecyclerView.setAdapter(navigationAdapter);
         addItem(new Item(Item.TYPE.HEADER));
 
     }
 
-    public void setEnabled(boolean bool) {
+    void setEnabled(boolean bool) {
         if (!bool) {
             mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
             getStartActivity().getToolbar()
@@ -153,26 +142,19 @@ public class NavigationDrawerFragment extends StartBaseFragment {
         }
     }
 
-    public void addItem(Item item) {
+    void addItem(Item item) {
         if (items.contains(item)) {
             Timber.e("Ignored adding item to Navihgation drawer, can only be added once");
             return;
         }
         item.position = items.size();
         items.add(item);
-        mRecyclerView.getAdapter()
-                     .notifyItemInserted(item.getPosition());
+        RecyclerView.Adapter adapter = mRecyclerView.getAdapter();
+        if (adapter != null)
+            adapter.notifyItemInserted(item.getPosition());
     }
 
-    public void handleChangedItem(Item item) {
-        navigationAdapter.notifyItemChanged(item.getPosition());
-    }
-
-    public void setActive(Item item) {
-        navigationAdapter.setActive(item.getPosition());
-    }
-
-    public void setActive(Class<? extends Fragment> fragmentClass) {
+    void setActive(Class<? extends Fragment> fragmentClass) {
         for (Item item : items) {
             if (item instanceof NavigationItem) {
                 if (fragmentClass == ((NavigationItem) item).getTarget()) {
@@ -184,17 +166,17 @@ public class NavigationDrawerFragment extends StartBaseFragment {
     }
 
 
-    public void addDividerItem() {
+    void addDividerItem() {
         addItem(new Item(Item.TYPE.DIVIDER));
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
+    public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putInt(KEY_ACTIVE, mActive);
     }
 
-    public void onClick(int position) {
+    private void onClick(int position) {
         Timber.d("position: %s",position);
         //navigationAdapter.setActive(position);
         Item item = navigationAdapter.getItem(position);
@@ -205,7 +187,7 @@ public class NavigationDrawerFragment extends StartBaseFragment {
         }
     }
 
-    public void simulateClick(NavigationItem item, boolean closeDrawer) {
+    void simulateClick(NavigationItem item, boolean closeDrawer) {
         if (closeDrawer) mDrawerLayout.closeDrawer(mDrawerContainerView);
         onClick(item.getPosition());
     }
@@ -215,7 +197,7 @@ public class NavigationDrawerFragment extends StartBaseFragment {
 
 
         @Override
-        public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
 
             switch (Item.TYPE.values()[viewType]) {
                 case HEADER:
@@ -233,9 +215,7 @@ public class NavigationDrawerFragment extends StartBaseFragment {
         }
 
         @Override
-        public void onBindViewHolder(ViewHolder holder, int position) {
-
-
+        public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
             switch (items.get(position)
                          .getType()) {
 
@@ -265,10 +245,6 @@ public class NavigationDrawerFragment extends StartBaseFragment {
                         .ordinal();
         }
 
-        //        private void addItem(Item item) {
-        //            items.add(item);
-        //        }
-
         private void setActive(int postion) {
             int oldActive = mActive;
             mActive = postion;
@@ -283,28 +259,18 @@ public class NavigationDrawerFragment extends StartBaseFragment {
                 return null;
             }
         }
-
-        //        public int getPositionOfItemWithFracmentFactoryId(int fragmentFactoryId) {
-        //            for (Item item : items) {
-        //                if (item instanceof NavigationItem) {
-        //                    if (((NavigationItem) item).getFragmentFactoryId() == fragmentFactoryId)
-        //                        return items.indexOf(item);
-        //                }
-        //            }
-        //            return -1;
-        //        }
     }
 
     private static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         Item.ClickListener clickListener;
 
-        public ViewHolder(View itemView) {
+        ViewHolder(View itemView) {
             super(itemView);
         }
 
 
-        public ViewHolder(View itemView, Item.ClickListener clickListener) {
+        ViewHolder(View itemView, Item.ClickListener clickListener) {
             super(itemView);
             this.clickListener = clickListener;
             if (clickListener != null) {
@@ -331,7 +297,7 @@ public class NavigationDrawerFragment extends StartBaseFragment {
         ImageView image;
         RelativeLayout layout;
 
-        public NavigationItemViewHolder(View itemView, Item.ClickListener clickListener) {
+        NavigationItemViewHolder(View itemView, Item.ClickListener clickListener) {
             super(itemView, clickListener);
             layout = itemView.findViewById(R.id.layout);
             text = itemView.findViewById(R.id.text);
@@ -358,7 +324,7 @@ public class NavigationDrawerFragment extends StartBaseFragment {
     private static class HeaderViewHolder extends ViewHolder {
         RelativeLayout layout;
 
-        public HeaderViewHolder(View itemView) {
+        HeaderViewHolder(View itemView) {
             super(itemView, null);
             layout = itemView.findViewById(R.id.layout);
             ViewCompat.setImportantForAccessibility(layout, ViewCompat.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS);
@@ -372,7 +338,7 @@ public class NavigationDrawerFragment extends StartBaseFragment {
         private int position;
 
 
-        public Item(TYPE type) {
+        Item(TYPE type) {
             this.type = type;
         }
 
@@ -401,7 +367,7 @@ public class NavigationDrawerFragment extends StartBaseFragment {
             this(text,-1);
         }
 
-        public ClickItem(String text, int drawableId) {
+        ClickItem(String text, int drawableId) {
             this(TYPE.ENTRY,text,drawableId);
         }
 
@@ -416,7 +382,7 @@ public class NavigationDrawerFragment extends StartBaseFragment {
             this.text = text;
         }
 
-        public void setAccessibilty(boolean bool) {
+        void setAccessibilty(boolean bool) {
             accessibility = bool;
         }
     }
@@ -429,7 +395,7 @@ public class NavigationDrawerFragment extends StartBaseFragment {
             this(text, -1, target);
         }
 
-        public NavigationItem(String text, int drawableId, Class<? extends Fragment> target) {
+        NavigationItem(String text, int drawableId, Class<? extends Fragment> target) {
             this(TYPE.ENTRY, text, drawableId, target);
         }
 
@@ -438,11 +404,11 @@ public class NavigationDrawerFragment extends StartBaseFragment {
             setTarget(target);
         }
 
-        public void setTarget(Class<? extends Fragment> target) {
+        void setTarget(Class<? extends Fragment> target) {
             this.target = target;
         }
 
-        public Class<? extends Fragment> getTarget() {
+        Class<? extends Fragment> getTarget() {
             return target;
         }
 

@@ -36,19 +36,22 @@ class ReportErrorFragment : PreferenceFragmentCompat() {
     override fun onCreatePreferencesFix(savedInstanceState: Bundle?, rootKey: String?) {
         addPreferencesFromResource(R.xml.report_error_preferences)
         logFileWritePreference = findPreference(getString(R.string.pref_key_log_file)) as SwitchPreferenceCompat?
-        val crashlyticsPreference = findPreference(getString(R.string.pref_key_crashlytics_always_send)) as SwitchPreferenceCompat
-        crashlyticsPreference.isChecked = settings.crashlyticsAlwaysSend
-        crashlyticsPreference.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _, newValue ->
+        val crashlyticsPreference = findPreference<SwitchPreferenceCompat>(getString(R.string.pref_key_crashlytics_always_send))
+        crashlyticsPreference?.isChecked = settings.crashlyticsAlwaysSend
+        crashlyticsPreference?.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _, newValue ->
             settings.crashlyticsAlwaysSend = newValue as Boolean
             settings.isAskForHelpAllowed = !newValue
             return@OnPreferenceChangeListener true
         }
 
-        val reportErrorPreference = findPreference(getString(R.string.pref_key_report_error))
-        reportErrorPreference.setOnPreferenceClickListener {
+        val reportErrorPreference = findPreference<Preference>(getString(R.string.pref_key_report_error))
+        reportErrorPreference?.setOnPreferenceClickListener {
             if (settings.isWriteLogfile) context?.let { context -> ErrorReporter.sendErrorMail(context) }
-            else RequestFileLogDialog.newInstance().show(fragmentManager, RequestFileLogDialog.DIALOG_FILELOG_REQUEST)
-//            if (context != null) ErrorReporter.sendErrorMail(context!!)
+            else if (isAdded) {
+                parentFragmentManager.let {
+                    RequestFileLogDialog.newInstance().show(it, RequestFileLogDialog.DIALOG_FILELOG_REQUEST)
+                }
+            }
             true
         }
     }

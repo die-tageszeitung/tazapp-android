@@ -31,7 +31,6 @@ public class TAZPageView extends PageView {
 
     TAZMuPDFCore mCore;
     Page _page;
-    //Context _context;
 
     public TAZPageView(Context c, Point parentSize, Bitmap sharedHqBm) {
         super(c, parentSize, sharedHqBm);
@@ -171,40 +170,40 @@ public class TAZPageView extends PageView {
         final float docRelX = (x - getLeft()) / scale;
         final float docRelY = (y - getTop()) / scale;
 
-        float relativeX = docRelX / mCore.getPageSize().x;
-        float relativeY = docRelY / mCore.getPageSize().y;
+        // do nothing if core is not initialized yet
+        if (mCore != null) {
+            float relativeX = docRelX / mCore.getPageSize().x;
+            float relativeY = docRelY / mCore.getPageSize().y;
 
-        Timber.d("relativeX: %s, relativeY: %s",relativeX, relativeY);
+            Timber.d("relativeX: %s, relativeY: %s", relativeX, relativeY);
 
-//        IReaderCallback readerCallback = ((TAZReaderView) getParent()).getReaderCallback();
+            ReaderActivity readerActivity = (ReaderActivity) getContext();
 
-        ReaderActivity readerActivity = (ReaderActivity)getContext();
-
-        for (Page.Geometry geometry : _page.getGeometries()) {
-            if (geometry.checkCoordinates(relativeX, relativeY)) {
-                String link = geometry.getCleanLink();
-                Timber.d("Found link: %s", link);
-                if (link != null) {
-                    ITocItem indexItem = _page.getPaper()
-                                              .getPlist()
-                                              .getIndexItem(link);
-                    if (indexItem != null) {
-                        readerActivity.loadContentFragment(link);
-                        return;
-                    } else {
-                        Timber.i("found no item for link in index");
-                        if (link.toLowerCase(Locale.getDefault())
-                                .startsWith("http")) {
-                            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(link));
-                            getContext().startActivity(browserIntent);
+            for (Page.Geometry geometry : _page.getGeometries()) {
+                if (geometry.checkCoordinates(relativeX, relativeY)) {
+                    String link = geometry.getCleanLink();
+                    Timber.d("Found link: %s", link);
+                    if (link != null) {
+                        ITocItem indexItem = _page.getPaper()
+                                .getPlist()
+                                .getIndexItem(link);
+                        if (indexItem != null) {
+                            readerActivity.loadContentFragment(link);
                             return;
+                        } else {
+                            Timber.i("found no item for link in index");
+                            if (link.toLowerCase(Locale.getDefault())
+                                    .startsWith("http")) {
+                                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(link));
+                                getContext().startActivity(browserIntent);
+                                return;
+                            }
                         }
                     }
                 }
             }
+            readerActivity.loadContentFragment(_page.getDefaultLink());
         }
-       readerActivity.loadContentFragment(_page.getDefaultLink());
-
     }
 
 

@@ -37,26 +37,11 @@ class AudioPlayerService : Service(), MediaPlayer.OnCompletionListener, MediaPla
     }
 
     companion object {
-        val TAG = "AudioPLayerService"
-//        const val ACTION_SERVICE_COMMUNICATION = "audioServiceDestroyedCommunication"
         const val EXTRA_AUDIO_ITEM = "audioExtra"
         const val ACTION_STATE_CHANGED = "serviceAudioStateChanged"
         const val ACTION_POSITION_UPDATE = "serviceAudioPositionChanged"
-//        const val EXTRA_COMMUNICATION_MESSAGE = "messageExtra"
-//        const val EXTRA_STATE = "state"
-
-//        const val MESSAGE_SERVICE_PREPARE_PLAYING = "servicePreparePlaying"
-//        const val MESSAGE_SERVICE_DESTROYED = "serviceDestroyed"
-//        const val MESSAGE_SERVICE_PLAYSTATE_CHANGED = "playstateChanged"
 
         var instance: AudioPlayerService? = null
-
-        fun isServiceCreated(): Boolean {
-            instance?.let {
-                return it.ping()
-            }
-            return false
-        }
     }
 
     private var mediaPlayer: MediaPlayer? = null
@@ -106,19 +91,6 @@ class AudioPlayerService : Service(), MediaPlayer.OnCompletionListener, MediaPla
         state = State.LOADING
         super.onDestroy()
     }
-
-    private fun ping(): Boolean {
-        return true
-    }
-
-//    private fun sendLocalBroadcastMessage(message: String) {
-//        val serviceIntent = Intent()
-//        serviceIntent.action = ACTION_SERVICE_COMMUNICATION
-//        serviceIntent.putExtra(EXTRA_COMMUNICATION_MESSAGE, message)
-//        LocalBroadcastManager.getInstance(this)
-//                .sendBroadcast(serviceIntent)
-//    }
-
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         d { "onStartCommand $intent" }
@@ -207,7 +179,6 @@ class AudioPlayerService : Service(), MediaPlayer.OnCompletionListener, MediaPla
             stopSelf()
         }
         state = State.LOADING
-//        sendLocalBroadcastMessage(MESSAGE_SERVICE_PREPARE_PLAYING)
         mp.prepareAsync()
         mediaPlayer = mp
     }
@@ -229,7 +200,6 @@ class AudioPlayerService : Service(), MediaPlayer.OnCompletionListener, MediaPla
             if (mp.isPlaying) {
                 mp.pause()
                 state = State.PAUSED
-//                sendLocalBroadcastMessage(MESSAGE_SERVICE_PLAYSTATE_CHANGED)
                 audioItem?.let {
                     it.resumePosition = mp.currentPosition
                 }
@@ -240,7 +210,6 @@ class AudioPlayerService : Service(), MediaPlayer.OnCompletionListener, MediaPla
                 }
                 mp.start()
                 state= State.PLAYING
-//                sendLocalBroadcastMessage(MESSAGE_SERVICE_PLAYSTATE_CHANGED)
             }
             initForeground()
         }

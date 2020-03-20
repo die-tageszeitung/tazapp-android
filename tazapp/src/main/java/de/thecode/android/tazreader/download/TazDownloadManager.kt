@@ -16,6 +16,7 @@ import de.thecode.android.tazreader.utils.UserDeviceInfo
 import de.thecode.android.tazreader.utils.deleteQuietly
 import de.thecode.android.tazreader.utils.getStringIdByName
 import java.io.File
+import kotlin.math.min
 
 
 class TazDownloadManager private constructor() {
@@ -43,7 +44,6 @@ class TazDownloadManager private constructor() {
         d { "download $download" }
         val result = Result(download = download)
         download.file = storageManager.getDownloadFile("$bookId.paper.zip")
-        //val destinationFile = storageManager.getDownloadFile(paper)
         if (!checkFreeSpace(download.file, calculateBytesNeeded(paper.len))) {
             result.state = Result.STATE.NOSPACE
             return result
@@ -221,7 +221,7 @@ class TazDownloadManager private constructor() {
         enum class STATE { UNKNOWN, SUCCESS, NOMANAGER, NOSPACE, ALLREADYDOWNLOADED;
 
             fun getText(): String {
-                return app.getString(app.getStringIdByName("start_download_result_" + this.toString()))
+                return app.getString(app.getStringIdByName("start_download_result_$this"))
             }
         }
     }
@@ -260,8 +260,8 @@ class TazDownloadManager private constructor() {
         companion object {
             fun fromCursor(cursor: Cursor): SystemDownloadManagerInfo {
                 val result = SystemDownloadManagerInfo()
-                result.downloadId = cursor.getLong(cursor.getColumnIndex(android.app.DownloadManager.COLUMN_ID))
-                result.status = SystemDownloadManagerInfo.STATE.fromInt(cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS)))
+                result.downloadId = cursor.getLong(cursor.getColumnIndex(DownloadManager.COLUMN_ID))
+                result.status = STATE.fromInt(cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS)))
                 result.statusText = try { res.getString(app.getStringIdByName("download_status_" + result.status)) } catch (e: Exception) { "status: ${result.status}" }
                 result.reason = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_REASON))
                 result.reasonText = try { res.getString(app.getStringIdByName("download_reason_" + result.reason)) } catch (e: Exception) {  "reason: ${result.reason}" }
@@ -302,7 +302,7 @@ private fun calculateBytesNeeded(bytesOfDownload: Long): Long {
     return if (threeDownloads > oneHundred) {
         threeDownloads
     } else
-        Math.min(oneHundred, fiveDownloads)
+        min(oneHundred, fiveDownloads)
 }
 
 private fun checkFreeSpace(downloadFile: File, requestedBytes: Long): Boolean {

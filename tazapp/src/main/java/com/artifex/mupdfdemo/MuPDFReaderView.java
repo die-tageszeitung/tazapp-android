@@ -225,15 +225,13 @@ public class MuPDFReaderView extends ReaderView {
 
 		((MuPDFView) v).setLinkHighlighting(mLinksEnabled);
 
-		((MuPDFView) v).setChangeReporter(new Runnable() {
-			public void run() {
-				applyToChildren(new ReaderView.ViewMapper() {
-					@Override
-					void applyToView(View view) {
-						((MuPDFView) view).update();
-					}
-				});
-			}
+		((MuPDFView) v).setChangeReporter(() -> {
+			applyToChildren(new ReaderView.ViewMapper() {
+				@Override
+				void applyToView(View view) {
+					((MuPDFView) view).update();
+				}
+			});
 		});
 	}
 

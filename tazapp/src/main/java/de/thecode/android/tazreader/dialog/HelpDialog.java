@@ -1,5 +1,6 @@
 package de.thecode.android.tazreader.dialog;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -7,6 +8,7 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
@@ -53,9 +55,9 @@ public class HelpDialog extends DialogCustomView {
     private static final String ARG_CURRENTURL = "currentUrl";
     private static final String ARG_BASEURL    = "baseUrl";
 
-    String  baseUrlPath;
-    WebView webView;
-    String  currentUrl;
+    private String  baseUrlPath;
+    private WebView webView;
+    private String  currentUrl;
 
     private PaperRepository    paperRepository;
     private ResourceRepository resourceRepository;
@@ -70,13 +72,13 @@ public class HelpDialog extends DialogCustomView {
         }
     }
 
+    @SuppressLint("SetJavaScriptEnabled")
     @Override
     public View getView(final LayoutInflater inflater, ViewGroup parent) {
 
         View view = inflater.inflate(R.layout.dialog_help, parent, false);
         webView = view.findViewById(R.id.help_web_view);
-        webView.getSettings()
-               .setJavaScriptEnabled(true);
+        webView.getSettings().setJavaScriptEnabled(true);
         webView.setWebViewClient(new WebViewClient() {
 
             @Override
@@ -92,7 +94,7 @@ public class HelpDialog extends DialogCustomView {
                 return true;
             }
         });
-
+        webView.setWebChromeClient(new WebChromeClient());
 
         if (TextUtils.isEmpty(currentUrl)) {
             paperRepository = PaperRepository.getInstance(view.getContext());

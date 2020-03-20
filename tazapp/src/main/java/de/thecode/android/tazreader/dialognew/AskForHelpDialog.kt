@@ -11,18 +11,18 @@ class AskForHelpDialog : DialogFragment() {
 
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        context?.let {
-            return MaterialDialog(it).title(R.string.dialog_ask_for_help_title)
+        context?.let { context ->
+            return MaterialDialog(context).title(R.string.dialog_ask_for_help_title)
                     .message(res = R.string.dialog_ask_for_help_message)
-                    .positiveButton { _ ->
-                        TazSettings.getInstance(dialog.context)
+                    .positiveButton {
+                        TazSettings.getInstance(context)
                                 .crashlyticsAlwaysSend = true
-                        TazSettings.getInstance(dialog.context).isAskForHelpAllowed = false
+                        TazSettings.getInstance(context).isAskForHelpAllowed = false
                     }
-                    .negativeButton(R.string.dialog_button_no) { _ ->
-                        TazSettings.getInstance(dialog.context).isAskForHelpAllowed = false
+                    .negativeButton(R.string.dialog_button_no) {
+                        TazSettings.getInstance(context).isAskForHelpAllowed = false
                     }
-                    .neutralButton(R.string.dialog_neutral_button_later) { _ -> }
+                    .neutralButton(R.string.dialog_neutral_button_later) {}
         }
         return super.onCreateDialog(savedInstanceState)
     }

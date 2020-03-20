@@ -3,6 +3,9 @@ package de.thecode.android.tazreader.utils;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Build;
+import android.content.res.Configuration;
+
 import androidx.fragment.app.FragmentManager;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -34,29 +37,18 @@ public class BaseActivity extends AppCompatActivity
         implements DialogButtonListener, DialogDismissListener, DialogCancelListener, DialogListListener,
         DialogAdapterListListener {
 
-    public static final  String DIALOG_HELP = "hilfeDialog";
+    public static final String DIALOG_HELP = "hilfeDialog";
     private static final String DIALOG_PUSH = "DialogPush";
 
-    private TazSettings.OnPreferenceChangeListener<String> orientationPreferenceListener = new TazSettings.OnPreferenceChangeListener<String>() {
-        @Override
-        public void onPreferenceChanged(String changedValue) {
-            setOrientation(changedValue);
-        }
-    };
-    private TazSettings.OnPreferenceChangeListener<Object> pushPreferenceListener        = new TazSettings.OnPreferenceChangeListener<Object>() {
-        @Override
-        public void onPreferenceChanged(Object changedValue) {
-            PushRestApiWorker.scheduleNow();
-        }
-    };
-
+    private TazSettings.OnPreferenceChangeListener<String> orientationPreferenceListener = this::setOrientation;
+    private TazSettings.OnPreferenceChangeListener<Object> pushPreferenceListener = changedValue -> PushRestApiWorker.scheduleNow();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         FragmentManager.enableDebugLogging(BuildConfig.DEBUG);
         setOrientation(TazSettings.getInstance(this)
-                                  .getPrefString(TazSettings.PREFKEY.ORIENTATION, "auto"));
+                .getPrefString(TazSettings.PREFKEY.ORIENTATION, "auto"));
     }
 
     private void setOrientation(String orientationKey) {
@@ -69,21 +61,21 @@ public class BaseActivity extends AppCompatActivity
         EventBus.getDefault()
                 .register(this);
         TazSettings.getInstance(this)
-                   .addOnPreferenceChangeListener(TazSettings.PREFKEY.ORIENTATION, orientationPreferenceListener);
+                .addOnPreferenceChangeListener(TazSettings.PREFKEY.ORIENTATION, orientationPreferenceListener);
         TazSettings.getInstance(this)
-                   .addOnPreferenceChangeListener(TazSettings.PREFKEY.NOTIFICATION_PUSH, pushPreferenceListener);
+                .addOnPreferenceChangeListener(TazSettings.PREFKEY.NOTIFICATION_PUSH, pushPreferenceListener);
         TazSettings.getInstance(this)
-                   .addOnPreferenceChangeListener(TazSettings.PREFKEY.NOTIFICATION_SOUND_PUSH, pushPreferenceListener);
+                .addOnPreferenceChangeListener(TazSettings.PREFKEY.NOTIFICATION_SOUND_PUSH, pushPreferenceListener);
         TazSettings.getInstance(this)
-                   .addOnPreferenceChangeListener(TazSettings.PREFKEY.FIREBASETOKEN, pushPreferenceListener);
+                .addOnPreferenceChangeListener(TazSettings.PREFKEY.FIREBASETOKEN, pushPreferenceListener);
     }
 
     @Override
     protected void onStop() {
         TazSettings.getInstance(this)
-                   .removeOnPreferenceChangeListener(orientationPreferenceListener);
+                .removeOnPreferenceChangeListener(orientationPreferenceListener);
         TazSettings.getInstance(this)
-                   .removeOnPreferenceChangeListener(pushPreferenceListener);
+                .removeOnPreferenceChangeListener(pushPreferenceListener);
         EventBus.getDefault()
                 .unregister(this);
         super.onStop();
@@ -105,21 +97,36 @@ public class BaseActivity extends AppCompatActivity
     public void onPushNotification(PushNotification event) {
         Timber.d("received PushNotification Event");
         new PushNotificationDialog.Builder().setPositiveButton()
-                                            .setPushNotification(event)
-                                            .buildSupport()
-                                            .show(getSupportFragmentManager(), DIALOG_PUSH);
+                .setPushNotification(event)
+                .buildSupport()
+                .show(getSupportFragmentManager(), DIALOG_PUSH);
     }
 
     public void showHelpDialog(@HelpDialog.HelpPage String helpPage) {
         if (getSupportFragmentManager().findFragmentByTag(DIALOG_HELP) == null) {
             HelpDialog.Builder builder = new HelpDialog.Builder().setPositiveButton()
-                                                                 .setHelpPage(helpPage);
-            if (HelpDialog.HELP_INTRO.equals(helpPage)){
+                    .setHelpPage(helpPage);
+            if (HelpDialog.HELP_INTRO.equals(helpPage)) {
                 builder.setNeutralButton(R.string.drawer_account);
             }
             builder.buildSupport()
-                   .show(getSupportFragmentManager(), DIALOG_HELP);
+                    .show(getSupportFragmentManager(), DIALOG_HELP);
         }
+    }
+
+    /**
+     * Workaround for AppCompat 1.1.0 and WebView on API 21 - 25
+     * See: https://issuetracker.google.com/issues/141132133
+     * TODO: try to remove when updating appcompat
+     */
+    @Override
+    public void applyOverrideConfiguration(Configuration overrideConfiguration) {
+        if (21 <= Build.VERSION.SDK_INT && Build.VERSION.SDK_INT <= 25 && (
+                getResources().getConfiguration().uiMode == getApplicationContext().getResources().getConfiguration().uiMode)
+        ) {
+            return;
+        }
+        super.applyOverrideConfiguration(overrideConfiguration);
     }
 
 
@@ -135,7 +142,7 @@ public class BaseActivity extends AppCompatActivity
 
     @Override
     public void onDialogDismiss(String tag, Bundle dialogArguments) {
-    Timber.i("");
+        Timber.i("");
     }
 
     @Override

@@ -29,30 +29,15 @@ public class Orientation {
 
     private static void setActivityOrientation(Activity activity, int orientationFromConfiguration) {
         if (orientationFromConfiguration == Configuration.ORIENTATION_LANDSCAPE) {
-            if (Build.VERSION.SDK_INT < 9) {
-                if (activity.getRequestedOrientation() != ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
-                    // You need to check if your desired orientation isn't
-                    // already set because setting orientation restarts your
-                    // Activity which takes long
-                    activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-                }
-            } else {
-                if (activity.getRequestedOrientation() != ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE) {
-                    // You need to check if your desired orientation isn't
-                    // already set because setting orientation restarts your
-                    // Activity which takes long
-                    activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
-                }
+            if (activity.getRequestedOrientation() != ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE) {
+                // You need to check if your desired orientation isn't
+                // already set because setting orientation restarts your
+                // Activity which takes long
+                activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
             }
         } else if (orientationFromConfiguration == Configuration.ORIENTATION_PORTRAIT) {
-            if (Build.VERSION.SDK_INT < 9) {
-                if (activity.getRequestedOrientation() != ActivityInfo.SCREEN_ORIENTATION_PORTRAIT) {
-                    activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-                }
-            } else {
-                if (activity.getRequestedOrientation() != ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT) {
-                    activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);
-                }
+            if (activity.getRequestedOrientation() != ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT) {
+                activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);
             }
         } else {
             if (activity.getRequestedOrientation() != ActivityInfo.SCREEN_ORIENTATION_USER) {
