@@ -15,8 +15,8 @@ plugins {
     id 'com.github.triplet.play' version '2.1.1'
 }
 
-def versionMajor = 3
-def versionMinor = 11
+def versionMajor = 0
+def versionMinor = 12
 def versionPatch = 4
 def versionBuild = 0
 
