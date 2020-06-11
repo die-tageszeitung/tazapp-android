@@ -1,13 +1,9 @@
 package de.thecode.android.tazreader.sync;
 
 import android.content.Context;
-import android.content.SharedPreferences.Editor;
 
-import de.thecode.android.tazreader.analytics.AnalyticsWrapper;
 import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.secure.Installation;
-
-import timber.log.Timber;
 
 public class AccountHelper {
 
@@ -39,27 +35,12 @@ public class AccountHelper {
     }
 
     public void setUser(String user, String password) {
-        AnalyticsWrapper.getInstance().setUserEncrypted(user);
         preferences.setEncrytedPrefString(cipherPassword, TazSettings.PREFKEY.USER, user);
         preferences.setEncrytedPrefString(cipherPassword, TazSettings.PREFKEY.PASS, password);
-//        setAuthenticated(true);
     }
 
     public boolean isDemo() {
         return getUser(ACCOUNT_DEMO_USER).equals(ACCOUNT_DEMO_USER);
     }
 
-    public void removeUser() {
-        preferences.removePref(TazSettings.PREFKEY.USER);
-        preferences.removePref(TazSettings.PREFKEY.PASS);
-//        setAuthenticated(false);
-    }
-
-//    public void setAuthenticated(boolean isAuthenticated) {
-//        preferences.setPref(TazSettings.PREFKEY.AUTHENTICATED,isAuthenticated);
-//    }
-//
-//    public boolean isAuthenticated(){
-//       return preferences.getPrefBoolean(TazSettings.PREFKEY.AUTHENTICATED,false);
-//    }
 }

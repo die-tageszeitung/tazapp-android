@@ -36,13 +36,6 @@ class ReportErrorFragment : PreferenceFragmentCompat() {
     override fun onCreatePreferencesFix(savedInstanceState: Bundle?, rootKey: String?) {
         addPreferencesFromResource(R.xml.report_error_preferences)
         logFileWritePreference = findPreference(getString(R.string.pref_key_log_file)) as SwitchPreferenceCompat?
-        val crashlyticsPreference = findPreference<SwitchPreferenceCompat>(getString(R.string.pref_key_crashlytics_always_send))
-        crashlyticsPreference?.isChecked = settings.crashlyticsAlwaysSend
-        crashlyticsPreference?.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _, newValue ->
-            settings.crashlyticsAlwaysSend = newValue as Boolean
-            settings.isAskForHelpAllowed = !newValue
-            return@OnPreferenceChangeListener true
-        }
 
         val reportErrorPreference = findPreference<Preference>(getString(R.string.pref_key_report_error))
         reportErrorPreference?.setOnPreferenceClickListener {

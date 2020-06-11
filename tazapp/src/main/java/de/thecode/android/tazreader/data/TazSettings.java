@@ -9,7 +9,6 @@ import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
 
-import com.crashlytics.android.core.CrashlyticsCore;
 import com.scottyab.aescrypt.AESCrypt;
 
 import de.thecode.android.tazreader.BuildConfig;
@@ -89,7 +88,6 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
 
     private static TazSettings       instance;
     private        SharedPreferences sharedPreferences;
-    private        SharedPreferences crashlyticsSharedPreferences;
     private        Resources         resources;
 
 
@@ -100,8 +98,6 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
 
     private TazSettings(Context context) {
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-        crashlyticsSharedPreferences = context.getSharedPreferences("com.crashlytics.sdk.android.crashlytics-core:" + CrashlyticsCore.class.getName(),
-                                                                    Context.MODE_PRIVATE);
         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
         resources = context.getResources();
     }
@@ -234,25 +230,6 @@ public final class TazSettings implements SharedPreferences.OnSharedPreferenceCh
         editor.putString(PREFKEY.FIREBASETOKEN, token)
               .apply();
     }
-
-    public void setCrashlyticsAlwaysSend(boolean alwaysSend) {
-        crashlyticsSharedPreferences.edit()
-                                    .putBoolean(PREFKEY.CRASHLYTICS_ALWAYS_SEND, alwaysSend)
-                                    .apply();
-    }
-
-    public boolean getCrashlyticsAlwaysSend() {
-        return crashlyticsSharedPreferences.getBoolean(PREFKEY.CRASHLYTICS_ALWAYS_SEND, false);
-    }
-
-    public SharedPreferences getSharedPreferences() {
-        return sharedPreferences;
-    }
-
-    public boolean hasPreference(String key) {
-        return sharedPreferences.contains(key);
-    }
-
 
     public int getAskForHelpCount() {
         return sharedPreferences.getInt(PREFKEY.ASK_HELP_COUNTER, 0);

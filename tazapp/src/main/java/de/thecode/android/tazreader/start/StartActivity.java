@@ -29,7 +29,6 @@ import de.mateware.snacky.Snacky;
 import de.thecode.android.tazreader.BuildConfig;
 import de.thecode.android.tazreader.R;
 import de.thecode.android.tazreader.TazApplicationKt;
-import de.thecode.android.tazreader.analytics.AnalyticsWrapper;
 import de.thecode.android.tazreader.data.Download;
 import de.thecode.android.tazreader.data.DownloadEvent;
 import de.thecode.android.tazreader.data.DownloadState;
@@ -42,7 +41,6 @@ import de.thecode.android.tazreader.data.TazSettings;
 import de.thecode.android.tazreader.dialog.ArchiveDialog;
 import de.thecode.android.tazreader.dialog.ArchiveEntry;
 import de.thecode.android.tazreader.dialog.HelpDialog;
-import de.thecode.android.tazreader.dialognew.AskForHelpDialog;
 import de.thecode.android.tazreader.dialognew.DownloadInfoDialog;
 import de.thecode.android.tazreader.download.TazDownloadManager;
 import de.thecode.android.tazreader.notifications.NotificationUtils;
@@ -79,6 +77,7 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.work.WorkInfo;
 import androidx.work.WorkManager;
@@ -158,8 +157,7 @@ public class StartActivity extends BaseActivity
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        startViewModel = ViewModelProviders.of(this)
-                                           .get(StartViewModel.class);
+        startViewModel = new ViewModelProvider(this).get(StartViewModel.class);
 
         setContentView(R.layout.activity_start);
 
@@ -563,12 +561,6 @@ public class StartActivity extends BaseActivity
                                                                                                           paper.getBookId());
                                                                                           startActivity(intent);
                                                                                       } else {
-                                                                                          AnalyticsWrapper.getInstance()
-                                                                                                          .logData("PAPER",
-                                                                                                                   paper.toString());
-                                                                                          AnalyticsWrapper.getInstance()
-                                                                                                          .logData("RESOURCE",
-                                                                                                                   resource.toString());
                                                                                           ConnectionInfo info = Connection.Companion.getConnectionInfo();
                                                                                           if (!info.getConnected()) {
                                                                                               Timber.e(new ConnectException(
@@ -679,47 +671,6 @@ public class StartActivity extends BaseActivity
     }
 
     AsyncTask<Void, Void, Boolean> firstStartTask;
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        new AsyncTaskListener<Void, Boolean>(voids -> {
-            boolean showDialog = false;
-            List<Paper> allPapers = startViewModel.getPaperRepository()
-                                                  .getAllPapers();
-            boolean foundDownloaded = false;
-            for (Paper paper : allPapers) {
-                if (foundDownloaded) break;
-                foundDownloaded = startViewModel.getPaperRepository()
-                                                .getDownloadStateForPaper(paper.getBookId()) != DownloadState.NONE;
-            }
-            if (!foundDownloaded) {
-                showDialog = startViewModel.getSettings()
-                                           .isDemoMode();
-            }
-            return showDialog;
-        }, aBoolean -> {
-            if (aBoolean) {
-                showHelpDialog(HelpDialog.HELP_INTRO);
-            } else {
-                if (getSupportFragmentManager().findFragmentByTag(AskForHelpDialog.TAG) == null && startViewModel.getSettings()
-                                                                                                                 .isAskForHelpAllowed()) {
-                    int currentStartCount = startViewModel.getSettings()
-                                                          .getAskForHelpCount();
-                    if (currentStartCount >= 20) {
-                        startViewModel.getSettings()
-                                      .setAskForHelpCounter(0);
-                        AskForHelpDialog.Companion.newInstance()
-                                                  .show(getSupportFragmentManager(), AskForHelpDialog.TAG);
-                    } else {
-                        currentStartCount++;
-                        startViewModel.getSettings()
-                                      .setAskForHelpCounter(currentStartCount);
-                    }
-                }
-            }
-        }).execute();
-    }
 
     @Override
     protected void onPause() {
