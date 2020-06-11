@@ -673,6 +673,31 @@ public class StartActivity extends BaseActivity
     AsyncTask<Void, Void, Boolean> firstStartTask;
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        new AsyncTaskListener<Void, Boolean>(voids -> {
+            boolean showDialog = false;
+            List<Paper> allPapers = startViewModel.getPaperRepository()
+                                                  .getAllPapers();
+            boolean foundDownloaded = false;
+            for (Paper paper : allPapers) {
+                if (foundDownloaded) break;
+                foundDownloaded = startViewModel.getPaperRepository()
+                                                .getDownloadStateForPaper(paper.getBookId()) != DownloadState.NONE;
+            }
+            if (!foundDownloaded) {
+                showDialog = startViewModel.getSettings()
+                                           .isDemoMode();
+            }
+            return showDialog;
+        }, aBoolean -> {
+            if (aBoolean) {
+                showHelpDialog(HelpDialog.HELP_INTRO);
+            }
+        }).execute();
+    }
+
+    @Override
     protected void onPause() {
         if (firstStartTask != null) firstStartTask.cancel(true);
         super.onPause();
