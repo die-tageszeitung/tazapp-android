@@ -12,12 +12,12 @@ buildscript {
 
 
 plugins {
-    id 'com.github.triplet.play' version '2.1.1'
+    id 'com.github.triplet.play' version '2.8.0'
 }
 
-def versionMajor = 0
+def versionMajor = 3
 def versionMinor = 12
-def versionPatch = 4
+def versionPatch = 0
 def versionBuild = 0
 
 def buildToolsVer = "28.0.3"
@@ -168,8 +168,7 @@ android {
             include "x86", "x86_64", "armeabi-v7a", "arm64-v8a"
 
             // Specifies that we do not want to also generate a universal APK that includes all ABIs.
-            universalApk true
-
+            universalApk false
         }
     }
     packagingOptions {
