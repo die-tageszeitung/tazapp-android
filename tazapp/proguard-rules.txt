@@ -61,13 +61,6 @@
 # JDK 7-only method which is @hide on Android. Animal sniffer annotation.
 -dontwarn okio.DeflaterSink
 
-# Fabric.io
--keepattributes SourceFile,LineNumberTable
--keep class com.crashlytics.** { *; }
--dontwarn com.crashlytics.**
--keep public class * extends java.lang.Exception
--keepattributes *Annotation*
-
 # --- Commons Lang ---
 -keep class org.apache.commons.lang3.** { <init>(...); *; }
 -keep enum org.apache.commons.lang3.** { <init>(...); *; }

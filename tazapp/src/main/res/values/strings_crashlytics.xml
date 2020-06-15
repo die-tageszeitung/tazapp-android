@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="com.crashlytics.CrashSubmissionPromptTitle">Fehlerbericht senden?</string>
-    <string name="com.crashlytics.CrashSubmissionPromptMessage">Leider ist die App abgestürzt. Helfen Sie uns den Fehler zu finden und senden Sie einen anonymen Fehlerbericht. Für die Auswertung benutzen wir Crashlytics von Google. Mehr Infos dazu finden Sie in unserer Datenschutzerklärung.</string>
-    <string name="com.crashlytics.CrashSubmissionSendTitle">Senden</string>
-    <string name="com.crashlytics.CrashSubmissionAlwaysSendTitle">Immer senden</string>
-    <string name="com.crashlytics.CrashSubmissionCancelTitle">Nicht senden</string>
-</resources>
