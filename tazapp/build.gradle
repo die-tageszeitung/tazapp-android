@@ -192,7 +192,7 @@ android {
         taz {
             dimension "publication"
             applicationId "de.thecode.android.tazreader"
-            resValue 'string', 'app_name', 'taz.app'
+            resValue 'string', 'app_name', 'taz klassisch'
             buildConfigField 'String', plistUrl, tazPlist
             buildConfigField 'String', plistArchiveUrl, tazPlistArchiv
             buildConfigField 'String', aboUrl, tazAboUrl
