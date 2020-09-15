@@ -37,7 +37,7 @@ class TazDownloadManager private constructor() {
     private val userAgentHelper = UserAgentHelper.getInstance(app)
 
     @WorkerThread
-    fun downloadPaper(bookId: String, unmeteredOnly: Boolean = false): Result {
+    fun downloadPaper(bookId: String, unmeteredOnly: Boolean = false, isAutomatically: Boolean = false): Result {
         val paper = paperRepository.getPaperWithBookId(bookId)
         d { "requesting paper download for paper $paper" }
         val download = paperRepository.getDownloadForPaper(bookId)
@@ -48,7 +48,7 @@ class TazDownloadManager private constructor() {
             result.state = Result.STATE.NOSPACE
             return result
         }
-        val requestUri = requestHelper.addToUri(Uri.parse(paper.link))
+        val requestUri = requestHelper.addParamtersToDownloadUri(Uri.parse(paper.link), isAutomatically)
         val request = createRequest(downloadUri = requestUri, destinationFile = download.file, title = download.title)
         if (unmeteredOnly) {
             request.setAllowedOverMetered(false)
@@ -244,13 +244,10 @@ class TazDownloadManager private constructor() {
         enum class STATE(val int: Int = 0) {
             SUCCESSFUL(DownloadManager.STATUS_SUCCESSFUL),
             FAILED(DownloadManager.STATUS_FAILED),
-            PAUSED(DownloadManager.STATUS_PAUSED),
-            PENDING(DownloadManager.STATUS_PENDING),
-            RUNNING(DownloadManager.STATUS_RUNNING),
             NOTFOUND;
 
             companion object {
-                private val map = STATE.values()
+                private val map = values()
                         .associateBy(STATE::int)
 
                 fun fromInt(type: Int) = map[type] ?: NOTFOUND
