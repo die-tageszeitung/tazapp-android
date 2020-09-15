@@ -2,7 +2,9 @@ package de.thecode.android.tazreader.okhttp3;
 
 import android.content.Context;
 import android.net.Uri;
+
 import androidx.annotation.NonNull;
+
 import android.text.TextUtils;
 
 import de.thecode.android.tazreader.BuildConfig;
@@ -20,15 +22,16 @@ import okhttp3.RequestBody;
 
 public class RequestHelper {
 
-    private static final String PARAMETER_TOKEN        = "deviceToken";
-    private static final String PARAMETER_OLDTOKEN     = "oldDeviceToken ";
-    private static final String PARAMETER_DEVICETYPE   = "deviceType";
+    private static final String PARAMETER_TOKEN = "deviceToken";
+    private static final String PARAMETER_OLDTOKEN = "oldDeviceToken ";
+    private static final String PARAMETER_DEVICETYPE = "deviceType";
     private static final String PARAMETER_DEVICEFORMAT = "deviceFormat";
-    private static final String PARAMETER_APPVERSION   = "appVersion";
-    private static final String PARAMETER_APPBUILD     = "appBuild";
-    private static final String PARAMETER_SOUND        = "deviceMessageSound";
-    private static final String PARAMETER_PUSH_ACTIVE  = "Benachrichtigungen";
-    private static final String PARAMETER_ABOID        = "AboId";
+    private static final String PARAMETER_APPVERSION = "appVersion";
+    private static final String PARAMETER_APPBUILD = "appBuild";
+    private static final String PARAMETER_SOUND = "deviceMessageSound";
+    private static final String PARAMETER_PUSH_ACTIVE = "Benachrichtigungen";
+    private static final String PARAMETER_ABOID = "AboId";
+    private static final String PARAMETER_IS_AUTOMATIC = "isAutomatically";
 
     private static volatile RequestHelper mInstance;
 
@@ -43,14 +46,14 @@ public class RequestHelper {
         return mInstance;
     }
 
-    private TazSettings   settings;
-    private String        deviceFormat;
+    private TazSettings settings;
+    private String deviceFormat;
     private AccountHelper accountHelper;
 
     private RequestHelper(Context context) {
         settings = TazSettings.getInstance(context);
         deviceFormat = context.getResources()
-                              .getBoolean(R.bool.isTablet) ? "Tablet" : "Handy";
+                .getBoolean(R.bool.isTablet) ? "Tablet" : "Handy";
         accountHelper = AccountHelper.getInstance(context);
     }
 
@@ -95,17 +98,33 @@ public class RequestHelper {
         return accountHelper.getUser("");
     }
 
+    public Uri addParamtersToDownloadUri(@NonNull Uri uri, Boolean isAutomatically) {
+        Uri.Builder uriBuilder = uri.buildUpon();
+        String isAutomaticallyString = "0";
+        if (isAutomatically) isAutomaticallyString = "1";
+        uriBuilder.appendQueryParameter(PARAMETER_TOKEN, getDeviceToken())
+                .appendQueryParameter(PARAMETER_DEVICETYPE, getDeviceType())
+                .appendQueryParameter(PARAMETER_DEVICEFORMAT, getDeviceFormat())
+                .appendQueryParameter(PARAMETER_APPVERSION, getAppVersion())
+                .appendQueryParameter(PARAMETER_APPBUILD, getAppBuild())
+                .appendQueryParameter(PARAMETER_SOUND, getDeviceMessageSound())
+                .appendQueryParameter(PARAMETER_PUSH_ACTIVE, String.valueOf(getPushActive()))
+                .appendQueryParameter(PARAMETER_ABOID, getAboID())
+                .appendQueryParameter(PARAMETER_IS_AUTOMATIC, isAutomaticallyString);
+        return uriBuilder.build();
+    }
+
 
     public Uri addToUri(@NonNull Uri uri) {
         Uri.Builder uriBuilder = uri.buildUpon();
         uriBuilder.appendQueryParameter(PARAMETER_TOKEN, getDeviceToken())
-                  .appendQueryParameter(PARAMETER_DEVICETYPE, getDeviceType())
-                  .appendQueryParameter(PARAMETER_DEVICEFORMAT, getDeviceFormat())
-                  .appendQueryParameter(PARAMETER_APPVERSION, getAppVersion())
-                  .appendQueryParameter(PARAMETER_APPBUILD, getAppBuild())
-                  .appendQueryParameter(PARAMETER_SOUND, getDeviceMessageSound())
-                  .appendQueryParameter(PARAMETER_PUSH_ACTIVE, String.valueOf(getPushActive()))
-                  .appendQueryParameter(PARAMETER_ABOID, getAboID());
+                .appendQueryParameter(PARAMETER_DEVICETYPE, getDeviceType())
+                .appendQueryParameter(PARAMETER_DEVICEFORMAT, getDeviceFormat())
+                .appendQueryParameter(PARAMETER_APPVERSION, getAppVersion())
+                .appendQueryParameter(PARAMETER_APPBUILD, getAppBuild())
+                .appendQueryParameter(PARAMETER_SOUND, getDeviceMessageSound())
+                .appendQueryParameter(PARAMETER_PUSH_ACTIVE, String.valueOf(getPushActive()))
+                .appendQueryParameter(PARAMETER_ABOID, getAboID());
         return uriBuilder.build();
     }
 
@@ -113,13 +132,13 @@ public class RequestHelper {
         String token = getDeviceToken();
         String oldtoken = getOldDeviceToken();
         FormBody.Builder builder = new FormBody.Builder().add(PARAMETER_TOKEN, token)
-                                                         .add(PARAMETER_DEVICETYPE, getDeviceType())
-                                                         .add(PARAMETER_DEVICEFORMAT, getDeviceFormat())
-                                                         .add(PARAMETER_APPVERSION, getAppVersion())
-                                                         .add(PARAMETER_APPBUILD, getAppBuild())
-                                                         .add(PARAMETER_SOUND, getDeviceMessageSound())
-                                                         .add(PARAMETER_PUSH_ACTIVE, String.valueOf(getPushActive()))
-                                                         .add(PARAMETER_ABOID, getAboID());
+                .add(PARAMETER_DEVICETYPE, getDeviceType())
+                .add(PARAMETER_DEVICEFORMAT, getDeviceFormat())
+                .add(PARAMETER_APPVERSION, getAppVersion())
+                .add(PARAMETER_APPBUILD, getAppBuild())
+                .add(PARAMETER_SOUND, getDeviceMessageSound())
+                .add(PARAMETER_PUSH_ACTIVE, String.valueOf(getPushActive()))
+                .add(PARAMETER_ABOID, getAboID());
 
         if (!TextUtils.isEmpty(oldtoken) && !oldtoken.equals(token)) {
             builder.add(PARAMETER_OLDTOKEN, oldtoken);

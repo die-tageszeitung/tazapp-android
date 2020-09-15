@@ -49,6 +49,7 @@ import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 import androidx.work.WorkRequest;
 import androidx.work.WorkerParameters;
+
 import okhttp3.HttpUrl;
 import timber.log.Timber;
 
@@ -59,16 +60,16 @@ public class SyncWorker extends LoggingWorker {
 
     private static final String PLIST_KEY_ISSUES = "issues";
 
-    public static final String ARG_START_DATE        = "startDate";
-    public static final String ARG_END_DATE          = "endDate";
+    public static final String ARG_START_DATE = "startDate";
+    public static final String ARG_END_DATE = "endDate";
     public static final String ARG_INITIATED_BY_USER = "initiatedByUser";
 
 
-    private final PaperRepository       paperRepository;
-    private final ResourceRepository    resourceRepository;
+    private final PaperRepository paperRepository;
+    private final ResourceRepository resourceRepository;
     private final PublicationRepository publicationRepository;
-    private final TazSettings           settings;
-    private final StoreRepository       storeRepository;
+    private final TazSettings settings;
+    private final StoreRepository storeRepository;
 
     public SyncWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
@@ -110,21 +111,21 @@ public class SyncWorker extends LoggingWorker {
         Paper latestPaper = paperRepository.getLatestPaper();
         if (latestPaper != null) {
             if (settings.getPrefBoolean(TazSettings.PREFKEY.AUTOLOAD, false) && !TazApplicationKt.getAccountHelper()
-                                                                                                 .isDemo()) {
+                    .isDemo()) {
                 Store autoDownloadedStore = storeRepository.getStore(latestPaper.getBookId(), Paper.STORE_KEY_AUTO_DOWNLOADED);
                 boolean isAutoDownloaded = Boolean.parseBoolean(autoDownloadedStore.getValue("false"));
                 if (!isAutoDownloaded /*&& (System.currentTimeMillis() - TimeUnit.DAYS.toMillis(1)) < latestPaper.getDateInMillis()*/) {
                     boolean wifiOnly = settings.getPrefBoolean(TazSettings.PREFKEY.AUTOLOAD_WIFI, false);
                     if (paperRepository.getDownloadStateForPaper(latestPaper.getBookId()) == DownloadState.NONE) {
                         TazDownloadManager.Result result = TazApplicationKt.getDownloadManager()
-                                                                           .downloadPaper(latestPaper.getBookId(), wifiOnly);
+                                .downloadPaper(latestPaper.getBookId(), wifiOnly, !initByUser);
                         if (result.getState() == TazDownloadManager.Result.STATE.SUCCESS) {
                             autoDownloadedStore.setValue("true");
                             storeRepository.saveStore(autoDownloadedStore);
                         } else if (result.getState() == TazDownloadManager.Result.STATE.NOSPACE) {
                             TazApplicationKt.getNotificationUtils()
-                                            .showDownloadErrorNotification(latestPaper,
-                                                                           getApplicationContext().getString(R.string.message_not_enough_space));
+                                    .showDownloadErrorNotification(latestPaper,
+                                            getApplicationContext().getString(R.string.message_not_enough_space));
                         }
                     }
                 }
@@ -146,7 +147,7 @@ public class SyncWorker extends LoggingWorker {
         publicationRepository.savePublication(publication);
 
         TazApplicationKt.getUpdate()
-                        .setLatestVersion(publication.getAppAndroidVersion());
+                .setLatestVersion(publication.getAppAndroidVersion());
 
 
         NSObject[] issues = ((NSArray) root.objectForKey(PLIST_KEY_ISSUES)).getArray();
@@ -162,7 +163,7 @@ public class SyncWorker extends LoggingWorker {
             Paper oldPaper = paperRepository.getPaperWithBookId(newPaper.getBookId());
             if (oldPaper != null) {
                 loadImage = !new EqualsBuilder().append(oldPaper.getImageHash(), newPaper.getImageHash())
-                                                .isEquals();
+                        .isEquals();
             }
             if (loadImage) preLoadImage(newPaper);
             newPapers.add(newPaper);
@@ -182,22 +183,22 @@ public class SyncWorker extends LoggingWorker {
             url = HttpUrl.parse(BuildConfig.PLISTURL);
         }
         okhttp3.Call call = OkHttp3Helper.getInstance(getApplicationContext())
-                                         .getCall(url,
-                                                  RequestHelper.getInstance(getApplicationContext())
-                                                               .getOkhttp3RequestBody());
+                .getCall(url,
+                        RequestHelper.getInstance(getApplicationContext())
+                                .getOkhttp3RequestBody());
         okhttp3.Response response = call.execute();
         if (response.isSuccessful()) {
             return (NSDictionary) PropertyListParser.parse(response.body()
-                                                                   .bytes());
+                    .bytes());
         }
         throw new IOException(response.body()
-                                      .string());
+                .string());
     }
 
     private void preLoadImage(Paper paper) {
         Picasso.with(getApplicationContext())
-               .load(paper.getImage())
-               .fetch();
+                .load(paper.getImage())
+                .fetch();
     }
 
     private void downloadLatestResource() {
@@ -207,7 +208,7 @@ public class SyncWorker extends LoggingWorker {
             DownloadState downloadState = resourceRepository.getDownloadState(latestResource.getKey());
             if (latestResource != null && downloadState == DownloadState.NONE) {
                 TazDownloadManager.Companion.getInstance()
-                                            .downloadResource(latestResource.getKey(), false, false);
+                        .downloadResource(latestResource.getKey(), false, false);
             }
         }
     }
@@ -227,11 +228,11 @@ public class SyncWorker extends LoggingWorker {
                         if (counter >= papersToKeep) {
                             Timber.d("PaperId: %s (currentOpen:%s)", paper.getBookId(), currentOpenPaperBookId);
                             if (!paper.getBookId()
-                                      .equals(currentOpenPaperBookId)) {
+                                    .equals(currentOpenPaperBookId)) {
                                 boolean safeToDelete = true;
                                 String bookmarksJsonString = storeRepository.getStore(paper.getBookId(),
-                                                                                      Paper.STORE_KEY_BOOKMARKS)
-                                                                            .getValue();
+                                        Paper.STORE_KEY_BOOKMARKS)
+                                        .getValue();
                                 if (!TextUtils.isEmpty(bookmarksJsonString)) {
                                     try {
                                         JSONArray bookmarks = new JSONArray(bookmarksJsonString);
@@ -261,7 +262,7 @@ public class SyncWorker extends LoggingWorker {
     public static void scheduleJobImmediately(boolean byUser, Calendar start, Calendar end) {
 
         WorkManager.getInstance()
-                   .cancelAllWorkByTag(TAG);
+                .cancelAllWorkByTag(TAG);
 
         Data.Builder dataBuilder = new Data.Builder().putBoolean(ARG_INITIATED_BY_USER, byUser);
 
@@ -271,11 +272,11 @@ public class SyncWorker extends LoggingWorker {
         }
 
         WorkRequest request = new OneTimeWorkRequest.Builder(SyncWorker.class).setInputData(dataBuilder.build())
-                                                                              .addTag(TAG)
-                                                                              .build();
+                .addTag(TAG)
+                .build();
 
         WorkManager.getInstance()
-                   .enqueue(request);
+                .enqueue(request);
     }
 
     private static void scheduleJobIn(long latestMillis) {
@@ -283,11 +284,11 @@ public class SyncWorker extends LoggingWorker {
         Constraints.Builder constraintsBuilder = new Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED);
 
         OneTimeWorkRequest request = new OneTimeWorkRequest.Builder(SyncWorker.class).setInitialDelay(latestMillis,
-                                                                                                      TimeUnit.MILLISECONDS)
-                                                                                     .setConstraints(constraintsBuilder.build())
-                                                                                     .build();
+                TimeUnit.MILLISECONDS)
+                .setConstraints(constraintsBuilder.build())
+                .build();
         WorkManager.getInstance()
-                   .beginUniqueWork(TAG, ExistingWorkPolicy.REPLACE, request)
-                   .enqueue();
+                .beginUniqueWork(TAG, ExistingWorkPolicy.REPLACE, request)
+                .enqueue();
     }
 }
